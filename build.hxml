@@ -1,0 +1,9 @@
+-cp src
+-D analyzer-optimize
+-D scriptable
+-D hscriptPos
+-cpp anna
+-main Anna
+-lib sepia
+-lib hx-color-trace
+-lib ihx
