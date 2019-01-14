@@ -1,3 +1,4 @@
+import haxe.Constraints.IMap;
 import haxe.macro.Context;
 import haxe.macro.Printer;
 import state.GlobalStore;
@@ -24,6 +25,10 @@ class Main {
 
   public static function main() {
     Native;
+    Random;
+    var m: IMap<String, String> = new Map<String, String>();
+    m.keys();
+    new Date(2018, 1, 1, 0, 0, 0).getTime();
     new Printer().printExpr(macro 'foo');
     AtomSupport.atoms = new HashTableAtoms();
     GlobalStore.start();
@@ -82,7 +87,7 @@ class Main {
       }
 
       Runtime.start('${basePath}scripts', '${basePath}out/',
-      ['${basePath}src/'], ['hscript'], onComplete);
+      ['${basePath}src/'], ['hscript', 'deep_equal'], onComplete);
     });
 
     pollChanges();

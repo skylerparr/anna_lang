@@ -2,8 +2,11 @@
 -D analyzer-optimize
 -D scriptable
 -D hscriptPos
+-D HXCPP_M64
 -cpp anna
 -main Main
 -lib sepia
+-lib random
+-lib deep_equal
 -lib hx-color-trace
 -lib ihx
