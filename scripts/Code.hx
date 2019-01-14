@@ -1,4 +1,5 @@
 package ;
+import haxe.macro.Expr;
 import lang.Types;
 import lang.Types.Atom;
 
@@ -21,6 +22,10 @@ class Code {
   public static function define(name: Atom, func: Dynamic): Tuple {
     functionMap.set(name, func);
     return {type: Types.TUPLE, value: ['ok'.atom()]};
+  }
+
+  public static function defineAnonFunc(body: Expr): Dynamic {
+    return {};
   }
 
 }

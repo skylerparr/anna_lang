@@ -13,4 +13,9 @@ class Native {
     var clazz = Type.resolveClass(mod);
     return call(clazz, funStr, args);
   }
+
+  public static function callStaticField(mod:String, field:String):Dynamic {
+    var clazz = Type.resolveClass(mod);
+    return Reflect.getProperty(clazz, field);
+  }
 }

@@ -1,3 +1,5 @@
+import haxe.macro.Context;
+import haxe.macro.Printer;
 import state.GlobalStore;
 import lang.Types;
 import core.PathSettings;
@@ -13,18 +15,19 @@ import ihx.HScriptEval;
 
 using lang.AtomSupport;
 
-class Anna {
-  private static var parser: Parser = new Parser();
-  private static var interp: Interp;
+class Main {
+  public static var parser: Parser = new Parser();
+  public static var interp: Interp;
 
   private static var mainThread: Thread;
   private static var ready: Bool = false;
 
   public static function main() {
     Native;
+    new Printer().printExpr(macro 'foo');
     AtomSupport.atoms = new HashTableAtoms();
     GlobalStore.start();
-    new Anna();
+    new Main();
   }
 
   public function new() {
@@ -32,12 +35,38 @@ class Anna {
     interp = HScriptEval.interp;
     var variables = interp.variables;
     variables.set("rc", function() {
-      Runtime.clean();
       Runtime.recompile();
+    });
+    variables.set("clean", function() {
+      Runtime.clean();
+    });
+    variables.set("c", function(file: String) {
+      Runtime.compile(file, null);
     });
     variables.set('Types', Types);
     variables.set('a', function(arg: String): Atom {
       return arg.atom();
+    });
+    variables.set("s", function(o: Dynamic): Bool {
+      o.parser = parser;
+      o.interp = interp;
+      return true;
+    });
+    variables.set("hxeval", function(string: String): Dynamic {
+      return hxeval(string);
+    });
+    variables.set('interp', interp);
+    variables.set("macro", function(string: String): Dynamic {
+      var ast = parser.parseString(string);
+      var pos = { max: 12, min: 0, file: null };
+      return new Macro(pos).convert(ast);
+    });
+    variables.set("ast", function(string: String): Dynamic {
+      return parser.parseString(string);
+    });
+    variables.set("Main", Main);
+    variables.set("fields", function(o: Dynamic): Dynamic {
+      return Reflect.fields(o);
     });
     mainThread = Thread.current();
     Thread.create(function() {
@@ -64,10 +93,17 @@ class Anna {
       Sys.sleep(0.25);
       var files: Array<String> = Thread.readMessage(false);
 
-      if(files != null) {
-        if(!ready) {
-          var clazz: Class<Dynamic> = Type.resolveClass("App");
-          if(clazz != null) {
+      if(files != null && files.length > 0) {
+        var clazz: Class<Dynamic> = Type.resolveClass("Anna");
+        if(clazz != null) {
+          var fields: Array<String> = Type.getClassFields(clazz);
+          for(f in fields) {
+            if(f == "start") {
+              continue;
+            }
+            interp.variables.set(f, Reflect.field(clazz, f));
+          }
+          if(!ready) {
             var fun = Reflect.field(clazz, "start");
             Reflect.callMethod(clazz, fun, []);
           }
@@ -77,42 +113,9 @@ class Anna {
     }
   }
 
-//  private inline function setupMacros(): Void {
-//    variables.set("s", function(o: Dynamic): Bool {
-//      o.parser = parser;
-//      o.interp = interp;
-//      return true;
-//    });
-//    variables.set("hxeval", function(string: String): Dynamic {
-//      return hxeval(string);
-//    });
-//    variables.set("macro", function(string: String): Dynamic {
-//      var ast = parser.parseString(string);
-//      var pos = { max: 12, min: 0, file: null };
-//      return new Macro(pos).convert(ast);
-//    });
-//    variables.set("hx", function(string: String): Dynamic {
-//      return string;
-//    });
-//    variables.set("ast", function(string: String): Dynamic {
-//      return parser.parseString(string);
-//    });
-//    variables.set("Anna", Anna);
-//    variables.set("fields", function(o: Dynamic): Dynamic {
-//      return Reflect.fields(o);
-//    });
-//
-//    hxeval('s(Compiler)');
-//    hxeval('s(Kernel)');
-//  }
-//
-//  public static function hxeval(string: String) {
-//    var ast = parser.parseString(string);
-//    return interp.execute(ast);
-//  }
-//
-//  private function onRecompile(files: Array<String>): Void {
-//    setupMacros();
-//  }
+  public static function hxeval(string: String) {
+    var ast = parser.parseString(string);
+    return interp.execute(ast);
+  }
 
 }

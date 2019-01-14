@@ -3,7 +3,7 @@
 -D scriptable
 -D hscriptPos
 -cpp anna
--main Anna
+-main Main
 -lib sepia
 -lib hx-color-trace
 -lib ihx
