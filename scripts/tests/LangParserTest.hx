@@ -86,6 +86,6 @@ class LangParserTest {
     Assert.areEqual(LangParser.toAST(
 'defmodule Foo do
 end'),
-    {val: 'defmodule', line: 1, args: [{val: 'Foo'.atom(), line: 1, args: []}, {val: cast('do'), line: 1, args: [{val: 'end', line: 2, args: []}]}]});
+    {val: 'defmodule', line: 1, args: [{val: 'Foo'.atom(), line: 1, args: []}, {val: cast('do'), line: 1, args: []}, {val: cast('end'), line: 2, args: []}]});
   }
 }

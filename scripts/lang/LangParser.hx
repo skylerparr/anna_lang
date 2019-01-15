@@ -68,54 +68,32 @@ class LangParser {
   private static function parseAst(parseObj: ParseVal): Void {
     var val: String = '';
 
-    trace('parse AST');
+//    trace('parse AST');
 
     while(parseObj.index < parseObj.body.length) {
       var char: String = parseObj.body.charAt(parseObj.index);
-      trace(char);
+//      trace(char);
       switch([parseObj.state, char]) {
         case [ParsingState.NONE, SPACE]:
         case [ParsingState.NONE, NEWLINE]:
-          trace(val);
         case [ParsingState.NONE, COMMA]:
           //throw parsing exception
-        case [ParsingState.NONE, COLON]:
-          var parseArg: ParseVal = {retVal: {val: '', args: [], line: 1}, index: parseObj.index + 1, line: parseObj.line, state: ParsingState.NONE, body: parseObj.body, isVal: false};
-          parseAst(parseArg);
-          if(parseArg.retVal.val != '') {
-            parseObj.retVal.val = cast(parseArg.retVal.val + "", String).atom();
-            parseObj.index = parseArg.index;
-            parseObj.retVal.line = parseArg.line;
-            parseObj.state = ParsingState.VAL;
-          }
-          break;
         case [ParsingState.NONE, OPEN_PAREN]:
           //could be grouping
         case [ParsingState.NONE, CLOSE_PAREN]:
           //throw parsing exception
         case [ParsingState.NONE, c]:
-          if(CAPITALS.match(char)) {
-            var parseArg: ParseVal = {retVal: {val: '', args: [], line: 1}, index: parseObj.index + 1, line: parseObj.line, state: ParsingState.NONE, body: parseObj.body, isVal: true};
-            parseAst(parseArg);
-            if(parseArg.retVal.val != '') {
-              parseObj.retVal.val = cast(char + parseArg.retVal.val, String).atom();
-              parseObj.index = parseArg.index;
-              parseObj.retVal.line = parseArg.line;
-              val = '';
-            }
-          } else {
-            val += char;
-          }
+          val += char;
           parseObj.state = ParsingState.VAL;
         case [ParsingState.VAL, SPACE]:
-          parseObj.retVal.val = val;
+          assignVal(parseObj, val);
           parseObj.retVal.line = parseObj.line;
+          val = '';
           if(parseObj.isVal) {
             break;
           }
-          val = '';
           parseObj.state = ParsingState.ARG;
-          var parseArg: ParseVal = {retVal: {val: '', args: [], line: 1}, index: parseObj.index + 1, line: parseObj.line, state: ParsingState.NONE, body: parseObj.body, isVal: false};
+          var parseArg: ParseVal = {retVal: {val: '', args: [], line: parseObj.line}, index: parseObj.index + 1, line: parseObj.line, state: ParsingState.NONE, body: parseObj.body, isVal: false};
           parseAst(parseArg);
 
           if(parseArg.retVal.val != '') {
@@ -123,7 +101,7 @@ class LangParser {
             parseObj.index = parseArg.index;
           }
         case [ParsingState.VAL, NEWLINE]:
-          parseObj.retVal.val = val;
+          assignVal(parseObj, val);
           parseObj.retVal.line = parseObj.line;
           val = '';
           parseObj.state = ParsingState.ARG;
@@ -138,13 +116,12 @@ class LangParser {
           parseObj.retVal.val = val;
           parseObj.index--; //don't remove the comma
           break;
-        case [ParsingState.VAL, COLON]:
         case [ParsingState.VAL, OPEN_PAREN]:
           parseObj.retVal.val = val;
           parseObj.retVal.line = parseObj.line;
           val = '';
           parseObj.state = ParsingState.ARG;
-          var parseArg: ParseVal = {retVal: {val: '', args: [], line: 1}, index: parseObj.index + 1, line: parseObj.line, state: ParsingState.NONE, body: parseObj.body, isVal: false};
+          var parseArg: ParseVal = {retVal: {val: '', args: [], line: parseObj.line}, index: parseObj.index + 1, line: parseObj.line, state: ParsingState.NONE, body: parseObj.body, isVal: false};
           parseAst(parseArg);
           if(parseArg.retVal.val != '') {
             parseObj.retVal.args.push(parseArg.retVal);
@@ -152,27 +129,25 @@ class LangParser {
           parseObj.index = parseArg.index;
           continue;
         case [ParsingState.VAL, CLOSE_PAREN]:
-          parseObj.retVal.val = val;
+          assignVal(parseObj, val);
           parseObj.index - 1;
           break;
         case [ParsingState.VAL, _]:
           val += char;
         case [ParsingState.ARG, SPACE]:
         case [ParsingState.ARG, NEWLINE]:
+          if(val != '') {
+            var arg: AST = {val: val, args: [], line: parseObj.line};
+            parseObj.retVal.args.push(arg);
+            parseObj.line++;
+            val = '';
+          }
         case [ParsingState.ARG, COMMA]:
           var parseArg: ParseVal = {retVal: {val: '', args: [], line: 1}, index: parseObj.index + 1, line: parseObj.line, state: ParsingState.NONE, body: parseObj.body, isVal: false};
           parseAst(parseArg);
           if(parseArg.retVal.val != '') {
             parseObj.retVal.args.push(parseArg.retVal);
             parseObj.index = --parseArg.index;
-          }
-        case [ParsingState.ARG, COLON]:
-          var parseArg: ParseVal = {retVal: {val: '', args: [], line: 1}, index: parseObj.index + 1, line: parseObj.line, state: ParsingState.NONE, body: parseObj.body, isVal: false};
-          parseAst(parseArg);
-          if(parseArg.retVal.val != '') {
-            parseObj.retVal.val = cast(parseArg.retVal.val + "", String).atom();
-            parseObj.index = parseArg.index + 1;
-            parseObj.retVal.line = parseArg.line;
           }
         case [ParsingState.ARG, OPEN_PAREN]:
           var parseArg: ParseVal = {retVal: {val: '', args: [], line: 1}, index: parseObj.index + 1, line: parseObj.line, state: ParsingState.NONE, body: parseObj.body, isVal: false};
@@ -191,7 +166,20 @@ class LangParser {
       parseObj.index++;
     }
 
-    trace('break');
+//    trace('break');
+  }
+
+  private static inline function assignVal(parseObj: ParseVal, val: String): Void {
+    if(CAPITALS.match(val.charAt(0))) {
+      val = ':${val}';
+    }
+    if(val.startsWith(':')) {
+      val = val.substr(1);
+      parseObj.retVal.val = val.atom();
+      parseObj.isVal = true;
+    } else {
+      parseObj.retVal.val = val;
+    }
   }
 
 }
