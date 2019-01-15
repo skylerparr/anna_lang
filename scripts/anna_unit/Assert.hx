@@ -6,9 +6,9 @@ import anna_unit.TestFailureException;
 class Assert {
 
   public static function areEqual(a: Dynamic, b: Dynamic): Void {
-    switch(DeepEqual.compare(a, b)) {
-      case Success(_):
-      case Failure(f):
+    switch((a + "") == (b + "")) {
+      case true:
+      case false:
         var errString = '';
         errString += '\n';
         errString += 'are not equal, expected to be equal\n';

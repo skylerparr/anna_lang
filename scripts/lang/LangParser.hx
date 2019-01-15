@@ -1,16 +1,28 @@
 package lang;
 
+import lang.LangParser.ParsingState;
 import compiler.CodeGen;
 using lang.AtomSupport;
 using StringTools;
 
 enum ParsingState {
   NONE;
-  CHAR;
   VAL;
-  CONST;
   ARG;
-  VAR;
+}
+
+typedef ParseVal = {
+  retVal: AST,
+  index: Int,
+  line: Int,
+  state: ParsingState,
+  body: String
+}
+
+typedef AST = {
+  val: Dynamic,
+  line: Int,
+  args: Array<AST>
 }
 
 @:build(macros.ScriptMacros.script())
@@ -34,93 +46,102 @@ class LangParser {
     #end
   }
 
-  private static var WHITESPACE: EReg = ~/\s/;
-  private static var FUNCTION_START: String = '(';
+  private static inline var SPACE: String = ' ';
+  private static inline var NEWLINE: String = '\n';
+  private static inline var COMMA: String = ',';
+  private static inline var COLON: String = ':';
+  private static inline var OPEN_PAREN: String = '(';
+  private static inline var CLOSE_PAREN: String = ')';
 
-  public static function toAST(body: String): Dynamic {
-    var retVal: Dynamic = {};
-    var index: Int = 0;
-    var state: ParsingState = ParsingState.NONE;
+  public static function toAST(body: String): AST {
+    body += '\n';
+    var parseObj: ParseVal = {retVal: {val: '', args: [], line: 0}, index: 0, line: 1, state: ParsingState.NONE, body: body};
 
-    while(index <= body.length) {
-      var char: String = body.charAt(index++);
-      switch([state, WHITESPACE.match(char), char == FUNCTION_START]) {
-        case [ParsingState.NONE, true, _]:
-        case [ParsingState.NONE, false, _]:
-          var functionString = extractValue(body.substr(index - 1));
-          Reflect.setField(retVal, 'func', functionString.atom());
-          Reflect.setField(retVal, 'line', 1);
+    parseAst(parseObj);
 
-          state = ParsingState.ARG;
-          index += functionString.length;
-        case [ParsingState.ARG, _, _]:
-          var args = extractArgs(body.substr(index - 2));
-          Reflect.setField(retVal, 'args', args);
-          state = ParsingState.NONE;
+    return parseObj.retVal;
+  }
+
+  private static function parseAst(parseObj: ParseVal): Void {
+    var val: String = '';
+
+    while(parseObj.index < parseObj.body.length) {
+      var char: String = parseObj.body.charAt(parseObj.index);
+      switch([parseObj.state, char]) {
+        case [ParsingState.NONE, SPACE]:
+        case [ParsingState.NONE, NEWLINE]:
+        case [ParsingState.NONE, COMMA]:
+          //throw parsing exception
+        case [ParsingState.NONE, COLON]:
+          var parseArg: ParseVal = {retVal: {val: '', args: [], line: 1}, index: parseObj.index + 1, line: parseObj.line, state: ParsingState.NONE, body: parseObj.body};
+          parseAst(parseArg);
+          if(parseArg.retVal.val != '') {
+            parseObj.retVal.val = cast(parseArg.retVal.val + "", String).atom();
+            parseObj.index = parseArg.index;
+            parseObj.retVal.line = parseArg.line;
+          }
+        case [ParsingState.NONE, OPEN_PAREN]:
+          //could be grouping
+        case [ParsingState.NONE, CLOSE_PAREN]:
+          //throw parsing exception
+        case [ParsingState.NONE, c]:
+          val += char;
+          parseObj.state = ParsingState.VAL;
+        case [ParsingState.VAL, SPACE]:
+          parseObj.retVal.val = val;
+          parseObj.retVal.line = parseObj.line;
+          val = '';
+          parseObj.state = ParsingState.ARG;
+          var parseArg: ParseVal = {retVal: {val: '', args: [], line: 1}, index: parseObj.index + 1, line: parseObj.line, state: ParsingState.NONE, body: parseObj.body};
+          parseAst(parseArg);
+          if(parseArg.retVal.val != '') {
+            parseObj.retVal.args.push(parseArg.retVal);
+            parseObj.index = parseArg.index;
+          }
+        case [ParsingState.VAL, NEWLINE]:
+          parseObj.retVal.val = val;
+          parseObj.retVal.line = parseObj.line;
+          val = '';
+          parseObj.state = ParsingState.NONE;
+        case [ParsingState.VAL, COMMA]:
+          parseObj.retVal.val = val;
+          parseObj.index--; //don't remove the comma
           break;
+        case [ParsingState.VAL, COLON]:
+        case [ParsingState.VAL, OPEN_PAREN]:
+          parseObj.retVal.val = val;
+          parseObj.retVal.line = parseObj.line;
+          val = '';
+          parseObj.state = ParsingState.ARG;
+          var parseArg: ParseVal = {retVal: {val: '', args: [], line: 1}, index: parseObj.index + 1, line: parseObj.line, state: ParsingState.NONE, body: parseObj.body};
+          parseAst(parseArg);
+          if(parseArg.retVal.val != '') {
+            parseObj.retVal.args.push(parseArg.retVal);
+            parseObj.index = parseArg.index;
+          }
+        case [ParsingState.VAL, CLOSE_PAREN]:
+          //throw parsing error
+        case [ParsingState.VAL, _]:
+          val += char;
+        case [ParsingState.ARG, SPACE]:
+        case [ParsingState.ARG, NEWLINE]:
+        case [ParsingState.ARG, COMMA]:
+          var parseArg: ParseVal = {retVal: {val: '', args: [], line: 1}, index: parseObj.index + 1, line: parseObj.line, state: ParsingState.NONE, body: parseObj.body};
+          parseAst(parseArg);
+          if(parseArg.retVal.val != '') {
+            parseObj.retVal.args.push(parseArg.retVal);
+            parseObj.index = parseArg.index;
+          }
+        case [ParsingState.ARG, COLON]:
+        case [ParsingState.ARG, OPEN_PAREN]:
+          continue;
+        case [ParsingState.ARG, CLOSE_PAREN]:
+        case [ParsingState.ARG, _]:
+          val += char;
         case _:
       }
+      parseObj.index++;
     }
-    if(state == ParsingState.ARG) {
-      Reflect.setField(retVal, 'args', []);
-    }
-
-    return retVal;
   }
 
-  private static function extractValue(body: String): String {
-    var index: Int = 0;
-    var currentString: String = '';
-    var state: ParsingState = ParsingState.NONE;
-    var retVal: String = '';
-
-    while(index != body.length){
-      var char: String = body.charAt(index++);
-      switch([state, WHITESPACE.match(char), char == FUNCTION_START]) {
-        case [ParsingState.NONE, true, _]:
-        case [ParsingState.NONE, false, _]:
-          state = ParsingState.CHAR;
-          currentString = char;
-        case [ParsingState.CHAR, false, false]:
-          currentString += char;
-        case [ParsingState.CHAR, false, true]:
-          retVal = currentString;
-          currentString = '';
-          break;
-        case _:
-      }
-    }
-    if(currentString.length > 0) {
-      retVal = currentString;
-    }
-    return retVal;
-  }
-
-  private static function extractArgs(body: String): Array<Dynamic> {
-    var retVal: Array<Dynamic> = [];
-    var index: Int = 0;
-    var currentString: String = '';
-    var state: ParsingState = ParsingState.NONE;
-
-    while(index != body.length){
-      var char: String = body.charAt(index++);
-      switch([state, WHITESPACE.match(char), char == ',']) {
-        case [ParsingState.NONE, true, false]:
-        case [ParsingState.NONE, true, true]:
-          //throw exception
-        case [ParsingState.NONE, false, false]:
-          state = ParsingState.VAL;
-          currentString += char;
-        case [ParsingState.VAL, true, false]:
-          //throw exception
-        case [ParsingState.VAL, false, true]:
-          var arg: String = currentString;
-          trace(arg);
-        case _:
-      }
-
-    }
-    return retVal;
-  }
-  
 }
