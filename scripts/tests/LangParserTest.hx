@@ -81,4 +81,11 @@ class LangParserTest {
   public static function shouldConvertVarsWithCapitalLettersToAtoms(): Void {
     Assert.areEqual(LangParser.toAST('EllieBear'), {val: 'EllieBear'.atom(), line: 1, args: []});
   }
+
+  public static function shouldConvertFunctionWithNoCommas(): Void {
+    Assert.areEqual(LangParser.toAST(
+'defmodule Foo do
+end'),
+    {val: 'defmodule', line: 1, args: [{val: 'Foo'.atom(), line: 1, args: []}, {val: cast('do'), line: 1, args: [{val: 'end', line: 2, args: []}]}]});
+  }
 }
