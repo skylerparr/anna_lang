@@ -68,11 +68,8 @@ class LangParser {
   private static function parseAst(parseObj: ParseVal): Void {
     var val: String = '';
 
-//    trace('parse AST');
-
     while(parseObj.index < parseObj.body.length) {
       var char: String = parseObj.body.charAt(parseObj.index);
-//      trace(char);
       switch([parseObj.state, char]) {
         case [ParsingState.NONE, SPACE]:
         case [ParsingState.NONE, NEWLINE]:
@@ -137,6 +134,10 @@ class LangParser {
         case [ParsingState.ARG, SPACE]:
         case [ParsingState.ARG, NEWLINE]:
           if(val != '') {
+            if(val == 'end') {
+              val = '';
+              break;
+            }
             var arg: AST = {val: val, args: [], line: parseObj.line};
             parseObj.retVal.args.push(arg);
             parseObj.line++;
@@ -165,8 +166,6 @@ class LangParser {
       }
       parseObj.index++;
     }
-
-//    trace('break');
   }
 
   private static inline function assignVal(parseObj: ParseVal, val: String): Void {
