@@ -53,6 +53,8 @@ class LangParser {
   private static inline var OPEN_PAREN: String = '(';
   private static inline var CLOSE_PAREN: String = ')';
 
+  private static var CAPITALS: EReg = ~/[A-Z]/;
+
   public static function toAST(body: String): AST {
     body += '\n';
     var parseObj: ParseVal = {retVal: {val: '', args: [], line: 0}, index: 0, line: 1, state: ParsingState.NONE, body: body};
@@ -79,12 +81,25 @@ class LangParser {
             parseObj.retVal.val = cast(parseArg.retVal.val + "", String).atom();
             parseObj.index = parseArg.index;
             parseObj.retVal.line = parseArg.line;
+            parseObj.state = ParsingState.VAL;
           }
+          break;
         case [ParsingState.NONE, OPEN_PAREN]:
           //could be grouping
         case [ParsingState.NONE, CLOSE_PAREN]:
           //throw parsing exception
         case [ParsingState.NONE, c]:
+          if(CAPITALS.match(char)) {
+            var parseArg: ParseVal = {retVal: {val: '', args: [], line: 1}, index: parseObj.index + 1, line: parseObj.line, state: ParsingState.NONE, body: parseObj.body};
+            parseAst(parseArg);
+            if(parseArg.retVal.val != '') {
+              parseObj.retVal.val = cast(char + parseArg.retVal.val, String).atom();
+              parseObj.index = parseArg.index;
+              parseObj.retVal.line = parseArg.line;
+              parseObj.state = ParsingState.VAL;
+            }
+            continue;
+          }
           val += char;
           parseObj.state = ParsingState.VAL;
         case [ParsingState.VAL, SPACE]:
@@ -94,6 +109,7 @@ class LangParser {
           parseObj.state = ParsingState.ARG;
           var parseArg: ParseVal = {retVal: {val: '', args: [], line: 1}, index: parseObj.index + 1, line: parseObj.line, state: ParsingState.NONE, body: parseObj.body};
           parseAst(parseArg);
+
           if(parseArg.retVal.val != '') {
             parseObj.retVal.args.push(parseArg.retVal);
             parseObj.index = parseArg.index;
@@ -117,10 +133,13 @@ class LangParser {
           parseAst(parseArg);
           if(parseArg.retVal.val != '') {
             parseObj.retVal.args.push(parseArg.retVal);
-            parseObj.index = parseArg.index;
           }
+          parseObj.index = parseArg.index;
+          continue;
         case [ParsingState.VAL, CLOSE_PAREN]:
-          //throw parsing error
+          parseObj.retVal.val = val;
+          parseObj.index - 1;
+          break;
         case [ParsingState.VAL, _]:
           val += char;
         case [ParsingState.ARG, SPACE]:
@@ -130,12 +149,26 @@ class LangParser {
           parseAst(parseArg);
           if(parseArg.retVal.val != '') {
             parseObj.retVal.args.push(parseArg.retVal);
-            parseObj.index = parseArg.index;
+            parseObj.index = --parseArg.index;
           }
         case [ParsingState.ARG, COLON]:
+          var parseArg: ParseVal = {retVal: {val: '', args: [], line: 1}, index: parseObj.index + 1, line: parseObj.line, state: ParsingState.NONE, body: parseObj.body};
+          parseAst(parseArg);
+          if(parseArg.retVal.val != '') {
+            parseObj.retVal.val = cast(parseArg.retVal.val + "", String).atom();
+            parseObj.index = parseArg.index + 1;
+            parseObj.retVal.line = parseArg.line;
+          }
         case [ParsingState.ARG, OPEN_PAREN]:
-          continue;
+          var parseArg: ParseVal = {retVal: {val: '', args: [], line: 1}, index: parseObj.index + 1, line: parseObj.line, state: ParsingState.NONE, body: parseObj.body};
+          parseAst(parseArg);
+          if(parseArg.retVal.val != '') {
+            parseObj.retVal.args.push(parseArg.retVal);
+            parseObj.index = parseArg.index;
+          }
         case [ParsingState.ARG, CLOSE_PAREN]:
+          parseObj.index++;
+          break;
         case [ParsingState.ARG, _]:
           val += char;
         case _:

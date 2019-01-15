@@ -1,14 +1,20 @@
 package anna_unit;
 
-import anna_unit.TestFailureException;
 @:build(macros.ScriptMacros.script())
 class AnnaUnit {
-  public static function start(): Void {
-    Native.callStatic('Runtime', 'recompile', []);
+  public static function start(testName: String = null): Void {
+    if(Native.callStatic('Runtime', 'recompile', []).length == 0){
+      return;
+    }
 
     var clazz: Class<Dynamic> = Type.resolveClass('tests.LangParserTest');
 
-    var fields: Array<String> = Type.getClassFields(clazz);
+    var fields: Array<String> = [];
+    if(testName == null) {
+      fields = Type.getClassFields(clazz);
+    } else {
+      fields.push(testName);
+    }
     fields = Native.callStatic('Random', 'shuffle', [fields]);
     var successCounter: Int = 0;
     var failureCounter: Int = 0;
