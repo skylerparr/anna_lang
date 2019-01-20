@@ -62,9 +62,36 @@ class LangParserTest {
   public static function shouldConvertComplexNestedArray(): Void {
     Assert.areEqual(LangParser.toAST('[[1, 2, 3], [:a, :b, :c], ["x", "y", "z"]]'), [[1,2,3], ['a'.atom(), 'b'.atom(), 'c'.atom()], ["x", "y", "z"]]);
   }
-//
-//  public static function shouldConvertHashToAst(): Void {
-//    Assert.areEqual(LangParser.toAST("{      }"), {});
-//    Assert.areNotEqual(LangParser.toAST('"{}"'), {});
-//  }
+
+  public static function shouldThrowExceptionIfArrayStillOpen(): Void {
+    Assert.throwsException(function(): Void { LangParser.toAST('["foo", "bar", [1, 2, 3], '); }, ParsingException);
+  }
+
+  public static function shouldThrowExceptionIfEncountersAClosingBracketWithNoOpenBracket(): Void {
+    Assert.throwsException(function(): Void { LangParser.toAST('   ]  '); }, ParsingException);
+  }
+
+  public static function shouldThrowExceptionIfEncounterTooManyClosingBrackets(): Void {
+    Assert.throwsException(function(): Void { LangParser.toAST(' [ ]  ] ] ]  '); }, ParsingException);
+  }
+
+  public static function shouldConvertHashToAst(): Void {
+    Assert.areEqual(LangParser.toAST("%{      }"), {});
+    Assert.areNotEqual(LangParser.toAST('"%{}"'), {});
+  }
+
+  public static function shouldConvertHashWithValues(): Void {
+    Assert.areEqual(LangParser.toAST('%{"foo" => :bar}'), {'foo': 'bar'.atom()});
+  }
+
+  public static function shouldConvertHashWithNestedHashes(): Void {
+    Assert.areEqual(LangParser.toAST('%{"foo" => :bar, "car" => %{}}'), {'foo': 'bar'.atom(), 'car': {}});
+  }
+
+  public static function shouldConvertHashWithHashKeys(): Void {
+    var expect: Dynamic = {};
+    var key: Dynamic = {};
+    Reflect.setField(expect, key, "car");
+    Assert.areEqual(LangParser.toAST('%{%{} => "car"}'), expect);
+  }
 }
