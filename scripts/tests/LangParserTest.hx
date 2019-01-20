@@ -1,91 +1,70 @@
 package tests;
 
+import lang.ParsingException;
 import lang.LangParser;
 import anna_unit.Assert;
 using lang.AtomSupport;
 @:build(macros.ScriptMacros.script())
 class LangParserTest {
 
-  public static function shouldExtractFunctionWithNoParenthesis(): Void {
-    Assert.areEqual(LangParser.toAST('foo'), {val: 'foo', args: [], line: 1});
+  public static function shouldConvertStringToAst(): Void {
+    Assert.areEqual(LangParser.toAST('"foo"'), 'foo');
+    Assert.areNotEqual(LangParser.toAST('"foo"'), 'foobert');
   }
 
-  public static function shoudExtractFunctionWithTrailingWhitespace(): Void {
-    Assert.areEqual(LangParser.toAST('foo  '), {val: 'foo', args: [], line: 1});
+  public static function shouldThrowParsingErrorIsStringIsNeverEndQuoted(): Void {
+    Assert.throwsException(function(): Void { LangParser.toAST('"foo'); }, ParsingException);
   }
 
-  public static function shoudExtractFunctionWithPreceedingWhitespace(): Void {
-    Assert.areEqual(LangParser.toAST('   foo'), {val: 'foo', args: [], line: 1});
+  public static function shouldEscapeStrings(): Void {
+    Assert.areEqual(LangParser.toAST('"foo\\"s"'), 'foo"s');
   }
 
-  public static function shoudExtractFunctionWithWhitespace(): Void {
-    Assert.areEqual(LangParser.toAST('  foo  '), {val: 'foo', args: [], line: 1});
+  public static function shouldThrowExceptionIfEndsInEscapeString(): Void {
+    Assert.throwsException(function(): Void { LangParser.toAST('"foo\\'); }, ParsingException);
   }
 
-  public static function shouldExtractFunctionWithParenthesis(): Void {
-    Assert.areEqual(LangParser.toAST('foo()'), {val: 'foo', args: [], line: 1});
+  public static function shouldConvertNumberToAst(): Void {
+    Assert.areEqual(LangParser.toAST("123"), 123);
+    Assert.areEqual(LangParser.toAST("  123  "), 123);
+
+    Assert.areNotEqual(LangParser.toAST('"123"'), 123);
+    Assert.areNotEqual(LangParser.toAST('123'), '123');
   }
 
-  public static function shouldExtractFunctionWithOneConstantArg(): Void {
-    Assert.areEqual(LangParser.toAST('foo(1)'), {val: 'foo', line: 1, args: [{ line: 1, val: 1, args: [] }]});
+  public static function shouldConvertAtomToAst(): Void {
+    Assert.areEqual(LangParser.toAST(":foo"), "foo".atom());
+    Assert.areNotEqual(LangParser.toAST('":foo"'), "foo".atom());
   }
 
-  public static function shouldExtractFunctionWithTwoConstantArgs(): Void {
-    Assert.areEqual(LangParser.toAST('foo(1, 2)'), {val: 'foo', line: 1, args: [{ line: 1, val: 1, args: [] }, { line: 1, val: 2, args: [] }]});
+  public static function shouldConvertAtomInQuote(): Void {
+    Assert.areEqual(LangParser.toAST(':"foo + 1"'), '"foo + 1"'.atom());
   }
 
-  public static function shouldExtractFunctionWithThreeConstantArgs(): Void {
-    Assert.areEqual(LangParser.toAST('foo(1, 2, 3)'), {val: 'foo', line: 1, args: [{ line: 1, val: 1, args: [] }, { line: 1, val: 2, args: [] }, { line: 1, val: 3, args: [] }]});
+  public static function shouldConvertArrayToAst(): Void {
+    Assert.areEqual(LangParser.toAST("[    ]"), []);
+    Assert.areNotEqual(LangParser.toAST('"[]"'), []);
   }
 
-  public static function shouldConvertFunctionWithNoParenthesis(): Void {
-    Assert.areEqual(LangParser.toAST('foo 1, 2'), {val: 'foo', line: 1, args: [{ line: 1, val: 1, args: [] }, { line: 1, val: 2, args: [] }]});
+  public static function shouldConvertArrayWithValues(): Void {
+    Assert.areEqual(LangParser.toAST('[  2,  :foo  , "house"  , 292  ]'), [2, 'foo'.atom(), 'house', 292]);
   }
 
-  public static function shouldConvertFunctionWithNestedFunction(): Void {
-    Assert.areEqual(LangParser.toAST('foo(1, getFish())'),
-      {val: 'foo', line: 1, args: [{ line: 1, val: 1, args: [] }, { line: 1, val: cast('getFish'), args: [] }]});
+  public static function shouldConvertArrayWithValuesWithTrailingComma(): Void {
+    Assert.areEqual(LangParser.toAST('[  2,  :foo  , "house"  , 292  ,  ]'), [2, 'foo'.atom(), 'house', 292]);
   }
 
-  public static function shouldConvertFunctionWithNestedFunctionThatHasArgs(): Void {
-    Assert.areEqual(LangParser.toAST('foo(1, getFish("foo"))'),
-      {val: 'foo', line: 1, args: [{ line: 1, val: 1, args: [] }, { line: 1, val: cast('getFish'), args: [{ line: 1, val: '"foo"', args: [] }] }]});
+  public static function shouldConvertArrayWithNestedArrays(): Void {
+    Assert.areEqual(LangParser.toAST('[[]]'), [[]]);
+    Assert.areEqual(LangParser.toAST('[[], [], []]'), [[], [], []]);
   }
 
-  public static function shouldConvertFunctionWithNestedFunctionThatHasArgsWithNoParenthesis(): Void {
-    Assert.areEqual(LangParser.toAST('foo 1, getFish "foo"'),
-      {val: 'foo', line: 1, args: [{ line: 1, val: 1, args: [] }, { line: 1, val: cast('getFish'), args: [{ line: 1, val: '"foo"', args: [] }] }]});
+  public static function shouldConvertComplexNestedArray(): Void {
+    Assert.areEqual(LangParser.toAST('[[1, 2, 3], [:a, :b, :c], ["x", "y", "z"]]'), [[1,2,3], ['a'.atom(), 'b'.atom(), 'c'.atom()], ["x", "y", "z"]]);
   }
-
-  public static function shouldConvertToAtom(): Void {
-    Assert.areEqual(LangParser.toAST(':foo'), {val: 'foo'.atom(), line: 1, args: []});
-  }
-
-  public static function shouldConvertFunctionWithNestedFunctionThatHasAtomArgs(): Void {
-    Assert.areEqual(LangParser.toAST('foo(1, getFish(:ellie))'),
-    {val: 'foo', line: 1, args: [{ line: 1, val: 1, args: [] }, { line: 1, val: cast('getFish'), args: [{ line: 1, val: "ellie".atom(), args: [] }] }]});
-  }
-
-  public static function shouldConvertFunctionWithMultipleNestedFunctions(): Void {
-    Assert.areEqual(LangParser.toAST('foo(1, getFish(2), getHigh(3))'),
-    {val: 'foo', line: 1, args: [{ line: 1, val: 1, args: [] },
-      { line: 1, val: cast('getFish'), args: [{ line: 1, val: 2, args: [] }] },
-      { line: 1, val: cast('getHigh'), args: [{ line: 1, val: 3, args: []}]}]});
-  }
-
-  public static function shouldConvertNestedFunctionsWithinFunctions(): Void {
-    Assert.areEqual(LangParser.toAST('cat(getFood(getHigh(giveItARest(:ellie)))'),
-    {val: 'cat', line: 1, args: [{val: 'getFood', line: 1, args: [{val: 'getHigh', line: 1, args: [{val: 'giveItARest', line: 1, args: [{val: 'ellie'.atom(), line: 1, args: []}]}]}]}]});
-  }
-
-  public static function shouldConvertVarsWithCapitalLettersToAtoms(): Void {
-    Assert.areEqual(LangParser.toAST('EllieBear'), {val: 'EllieBear'.atom(), line: 1, args: []});
-  }
-
-  public static function shouldConvertFunctionWithNoCommas(): Void {
-    Assert.areEqual(LangParser.toAST(
-'defmodule Foo do
-end'),
-    {val: 'defmodule', line: 1, args: [{val: 'Foo'.atom(), line: 1, args: []}, {val: cast('do'), line: 1, args: []}]});
-  }
+//
+//  public static function shouldConvertHashToAst(): Void {
+//    Assert.areEqual(LangParser.toAST("{      }"), {});
+//    Assert.areNotEqual(LangParser.toAST('"{}"'), {});
+//  }
 }
