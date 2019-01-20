@@ -67,12 +67,17 @@ class LangParser {
   private static var WHITESPACE: EReg = ~/\s/;
 
   public static function toAST(body: String): Dynamic {
-    return parseExpr(body);
+    var retVal: Array<Dynamic> = parseExpr(body);
+    if(retVal.length == 1) {
+      return retVal[0];
+    }
+    return retVal;
   }
 
-  private static function parseExpr(string: String): Dynamic {
-    var retVal: Dynamic = null;
-    var currentVal: String = "";
+  private static function parseExpr(string: String): Array<Dynamic> {
+    var retVal: Array<Dynamic> = [];
+    var currentVal: Dynamic = null;
+    var currentStrVal: String = "";
     var openCount: Int = 0;
     var state: ParsingState = ParsingState.NONE;
     for(i in 0...string.length) {
@@ -80,7 +85,7 @@ class LangParser {
       switch([state, NUMBER.match(char), char]) {
         case [ParsingState.NONE, true, _]:
           state = ParsingState.NUMBER;
-          currentVal += char;
+          currentStrVal += char;
         case [ParsingState.NONE, false, DOUBLE_QUOTE]:
           state = ParsingState.STRING;
         case [ParsingState.NONE, false, COLON]:
@@ -95,83 +100,95 @@ class LangParser {
         case [ParsingState.NONE, false, OPEN_PAREN]:
           state = ParsingState.FUNCTION;
           openCount++;
-          currentVal += char;
+          currentStrVal += char;
         case [ParsingState.HASH, false, OPEN_BRACE]:
           if(openCount > 0) {
-            currentVal += char;
+            currentStrVal += char;
           }
           openCount++;
         case [ParsingState.NONE, false, CLOSE_BRACE]:
 
         case [ParsingState.ARRAY, false, OPEN_BRACE]:
-          currentVal += char;
+          currentStrVal += char;
           openCount++;
         case [ParsingState.ARRAY, false, CLOSE_BRACE]:
           openCount--;
           if(openCount == 0) {
             state = ParsingState.NONE;
-            retVal = [];
-            parseArray(retVal, currentVal);
-            currentVal = "";
+            currentVal = [];
+            parseArray(currentVal, currentStrVal);
+            retVal.push(currentVal);
+            currentVal = null;
+            currentStrVal = "";
           } else {
-            currentVal += char;
+            currentStrVal += char;
           }
         case [ParsingState.ARRAY, _, _]:
-          currentVal += char;
+          currentStrVal += char;
         case [ParsingState.HASH, false, CLOSE_BRACE]:
           openCount--;
           if(openCount == 0) {
             state = ParsingState.NONE;
-            retVal = {};
-            parseHash(retVal, currentVal);
-            currentVal = "";
+            currentVal = {};
+            parseHash(currentVal, currentStrVal);
+            retVal.push(currentVal);
+            currentVal = null;
+            currentStrVal = "";
           } else {
-            currentVal += char;
+            currentStrVal += char;
           }
         case [ParsingState.HASH, _, _]:
-          currentVal += char;
+          currentStrVal += char;
         case [ParsingState.FUNCTION, _, CLOSE_PAREN]:
           openCount--;
-          currentVal += char;
+          currentStrVal += char;
           if(openCount == 0) {
             state = ParsingState.NONE;
-            retVal = [null, [], null];
-            parseFunc(retVal, currentVal);
-            currentVal = "";
+            currentVal = [null, [], null];
+            parseFunc(currentVal, currentStrVal);
+            retVal.push(currentVal);
+            currentVal = null;
+            currentStrVal = "";
           }
         case [ParsingState.ESCAPE, false, DOUBLE_QUOTE]:
           state = ParsingState.STRING;
-          currentVal += char;
+          currentStrVal += char;
         case [ParsingState.STRING, false, BACK_SLASH]:
           state = ParsingState.ESCAPE;
         case [ParsingState.STRING, false, DOUBLE_QUOTE]:
           state = ParsingState.NONE;
-          retVal = currentVal;
-          currentVal = "";
+          currentVal = currentStrVal;
+          retVal.push(currentVal);
+          currentVal = null;
+          currentStrVal = "";
         case [ParsingState.FUNCTION, _, _]:
-          currentVal += char;
+          currentStrVal += char;
         case [ParsingState.ATOM, _, _]:
-          currentVal += char;
+          currentStrVal += char;
         case [ParsingState.STRING, _, _]:
-          currentVal += char;
+          currentStrVal += char;
         case [ParsingState.NUMBER, true, _]:
-          currentVal += char;
+          currentStrVal += char;
         case _:
           if(!WHITESPACE.match(char)) {
             state = ParsingState.FUNCTION;
-            currentVal += char;
+            currentStrVal += char;
           }
       }
     }
 
     switch(state) {
       case ParsingState.NUMBER:
-        retVal = Std.parseInt(currentVal);
+        currentVal = Std.parseInt(currentStrVal);
+        retVal.push(currentVal);
+        currentVal = null;
       case ParsingState.ATOM:
-        if(currentVal == '') {
+        if(currentStrVal == '') {
           throw new ParsingException();
         }
-        retVal = currentVal.trim().atom();
+        currentVal = currentStrVal.trim().atom();
+        retVal.push(currentVal);
+        currentVal = null;
       case ParsingState.STRING:
         throw new ParsingException();
       case ParsingState.ESCAPE:
@@ -181,12 +198,16 @@ class LangParser {
       case ParsingState.HASH:
         throw new ParsingException();
       case ParsingState.FUNCTION:
-        retVal = [null, [], null];
-        parseFunc(retVal, currentVal);
+        currentVal = [null, [], null];
+        parseFunc(currentVal, currentStrVal);
+        retVal.push(currentVal);
+        currentVal = null;
       case ParsingState.NONE:
-        if(currentVal.length > 0) {
-          retVal = [null, [], null];
-          parseFunc(retVal, currentVal);
+        if(currentStrVal.length > 0) {
+          currentVal = [null, [], null];
+          parseFunc(currentVal, currentStrVal);
+          retVal.push(currentVal);
+          currentVal = null;
         }
     }
 
@@ -213,9 +234,9 @@ class LangParser {
           currentVal += char;
           bracketCount--;
           if(bracketCount == 0) {
-            var val: Dynamic = parseExpr(currentVal);
-            if(val != null) {
-              array.push(val);
+            var val: Array<Dynamic> = parseExpr(currentVal);
+            if(val.length > 0) {
+              array.push(val[0]);
             }
             currentVal = "";
           }
@@ -223,17 +244,17 @@ class LangParser {
           currentVal += char;
         case [ParsingState.NONE, COMMA]:
           if(bracketCount == 0) {
-            var val: Dynamic = parseExpr(currentVal);
-            if(val != null) {
-              array.push(val);
+            var val: Array<Dynamic> = parseExpr(currentVal);
+            if(val.length > 0) {
+              array.push(val[0]);
             }
           }
           currentVal = "";
         case [ParsingState.NONE, SPACE]:
           if(spaceAsDelimiter) {
-            var val: Dynamic = parseExpr(currentVal);
-            if(val != null) {
-              array.push(val);
+            var val: Array<Dynamic> = parseExpr(currentVal);
+            if(val.length > 0) {
+              array.push(val[0]);
             }
             currentVal = "";
           }
@@ -244,9 +265,9 @@ class LangParser {
     }
     if(currentVal != "") {
       if(bracketCount == 0) {
-        var val: Dynamic = parseExpr(currentVal);
-        if(val != null) {
-          array.push(val);
+        var val: Array<Dynamic> = parseExpr(currentVal);
+        if(val.length > 0) {
+          array.push(val[0]);
         }
       }
     }
@@ -256,7 +277,7 @@ class LangParser {
   private static function parseHash(hash: Dynamic, string: String): Dynamic {
     var currentVal: String = "";
     var braceCount: Int = 0;
-    var key: Dynamic = null;
+    var key: Array<Dynamic> = null;
     var state: ParsingState = ParsingState.NONE;
     var hashState: HashState = HashState.NONE;
     for(i in 0...string.length) {
@@ -269,14 +290,16 @@ class LangParser {
           hashState = HashState.DEFINE_KEY;
           currentVal += char;
         case [ParsingState.NONE, EQUALS, HashState.DEFINE_KEY]:
-          key = parseExpr(currentVal);
+          key = parseExpr(currentVal)[0];
           currentVal = "";
           hashState = HashState.DEFINE_VALUE;
           state = ParsingState.NONE;
         case [ParsingState.NONE, GREATER_THAN, HashState.DEFINE_VALUE]:
         case [ParsingState.NONE, COMMA, HashState.DEFINE_VALUE]:
-          var val: Dynamic = parseExpr(currentVal);
-          Reflect.setField(hash, key, val);
+          var val: Array<Dynamic> = parseExpr(currentVal);
+          if(val.length > 0) {
+            Reflect.setField(hash, cast key, val[0]);
+          }
           currentVal = "";
           hashState = HashState.NONE;
         case [ParsingState.NONE, _, HashState.DEFINE_VALUE]:
@@ -290,8 +313,10 @@ class LangParser {
           braceCount--;
           currentVal += char;
           if(braceCount == 0) {
-            var val: Dynamic = parseExpr(currentVal);
-            Reflect.setField(hash, key, val);
+            var val: Array<Dynamic> = parseExpr(currentVal);
+            if(val.length > 0) {
+              Reflect.setField(hash, cast key, val[0]);
+            }
             currentVal = "";
             hashState = HashState.NONE;
           } else {
@@ -304,9 +329,9 @@ class LangParser {
     }
     if(currentVal.trim() != "") {
       if(braceCount == 0) {
-        var val: Dynamic = parseExpr(currentVal);
-        if(val != null) {
-          Reflect.setField(hash, key, val);
+        var val: Array<Dynamic> = parseExpr(currentVal);
+        if(val.length > 0) {
+          Reflect.setField(hash, cast key, val[0]);
         }
       }
     }
@@ -325,11 +350,11 @@ class LangParser {
         case [ParsingState.NONE, OPEN_PAREN]:
           throw new ParsingException();
         case [ParsingState.FUNCTION, SPACE]:
-          retVal[0] = parseExpr(":" + currentVal);
+          retVal[0] = parseExpr(":" + currentVal)[0];
           state = ParsingState.ARRAY;
           currentVal = "";         
         case [ParsingState.FUNCTION, OPEN_PAREN]:
-          retVal[0] = parseExpr(":" + currentVal);
+          retVal[0] = parseExpr(":" + currentVal)[0];
           state = ParsingState.ARRAY;
           currentVal = "";
         case [ParsingState.FUNCTION, _]:
@@ -349,7 +374,7 @@ class LangParser {
     }
     switch([state, currentVal != ""]) {
       case [ParsingState.FUNCTION, true]:
-        retVal[0] = parseExpr(":" + currentVal);
+        retVal[0] = parseExpr(":" + currentVal)[0];
       case [ParsingState.ARRAY, true]:
         retVal[2] = parseArray([], currentVal, true);
       case _:

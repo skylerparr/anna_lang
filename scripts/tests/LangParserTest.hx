@@ -124,4 +124,26 @@ class LangParserTest {
   public static function shouldParseAFunctionArgsWithNoCommasOrParentheses(): Void {
     Assert.areEqual(LangParser.toAST('foo "bar" 1 cat :three'), ['foo'.atom(), [], ['bar', 1, ['cat'.atom(), [], null], 'three'.atom()]]);
   }
+
+  public static function shouldParseAFunctionWithArgsAndNoParentheses(): Void {
+    Assert.areEqual(LangParser.toAST('foo "bar", 1, cat, :three'), ['foo'.atom(), [], ['bar', 1, ['cat'.atom(), [], null], 'three'.atom()]]);
+  }
+
+  public static function shouldParseStringsWithNewLines(): Void {
+    Assert.areEqual(LangParser.toAST('
+    foo("bar", 1, 2, :three)
+    :hash
+    soo("baz", 3, 4, :five)
+    {}
+    coo("cat", 5, 6, :seven)
+    %{}
+'), [
+      ['foo'.atom(), [], ['bar', 1, 2, 'three'.atom()]],
+      'hash'.atom(),
+      ['soo'.atom(), [], ['baz', 3, 4, 'five'.atom()]],
+      [],
+      ['coo'.atom(), [], ['cat', 5, 6, 'seven'.atom()]],
+      {}
+    ]);
+  }
 }
