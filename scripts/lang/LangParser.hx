@@ -9,6 +9,8 @@ enum ParsingState {
   NUMBER;
   STRING;
   ATOM;
+  QUOATED_ATOM;
+  QUOATED_ATOM_ESCAPE;
   ESCAPE;
   ARRAY;
   HASH;
@@ -90,28 +92,42 @@ class LangParser {
           state = ParsingState.STRING;
         case [ParsingState.NONE, false, COLON]:
           state = ParsingState.ATOM;
-        case [ParsingState.NONE, false, OPEN_BRACE]:
+        case [ParsingState.ATOM, _, DOUBLE_QUOTE]:
+          state = ParsingState.QUOATED_ATOM;
+        case [ParsingState.QUOATED_ATOM, _, BACK_SLASH]:
+          state = ParsingState.QUOATED_ATOM_ESCAPE;
+        case [ParsingState.QUOATED_ATOM_ESCAPE, _, _]:
+          currentStrVal += char;
+          state = ParsingState.QUOATED_ATOM;
+        case [ParsingState.QUOATED_ATOM, _, DOUBLE_QUOTE]:
+          state = ParsingState.NONE;
+          retVal.push(currentStrVal.atom());
+          currentVal = null;
+          currentStrVal = "";
+        case [ParsingState.QUOATED_ATOM, _, _]:
+          currentStrVal += char;
+        case [ParsingState.NONE, _, OPEN_BRACE]:
           state = ParsingState.ARRAY;
           openCount++;
-        case [ParsingState.NONE, false, CLOSE_BRACE]:
+        case [ParsingState.NONE, _, CLOSE_BRACE]:
           throw new ParsingException();
-        case [ParsingState.NONE, false, PERCENT]:
+        case [ParsingState.NONE, _, PERCENT]:
           state = ParsingState.HASH;
-        case [ParsingState.NONE, false, OPEN_PAREN]:
+        case [ParsingState.FUNCTION, _, OPEN_PAREN]:
           state = ParsingState.FUNCTION;
           openCount++;
           currentStrVal += char;
-        case [ParsingState.HASH, false, OPEN_BRACE]:
+        case [ParsingState.HASH, _, OPEN_BRACE]:
           if(openCount > 0) {
             currentStrVal += char;
           }
           openCount++;
-        case [ParsingState.NONE, false, CLOSE_BRACE]:
+        case [ParsingState.NONE, _, CLOSE_BRACE]:
 
-        case [ParsingState.ARRAY, false, OPEN_BRACE]:
+        case [ParsingState.ARRAY, _, OPEN_BRACE]:
           currentStrVal += char;
           openCount++;
-        case [ParsingState.ARRAY, false, CLOSE_BRACE]:
+        case [ParsingState.ARRAY, _, CLOSE_BRACE]:
           openCount--;
           if(openCount == 0) {
             state = ParsingState.NONE;
@@ -125,7 +141,7 @@ class LangParser {
           }
         case [ParsingState.ARRAY, _, _]:
           currentStrVal += char;
-        case [ParsingState.HASH, false, CLOSE_BRACE]:
+        case [ParsingState.HASH, _, CLOSE_BRACE]:
           openCount--;
           if(openCount == 0) {
             state = ParsingState.NONE;
@@ -150,12 +166,12 @@ class LangParser {
             currentVal = null;
             currentStrVal = "";
           }
-        case [ParsingState.ESCAPE, false, DOUBLE_QUOTE]:
+        case [ParsingState.ESCAPE, _, DOUBLE_QUOTE]:
           state = ParsingState.STRING;
           currentStrVal += char;
-        case [ParsingState.STRING, false, BACK_SLASH]:
+        case [ParsingState.STRING, _, BACK_SLASH]:
           state = ParsingState.ESCAPE;
-        case [ParsingState.STRING, false, DOUBLE_QUOTE]:
+        case [ParsingState.STRING, _, DOUBLE_QUOTE]:
           state = ParsingState.NONE;
           currentVal = currentStrVal;
           retVal.push(currentVal);
@@ -164,11 +180,27 @@ class LangParser {
         case [ParsingState.FUNCTION, _, _]:
           currentStrVal += char;
         case [ParsingState.ATOM, _, _]:
-          currentStrVal += char;
+          if(WHITESPACE.match(char)) {
+            state = ParsingState.NONE;
+            retVal.push(currentStrVal.atom());
+            currentVal = null;
+            currentStrVal = "";
+          } else {
+            currentStrVal += char;
+          }
         case [ParsingState.STRING, _, _]:
           currentStrVal += char;
         case [ParsingState.NUMBER, true, _]:
           currentStrVal += char;
+        case [ParsingState.NUMBER, _, _]:
+          if(WHITESPACE.match(char)) {
+            state = ParsingState.NONE;
+            retVal.push(Std.parseInt(currentStrVal));
+            currentVal = null;
+            currentStrVal = "";
+          } else {
+            currentStrVal += char;
+          }
         case _:
           if(!WHITESPACE.match(char)) {
             state = ParsingState.FUNCTION;
@@ -202,6 +234,10 @@ class LangParser {
         parseFunc(currentVal, currentStrVal);
         retVal.push(currentVal);
         currentVal = null;
+      case ParsingState.QUOATED_ATOM:
+        throw new ParsingException();
+      case ParsingState.QUOATED_ATOM_ESCAPE:
+        throw new ParsingException();
       case ParsingState.NONE:
         if(currentStrVal.length > 0) {
           currentVal = [null, [], null];

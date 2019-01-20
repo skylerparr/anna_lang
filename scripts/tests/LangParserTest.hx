@@ -39,8 +39,20 @@ class LangParserTest {
     Assert.areNotEqual(LangParser.toAST('":foo"'), "foo".atom());
   }
 
+  public static function shouldConvertQuotedAtomWithDoubleQuoteToAst(): Void {
+    Assert.areEqual(LangParser.toAST(':"foo\\"s"'), 'foo"s'.atom());
+  }
+
+  public static function shouldThrowExceptionOnQuotedAtomWithHangingEscape(): Void {
+    Assert.throwsException(function() { LangParser.toAST(':"foo\\'); }, ParsingException);
+  }
+
   public static function shouldConvertAtomInQuote(): Void {
-    Assert.areEqual(LangParser.toAST(':"foo + 1"'), '"foo + 1"'.atom());
+    Assert.areEqual(LangParser.toAST(':"foo + 1"'), 'foo + 1'.atom());
+  }
+
+  public static function shouldThrowExceptionIfQuoteIsNeverTerminated(): Void {
+    Assert.throwsException(function() { LangParser.toAST(':"foo + 1'); }, ParsingException);
   }
 
   public static function shouldConvertArrayToAst(): Void {
@@ -134,6 +146,8 @@ class LangParserTest {
     foo("bar", 1, 2, :three)
     :hash
     soo("baz", 3, 4, :five)
+    "hello world"
+    324
     {}
     coo("cat", 5, 6, :seven)
     %{}
@@ -141,6 +155,8 @@ class LangParserTest {
       ['foo'.atom(), [], ['bar', 1, 2, 'three'.atom()]],
       'hash'.atom(),
       ['soo'.atom(), [], ['baz', 3, 4, 'five'.atom()]],
+      "hello world",
+      324,
       [],
       ['coo'.atom(), [], ['cat', 5, 6, 'seven'.atom()]],
       {}
