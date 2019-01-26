@@ -3,6 +3,7 @@ package lang;
 import compiler.CodeGen;
 using lang.AtomSupport;
 using StringTools;
+using lang.ArraySupport;
 
 enum ParsingState {
   NONE;
@@ -113,11 +114,6 @@ class LangParser {
           currentStrVal = "";
         case [ParsingState.QUOATED_ATOM, _, _]:
           currentStrVal += char;
-        case [ParsingState.NONE, _, PLUS | MINUS | MULTIPLY | DIVIDE | EQUALS]:
-          var arg2: Dynamic = retVal.pop();
-          state = ParsingState.FUNCTION;
-          openCount++;
-          currentStrVal = '${char} ${arg2}';
         case [ParsingState.NONE, _, OPEN_BRACE]:
           state = ParsingState.ARRAY;
           openCount++;
@@ -190,11 +186,18 @@ class LangParser {
           currentVal = null;
           currentStrVal = "";
         case [ParsingState.FUNCTION, _, _]:
-          currentStrVal += char;
+          if(openCount == 0 && leftRightOperators.any(char)) {
+            currentStrVal = '${char} ${currentStrVal} ';
+          } else {
+            currentStrVal += char;
+          }
         case [ParsingState.ATOM, _, _]:
           if(WHITESPACE.match(char)) {
+            if(currentStrVal == '') {
+              currentStrVal += char;
+            }
             state = ParsingState.NONE;
-            retVal.push(currentStrVal.atom());
+            retVal.push(currentStrVal.trim().atom());
             currentVal = null;
             currentStrVal = "";
           } else {
@@ -217,6 +220,12 @@ class LangParser {
           if(!WHITESPACE.match(char)) {
             state = ParsingState.FUNCTION;
             currentStrVal += char;
+          }
+          if(leftRightOperators.any(char)) {
+            var arg2: Dynamic = retVal.pop();
+            state = ParsingState.FUNCTION;
+            openCount++;
+            currentStrVal = '${char} ${arg2}';
           }
       }
     }
@@ -442,13 +451,6 @@ class LangParser {
           currentVal = "";
         case [ParsingState.FUNCTION, _]:
           currentVal += char;
-        case [ParsingState.ARRAY, EQUALS | PLUS | MINUS | MULTIPLY | DIVIDE]:
-          if(openCount == 0) {
-            retVal[0] = '${char}'.atom();
-            currentVal = firstVal + ",";
-          } else {
-            currentVal += char;
-          }
         case [ParsingState.ARRAY, OPEN_PAREN | OPEN_BRACE]:
           currentVal += char;
           openCount++;
@@ -462,7 +464,12 @@ class LangParser {
             currentVal += char;
           }
         case [ParsingState.ARRAY, _]:
-          currentVal += char;
+          if(leftRightOperators.any(char) && openCount == 0) {
+            retVal[0] = '${char}'.atom();
+            currentVal = firstVal + ",";
+          } else {
+            currentVal += char;
+          }
         case _:
           if(!WHITESPACE.match(char)) {
             state = ParsingState.FUNCTION;
@@ -474,7 +481,12 @@ class LangParser {
       case [ParsingState.FUNCTION, true]:
         retVal[0] = parseExpr(":" + currentVal)[0];
       case [ParsingState.ARRAY, true]:
-        retVal[2] = parseArray([], currentVal, true);
+        if(currentVal.trim() != '') {
+          var val: Array<Dynamic> = parseArray([], currentVal, true);
+          if(val.length > 0) {
+            retVal[2] = val;
+          }
+        }
       case _:
     }
     return retVal;

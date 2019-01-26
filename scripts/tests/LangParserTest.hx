@@ -137,6 +137,14 @@ class LangParserTest {
     Assert.areEqual(LangParser.toAST('foo'), ['foo'.atom(), [], null]);
   }
 
+  public static function shouldParseAFunctionWithNoParenthesesAndSurroundedWithWhitespace(): Void {
+    Assert.areEqual(LangParser.toAST('   foo   '), ['foo'.atom(), [], null]);
+  }
+
+  public static function shouldParseASingleLetterFunction(): Void {
+    Assert.areEqual(LangParser.toAST('a '), ['a'.atom(), [], null]);
+  }
+
   public static function shouldParseAFunctionArgsWithNoCommasOrParentheses(): Void {
     Assert.areEqual(LangParser.toAST('foo "bar" 1 cat :three'), ['foo'.atom(), [], ['bar', 1, ['cat'.atom(), [], null], 'three'.atom()]]);
   }
@@ -217,23 +225,35 @@ class LangParserTest {
     Assert.areEqual(LangParser.toAST("1 = 2"), ['='.atom(), [], [1, 2]]);
   }
 
-//  public static function shouldParseEqualsOperatorsWithVariables(): Void {
-//    Assert.areEqual(LangParser.toAST("a = b"), ['='.atom(), [], [['a'.atom(), [] , null], ['b'.atom(), [], null]]]);
-//  }
+  public static function shouldParseEqualsOperatorsWithVariables(): Void {
+    Assert.areEqual(LangParser.toAST("a=b"), ['='.atom(), [], [['a'.atom(), [] , null], ['b'.atom(), [], null]]]);
+    Assert.areEqual(LangParser.toAST("a = 1"), ['='.atom(), [], [['a'.atom(), [] , null], 1]]);
+  }
 
-//  public static function shouldParsePlusOperatorWithVariables(): Void {
-//    Assert.areEqual(LangParser.toAST("abc + xyz"), ['+'.atom(), [], [['abc'.atom(), [] , null], ['xyz'.atom(), [], null]]]);
-//  }
-//
-//  public static function shouldParseMinusOperatorWithVariables(): Void {
-//    Assert.areEqual(LangParser.toAST("abc - xyz"), ['-'.atom(), [], [['abc'.atom(), [] , null], ['xyz'.atom(), [], null]]]);
-//  }
-//
-//  public static function shouldParseMultiplyOperatorWithVariables(): Void {
-//    Assert.areEqual(LangParser.toAST("abc * xyz"), ['*'.atom(), [], [['abc'.atom(), [] , null], ['xyz'.atom(), [], null]]]);
-//  }
-//
-//  public static function shouldParseDivideOperatorWithVariables(): Void {
-//    Assert.areEqual(LangParser.toAST("abc / xyz"), ['/'.atom(), [], [['abc'.atom(), [] , null], ['xyz'.atom(), [], null]]]);
-//  }
+  public static function shouldParseGreaterThanOperatorWithVariables(): Void {
+    Assert.areEqual(LangParser.toAST("a>b"), ['>'.atom(), [], [['a'.atom(), [] , null], ['b'.atom(), [], null]]]);
+    Assert.areEqual(LangParser.toAST("a > 1"), ['>'.atom(), [], [['a'.atom(), [] , null], 1]]);
+  }
+
+  public static function shouldParseLessThanOperatorWithVariables(): Void {
+    Assert.areEqual(LangParser.toAST("a<b"), ['<'.atom(), [], [['a'.atom(), [] , null], ['b'.atom(), [], null]]]);
+    Assert.areEqual(LangParser.toAST("a < 1"), ['<'.atom(), [], [['a'.atom(), [] , null], 1]]);
+  }
+
+  public static function shouldParsePlusOperatorWithVariables(): Void {
+    Assert.areEqual(LangParser.toAST("abc + xyz"), ['+'.atom(), [], [['abc'.atom(), [] , null], ['xyz'.atom(), [], null]]]);
+    Assert.areEqual(LangParser.toAST("abc + 224"), ['+'.atom(), [], [['abc'.atom(), [] , null], 224]]);
+  }
+
+  public static function shouldParseMinusOperatorWithVariables(): Void {
+    Assert.areEqual(LangParser.toAST("abc - xyz"), ['-'.atom(), [], [['abc'.atom(), [] , null], ['xyz'.atom(), [], null]]]);
+  }
+
+  public static function shouldParseMultiplyOperatorWithVariables(): Void {
+    Assert.areEqual(LangParser.toAST("abc * xyz"), ['*'.atom(), [], [['abc'.atom(), [] , null], ['xyz'.atom(), [], null]]]);
+  }
+
+  public static function shouldParseDivideOperatorWithVariables(): Void {
+    Assert.areEqual(LangParser.toAST("abc / xyz"), ['/'.atom(), [], [['abc'.atom(), [] , null], ['xyz'.atom(), [], null]]]);
+  }
 }
