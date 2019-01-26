@@ -72,6 +72,8 @@ class LangParser {
   private static var CHAR: EReg = ~/[a-z]/;
   private static var WHITESPACE: EReg = ~/\s/;
 
+  private static var leftRightOperators: Array<String> = [EQUALS, PLUS, MINUS, MULTIPLY, DIVIDE, GREATER_THAN, LESS_THAN];
+
   public static function toAST(body: String): Dynamic {
     var retVal: Array<Dynamic> = parseExpr(body);
     if(retVal.length == 1) {
@@ -86,6 +88,7 @@ class LangParser {
     var currentStrVal: String = "";
     var openCount: Int = 0;
     var state: ParsingState = ParsingState.NONE;
+
     for(i in 0...string.length) {
       var char: String = string.charAt(i);
       switch([state, NUMBER.match(char), char]) {
@@ -272,13 +275,15 @@ class LangParser {
           currentVal += char;
           openCount++;
         case [ParsingState.NONE, OPEN_PAREN]:
+          currentVal += char;
+          openCount++;
           state = ParsingState.ARRAY;
         case [ParsingState.ARRAY, OPEN_PAREN]:
           currentVal += char;
           openCount++;
         case [ParsingState.ARRAY, CLOSE_PAREN]:
-          currentVal += char;
           openCount--;
+          currentVal += char;
           if(openCount == 0) {
             var val: Array<Dynamic> = parseExpr(currentVal);
             if(val.length > 0) {
@@ -288,7 +293,6 @@ class LangParser {
           }
         case [ParsingState.ARRAY, OPEN_BRACE]:
           currentVal += char;
-          currentVal = OPEN_BRACE;
           openCount++;
         case [ParsingState.ARRAY, CLOSE_BRACE]:
           currentVal += char;
@@ -299,8 +303,6 @@ class LangParser {
               array.push(val[0]);
             }
             currentVal = "";
-          } else {
-            currentVal += char;
           }
         case [ParsingState.ARRAY, COMMA]:
           if(openCount == 0) {
@@ -441,12 +443,16 @@ class LangParser {
         case [ParsingState.FUNCTION, _]:
           currentVal += char;
         case [ParsingState.ARRAY, EQUALS | PLUS | MINUS | MULTIPLY | DIVIDE]:
-          retVal[0] = '${char}'.atom();
-          currentVal = firstVal + ",";
-        case [ParsingState.ARRAY, OPEN_PAREN]:
+          if(openCount == 0) {
+            retVal[0] = '${char}'.atom();
+            currentVal = firstVal + ",";
+          } else {
+            currentVal += char;
+          }
+        case [ParsingState.ARRAY, OPEN_PAREN | OPEN_BRACE]:
           currentVal += char;
           openCount++;
-        case [ParsingState.ARRAY, CLOSE_PAREN]:
+        case [ParsingState.ARRAY, CLOSE_PAREN | CLOSE_BRACE]:
           openCount--;
           if(openCount == 0) {
             retVal[2] = parseArray([], currentVal);

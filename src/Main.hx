@@ -1,3 +1,4 @@
+import haxe.CallStack;
 import haxe.Constraints.IMap;
 import haxe.macro.Context;
 import haxe.macro.Printer;
@@ -26,6 +27,8 @@ class Main {
   public static function main() {
     Native;
     Random;
+    CallStack.exceptionStack();
+    CallStack.callStack();
     var m: IMap<String, String> = new Map<String, String>();
     m.keys();
     new Date(2018, 1, 1, 0, 0, 0).getTime();
