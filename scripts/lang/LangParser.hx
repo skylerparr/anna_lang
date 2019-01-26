@@ -58,9 +58,13 @@ class LangParser {
   private static inline var CLOSE_BRACE: String = '}';
   private static inline var BACK_SLASH: String = "\\";
   private static inline var PLUS: String = "+";
+  private static inline var MINUS: String = "-";
+  private static inline var MULTIPLY: String = "*";
+  private static inline var DIVIDE: String = "/";
   private static inline var PERCENT: String = "%";
   private static inline var EQUALS: String = "=";
   private static inline var GREATER_THAN: String = ">";
+  private static inline var LESS_THAN: String = "<";
 
   private static var CAPITALS: EReg = ~/[A-Z]/;
   private static var NUMBER: EReg = ~/[0-9]/;
@@ -106,6 +110,11 @@ class LangParser {
           currentStrVal = "";
         case [ParsingState.QUOATED_ATOM, _, _]:
           currentStrVal += char;
+        case [ParsingState.NONE, _, PLUS | MINUS | MULTIPLY | DIVIDE | EQUALS]:
+          var arg2: Dynamic = retVal.pop();
+          state = ParsingState.FUNCTION;
+          openCount++;
+          currentStrVal = '${char} ${arg2}';
         case [ParsingState.NONE, _, OPEN_BRACE]:
           state = ParsingState.ARRAY;
           openCount++;
@@ -252,7 +261,7 @@ class LangParser {
 
   private static function parseArray(array: Array<Dynamic>, string: String, spaceAsDelimiter: Bool = false): Array<Dynamic> {
     var currentVal: String = "";
-    var bracketCount: Int = 0;
+    var openCount: Int = 0;
     var state: ParsingState = ParsingState.NONE;
 
     for(i in 0...string.length) {
@@ -261,31 +270,61 @@ class LangParser {
         case [ParsingState.NONE, OPEN_BRACE]:
           state = ParsingState.ARRAY;
           currentVal += char;
-          bracketCount++;
-        case [ParsingState.ARRAY, OPEN_BRACE]:
+          openCount++;
+        case [ParsingState.NONE, OPEN_PAREN]:
+          state = ParsingState.ARRAY;
+        case [ParsingState.ARRAY, OPEN_PAREN]:
           currentVal += char;
-          currentVal = OPEN_BRACE;
-          bracketCount++;
-        case [ParsingState.ARRAY, CLOSE_BRACE]:
+          openCount++;
+        case [ParsingState.ARRAY, CLOSE_PAREN]:
           currentVal += char;
-          bracketCount--;
-          if(bracketCount == 0) {
+          openCount--;
+          if(openCount == 0) {
             var val: Array<Dynamic> = parseExpr(currentVal);
             if(val.length > 0) {
               array.push(val[0]);
             }
             currentVal = "";
           }
-        case [ParsingState.ARRAY, _]:
+        case [ParsingState.ARRAY, OPEN_BRACE]:
           currentVal += char;
-        case [ParsingState.NONE, COMMA]:
-          if(bracketCount == 0) {
+          currentVal = OPEN_BRACE;
+          openCount++;
+        case [ParsingState.ARRAY, CLOSE_BRACE]:
+          currentVal += char;
+          openCount--;
+          if(openCount == 0) {
             var val: Array<Dynamic> = parseExpr(currentVal);
             if(val.length > 0) {
               array.push(val[0]);
             }
+            currentVal = "";
+          } else {
+            currentVal += char;
           }
-          currentVal = "";
+        case [ParsingState.ARRAY, COMMA]:
+          if(openCount == 0) {
+            var val: Array<Dynamic> = parseExpr(currentVal);
+            if(val.length > 0) {
+              array.push(val[0]);
+            }
+            currentVal = "";
+          } else {
+            currentVal += char;
+          }
+        case [ParsingState.ARRAY, _]:
+          currentVal += char;
+        case [ParsingState.NONE, COMMA]:
+          if(openCount == 0) {
+            var val: Array<Dynamic> = parseExpr(currentVal);
+            if(val.length > 0) {
+              array.push(val[0]);
+            }
+            state = ParsingState.ARRAY;
+            currentVal = "";
+          } else {
+            currentVal += char;
+          }
         case [ParsingState.NONE, SPACE]:
           if(spaceAsDelimiter) {
             var val: Array<Dynamic> = parseExpr(currentVal);
@@ -293,6 +332,8 @@ class LangParser {
               array.push(val[0]);
             }
             currentVal = "";
+          } else {
+            currentVal += char;
           }
         case [ParsingState.NONE, _]:
           currentVal += char;
@@ -300,7 +341,7 @@ class LangParser {
       }
     }
     if(currentVal != "") {
-      if(bracketCount == 0) {
+      if(openCount == 0) {
         var val: Array<Dynamic> = parseExpr(currentVal);
         if(val.length > 0) {
           array.push(val[0]);
@@ -379,6 +420,7 @@ class LangParser {
     var openCount: Int = 0;
     var key: Dynamic = null;
     var state: ParsingState = ParsingState.NONE;
+    var firstVal: String = "";
 
     for(i in 0...string.length) {
       var char: String = string.charAt(i);
@@ -386,19 +428,33 @@ class LangParser {
         case [ParsingState.NONE, OPEN_PAREN]:
           throw new ParsingException();
         case [ParsingState.FUNCTION, SPACE]:
+          firstVal = currentVal;
+          openCount++;
           retVal[0] = parseExpr(":" + currentVal)[0];
           state = ParsingState.ARRAY;
           currentVal = "";         
         case [ParsingState.FUNCTION, OPEN_PAREN]:
           retVal[0] = parseExpr(":" + currentVal)[0];
           state = ParsingState.ARRAY;
+          openCount++;
           currentVal = "";
         case [ParsingState.FUNCTION, _]:
           currentVal += char;
+        case [ParsingState.ARRAY, EQUALS | PLUS | MINUS | MULTIPLY | DIVIDE]:
+          retVal[0] = '${char}'.atom();
+          currentVal = firstVal + ",";
+        case [ParsingState.ARRAY, OPEN_PAREN]:
+          currentVal += char;
+          openCount++;
         case [ParsingState.ARRAY, CLOSE_PAREN]:
-          retVal[2] = parseArray([], currentVal);
-          state = ParsingState.NONE;
-          currentVal = "";
+          openCount--;
+          if(openCount == 0) {
+            retVal[2] = parseArray([], currentVal);
+            state = ParsingState.NONE;
+            currentVal = "";
+          } else {
+            currentVal += char;
+          }
         case [ParsingState.ARRAY, _]:
           currentVal += char;
         case _:

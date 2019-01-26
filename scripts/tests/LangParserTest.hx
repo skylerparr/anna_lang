@@ -55,6 +55,10 @@ class LangParserTest {
     Assert.throwsException(function() { LangParser.toAST(':"foo + 1'); }, ParsingException);
   }
 
+  public static function shouldParseAnAtomWithDots(): Void {
+    Assert.areEqual(LangParser.toAST('Foo.Bar.Cat'), ['Foo.Bar.Cat'.atom(),[],null]);
+  }
+
   public static function shouldConvertArrayToAst(): Void {
     Assert.areEqual(LangParser.toAST("{    }"), []);
     Assert.areNotEqual(LangParser.toAST('"{}"'), []);
@@ -81,11 +85,11 @@ class LangParserTest {
     Assert.throwsException(function(): Void { LangParser.toAST('{"foo", "bar", {1, 2, 3}, '); }, ParsingException);
   }
 
-  public static function shouldThrowExceptionIfEncountersAClosingBracketWithNoOpenBracket(): Void {
+  public static function shouldThrowExceptionIfEncountersAClosingBracketWithNoOpenBraces(): Void {
     Assert.throwsException(function(): Void { LangParser.toAST('   }  '); }, ParsingException);
   }
 
-  public static function shouldThrowExceptionIfEncounterTooManyClosingBrackets(): Void {
+  public static function shouldThrowExceptionIfEncounterTooManyClosingBraces(): Void {
     Assert.throwsException(function(): Void { LangParser.toAST(' { }  } } }  '); }, ParsingException);
   }
 
@@ -141,7 +145,21 @@ class LangParserTest {
     Assert.areEqual(LangParser.toAST('foo "bar", 1, cat, :three'), ['foo'.atom(), [], ['bar', 1, ['cat'.atom(), [], null], 'three'.atom()]]);
   }
 
-  public static function shouldParseStringsWithNewLines(): Void {
+  public static function shouldParseFunctionWith2VarArgs(): Void {
+    Assert.areEqual(LangParser.toAST('foo a, b'), ['foo'.atom(), [], [['a'.atom(), [], null], ['b'.atom(), [], null]]]);
+  }
+
+  public static function shouldParseFunctionWithNestedFunctionCalls(): Void {
+    Assert.areEqual(LangParser.toAST('m(3, a(1, 2))'), ['m'.atom(), [], [3, ['a'.atom(), [], [1,2]]]]);
+  }
+
+  public static function shouldParseFunctionWithNestedFunctionCallsAndDataStructures(): Void {
+    Assert.areEqual(LangParser.toAST('m(3, b(1, 2), ellie({:foo}), qtip(nozy(%{"bar" => "cat"))'),
+      ['m'.atom(), [], [3, ['b'.atom(), [], [1,2]], ['ellie'.atom(), [], [['foo'.atom()]]],
+        'qtip'.atom(), [], ['nozy', [], [{'bar': 'cat'}]]]]);
+  }
+
+  public static function shouldParseMultipleExpressions(): Void {
     Assert.areEqual(LangParser.toAST('
     foo("bar", 1, 2, :three)
     :hash
@@ -151,7 +169,7 @@ class LangParserTest {
     {}
     coo("cat", 5, 6, :seven)
     %{}
-'), [
+    '), [
       ['foo'.atom(), [], ['bar', 1, 2, 'three'.atom()]],
       'hash'.atom(),
       ['soo'.atom(), [], ['baz', 3, 4, 'five'.atom()]],
@@ -161,5 +179,45 @@ class LangParserTest {
       ['coo'.atom(), [], ['cat', 5, 6, 'seven'.atom()]],
       {}
     ]);
+  }
+
+  public static function shouldParseAddOperatorsIntoFunctions(): Void {
+    Assert.areEqual(LangParser.toAST("1 + 2"), ['+'.atom(), [], [1, 2]]);
+  }
+
+  public static function shouldParseSubtractOperatorsIntoFunctions(): Void {
+    Assert.areEqual(LangParser.toAST("1 - 2"), ['-'.atom(), [], [1, 2]]);
+  }
+
+  public static function shouldParseMultiplyOperatorsIntoFunctions(): Void {
+    Assert.areEqual(LangParser.toAST("1 * 2"), ['*'.atom(), [], [1, 2]]);
+  }
+
+  public static function shouldParseDivideOperatorsIntoFunctions(): Void {
+    Assert.areEqual(LangParser.toAST("1 / 2"), ['/'.atom(), [], [1, 2]]);
+  }
+
+  public static function shouldParseEqualsOperatorsIntoFunctions(): Void {
+    Assert.areEqual(LangParser.toAST("1 = 2"), ['='.atom(), [], [1, 2]]);
+  }
+
+  public static function shouldParseEqualsOperatorsWithVariables(): Void {
+    Assert.areEqual(LangParser.toAST("a = b"), ['='.atom(), [], [['a'.atom(), [] , null], ['b'.atom(), [], null]]]);
+  }
+
+  public static function shouldParsePlusOperatorWithVariables(): Void {
+    Assert.areEqual(LangParser.toAST("abc + xyz"), ['+'.atom(), [], [['abc'.atom(), [] , null], ['xyz'.atom(), [], null]]]);
+  }
+
+  public static function shouldParseMinusOperatorWithVariables(): Void {
+    Assert.areEqual(LangParser.toAST("abc - xyz"), ['-'.atom(), [], [['abc'.atom(), [] , null], ['xyz'.atom(), [], null]]]);
+  }
+
+  public static function shouldParseMultiplyOperatorWithVariables(): Void {
+    Assert.areEqual(LangParser.toAST("abc * xyz"), ['*'.atom(), [], [['abc'.atom(), [] , null], ['xyz'.atom(), [], null]]]);
+  }
+
+  public static function shouldParseDivideOperatorWithVariables(): Void {
+    Assert.areEqual(LangParser.toAST("abc / xyz"), ['/'.atom(), [], [['abc'.atom(), [] , null], ['xyz'.atom(), [], null]]]);
   }
 }
