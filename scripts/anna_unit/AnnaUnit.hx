@@ -1,6 +1,6 @@
 package anna_unit;
 
-import haxe.CallStack;
+import haxe.Timer;
 @:build(macros.ScriptMacros.script())
 class AnnaUnit {
   public static function start(testName: String = null): Void {
@@ -8,6 +8,7 @@ class AnnaUnit {
       return;
     }
 
+    var startTime: Float = Timer.stamp();
     var clazz: Class<Dynamic> = Type.resolveClass('tests.LangParserTest');
 
     var fields: Array<String> = [];
@@ -40,6 +41,12 @@ class AnnaUnit {
     cpp.Lib.println('Success: ${successCounter} test(s).');
     if(failureCounter > 0) {
       cpp.Lib.println('Fail: ${failureCounter} test(s).');
+    }
+    var diff: Float = (Timer.stamp() - startTime) * 1000;
+    if(diff < 1) {
+      cpp.Lib.println('Total Time: ${Std.int((Timer.stamp() - startTime) * 1000000)}µs');
+    } else {
+      cpp.Lib.println('Total Time: ${Std.int(diff)}ms');
     }
   }
 

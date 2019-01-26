@@ -32,6 +32,15 @@ class LangParserTest {
     Assert.areNotEqual(LangParser.toAST('123'), '123');
   }
 
+  public static function shouldConvertFloatingPointNumberToAst(): Void {
+    Assert.areEqual(LangParser.toAST("12.3"), 12.3);
+    Assert.areEqual(LangParser.toAST(".3"), .3);
+    Assert.areEqual(LangParser.toAST("  1.23  "), 1.23);
+
+    Assert.areNotEqual(LangParser.toAST('"12.3"'), 12.3);
+    Assert.areNotEqual(LangParser.toAST('1.23'), '1.23');
+  }
+
   public static function shouldConvertAtomToAst(): Void {
     Assert.areEqual(LangParser.toAST(":foo"), "foo".atom());
     Assert.areEqual(LangParser.toAST("  :foo   "), "foo".atom());

@@ -68,9 +68,9 @@ class LangParser {
   private static inline var LESS_THAN: String = "<";
 
   private static var CAPITALS: EReg = ~/[A-Z]/;
-  private static var NUMBER: EReg = ~/[0-9]/;
-  private static var INTEGER: EReg = ~/[0-9]/g;
+  private static var NUMBER: EReg = ~/[0-9]|\./;
   private static var CHAR: EReg = ~/[a-z]/;
+  private static var DOT: EReg = ~/\./;
   private static var WHITESPACE: EReg = ~/\s/;
 
   private static var leftRightOperators: Array<String> = [EQUALS, PLUS, MINUS, MULTIPLY, DIVIDE, GREATER_THAN, LESS_THAN];
@@ -210,7 +210,11 @@ class LangParser {
         case [ParsingState.NUMBER, _, _]:
           if(WHITESPACE.match(char)) {
             state = ParsingState.NONE;
-            retVal.push(Std.parseInt(currentStrVal));
+            if(DOT.match(currentStrVal)) {
+              retVal.push(Std.parseFloat(currentStrVal));
+            } else {
+              retVal.push(Std.parseInt(currentStrVal));
+            }
             currentVal = null;
             currentStrVal = "";
           } else {
@@ -232,7 +236,11 @@ class LangParser {
 
     switch(state) {
       case ParsingState.NUMBER:
-        currentVal = Std.parseInt(currentStrVal);
+        if(DOT.match(currentStrVal)) {
+          currentVal = Std.parseFloat(currentStrVal);
+        } else {
+          currentVal = Std.parseInt(currentStrVal);
+        }
         retVal.push(currentVal);
         currentVal = null;
       case ParsingState.ATOM:

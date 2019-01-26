@@ -1,3 +1,4 @@
+import haxe.Timer;
 import haxe.CallStack;
 import haxe.Constraints.IMap;
 import haxe.macro.Context;
@@ -30,6 +31,7 @@ class Main {
     CallStack.exceptionStack();
     CallStack.callStack();
     var m: IMap<String, String> = new Map<String, String>();
+    Timer.stamp();
     m.keys();
     new Date(2018, 1, 1, 0, 0, 0).getTime();
     new Printer().printExpr(macro 'foo');
