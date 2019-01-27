@@ -66,6 +66,7 @@ class LangParser {
   private static inline var EQUALS: String = "=";
   private static inline var GREATER_THAN: String = ">";
   private static inline var LESS_THAN: String = "<";
+  private static inline var PERIOD: String = ".";
 
   private static var CAPITALS: EReg = ~/[A-Z]/;
   private static var NUMBER: EReg = ~/[0-9]|\./;
@@ -73,7 +74,8 @@ class LangParser {
   private static var DOT: EReg = ~/\./;
   private static var WHITESPACE: EReg = ~/\s/;
 
-  private static var leftRightOperators: Array<String> = [EQUALS, PLUS, MINUS, MULTIPLY, DIVIDE, GREATER_THAN, LESS_THAN];
+  private static var leftRightOperators: Array<String> = [EQUALS, PLUS, MINUS, MULTIPLY, DIVIDE, GREATER_THAN,
+    LESS_THAN, PERIOD];
 
   public static function toAST(body: String): Dynamic {
     var retVal: Array<Dynamic> = parseExpr(body);
@@ -187,7 +189,8 @@ class LangParser {
           currentStrVal = "";
         case [ParsingState.FUNCTION, _, _]:
           if(openCount == 0 && leftRightOperators.any(char)) {
-            currentStrVal = '${char} ${currentStrVal} ';
+            currentStrVal = '${char}(${currentStrVal}, ';
+            openCount++;
           } else {
             currentStrVal += char;
           }

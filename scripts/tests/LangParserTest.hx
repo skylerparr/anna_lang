@@ -65,7 +65,7 @@ class LangParserTest {
   }
 
   public static function shouldParseAnAtomWithDots(): Void {
-    Assert.areEqual(LangParser.toAST('Foo.Bar.Cat'), ['Foo.Bar.Cat'.atom(),[],null]);
+    Assert.areEqual(LangParser.toAST('Foo.Bar.Cat'), ['.'.atom(),[],[['Foo'.atom(),[],null],['.'.atom(),[],[['Bar'.atom(),[],null],['Cat'.atom(),[],null]]]]]);
   }
 
   public static function shouldConvertArrayToAst(): Void {
@@ -254,6 +254,10 @@ class LangParserTest {
     Assert.areEqual(LangParser.toAST("abc + 224"), ['+'.atom(), [], [['abc'.atom(), [] , null], 224]]);
   }
 
+  public static function shouldParseMultipleOperators(): Void {
+    Assert.areEqual(LangParser.toAST("abc + xyz - 15 * 29"), ['+'.atom(),[],[['abc'.atom(),[],null], ['-'.atom(),[],[['xyz'.atom(),[],null], ['*'.atom(),[],[15,29]]]]]]);
+  }
+
   public static function shouldParseMinusOperatorWithVariables(): Void {
     Assert.areEqual(LangParser.toAST("abc - xyz"), ['-'.atom(), [], [['abc'.atom(), [] , null], ['xyz'.atom(), [], null]]]);
   }
@@ -264,5 +268,9 @@ class LangParserTest {
 
   public static function shouldParseDivideOperatorWithVariables(): Void {
     Assert.areEqual(LangParser.toAST("abc / xyz"), ['/'.atom(), [], [['abc'.atom(), [] , null], ['xyz'.atom(), [], null]]]);
+  }
+
+  public static function shouldHandleDotAsOperator(): Void {
+    Assert.areEqual(LangParser.toAST("foo.bar"), ['.'.atom(), [], [['foo'.atom(), [] , null], ['bar'.atom(), [], null]]]);
   }
 }
