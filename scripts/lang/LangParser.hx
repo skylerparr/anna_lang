@@ -207,6 +207,41 @@ class LangParser {
           } else {
             currentStrVal += char;
           }
+
+          if(currentStrVal.substr(currentStrVal.length - 2) == DO) {
+            currentStrVal = currentStrVal.substr(0, currentStrVal.length - 2);
+
+            currentVal = [null, [], null];
+            if(currentStrVal != '') {
+              parseFunc(currentVal, currentStrVal);
+              retVal.push(currentVal);
+              currentVal = null;
+            }
+
+            currentStrVal = "";
+            state = ParsingState.DO;
+            openCount++;
+          }
+        case [ParsingState.DO, _, _]:
+          currentStrVal += char;
+          if(currentStrVal.substr(currentStrVal.length - 2) == DO) {
+            openCount++;
+          } else if(currentStrVal.substr(currentStrVal.length - 3) == END) {
+            openCount--;
+            if(openCount == 0) {
+              currentStrVal = currentStrVal.substr(0, currentStrVal.length - 3);
+              var val: Array<Dynamic> = parseExpr(currentStrVal);
+              if(retVal.length > 0) {
+                var lastArg: Array<Dynamic> = retVal[retVal.length - 1][2];
+                lastArg.push({'do': val});
+              } else {
+                retVal.push(val);
+              }
+
+              currentStrVal = '';
+              state = ParsingState.NONE;
+            }
+          }
         case [ParsingState.ATOM, _, _]:
           if(WHITESPACE.match(char)) {
             if(currentStrVal == '') {
@@ -364,8 +399,8 @@ class LangParser {
           } else {
             currentVal += char;
           }
-        case [ParsingState.NONE, SPACE]:
-          if(spaceAsDelimiter) {
+        case [ParsingState.NONE, _]:
+          if(spaceAsDelimiter && WHITESPACE.match(char)) {
             var val: Array<Dynamic> = parseExpr(currentVal);
             if(val.length > 0) {
               array.push(val[0]);
@@ -374,8 +409,6 @@ class LangParser {
           } else {
             currentVal += char;
           }
-        case [ParsingState.NONE, _]:
-          currentVal += char;
         case _:
       }
     }

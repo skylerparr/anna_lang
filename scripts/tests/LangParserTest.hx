@@ -1,5 +1,6 @@
 package tests;
 
+import lang.Types;
 import lang.ParsingException;
 import lang.LangParser;
 import anna_unit.Assert;
@@ -289,7 +290,43 @@ class LangParserTest {
       defmodule Foo do
       end
     ";
+    Assert.areEqual(LangParser.toAST(string), ['defmodule'.atom(), [], [['Foo'.atom(), [], null], {'do': []}]]);
 
-    Assert.areEqual(LangParser.toAST(string), ['defmodule'.atom, [], ['Foo'.atom(), []]]);
+    var string: String = "
+      defmodule Foo do
+        inject Ellie, :bear
+      end
+    ";
+
+    var doBlock: Array<Dynamic> = ['inject'.atom(),[],[['Ellie'.atom(),[],null],'bear'.atom()]];
+    Assert.areEqual(LangParser.toAST(string), ['defmodule'.atom(), [], [['Foo'.atom(), [], null], {'do': [doBlock]}]]);
   }
+
+  public static function shouldHandleDoBlocksWithParens(): Void {
+    var string: String = "
+      if(a > 29) do
+        inject Ellie, :bear
+      end
+    ";
+
+    var doBlock: Array<Dynamic> = ['inject'.atom(),[],[['Ellie'.atom(),[],null],'bear'.atom()]];
+    Assert.areEqual(LangParser.toAST(string), ['if'.atom(),[],[['>'.atom(),[],[['a'.atom(),[],null],29]], {'do': [doBlock]}]]);
+  }
+
+  public static function shouldHandleNestedDoBlocks(): Void {
+    var string: String = "
+      defmodule Foo do
+        def bar() do
+          if(ellie > 5) do
+            inject Ellie, :bear
+          end
+        end
+      end
+    ";
+    var doIfBody: Array<Dynamic> = ['inject'.atom(),[],[['Ellie'.atom(),[],null],'bear'.atom()]];
+    var doDefBody: Array<Dynamic> = ['if'.atom(),[],[['>'.atom(),[],[['ellie'.atom(),[],null],5]], {'do': [doIfBody]}]];
+    var doModuleBody: Array<Dynamic> = ['def'.atom(),[],[['bar'.atom(),[], []], {'do': [doDefBody]}]];
+    Assert.areEqual(LangParser.toAST(string), ['defmodule'.atom(), [], [['Foo'.atom(), [], null], {'do': [doModuleBody]}]]);
+  }
+
 }
