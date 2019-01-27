@@ -273,4 +273,23 @@ class LangParserTest {
   public static function shouldHandleDotAsOperator(): Void {
     Assert.areEqual(LangParser.toAST("foo.bar"), ['.'.atom(), [], [['foo'.atom(), [] , null], ['bar'.atom(), [], null]]]);
   }
+
+  public static function shouldHandleGreaterThanOrEqualOperator(): Void {
+    Assert.areEqual(LangParser.toAST("foo >= bar"), ['>='.atom(), [], [['foo'.atom(), [] , null], ['bar'.atom(), [], null]]]);
+    Assert.areEqual(LangParser.toAST("ellie>=bear"), ['>='.atom(), [], [['ellie'.atom(), [] , null], ['bear'.atom(), [], null]]]);
+  }
+
+  public static function shouldHandleLessThanOrEqualOperator(): Void {
+    Assert.areEqual(LangParser.toAST("foo <= bar"), ['<='.atom(), [], [['foo'.atom(), [] , null], ['bar'.atom(), [], null]]]);
+    Assert.areEqual(LangParser.toAST("ellie<=bear"), ['<='.atom(), [], [['ellie'.atom(), [] , null], ['bear'.atom(), [], null]]]);
+  }
+
+  public static function shouldParseDoAndEndAsAST(): Void {
+    var string: String = "
+      defmodule Foo do
+      end
+    ";
+
+    Assert.areEqual(LangParser.toAST(string), ['defmodule'.atom, [], ['Foo'.atom(), []]]);
+  }
 }

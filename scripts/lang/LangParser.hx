@@ -16,6 +16,8 @@ enum ParsingState {
   ARRAY;
   HASH;
   FUNCTION;
+  LEFT_RIGHT_FUNCTION;
+  DO;
 }
 
 enum HashState {
@@ -67,6 +69,8 @@ class LangParser {
   private static inline var GREATER_THAN: String = ">";
   private static inline var LESS_THAN: String = "<";
   private static inline var PERIOD: String = ".";
+  private static inline var DO: String = "do";
+  private static inline var END: String = "end";
 
   private static var CAPITALS: EReg = ~/[A-Z]/;
   private static var NUMBER: EReg = ~/[0-9]|\./;
@@ -89,6 +93,7 @@ class LangParser {
     var retVal: Array<Dynamic> = [];
     var currentVal: Dynamic = null;
     var currentStrVal: String = "";
+    var operatorStrVal: String = "";
     var openCount: Int = 0;
     var state: ParsingState = ParsingState.NONE;
 
@@ -187,10 +192,18 @@ class LangParser {
           retVal.push(currentVal);
           currentVal = null;
           currentStrVal = "";
+        case [ParsingState.LEFT_RIGHT_FUNCTION, _, _]:
+          if(leftRightOperators.any(char)) {
+            operatorStrVal += char;
+          } else {
+            openCount++;
+            state = ParsingState.FUNCTION;
+            currentStrVal = '${operatorStrVal}(${currentStrVal}, ${char}';
+          }
         case [ParsingState.FUNCTION, _, _]:
           if(openCount == 0 && leftRightOperators.any(char)) {
-            currentStrVal = '${char}(${currentStrVal}, ';
-            openCount++;
+            operatorStrVal += char;
+            state = ParsingState.LEFT_RIGHT_FUNCTION;
           } else {
             currentStrVal += char;
           }
@@ -260,6 +273,10 @@ class LangParser {
       case ParsingState.ARRAY:
         throw new ParsingException();
       case ParsingState.HASH:
+        throw new ParsingException();
+      case ParsingState.LEFT_RIGHT_FUNCTION:
+        throw new ParsingException();
+      case ParsingState.DO:
         throw new ParsingException();
       case ParsingState.FUNCTION:
         currentVal = [null, [], null];
