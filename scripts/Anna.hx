@@ -23,22 +23,16 @@ class Anna {
     return 'ok'.atom();
   }
 
-  public static function add(args: Array<Int>): Int {
-    switch(args) {
-      case [a,b]:
-        return a+b;
-      case l:
-        return 0;
-    }
+  public static function add(a: Int, b: Int): Int {
+    return a+b;
   }
 
-  public static function subtract(args: Array<Int>): Int {
-    switch(args) {
-      case [a,b]:
-        return a-b;
-      case l:
-        return 0;
-    }
+  public static function subtract(a: Int, b: Int): Int {
+    return a-b;
+  }
+
+  public static function rem(a: Int, b: Int): Int {
+    return a%b;
   }
 
   public static function foo(args: Array<Dynamic>): Void {
@@ -77,9 +71,9 @@ class Anna {
     }
     var b: String = 'Anna.${fun.value}${args}';
     #if macro
-      return CodeGen.parse(b);
-    #else
       return CodeGen._parse(b);
+    #else
+      return CodeGen.parse(b);
     #end
   }
 }

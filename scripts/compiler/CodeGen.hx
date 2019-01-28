@@ -23,11 +23,11 @@ class CodeGen {
     return parser.parseString(fnBody);
   }
 
-  macro public static function parse(s: String): Expr {
+  macro public static function _parse(s: String): Expr {
     return Context.parse(s, Context.currentPos());
   }
 
-  public static function _parse(string: String): hscript.Expr {
+  public static function parse(string: String): hscript.Expr {
     var parser: Parser = Native.callStaticField('Main', 'parser');
     return parser.parseString(string);
   }

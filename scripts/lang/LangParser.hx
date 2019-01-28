@@ -38,7 +38,6 @@ class LangParser {
     builtinAliases;
   };
 
-
   public static function parse(body: String, aliases: Map<String, String> = null): #if macro haxe.macro.Expr #else hscript.Expr #end {
     if(aliases == null) {
       aliases = new Map<String, String>();
@@ -51,10 +50,43 @@ class LangParser {
     var haxeStr: String = toHaxe(ast, aliases);
 
     #if macro
-    return CodeGen.parse(haxeStr);
-    #else
     return CodeGen._parse(haxeStr);
+    #else
+    return CodeGen.parse(haxeStr);
     #end
+  }
+
+  public static function _defmodule(moduleDef: Array<Dynamic>, body: Dynamic, aliases: Map<String, String>): String {
+    var moduleName: String = moduleDef[0].value;
+    var retVal: String =
+    '@:build(macros.ScriptMacros.script())
+class ${moduleName} {';
+    var moduleBody: String = toHaxe(body, aliases);
+    return '${retVal}\n${moduleBody}\n}';
+  }
+
+  public static function _def(defDef: Array<Dynamic>, body: Dynamic, aliases: Map<String, String>): String {
+    var retVal: String = null;
+    var functionName: String = defDef[0].value;
+    var functionArgsAST: Array<Dynamic> = defDef[2];
+    var funArgs: Array<String> = [];
+    for(funArg in functionArgsAST) {
+      funArgs.push(toHaxe(funArg));
+    }
+    var funBody: Array<String> = [];
+    for(expr in cast(body.__block__, Array<Dynamic>)) {
+      funBody.push(toHaxe(expr));
+    }
+    var finalExpr: String = funBody.pop();
+    if(finalExpr != null) {
+      finalExpr = 'return ${finalExpr};';
+    } else {
+      finalExpr = '';
+    }
+    retVal = '  public static function ${functionName}(${funArgs.join(', ')}) {
+    ${funBody.join(";\n")}${finalExpr}
+  }';
+    return retVal;
   }
 
   public static function toHaxe(ast: Dynamic, aliases: Map<String, String> = null): String {
@@ -75,16 +107,27 @@ class LangParser {
             case [fun, [], null]:
               retVal = fun.value;
             case [fun, [], args]:
-              var parsedArgs: Array<String> = [];
-              for(arg in cast(args, Array<Dynamic>)) {
-                parsedArgs.push(toHaxe(arg, aliases));
-              }
-
               var funName: String = aliases.get(fun.value);
               if(funName == null) {
                 funName = fun.value;
               }
-              retVal = '${funName}([${parsedArgs.join(", ")}])';
+              var langParserFields: Array<String> = Type.getClassFields(LangParser);
+              var macroFunc: Dynamic = null;
+              for(field in langParserFields) {
+                if('_${funName}' == field) {
+                  macroFunc = Reflect.getProperty(LangParser, field);
+                  break;
+                }
+              }
+              if(macroFunc != null) {
+                retVal = macroFunc(args[0], args[1], aliases);
+              } else {
+                var parsedArgs: Array<String> = [];
+                for(arg in cast(args, Array<Dynamic>)) {
+                  parsedArgs.push(toHaxe(arg, aliases));
+                }
+                retVal = '${funName}(${parsedArgs.join(", ")})';
+              }
             case _:
               throw new ParsingException();
           }
@@ -101,7 +144,10 @@ class LangParser {
           var vals: Array<String> = [];
           var orig: Array<Dynamic> = cast(Reflect.field(ast, '__block__'));
           for(val in orig) {
-            vals.push(toHaxe(val, aliases) + ";");
+            var haxeString: String = toHaxe(val, aliases);
+            if(haxeString != null) {
+              vals.push(haxeString);
+            }
           }
           retVal = vals.join("\n");
         } else {
@@ -304,7 +350,7 @@ class LangParser {
               var val: Array<Dynamic> = parseExpr(currentStrVal);
               if(retVal.length > 0) {
                 var lastArg: Array<Dynamic> = retVal[retVal.length - 1][2];
-                lastArg.push({'do': val});
+                lastArg.push({__block__: val});
               } else {
                 retVal.push(val);
               }

@@ -4,6 +4,7 @@ import lang.LangParser;
 import lang.LangParser;
 import lang.LangParser;
 import lang.LangParser;
+import lang.LangParser;
 import lang.Types;
 import lang.ParsingException;
 import lang.LangParser;
@@ -305,7 +306,7 @@ class LangParserTest {
       defmodule Foo do
       end
     ";
-    Assert.areEqual(LangParser.toAST(string), ['defmodule'.atom(), [], [['Foo'.atom(), [], null], {'do': []}]]);
+    Assert.areEqual(LangParser.toAST(string), ['defmodule'.atom(), [], [['Foo'.atom(), [], null], {__block__: []}]]);
 
     var string: String = "
       defmodule Foo do
@@ -314,7 +315,7 @@ class LangParserTest {
     ";
 
     var doBlock: Array<Dynamic> = ['inject'.atom(),[],[['Ellie'.atom(),[],null],'bear'.atom()]];
-    Assert.areEqual(LangParser.toAST(string), ['defmodule'.atom(), [], [['Foo'.atom(), [], null], {'do': [doBlock]}]]);
+    Assert.areEqual(LangParser.toAST(string), ['defmodule'.atom(), [], [['Foo'.atom(), [], null], {__block__: [doBlock]}]]);
   }
 
   public static function shouldHandleDoBlocksWithParens(): Void {
@@ -325,7 +326,7 @@ class LangParserTest {
     ";
 
     var doBlock: Array<Dynamic> = ['inject'.atom(),[],[['Ellie'.atom(),[],null],'bear'.atom()]];
-    Assert.areEqual(LangParser.toAST(string), ['if'.atom(),[],[['>'.atom(),[],[['a'.atom(),[],null],29]], {'do': [doBlock]}]]);
+    Assert.areEqual(LangParser.toAST(string), ['if'.atom(),[],[['>'.atom(),[],[['a'.atom(),[],null],29]], {__block__: [doBlock]}]]);
   }
 
   public static function shouldHandleNestedDoBlocks(): Void {
@@ -339,9 +340,9 @@ class LangParserTest {
       end
     ";
     var doIfBody: Array<Dynamic> = ['inject'.atom(),[],[['Ellie'.atom(),[],null],'bear'.atom()]];
-    var doDefBody: Array<Dynamic> = ['if'.atom(),[],[['>'.atom(),[],[['ellie'.atom(),[],null],5]], {'do': [doIfBody]}]];
-    var doModuleBody: Array<Dynamic> = ['def'.atom(),[],[['bar'.atom(),[], []], {'do': [doDefBody]}]];
-    Assert.areEqual(LangParser.toAST(string), ['defmodule'.atom(), [], [['Foo'.atom(), [], null], {'do': [doModuleBody]}]]);
+    var doDefBody: Array<Dynamic> = ['if'.atom(),[],[['>'.atom(),[],[['ellie'.atom(),[],null],5]], {__block__: [doIfBody]}]];
+    var doModuleBody: Array<Dynamic> = ['def'.atom(),[],[['bar'.atom(),[], []], {__block__: [doDefBody]}]];
+    Assert.areEqual(LangParser.toAST(string), ['defmodule'.atom(), [], [['Foo'.atom(), [], null], {__block__: [doModuleBody]}]]);
   }
 
   public static function shouldConvertStringASTToHaxe(): Void {
@@ -385,24 +386,24 @@ class LangParserTest {
   }
 
   public static function shouldConvertFunctionCallASTToHaxe(): Void {
-    Assert.areEqual(LangParser.toHaxe(LangParser.toAST('foo()')), 'foo([])');
+    Assert.areEqual(LangParser.toHaxe(LangParser.toAST('foo()')), 'foo()');
   }
 
   public static function shouldConvertFunctionCallWithArgsFromASTToHaxe(): Void {
-    Assert.areEqual(LangParser.toHaxe(LangParser.toAST('foo(1, :two, three)')), 'foo([1, ${'two'.atom()}, three])');
+    Assert.areEqual(LangParser.toHaxe(LangParser.toAST('foo(1, :two, three)')), 'foo(1, ${'two'.atom()}, three)');
   }
 
   public static function shouldParseFunctionWithNestedFunctionCallsAndDataStructuresToHaxe(): Void {
     Assert.areEqual(LangParser.toHaxe(LangParser.toAST(
       'm(3, b(1, 2), ellie({:foo}), qtip(nozy(%{"bar" => {:cat}})))')),
-      'm([3, b([1, 2]), ellie([[${'foo'.atom()}]]), qtip([nozy([{"bar": [${'cat'.atom()}]}])])])');
+      'm(3, b(1, 2), ellie([${'foo'.atom()}]), qtip(nozy({"bar": [${'cat'.atom()}]})))');
   }
 
   public static function shouldSubstituteAliasedFunctionsWhenConvertingToHaxe(): Void {
     var aliases: Map<String, String> = new Map<String, String>();
     aliases.set('+', 'add');
     Assert.areEqual(LangParser.toHaxe(LangParser.toAST(
-      '193 + 230'), aliases), 'add([193, 230])');
+      '193 + 230'), aliases), 'add(193, 230)');
   }
 
   public static function shouldConvertMultipleStatementsToHaxe(): Void {
@@ -415,13 +416,54 @@ class LangParserTest {
     {}
     coo("cat", 5, 6, :seven)
     %{}')),
-    'foo(["bar", 1, 2, ${'three'.atom()}]);
-${'hash'.atom()};
-soo(["baz", 3, 4, ${'five'.atom()}]);
-"hello world";
-324;
-[];
-coo(["cat", 5, 6, ${'seven'.atom()}]);
-{};');
+    'foo("bar", 1, 2, ${'three'.atom()})
+${'hash'.atom()}
+soo("baz", 3, 4, ${'five'.atom()})
+"hello world"
+324
+[]
+coo("cat", 5, 6, ${'seven'.atom()})
+{}');
+  }
+
+  public static function shouldCallDefmoduleMacro(): Void {
+    var string: String = "defmodule Foo do end";
+    Assert.areEqual(LangParser.toHaxe(LangParser.toAST(string)),
+      '@:build(macros.ScriptMacros.script())
+class Foo {
+
+}'
+    );
+  }
+
+  public static function shouldCallDefMacro(): Void {
+    var string: String = "defmodule Foo do
+      def bar() do
+      end
+    end";
+    Assert.areEqual(LangParser.toHaxe(LangParser.toAST(string)),
+    '@:build(macros.ScriptMacros.script())
+class Foo {
+  public static function bar() {
+    
+  }
+}'
+    );
+  }
+
+  public static function shouldFillInFunctionBodyForDef(): Void {
+    var string: String = "defmodule Foo do
+      def mod(a, b) do
+        rem(a, b)
+      end
+    end";
+    Assert.areEqual(LangParser.toHaxe(LangParser.toAST(string)),
+    '@:build(macros.ScriptMacros.script())
+class Foo {
+  public static function mod(a, b) {
+    return rem(a, b);
+  }
+}'
+    );
   }
 }
