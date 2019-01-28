@@ -199,6 +199,11 @@ class LangParserTest {
         ['qtip'.atom(), [], [['nozy'.atom(), [], [{'bar': ['cat'.atom()]}]]]]]]);
   }
 
+  public static function shouldParseAtFunctionWhenOneOfTheArgsIsAnArray(): Void {
+    Assert.areEqual(LangParser.toAST('@spec(mod, {Int, Int}, Float)'),
+    ['at_spec'.atom(), [], [['mod'.atom(), [], null], [['Int'.atom(), [], null], ['Int'.atom(), [], null]], ['Float'.atom(), [], null]]]);
+  }
+
   public static function shouldParseMultipleExpressions(): Void {
     var expectation: Dynamic<Array<Dynamic>> = {__block__: [
       ['foo'.atom(), [], ['bar', 1, 2, 'three'.atom()]],
@@ -464,6 +469,25 @@ class Foo {
 @:build(macros.ScriptMacros.script())
 class Foo {
   public static function mod(a, b) {
+    return rem(a, b);
+  }
+}'
+    );
+  }
+
+  public static function shouldAddFunctionSpec(): Void {
+    var string: String = "
+    defmodule Foo do
+      @spec(mod, {Int, Int}, Float)
+      def mod(a, b) do
+        rem(a, b)
+      end
+    end";
+    Assert.areEqual(LangParser.toHaxe(LangParser.toAST(string)),
+    'package;
+@:build(macros.ScriptMacros.script())
+class Foo {
+  public static function mod(a: Int, b: Int): Float {
     return rem(a, b);
   }
 }'

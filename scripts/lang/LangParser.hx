@@ -56,26 +56,45 @@ class LangParser {
     #end
   }
 
-  public static function _defmodule(moduleDef: Array<Dynamic>, body: Dynamic, aliases: Map<String, String>): String {
+  public static function _defmodule(moduleDef: Array<Dynamic>, body: Dynamic, aliases: Map<String, String>, context: Dynamic): String {
     var moduleName: String = moduleDef[0].value;
+    context.moduleName = moduleName;
     var retVal: String =
 'package;
 @:build(macros.ScriptMacros.script())
 class ${moduleName} {';
-    var moduleBody: String = toHaxe(body, aliases);
+    var moduleBody: String = toHaxe(body[0], aliases);
     return '${retVal}\n${moduleBody}\n}';
   }
 
-  public static function _def(defDef: Array<Dynamic>, body: Dynamic, aliases: Map<String, String>): String {
+  public static function _def(defDef: Array<Dynamic>, body: Dynamic, aliases: Map<String, String>, context: Dynamic): String {
     var retVal: String = null;
     var functionName: String = defDef[0].value;
     var functionArgsAST: Array<Dynamic> = defDef[2];
+
     var funArgs: Array<String> = [];
     for(funArg in functionArgsAST) {
-      funArgs.push(toHaxe(funArg));
+      var haxeArg: String = toHaxe(funArg);
+      funArgs.push(haxeArg);
     }
+
+    var retType: String = '';
+    var specs: Map<String, Dynamic> = context.specs;
+    if(specs != null) {
+      var spec: Dynamic = specs.get(functionName);
+      if(spec != null) {
+        retType = ': ${spec[1][0].value}';
+        var typedArgs: Array<String> = [];
+        for(i in 0...funArgs.length) {
+          var type: String = spec[0][i][0].value;
+          typedArgs.push('${funArgs[i]}: ${type}');
+        }
+        funArgs = typedArgs;
+      }
+    }
+
     var funBody: Array<String> = [];
-    for(expr in cast(body.__block__, Array<Dynamic>)) {
+    for(expr in cast(body[0].__block__, Array<Dynamic>)) {
       funBody.push(toHaxe(expr));
     }
     var finalExpr: String = funBody.pop();
@@ -84,15 +103,28 @@ class ${moduleName} {';
     } else {
       finalExpr = '';
     }
-    retVal = '  public static function ${functionName}(${funArgs.join(', ')}) {
+    retVal = '  public static function ${functionName}(${funArgs.join(', ')})${retType} {
     ${funBody.join(";\n")}${finalExpr}
   }';
     return retVal;
   }
 
-  public static function toHaxe(ast: Dynamic, aliases: Map<String, String> = null): String {
+  public static function _at_spec(specDef: Array<Dynamic>, body: Dynamic, aliases: Map<String, String>, context: Dynamic): String {
+    var funcName: String = specDef[0].value;
+    if(context.specs == null) {
+      context.specs = new Map<String, Dynamic>();
+    }
+    var specs: Map<String, Dynamic> = context.specs;
+    specs.set(funcName, body);
+    return null;
+  }
+
+  public static function toHaxe(ast: Dynamic, aliases: Map<String, String> = null, context: Dynamic = null): String {
     if(aliases == null) {
       aliases = new Map<String, String>();
+    }
+    if(context == null) {
+      context = {};
     }
     var retVal: String = '';
     switch(Type.typeof(ast)) {
@@ -121,11 +153,11 @@ class ${moduleName} {';
                 }
               }
               if(macroFunc != null) {
-                retVal = macroFunc(args[0], args[1], aliases);
+                retVal = macroFunc(args.shift(), args, aliases, context);
               } else {
                 var parsedArgs: Array<String> = [];
                 for(arg in cast(args, Array<Dynamic>)) {
-                  parsedArgs.push(toHaxe(arg, aliases));
+                  parsedArgs.push(toHaxe(arg, aliases, context));
                 }
                 retVal = '${funName}(${parsedArgs.join(", ")})';
               }
@@ -134,7 +166,7 @@ class ${moduleName} {';
           }
         } else {
           for(val in orig) {
-            vals.push(toHaxe(val, aliases));
+            vals.push(toHaxe(val, aliases, context));
           }
           retVal = '[${vals.join(", ")}]';
         }
@@ -145,7 +177,7 @@ class ${moduleName} {';
           var vals: Array<String> = [];
           var orig: Array<Dynamic> = cast(Reflect.field(ast, '__block__'));
           for(val in orig) {
-            var haxeString: String = toHaxe(val, aliases);
+            var haxeString: String = toHaxe(val, aliases, context);
             if(haxeString != null) {
               vals.push(haxeString);
             }
@@ -155,7 +187,7 @@ class ${moduleName} {';
           var vals: Array<String> = [];
           var fields: Array<String> = Reflect.fields(ast);
           for(field in fields) {
-            vals.push('${toHaxe(field, aliases)}: ${toHaxe(Reflect.field(ast, field), aliases)}');
+            vals.push('${toHaxe(field, aliases, context)}: ${toHaxe(Reflect.field(ast, field), aliases, context)}');
           }
           retVal = '{${vals.join(", ")}}';
         }
@@ -186,7 +218,9 @@ class ${moduleName} {';
   private static inline var EQUALS: String = "=";
   private static inline var GREATER_THAN: String = ">";
   private static inline var LESS_THAN: String = "<";
+  private static inline var PIPE: String = "|";
   private static inline var PERIOD: String = ".";
+  private static inline var AT: String = "@";
   private static inline var DO: String = "do";
   private static inline var END: String = "end";
 
@@ -197,7 +231,7 @@ class ${moduleName} {';
   private static var WHITESPACE: EReg = ~/\s/;
 
   private static var leftRightOperators: Array<String> = [EQUALS, PLUS, MINUS, MULTIPLY, DIVIDE, GREATER_THAN,
-    LESS_THAN, PERIOD];
+    LESS_THAN, PERIOD, PIPE];
 
   public static function toAST(body: String): Dynamic {
     var retVal: Array<Dynamic> = parseExpr(body);
@@ -217,6 +251,9 @@ class ${moduleName} {';
 
     for(i in 0...string.length) {
       var char: String = string.charAt(i);
+      if(char == AT) {
+        char = "at_";
+      }
       switch([state, NUMBER.match(char), char]) {
         case [ParsingState.NONE, true, _]:
           state = ParsingState.NUMBER;
