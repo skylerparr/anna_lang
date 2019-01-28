@@ -13,7 +13,7 @@ typedef Tuple = {
 
 typedef Atom = {
     value: String,
-    type: Types
+    __type__: Types
 }
 
 typedef LinkedList = {

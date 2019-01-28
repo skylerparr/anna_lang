@@ -1,5 +1,8 @@
 package tests;
 
+import lang.LangParser;
+import lang.LangParser;
+import lang.LangParser;
 import lang.Types;
 import lang.ParsingException;
 import lang.LangParser;
@@ -271,6 +274,14 @@ class LangParserTest {
     Assert.areEqual(LangParser.toAST("abc / xyz"), ['/'.atom(), [], [['abc'.atom(), [] , null], ['xyz'.atom(), [], null]]]);
   }
 
+  public static function shouldParseDoubleEqualsOperatorWithVariables(): Void {
+    Assert.areEqual(LangParser.toAST("abc == xyz"), ['=='.atom(), [], [['abc'.atom(), [] , null], ['xyz'.atom(), [], null]]]);
+  }
+
+  public static function shouldParseStabbyOperatorWithVariables(): Void {
+    Assert.areEqual(LangParser.toAST("abc -> xyz"), ['->'.atom(), [], [['abc'.atom(), [] , null], ['xyz'.atom(), [], null]]]);
+  }
+
   public static function shouldHandleDotAsOperator(): Void {
     Assert.areEqual(LangParser.toAST("foo.bar"), ['.'.atom(), [], [['foo'.atom(), [] , null], ['bar'.atom(), [], null]]]);
   }
@@ -329,4 +340,64 @@ class LangParserTest {
     Assert.areEqual(LangParser.toAST(string), ['defmodule'.atom(), [], [['Foo'.atom(), [], null], {'do': [doModuleBody]}]]);
   }
 
+  public static function shouldConvertStringASTToHaxe(): Void {
+    Assert.areEqual(LangParser.toHaxe(LangParser.toAST('"foo"')), '"foo"');
+  }
+
+  public static function shouldConvertEscapedStringASTToHaxe(): Void {
+    Assert.areEqual(LangParser.toHaxe(LangParser.toAST('"foo\\"s"')), '"foo"s"');
+  }
+
+  public static function shouldConvertNumberASTToHaxe(): Void {
+    Assert.areEqual(LangParser.toHaxe(LangParser.toAST('3412')), '3412');
+  }
+
+  public static function shouldConvertFloatingPointNumberASTToHaxe(): Void {
+    Assert.areEqual(LangParser.toHaxe(LangParser.toAST('34.12')), '34.12');
+  }
+
+  public static function shouldConvertAtomASTToHaxe(): Void {
+    Assert.areEqual(LangParser.toHaxe(LangParser.toAST(':pretty')), '${'pretty'.atom()}');
+  }
+
+  public static function shouldConvertArrayASTToHaxe(): Void {
+    Assert.areEqual(LangParser.toHaxe(LangParser.toAST('{}')), '[]');
+  }
+
+  public static function shouldConvertArrayWithValuesToHaxe(): Void {
+    Assert.areEqual(LangParser.toHaxe(LangParser.toAST('{2,  :foo, "house", 292}')), '[2, ${'foo'.atom()}, "house", 292]');
+  }
+
+  public static function shouldConvertHashASTToHaxe(): Void {
+    Assert.areEqual(LangParser.toHaxe(LangParser.toAST('%{}')), '{}');
+  }
+
+  public static function shouldConvertHashWithValuesASTToHaxe(): Void {
+    Assert.areEqual(LangParser.toHaxe(LangParser.toAST('%{"foo" => :bar, "car" => {}}')), '{"car": [], "foo": ${'bar'.atom()}}');
+  }
+
+  public static function shouldConvertVariableToHaxe(): Void {
+    Assert.areEqual(LangParser.toHaxe(LangParser.toAST('foobee')), 'foobee');
+  }
+
+  public static function shouldConvertFunctionCallASTToHaxe(): Void {
+    Assert.areEqual(LangParser.toHaxe(LangParser.toAST('foo()')), 'foo([])');
+  }
+
+  public static function shouldConvertFunctionCallWithArgsFromASTToHaxe(): Void {
+    Assert.areEqual(LangParser.toHaxe(LangParser.toAST('foo(1, :two, three)')), 'foo([1, ${'two'.atom()}, three])');
+  }
+
+  public static function shouldParseFunctionWithNestedFunctionCallsAndDataStructuresToHaxe(): Void {
+    Assert.areEqual(LangParser.toHaxe(LangParser.toAST(
+      'm(3, b(1, 2), ellie({:foo}), qtip(nozy(%{"bar" => {:cat}})))')),
+      'm([3, b([1, 2]), ellie([[${'foo'.atom()}]]), qtip([nozy([{"bar": [${'cat'.atom()}]}])])])');
+  }
+
+  public static function shouldSubstituteAliasedFunctionsWhenConvertingToHaxe(): Void {
+    var aliases: Map<String, String> = new Map<String, String>();
+    aliases.set('+', 'add');
+    Assert.areEqual(LangParser.toHaxe(LangParser.toAST(
+      '193 + 230'), aliases), 'add([193, 230])');
+  }
 }

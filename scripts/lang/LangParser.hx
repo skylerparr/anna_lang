@@ -1,5 +1,6 @@
 package lang;
 
+import Type.ValueType;
 import compiler.CodeGen;
 using lang.AtomSupport;
 using StringTools;
@@ -28,23 +29,86 @@ enum HashState {
 
 @:build(macros.ScriptMacros.script())
 class LangParser {
+  private static var builtinAliases: Map<String, String> = {
+    builtinAliases = new Map<String, String>();
+    builtinAliases.set('+', 'add');
+    builtinAliases.set('-', 'subtract');
+    builtinAliases.set('*', 'multiply');
+    builtinAliases.set('/', 'divide');
+    builtinAliases;
+  };
 
-  public static function parse(body: String): #if macro haxe.macro.Expr #else hscript.Expr #end {
-    var sample: String = "
-    defmodule(Foo, do:
-    end
 
-    {func: 'defmodule'.atom(), args: ['foo'.atom(), {'do'.atom(), []}], line: 0}
+  public static function parse(body: String, aliases: Map<String, String> = null): #if macro haxe.macro.Expr #else hscript.Expr #end {
+    if(aliases == null) {
+      aliases = new Map<String, String>();
+    }
+    for(alias in builtinAliases.keys()) {
+      aliases.set(alias, builtinAliases.get(alias));
+    }
 
-    defmodule('foo'.atom(), body(do:))
-    ";
+    var ast: Dynamic = toAST(body);
+    var haxeStr: String = toHaxe(ast, aliases);
 
-    var b: String = "trace('remember to assign this')";
     #if macro
-    return CodeGen.parse(b);
+    return CodeGen.parse(haxeStr);
     #else
-    return CodeGen._parse(b);
+    return CodeGen._parse(haxeStr);
     #end
+  }
+
+  public static function toHaxe(ast: Dynamic, aliases: Map<String, String> = null): String {
+    if(aliases == null) {
+      aliases = new Map<String, String>();
+    }
+    var retVal: String = '';
+    switch(Type.typeof(ast)) {
+      case TInt | TFloat:
+        retVal = ast;
+      case ValueType.TClass(String):
+        retVal = '"${ast}"';
+      case ValueType.TClass(Array):
+        var vals: Array<String> = [];
+        var orig: Array<Dynamic> = cast ast;
+        if(orig.length == 3) {
+          switch(orig) {
+            case [fun, [], null]:
+              retVal = fun.value;
+            case [fun, [], args]:
+              var parsedArgs: Array<String> = [];
+              for(arg in cast(args, Array<Dynamic>)) {
+                parsedArgs.push(toHaxe(arg, aliases));
+              }
+
+              var funName: String = aliases.get(fun.value);
+              if(funName == null) {
+                funName = fun.value;
+              }
+              retVal = '${funName}([${parsedArgs.join(", ")}])';
+            case _:
+              throw new ParsingException();
+          }
+        } else {
+          for(val in orig) {
+            vals.push(toHaxe(val, aliases));
+          }
+          retVal = '[${vals.join(", ")}]';
+        }
+      case ValueType.TObject:
+        if(Reflect.hasField(ast, '__type__')) {
+          retVal = ast;
+        } else {
+          var vals: Array<String> = [];
+          var fields: Array<String> = Reflect.fields(ast);
+          for(field in fields) {
+            vals.push('${toHaxe(field, aliases)}: ${toHaxe(Reflect.field(ast, field), aliases)}');
+          }
+          retVal = '{${vals.join(", ")}}';
+        }
+      case _:
+        throw new ParsingException();
+    }
+    return retVal;
   }
 
   private static inline var SPACE: String = ' ';
@@ -89,7 +153,7 @@ class LangParser {
     return retVal;
   }
 
-  private static function parseExpr(string: String): Array<Dynamic> {
+  private static inline function parseExpr(string: String): Array<Dynamic> {
     var retVal: Array<Dynamic> = [];
     var currentVal: Dynamic = null;
     var currentStrVal: String = "";
@@ -334,7 +398,7 @@ class LangParser {
     return retVal;
   }
 
-  private static function parseArray(array: Array<Dynamic>, string: String, spaceAsDelimiter: Bool = false): Array<Dynamic> {
+  private static inline function parseArray(array: Array<Dynamic>, string: String, spaceAsDelimiter: Bool = false): Array<Dynamic> {
     var currentVal: String = "";
     var openCount: Int = 0;
     var state: ParsingState = ParsingState.NONE;
@@ -423,7 +487,7 @@ class LangParser {
     return array;
   }
 
-  private static function parseHash(hash: Dynamic, string: String): Dynamic {
+  private static inline function parseHash(hash: Dynamic, string: String): Dynamic {
     var currentVal: String = "";
     var braceCount: Int = 0;
     var key: Array<Dynamic> = null;
@@ -487,7 +551,7 @@ class LangParser {
     return hash;
   }
 
-  private static function parseFunc(retVal: Array<Dynamic>, string: String): Array<Dynamic> {
+  private static inline function parseFunc(retVal: Array<Dynamic>, string: String): Array<Dynamic> {
     var currentVal: String = "";
     var openCount: Int = 0;
     var key: Dynamic = null;

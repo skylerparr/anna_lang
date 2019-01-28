@@ -32,7 +32,16 @@ class Anna {
     }
   }
 
-  public static function foo(): Void {
+  public static function subtract(args: Array<Int>): Int {
+    switch(args) {
+      case [a,b]:
+        return a-b;
+      case l:
+        return 0;
+    }
+  }
+
+  public static function foo(args: Array<Dynamic>): Void {
     trace("foo");
   }
 
