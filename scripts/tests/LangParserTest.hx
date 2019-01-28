@@ -429,7 +429,8 @@ coo("cat", 5, 6, ${'seven'.atom()})
   public static function shouldCallDefmoduleMacro(): Void {
     var string: String = "defmodule Foo do end";
     Assert.areEqual(LangParser.toHaxe(LangParser.toAST(string)),
-      '@:build(macros.ScriptMacros.script())
+      'package;
+@:build(macros.ScriptMacros.script())
 class Foo {
 
 }'
@@ -442,7 +443,8 @@ class Foo {
       end
     end";
     Assert.areEqual(LangParser.toHaxe(LangParser.toAST(string)),
-    '@:build(macros.ScriptMacros.script())
+    'package;
+@:build(macros.ScriptMacros.script())
 class Foo {
   public static function bar() {
     
@@ -458,7 +460,8 @@ class Foo {
       end
     end";
     Assert.areEqual(LangParser.toHaxe(LangParser.toAST(string)),
-    '@:build(macros.ScriptMacros.script())
+    'package;
+@:build(macros.ScriptMacros.script())
 class Foo {
   public static function mod(a, b) {
     return rem(a, b);

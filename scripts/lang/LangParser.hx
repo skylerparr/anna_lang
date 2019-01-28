@@ -59,7 +59,8 @@ class LangParser {
   public static function _defmodule(moduleDef: Array<Dynamic>, body: Dynamic, aliases: Map<String, String>): String {
     var moduleName: String = moduleDef[0].value;
     var retVal: String =
-    '@:build(macros.ScriptMacros.script())
+'package;
+@:build(macros.ScriptMacros.script())
 class ${moduleName} {';
     var moduleBody: String = toHaxe(body, aliases);
     return '${retVal}\n${moduleBody}\n}';
