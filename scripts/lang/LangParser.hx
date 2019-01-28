@@ -97,6 +97,13 @@ class LangParser {
       case ValueType.TObject:
         if(Reflect.hasField(ast, '__type__')) {
           retVal = ast;
+        } else if(Reflect.hasField(ast, '__block__')) {
+          var vals: Array<String> = [];
+          var orig: Array<Dynamic> = cast(Reflect.field(ast, '__block__'));
+          for(val in orig) {
+            vals.push(toHaxe(val, aliases) + ";");
+          }
+          retVal = vals.join("\n");
         } else {
           var vals: Array<String> = [];
           var fields: Array<String> = Reflect.fields(ast);
@@ -202,7 +209,7 @@ class LangParser {
           }
           openCount++;
         case [ParsingState.NONE, _, CLOSE_BRACE]:
-
+          throw new ParsingException();
         case [ParsingState.ARRAY, _, OPEN_BRACE]:
           currentStrVal += char;
           openCount++;
@@ -393,6 +400,10 @@ class LangParser {
           retVal.push(currentVal);
           currentVal = null;
         }
+    }
+
+    if(retVal.length > 1) {
+      retVal = [{__block__: retVal}];
     }
 
     return retVal;

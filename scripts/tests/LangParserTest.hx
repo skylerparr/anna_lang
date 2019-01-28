@@ -3,11 +3,13 @@ package tests;
 import lang.LangParser;
 import lang.LangParser;
 import lang.LangParser;
+import lang.LangParser;
 import lang.Types;
 import lang.ParsingException;
 import lang.LangParser;
 import anna_unit.Assert;
 using lang.AtomSupport;
+using StringTools;
 @:build(macros.ScriptMacros.script())
 class LangParserTest {
 
@@ -197,6 +199,17 @@ class LangParserTest {
   }
 
   public static function shouldParseMultipleExpressions(): Void {
+    var expectation: Dynamic<Array<Dynamic>> = {__block__: [
+      ['foo'.atom(), [], ['bar', 1, 2, 'three'.atom()]],
+      'hash'.atom(),
+      ['soo'.atom(), [], ['baz', 3, 4, 'five'.atom()]],
+      "hello world",
+      324,
+      [],
+      ['coo'.atom(), [], ['cat', 5, 6, 'seven'.atom()]],
+      {}
+    ]};
+
     Assert.areEqual(LangParser.toAST('
     foo("bar", 1, 2, :three)
     :hash
@@ -206,16 +219,7 @@ class LangParserTest {
     {}
     coo("cat", 5, 6, :seven)
     %{}
-    '), [
-      ['foo'.atom(), [], ['bar', 1, 2, 'three'.atom()]],
-      'hash'.atom(),
-      ['soo'.atom(), [], ['baz', 3, 4, 'five'.atom()]],
-      "hello world",
-      324,
-      [],
-      ['coo'.atom(), [], ['cat', 5, 6, 'seven'.atom()]],
-      {}
-    ]);
+    '), expectation);
   }
 
   public static function shouldParseAddOperatorsIntoFunctions(): Void {
@@ -399,5 +403,25 @@ class LangParserTest {
     aliases.set('+', 'add');
     Assert.areEqual(LangParser.toHaxe(LangParser.toAST(
       '193 + 230'), aliases), 'add([193, 230])');
+  }
+
+  public static function shouldConvertMultipleStatementsToHaxe(): Void {
+    Assert.areEqual(LangParser.toHaxe(LangParser.toAST('
+    foo("bar", 1, 2, :three)
+    :hash
+    soo("baz", 3, 4, :five)
+    "hello world"
+    324
+    {}
+    coo("cat", 5, 6, :seven)
+    %{}')),
+    'foo(["bar", 1, 2, ${'three'.atom()}]);
+${'hash'.atom()};
+soo(["baz", 3, 4, ${'five'.atom()}]);
+"hello world";
+324;
+[];
+coo(["cat", 5, 6, ${'seven'.atom()}]);
+{};');
   }
 }
