@@ -1,14 +1,8 @@
 package tests;
 
-import lang.LangParser;
-import lang.LangParser;
-import lang.LangParser;
-import lang.LangParser;
-import lang.LangParser;
-import lang.Types;
-import lang.ParsingException;
-import lang.LangParser;
 import anna_unit.Assert;
+import lang.LangParser;
+import lang.ParsingException;
 using lang.AtomSupport;
 using StringTools;
 @:build(macros.ScriptMacros.script())
@@ -116,6 +110,13 @@ class LangParserTest {
 
   public static function shouldConvertHashWithValues(): Void {
     Assert.areEqual(LangParser.toAST('%{"foo" => :bar}'), {'foo': 'bar'.atom()});
+  }
+
+  public static function shouldConvertHashWithAtomKeys(): Void {
+    var expect: Dynamic = {};
+    var key: Dynamic = 'foo'.atom();
+    Reflect.setField(expect, key, 'bar'.atom());
+    Assert.areEqual(LangParser.toAST('%{:foo => :bar}'), expect);
   }
 
   public static function shouldConvertHashWithNestedHashes(): Void {
@@ -306,6 +307,15 @@ class LangParserTest {
     Assert.areEqual(LangParser.toAST("ellie<=bear"), ['<='.atom(), [], [['ellie'.atom(), [] , null], ['bear'.atom(), [], null]]]);
   }
 
+  public static function shouldParseAssigningFunctionToAPattern(): Void {
+    var string: String = '%{"cost" => pza} = cook(a, b + 212)';
+    var cost: Dynamic = {};
+    var value: Dynamic = ["pza".atom(), [], null];
+    Reflect.setField(cost, 'cost', value);
+    Assert.areEqual(LangParser.toAST(string),
+      ['='.atom(), [], [cost, ['cook'.atom(), [], [['a'.atom(), [], null], ['+'.atom(), [], [['b'.atom(), [], null], 212]]]]]]);
+  }
+
   public static function shouldParseDoAndEndAsAST(): Void {
     var string: String = "
       defmodule Foo do
@@ -420,6 +430,9 @@ class LangParserTest {
     324
     {}
     coo("cat", 5, 6, :seven)
+    rem(a, b)
+    %{cost => pza} = cook(a, b + 212)
+    cost
     %{}')),
     'foo("bar", 1, 2, ${'three'.atom()})
 ${'hash'.atom()}
@@ -428,6 +441,9 @@ soo("baz", 3, 4, ${'five'.atom()})
 324
 []
 coo("cat", 5, 6, ${'seven'.atom()})
+rem(a, b)
+=({"[{ __type__ => ATOM, value => cost },[],null]": pza}, cook(a, Anna.add(b, 212)))
+cost
 {}');
   }
 
@@ -435,6 +451,7 @@ coo("cat", 5, 6, ${'seven'.atom()})
     var string: String = "defmodule Foo do end";
     Assert.areEqual(LangParser.toHaxe(LangParser.toAST(string)),
       'package;
+using lang.AtomSupport;
 @:build(macros.ScriptMacros.script())
 class Foo {
 
@@ -449,6 +466,7 @@ class Foo {
     end";
     Assert.areEqual(LangParser.toHaxe(LangParser.toAST(string)),
     'package;
+using lang.AtomSupport;
 @:build(macros.ScriptMacros.script())
 class Foo {
   public static function bar() {
@@ -458,37 +476,39 @@ class Foo {
     );
   }
 
-  public static function shouldFillInFunctionBodyForDef(): Void {
-    var string: String = "defmodule Foo do
-      def mod(a, b) do
-        rem(a, b)
-      end
-    end";
-    Assert.areEqual(LangParser.toHaxe(LangParser.toAST(string)),
-    'package;
-@:build(macros.ScriptMacros.script())
-class Foo {
-  public static function mod(a, b) {
-    return rem(a, b);
-  }
-}'
-    );
-  }
-
-  public static function shouldAddFunctionSpec(): Void {
+  public static function shouldHandleMultipleExpressions(): Void {
     var string: String = "
     defmodule Foo do
-      @spec(mod, {Int, Int}, Float)
-      def mod(a, b) do
+      @spec(order, {Int, Int}, Int)
+      def order(a, b) do
         rem(a, b)
+        %{cost => pza} = cook(a, b + 212)
+        cost
       end
     end";
     Assert.areEqual(LangParser.toHaxe(LangParser.toAST(string)),
     'package;
+using lang.AtomSupport;
 @:build(macros.ScriptMacros.script())
 class Foo {
-  public static function mod(a: Int, b: Int): Float {
-    return rem(a, b);
+  public static function order(a: Int, b: Int): Int {
+    var scopeVariables: Map<String, Dynamic> = new Map<String, Dynamic>();
+    var get: String->Dynamic = scopeVariables.get;
+    var set: String->Dynamic->Void = scopeVariables.set;
+    switch([a, b]) {
+      case _:
+        set("a", a);
+        set("b", b);
+    }
+    var v1 = rem(get("a"), get("b"));
+
+    var v2 = cook(get("a"), add(get("b"), 212));
+    var _pizza1 = {toppings: v2.toppings, cost: v2.cost};
+    switch(_pizza1) {
+      case {cost: cost}:
+        set("pza", cost);
+    }
+    return get("pza");
   }
 }'
     );

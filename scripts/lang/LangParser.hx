@@ -31,10 +31,11 @@ enum HashState {
 class LangParser {
   private static var builtinAliases: Map<String, String> = {
     builtinAliases = new Map<String, String>();
-    builtinAliases.set('+', 'add');
-    builtinAliases.set('-', 'subtract');
-    builtinAliases.set('*', 'multiply');
-    builtinAliases.set('/', 'divide');
+    builtinAliases.set('+', 'Anna.add');
+    builtinAliases.set('-', 'Anna.subtract');
+    builtinAliases.set('*', 'Anna.multiply');
+    builtinAliases.set('/', 'Anna.divide');
+//    builtinAliases.set('=', 'patternMatch');
     builtinAliases;
   };
 
@@ -61,6 +62,7 @@ class LangParser {
     context.moduleName = moduleName;
     var retVal: String =
 'package;
+using lang.AtomSupport;
 @:build(macros.ScriptMacros.script())
 class ${moduleName} {';
     var moduleBody: String = toHaxe(body[0], aliases);
@@ -80,22 +82,22 @@ class ${moduleName} {';
 
     var retType: String = '';
     var specs: Map<String, Dynamic> = context.specs;
+    var typedArgs: Array<String> = [];
     if(specs != null) {
       var spec: Dynamic = specs.get(functionName);
       if(spec != null) {
         retType = ': ${spec[1][0].value}';
-        var typedArgs: Array<String> = [];
         for(i in 0...funArgs.length) {
           var type: String = spec[0][i][0].value;
           typedArgs.push('${funArgs[i]}: ${type}');
         }
-        funArgs = typedArgs;
       }
     }
 
     var funBody: Array<String> = [];
+    var counter: Int = 1;
     for(expr in cast(body[0].__block__, Array<Dynamic>)) {
-      funBody.push(toHaxe(expr));
+      funBody.push('var v${counter} = ${toHaxe(expr)}');
     }
     var finalExpr: String = funBody.pop();
     if(finalExpr != null) {
@@ -103,7 +105,18 @@ class ${moduleName} {';
     } else {
       finalExpr = '';
     }
-    retVal = '  public static function ${functionName}(${funArgs.join(', ')})${retType} {
+    var patternAssignedArgs: Array<String> = [];
+    for(arg in funArgs) {
+      patternAssignedArgs.push('        set("${arg}", ${arg});');
+    }
+    retVal = '  public static function ${functionName}(${typedArgs.join(', ')})${retType} {
+    var scopeVariables: Map<String, Dynamic> = new Map<String, Dynamic>();
+    var get: String->Dynamic = scopeVariables.get;
+    var set: String->Dynamic->Void = scopeVariables.set;
+    switch([${funArgs.join(',')}]) {
+      case _:
+${patternAssignedArgs.join('\n')}
+    }
     ${funBody.join(";\n")}${finalExpr}
   }';
     return retVal;
@@ -119,9 +132,19 @@ class ${moduleName} {';
     return null;
   }
 
+  public static function _patternMatch(patternDef: Array<Dynamic>, body: Dynamic, aliases: Map<String, String>, context: Dynamic): String {
+    trace('pattern match');
+    trace(patternDef);
+    trace(body);
+    return null;
+  }
+
   public static function toHaxe(ast: Dynamic, aliases: Map<String, String> = null, context: Dynamic = null): String {
     if(aliases == null) {
       aliases = new Map<String, String>();
+      for(alias in builtinAliases.keys()) {
+        aliases.set(alias, builtinAliases.get(alias));
+      }
     }
     if(context == null) {
       context = {};
@@ -245,6 +268,7 @@ class ${moduleName} {';
     var retVal: Array<Dynamic> = [];
     var currentVal: Dynamic = null;
     var currentStrVal: String = "";
+    var leftStrVal: String = "";
     var operatorStrVal: String = "";
     var openCount: Int = 0;
     var state: ParsingState = ParsingState.NONE;
@@ -272,6 +296,7 @@ class ${moduleName} {';
         case [ParsingState.QUOATED_ATOM, _, DOUBLE_QUOTE]:
           state = ParsingState.NONE;
           retVal.push(currentStrVal.atom());
+          leftStrVal = currentStrVal;
           currentVal = null;
           currentStrVal = "";
         case [ParsingState.QUOATED_ATOM, _, _]:
@@ -304,6 +329,7 @@ class ${moduleName} {';
             currentVal = [];
             parseArray(currentVal, currentStrVal);
             retVal.push(currentVal);
+            leftStrVal = currentStrVal;
             currentVal = null;
             currentStrVal = "";
           } else {
@@ -317,6 +343,7 @@ class ${moduleName} {';
             state = ParsingState.NONE;
             currentVal = {};
             parseHash(currentVal, currentStrVal);
+            leftStrVal = '%{${currentStrVal}}';
             retVal.push(currentVal);
             currentVal = null;
             currentStrVal = "";
@@ -325,7 +352,7 @@ class ${moduleName} {';
           }
         case [ParsingState.HASH, _, _]:
           currentStrVal += char;
-        case [ParsingState.FUNCTION, _, CLOSE_PAREN]:
+        case [ParsingState.FUNCTION, _, CLOSE_PAREN | NEWLINE]:
           openCount--;
           currentStrVal += char;
           if(openCount == 0) {
@@ -333,6 +360,7 @@ class ${moduleName} {';
             currentVal = [null, [], null];
             parseFunc(currentVal, currentStrVal);
             retVal.push(currentVal);
+            leftStrVal = currentStrVal;
             currentVal = null;
             currentStrVal = "";
           }
@@ -345,20 +373,46 @@ class ${moduleName} {';
           state = ParsingState.NONE;
           currentVal = currentStrVal;
           retVal.push(currentVal);
+          leftStrVal = currentStrVal;
           currentVal = null;
           currentStrVal = "";
+        case [ParsingState.LEFT_RIGHT_FUNCTION, _, OPEN_PAREN | OPEN_BRACE | OPEN_BRACKET]:
+          openCount++;
+          currentStrVal += char;
+        case [ParsingState.LEFT_RIGHT_FUNCTION, _, CLOSE_PAREN | CLOSE_BRACE | CLOSE_BRACKET]:
+          openCount--;
+          currentStrVal += char;
+        case [ParsingState.LEFT_RIGHT_FUNCTION, _, NEWLINE]:
+          if(openCount == 1) {
+            currentStrVal += CLOSE_PAREN;
+            state = ParsingState.NONE;
+            currentVal = [null, [], null];
+            parseFunc(currentVal, currentStrVal);
+            retVal.push(currentVal);
+            leftStrVal = currentStrVal;
+            currentVal = null;
+            currentStrVal = "";
+          } else {
+            currentStrVal += char;
+          }
         case [ParsingState.LEFT_RIGHT_FUNCTION, _, _]:
-          if(leftRightOperators.any(char)) {
+          if(openCount == 0 && leftRightOperators.any(char)) {
             operatorStrVal += char;
           } else {
-            openCount++;
-            state = ParsingState.FUNCTION;
-            currentStrVal = '${operatorStrVal}(${currentStrVal}, ${char}';
+            if(openCount == 0) {
+              openCount++;
+              retVal.pop();
+              currentStrVal = '${operatorStrVal}(${leftStrVal}, ${char}';
+            } else {
+              currentStrVal += char;
+            }
           }
         case [ParsingState.FUNCTION, _, _]:
           if(openCount == 0 && leftRightOperators.any(char)) {
             operatorStrVal += char;
             state = ParsingState.LEFT_RIGHT_FUNCTION;
+            leftStrVal = currentStrVal;
+            currentStrVal = '';
           } else {
             currentStrVal += char;
           }
@@ -370,6 +424,7 @@ class ${moduleName} {';
             if(currentStrVal != '') {
               parseFunc(currentVal, currentStrVal);
               retVal.push(currentVal);
+              leftStrVal = currentStrVal;
               currentVal = null;
             }
 
@@ -393,6 +448,7 @@ class ${moduleName} {';
                 retVal.push(val);
               }
 
+              leftStrVal = currentStrVal;
               currentStrVal = '';
               state = ParsingState.NONE;
             }
@@ -404,6 +460,7 @@ class ${moduleName} {';
             }
             state = ParsingState.NONE;
             retVal.push(currentStrVal.trim().atom());
+            leftStrVal = currentStrVal;
             currentVal = null;
             currentStrVal = "";
           } else {
@@ -421,6 +478,7 @@ class ${moduleName} {';
             } else {
               retVal.push(Std.parseInt(currentStrVal));
             }
+            leftStrVal = currentStrVal;
             currentVal = null;
             currentStrVal = "";
           } else {
@@ -432,10 +490,10 @@ class ${moduleName} {';
             currentStrVal += char;
           }
           if(leftRightOperators.any(char)) {
-            var arg2: Dynamic = retVal.pop();
-            state = ParsingState.FUNCTION;
+            retVal.pop();
+            state = ParsingState.LEFT_RIGHT_FUNCTION;
             openCount++;
-            currentStrVal = '${char} ${arg2}';
+            currentStrVal = '${char}(${leftStrVal},';
           }
       }
     }
@@ -465,7 +523,18 @@ class ${moduleName} {';
       case ParsingState.HASH:
         throw new ParsingException();
       case ParsingState.LEFT_RIGHT_FUNCTION:
-        throw new ParsingException();
+        if(openCount == 1) {
+          currentStrVal += CLOSE_PAREN;
+          state = ParsingState.NONE;
+          currentVal = [null, [], null];
+          parseFunc(currentVal, currentStrVal);
+          retVal.push(currentVal);
+          leftStrVal = currentStrVal;
+          currentVal = null;
+          currentStrVal = "";
+        } else {
+          throw new ParsingException();
+        }
       case ParsingState.DO:
         throw new ParsingException();
       case ParsingState.FUNCTION:
