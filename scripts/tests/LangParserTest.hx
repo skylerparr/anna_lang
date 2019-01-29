@@ -482,7 +482,7 @@ class Foo {
 
     }
     
-    
+    return "nil".atom();
   }
 }'
     );

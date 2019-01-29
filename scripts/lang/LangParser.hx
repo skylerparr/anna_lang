@@ -111,7 +111,7 @@ class ${moduleName} {';
       var regex: EReg = ~/var.*=./;
       finalExpr = 'return ${regex.replace(finalExpr, "")}';
     } else {
-      finalExpr = '';
+      finalExpr = 'return "nil".atom();';
     }
     var patternAssignedArgs: Array<String> = [];
     for(i in 0...funArgs.length) {
