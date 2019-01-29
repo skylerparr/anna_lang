@@ -36,7 +36,7 @@ class LangParser {
     builtinAliases.set('-', 'Anna.subtract');
     builtinAliases.set('*', 'Anna.multiply');
     builtinAliases.set('/', 'Anna.divide');
-//    builtinAliases.set('=', 'patternMatch');
+    builtinAliases.set('.', 'resolveScope');
     builtinAliases;
   };
 
@@ -85,8 +85,9 @@ class ${moduleName} {';
     var specs: Map<String, Dynamic> = context.specs;
     var typedArgs: Array<String> = [];
     var genericArgs: Array<String> = [];
+    var spec: Dynamic = null;
     if(specs != null) {
-      var spec: Dynamic = specs.get(functionName);
+      spec = specs.get(functionName);
       if(spec != null) {
         retType = ': ${spec[1][0].value}';
         for(i in 0...funArgs.length) {
@@ -101,27 +102,43 @@ class ${moduleName} {';
     var funBody: Array<String> = [];
     var counter: Int = 0;
     for(expr in cast(body[0].__block__, Array<Dynamic>)) {
-      for(expr in cast(expr.__block__, Array<Dynamic>)) {
-        counter++;
+      if(Reflect.hasField(expr, "__block__")) {
+        for(expr in cast(expr.__block__, Array<Dynamic>)) {
+          counter++;
+          funBody.push('var v${counter} = ${toHaxe(expr)};');
+        }
+      } else {
         funBody.push('var v${counter} = ${toHaxe(expr)};');
       }
     }
     var finalExpr: String = funBody.pop();
     if(finalExpr != null) {
-      var regex: EReg = ~/var.*=./;
+      var regex: EReg = ~/var v[0-9].= /;
       finalExpr = 'return ${regex.replace(finalExpr, "")}';
     } else {
       finalExpr = 'return "nil".atom();';
     }
-    var patternAssignedArgs: Array<String> = [];
-    for(i in 0...funArgs.length) {
-      patternAssignedArgs.push('        ${funArgs[i]} = ${genericArgs[i]};');
-    }
-    retVal = '  public static function ${functionName}(${typedArgs.join(', ')})${retType} {
+
+    var patternAssignment: String = "";
+
+    if(funArgs.length > 0) {
+      var patternAssignedArgs: Array<String> = [];
+      var patternArgsDeclarations: Array<String> = [];
+      for(i in 0...funArgs.length) {
+        patternAssignedArgs.push('        ${funArgs[i]} = ${genericArgs[i]};');
+        var type: String = spec[0][i][0].value;
+        patternArgsDeclarations.push('    var ${funArgs[i]}: ${type};');
+      }
+
+      patternAssignment = '${patternArgsDeclarations.join('\n')}
     switch([${genericArgs.join(', ')}]) {
       case _:
 ${patternAssignedArgs.join('\n')}
+    }';
     }
+
+    retVal = '  public static function ${functionName}(${typedArgs.join(', ')})${retType} {
+${patternAssignment}
     ${funBody.join("\n    ")}
     ${finalExpr}
   }';
@@ -201,7 +218,7 @@ ${patternAssignedArgs.join('\n')}
         }
       case ValueType.TObject:
         if(Reflect.hasField(ast, '__type__')) {
-          retVal = ast;
+          retVal = '"${ast.value}".atom()';
         } else if(Reflect.hasField(ast, '__block__')) {
           var vals: Array<String> = [];
           var orig: Array<Dynamic> = cast(Reflect.field(ast, '__block__'));

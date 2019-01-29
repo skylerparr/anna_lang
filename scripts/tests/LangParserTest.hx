@@ -381,7 +381,7 @@ class LangParserTest {
   }
 
   public static function shouldConvertAtomASTToHaxe(): Void {
-    Assert.areEqual(LangParser.toHaxe(LangParser.toAST(':pretty')), '${'pretty'.atom()}');
+    Assert.areEqual(LangParser.toHaxe(LangParser.toAST(':pretty')), '"pretty".atom()');
   }
 
   public static function shouldConvertArrayASTToHaxe(): Void {
@@ -389,7 +389,7 @@ class LangParserTest {
   }
 
   public static function shouldConvertArrayWithValuesToHaxe(): Void {
-    Assert.areEqual(LangParser.toHaxe(LangParser.toAST('{2,  :foo, "house", 292}')), '[2, ${'foo'.atom()}, "house", 292]');
+    Assert.areEqual(LangParser.toHaxe(LangParser.toAST('{2,  :foo, "house", 292}')), '[2, "foo".atom(), "house", 292]');
   }
 
   public static function shouldConvertHashASTToHaxe(): Void {
@@ -397,7 +397,7 @@ class LangParserTest {
   }
 
   public static function shouldConvertHashWithValuesASTToHaxe(): Void {
-    Assert.areEqual(LangParser.toHaxe(LangParser.toAST('%{"foo" => :bar, "car" => {}}')), '{"car": [], "foo": ${'bar'.atom()}}');
+    Assert.areEqual(LangParser.toHaxe(LangParser.toAST('%{"foo" => :bar, "car" => {}}')), '{"car": [], "foo": "bar".atom()}');
   }
 
   public static function shouldConvertVariableToHaxe(): Void {
@@ -409,13 +409,13 @@ class LangParserTest {
   }
 
   public static function shouldConvertFunctionCallWithArgsFromASTToHaxe(): Void {
-    Assert.areEqual(LangParser.toHaxe(LangParser.toAST('foo(1, :two, three)')), 'foo(1, ${'two'.atom()}, three)');
+    Assert.areEqual(LangParser.toHaxe(LangParser.toAST('foo(1, :two, three)')), 'foo(1, "two".atom(), three)');
   }
 
   public static function shouldParseFunctionWithNestedFunctionCallsAndDataStructuresToHaxe(): Void {
     Assert.areEqual(LangParser.toHaxe(LangParser.toAST(
       'm(3, b(1, 2), ellie({:foo}), qtip(nozy(%{"bar" => {:cat}})))')),
-      'm(3, b(1, 2), ellie([${'foo'.atom()}]), qtip(nozy({"bar": [${'cat'.atom()}]})))');
+      'm(3, b(1, 2), ellie(["foo".atom()]), qtip(nozy({"bar": ["cat".atom()]})))');
   }
 
   public static function shouldSubstituteAliasedFunctionsWhenConvertingToHaxe(): Void {
@@ -440,13 +440,13 @@ class LangParserTest {
     #%{cost => pza} = cook(a, b + 212)
     cost
     %{}')),
-    'foo("bar", 1, 2, ${'three'.atom()})
-${'hash'.atom()}
-soo("baz", 3, 4, ${'five'.atom()})
+    'foo("bar", 1, 2, "three".atom())
+"hash".atom()
+soo("baz", 3, 4, "five".atom())
 "hello world"
 324
 []
-coo("cat", 5, 6, ${'seven'.atom()})
+coo("cat", 5, 6, "seven".atom())
 rem(a, b)
 cook(a, Anna.add(b, 212))
 Anna.add(a, b)
@@ -477,12 +477,50 @@ using lang.AtomSupport;
 @:build(macros.ScriptMacros.script())
 class Foo {
   public static function bar() {
-    switch([]) {
-      case _:
 
-    }
     
     return "nil".atom();
+  }
+}'
+    );
+  }
+
+  public static function shouldCallDefMacroWithSingleExpression(): Void {
+    var string: String = "defmodule Foo do
+      def bar() do
+        1 + 2
+      end
+    end";
+    Assert.areEqual(LangParser.toHaxe(LangParser.toAST(string)),
+    'package;
+using lang.AtomSupport;
+@:build(macros.ScriptMacros.script())
+class Foo {
+  public static function bar() {
+
+    
+    return Anna.add(1, 2);
+  }
+}'
+    );
+  }
+
+  public static function shouldCallDefMacroAndReturnAtom(): Void {
+    var string: String = "defmodule Foo do
+      @spec(bar, nil, Dynamic)
+      def bar() do
+        :success
+      end
+    end";
+    Assert.areEqual(LangParser.toHaxe(LangParser.toAST(string)),
+    'package;
+using lang.AtomSupport;
+@:build(macros.ScriptMacros.script())
+class Foo {
+  public static function bar(): Dynamic {
+
+    
+    return "success".atom();
   }
 }'
     );
@@ -504,6 +542,8 @@ using lang.AtomSupport;
 @:build(macros.ScriptMacros.script())
 class Foo {
   public static function order(arg0: Int, arg1: Int): Int {
+    var a: Int;
+    var b: Int;
     switch([arg0, arg1]) {
       case _:
         a = arg0;

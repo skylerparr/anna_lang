@@ -1,0 +1,12 @@
+defmodule Sample do
+
+  @spec(sum, {Int, Int}, Int)
+  def sum(a, b) do
+    a + b
+  end
+
+  @spec(hello_world, null, String)
+  def hello_world() do
+    "hello world"
+  end
+end

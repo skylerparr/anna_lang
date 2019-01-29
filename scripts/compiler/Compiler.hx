@@ -1,14 +1,13 @@
 package compiler;
 
-import haxe.macro.Context;
-import Anna;
 import haxe.macro.Printer;
-import haxe.macro.Expr;
-import hscript.Parser;
 import hscript.Interp;
-import lang.Types.Atom;
+import hscript.Parser;
+import lang.LangParser;
+import sys.io.File;
 
 using lang.AtomSupport;
+using StringTools;
 
 @:build(macros.ValueClassImpl.build())
 class Compiler {
@@ -42,5 +41,16 @@ class Compiler {
     #else
     return interp.execute(CodeGen._fn());
     #end
+  }
+
+  public static function compile(filePath: String): Void {
+    var lib: String = 'lib/';
+    var outputfilePath = '${Sys.getCwd()}${lib}${filePath}';
+    var content: String = File.getContent(outputfilePath);
+    var ast = LangParser.toAST(content);
+    var haxeCode: String = LangParser.toHaxe(ast);
+    var outFile: String = '${Sys.getCwd()}/scripts/${filePath.replace(".anna", ".hx")}';
+    File.saveContent(outFile, haxeCode);
+    Native.callStatic("Runtime", "recompile", []);
   }
 }
