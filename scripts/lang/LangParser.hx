@@ -19,6 +19,7 @@ enum ParsingState {
   FUNCTION;
   LEFT_RIGHT_FUNCTION;
   DO;
+  COMMENT;
 }
 
 enum HashState {
@@ -83,41 +84,46 @@ class ${moduleName} {';
     var retType: String = '';
     var specs: Map<String, Dynamic> = context.specs;
     var typedArgs: Array<String> = [];
+    var genericArgs: Array<String> = [];
     if(specs != null) {
       var spec: Dynamic = specs.get(functionName);
       if(spec != null) {
         retType = ': ${spec[1][0].value}';
         for(i in 0...funArgs.length) {
           var type: String = spec[0][i][0].value;
-          typedArgs.push('${funArgs[i]}: ${type}');
+          var argName: String = 'arg${i}';
+          typedArgs.push('${argName}: ${type}');
+          genericArgs.push(argName);
         }
       }
     }
 
     var funBody: Array<String> = [];
-    var counter: Int = 1;
+    var counter: Int = 0;
     for(expr in cast(body[0].__block__, Array<Dynamic>)) {
-      funBody.push('var v${counter} = ${toHaxe(expr)}');
+      for(expr in cast(expr.__block__, Array<Dynamic>)) {
+        counter++;
+        funBody.push('var v${counter} = ${toHaxe(expr)};');
+      }
     }
     var finalExpr: String = funBody.pop();
     if(finalExpr != null) {
-      finalExpr = 'return ${finalExpr};';
+      var regex: EReg = ~/var.*=./;
+      finalExpr = 'return ${regex.replace(finalExpr, "")}';
     } else {
       finalExpr = '';
     }
     var patternAssignedArgs: Array<String> = [];
-    for(arg in funArgs) {
-      patternAssignedArgs.push('        set("${arg}", ${arg});');
+    for(i in 0...funArgs.length) {
+      patternAssignedArgs.push('        ${funArgs[i]} = ${genericArgs[i]};');
     }
     retVal = '  public static function ${functionName}(${typedArgs.join(', ')})${retType} {
-    var scopeVariables: Map<String, Dynamic> = new Map<String, Dynamic>();
-    var get: String->Dynamic = scopeVariables.get;
-    var set: String->Dynamic->Void = scopeVariables.set;
-    switch([${funArgs.join(',')}]) {
+    switch([${genericArgs.join(', ')}]) {
       case _:
 ${patternAssignedArgs.join('\n')}
     }
-    ${funBody.join(";\n")}${finalExpr}
+    ${funBody.join("\n    ")}
+    ${finalExpr}
   }';
     return retVal;
   }
@@ -244,6 +250,7 @@ ${patternAssignedArgs.join('\n')}
   private static inline var PIPE: String = "|";
   private static inline var PERIOD: String = ".";
   private static inline var AT: String = "@";
+  private static inline var HASH: String = "#";
   private static inline var DO: String = "do";
   private static inline var END: String = "end";
 
@@ -272,6 +279,7 @@ ${patternAssignedArgs.join('\n')}
     var operatorStrVal: String = "";
     var openCount: Int = 0;
     var state: ParsingState = ParsingState.NONE;
+    var previousState: ParsingState = ParsingState.NONE;
 
     for(i in 0...string.length) {
       var char: String = string.charAt(i);
@@ -286,6 +294,13 @@ ${patternAssignedArgs.join('\n')}
           state = ParsingState.STRING;
         case [ParsingState.NONE, false, COLON]:
           state = ParsingState.ATOM;
+        case [ParsingState.NONE, false, HASH]:
+          previousState = state;
+          state = ParsingState.COMMENT;
+        case [ParsingState.COMMENT, _, NEWLINE]:
+          state = previousState;
+        case [ParsingState.COMMENT, _, _]:
+          //ignore
         case [ParsingState.ATOM, _, DOUBLE_QUOTE]:
           state = ParsingState.QUOATED_ATOM;
         case [ParsingState.QUOATED_ATOM, _, BACK_SLASH]:
@@ -355,7 +370,8 @@ ${patternAssignedArgs.join('\n')}
         case [ParsingState.FUNCTION, _, CLOSE_PAREN | NEWLINE]:
           openCount--;
           currentStrVal += char;
-          if(openCount == 0) {
+          if(openCount <= 0) {
+            openCount = 0;
             state = ParsingState.NONE;
             currentVal = [null, [], null];
             parseFunc(currentVal, currentStrVal);
@@ -401,7 +417,6 @@ ${patternAssignedArgs.join('\n')}
           } else {
             if(openCount == 0) {
               openCount++;
-              retVal.pop();
               currentStrVal = '${operatorStrVal}(${leftStrVal}, ${char}';
             } else {
               currentStrVal += char;
@@ -537,6 +552,8 @@ ${patternAssignedArgs.join('\n')}
         }
       case ParsingState.DO:
         throw new ParsingException();
+      case ParsingState.COMMENT:
+        //ignore
       case ParsingState.FUNCTION:
         currentVal = [null, [], null];
         parseFunc(currentVal, currentStrVal);

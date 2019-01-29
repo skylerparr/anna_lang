@@ -229,6 +229,10 @@ class LangParserTest {
     '), expectation);
   }
 
+  public static function shouldIgnoreCommentedLines(): Void {
+    Assert.areEqual(LangParser.toAST('# this is a comment'), []);
+  }
+
   public static function shouldParseAddOperatorsIntoFunctions(): Void {
     Assert.areEqual(LangParser.toAST("1 + 2"), ['+'.atom(), [], [1, 2]]);
   }
@@ -431,7 +435,9 @@ class LangParserTest {
     {}
     coo("cat", 5, 6, :seven)
     rem(a, b)
-    %{cost => pza} = cook(a, b + 212)
+    cook(a, b + 212)
+    a + b
+    #%{cost => pza} = cook(a, b + 212)
     cost
     %{}')),
     'foo("bar", 1, 2, ${'three'.atom()})
@@ -442,7 +448,8 @@ soo("baz", 3, 4, ${'five'.atom()})
 []
 coo("cat", 5, 6, ${'seven'.atom()})
 rem(a, b)
-=({"[{ __type__ => ATOM, value => cost },[],null]": pza}, cook(a, Anna.add(b, 212)))
+cook(a, Anna.add(b, 212))
+Anna.add(a, b)
 cost
 {}');
   }
@@ -470,6 +477,11 @@ using lang.AtomSupport;
 @:build(macros.ScriptMacros.script())
 class Foo {
   public static function bar() {
+    switch([]) {
+      case _:
+
+    }
+    
     
   }
 }'
@@ -482,8 +494,8 @@ class Foo {
       @spec(order, {Int, Int}, Int)
       def order(a, b) do
         rem(a, b)
-        %{cost => pza} = cook(a, b + 212)
-        cost
+        cook(a, b + 212)
+        a + b
       end
     end";
     Assert.areEqual(LangParser.toHaxe(LangParser.toAST(string)),
@@ -491,24 +503,15 @@ class Foo {
 using lang.AtomSupport;
 @:build(macros.ScriptMacros.script())
 class Foo {
-  public static function order(a: Int, b: Int): Int {
-    var scopeVariables: Map<String, Dynamic> = new Map<String, Dynamic>();
-    var get: String->Dynamic = scopeVariables.get;
-    var set: String->Dynamic->Void = scopeVariables.set;
-    switch([a, b]) {
+  public static function order(arg0: Int, arg1: Int): Int {
+    switch([arg0, arg1]) {
       case _:
-        set("a", a);
-        set("b", b);
+        a = arg0;
+        b = arg1;
     }
-    var v1 = rem(get("a"), get("b"));
-
-    var v2 = cook(get("a"), add(get("b"), 212));
-    var _pizza1 = {toppings: v2.toppings, cost: v2.cost};
-    switch(_pizza1) {
-      case {cost: cost}:
-        set("pza", cost);
-    }
-    return get("pza");
+    var v1 = rem(a, b);
+    var v2 = cook(a, Anna.add(b, 212));
+    return Anna.add(a, b);
   }
 }'
     );
