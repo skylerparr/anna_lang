@@ -29,8 +29,8 @@ class Assert {
         errString += '\n';
         errString += 'are not equal, expected to be equal\n';
         errString += '\n';
-        errString += 'lhs: ${a}\n';
-        errString += 'rhs: ${b}\n';
+        errString += 'lhs: > ${a} <\n';
+        errString += 'rhs: > ${b} <\n';
         fail(errString);
     }
   }

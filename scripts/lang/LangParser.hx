@@ -17,9 +17,11 @@ enum ParsingState {
   ARRAY;
   HASH;
   FUNCTION;
+  FUNCTION_ARGS;
   LEFT_RIGHT_FUNCTION;
   DO;
   COMMENT;
+  EXPRESSION_UNKNOWN;
 }
 
 enum HashState {
@@ -271,11 +273,11 @@ ${patternAssignment}
   private static inline var DO: String = "do";
   private static inline var END: String = "end";
 
-  private static var CAPITALS: EReg = ~/[A-Z]/;
   private static var NUMBER: EReg = ~/[0-9]|\./;
-  private static var CHAR: EReg = ~/[a-z]/;
+  private static var CHAR: EReg = ~/[a-z][A-Z]/;
   private static var DOT: EReg = ~/\./;
   private static var WHITESPACE: EReg = ~/\s/;
+  private static var SYMBOL: EReg = ~/\W/;
 
   private static var leftRightOperators: Array<String> = [EQUALS, PLUS, MINUS, MULTIPLY, DIVIDE, GREATER_THAN,
     LESS_THAN, PERIOD, PIPE];
@@ -286,6 +288,113 @@ ${patternAssignment}
       return retVal[0];
     }
     return retVal;
+  }
+
+  public static function sanitizeExpr(string: String): String {
+    var retVal: String = '';
+    var state: ParsingState = ParsingState.NONE;
+    var prevState: ParsingState = ParsingState.NONE;
+    var parenCount: Int = 0;
+    var braceCount: Int = 0;
+
+    for(i in 0...string.length) {
+      var char: String = string.charAt(i);
+      switch([state, NUMBER.match(char), char, SYMBOL.match(char)]) {
+        case [ParsingState.NONE, true, _, _]:
+          retVal += char;
+          state = ParsingState.NUMBER;
+        case [ParsingState.NONE, _, DOUBLE_QUOTE, _]:
+          retVal += char;
+          state = ParsingState.STRING;
+        case [ParsingState.STRING, _, DOUBLE_QUOTE, _]:
+          retVal += char;
+          state = prevState;
+          prevState = ParsingState.NONE;
+        case [ParsingState.STRING, _, BACK_SLASH, _]:
+          state = ParsingState.ESCAPE;
+        case [ParsingState.ESCAPE, _, _, _]:
+          retVal += char;
+          state = ParsingState.STRING;
+        case [ParsingState.STRING, _, _, _]:
+          retVal += char;
+        case [ParsingState.NONE, _, PERCENT, _]:
+          retVal += char;
+          state = ParsingState.HASH;
+        case [ParsingState.NONE | ParsingState.ARRAY, _, OPEN_BRACE, _]:
+          retVal += char;
+          braceCount++;
+          state = ParsingState.ARRAY;
+        case [ParsingState.ARRAY, _, CLOSE_BRACE, _]:
+          braceCount--;
+          retVal += char;
+          if(braceCount == 0) {
+            state = ParsingState.NONE;
+          }
+        case [ParsingState.ARRAY, _, SPACE, _]:
+        case [ParsingState.ARRAY, _, _, _]:
+          retVal += char;
+        case [ParsingState.HASH, _, OPEN_BRACE, _]:
+          retVal += char;
+          braceCount++;
+        case [ParsingState.HASH, _, CLOSE_BRACE, _]:
+          retVal += char;
+          braceCount--;
+          if(braceCount == 0) {
+            state = ParsingState.NONE;
+          }
+        case [ParsingState.HASH, _, _, _]:
+          retVal += char;
+        case [ParsingState.NUMBER, _, SPACE | NEWLINE, _]:
+          retVal += char;
+          state = ParsingState.NONE;
+        case [ParsingState.NUMBER, _, _, true]:
+          retVal += char;
+          state = ParsingState.NONE;
+        case [ParsingState.NUMBER, _, _, _]:
+          retVal += char;
+        case [ParsingState.FUNCTION, _, OPEN_PAREN, _]:
+          retVal += char;
+          parenCount++;
+          state = ParsingState.FUNCTION_ARGS;
+        case [ParsingState.FUNCTION, _, SPACE, _]:
+          state = ParsingState.EXPRESSION_UNKNOWN;
+        case [ParsingState.FUNCTION, _, _, _]:
+          retVal += char;
+        case [ParsingState.EXPRESSION_UNKNOWN, _, OPEN_PAREN, _]:
+          state = ParsingState.FUNCTION;
+        case [ParsingState.EXPRESSION_UNKNOWN, _, _, _]:
+          if(!WHITESPACE.match(char)) {
+            retVal += '(${char}';
+            parenCount++;
+            state = ParsingState.FUNCTION_ARGS;
+          }
+        case [ParsingState.FUNCTION_ARGS, _, SPACE, _]:
+        case [ParsingState.FUNCTION_ARGS, _, DOUBLE_QUOTE, _]:
+          retVal += char;
+          prevState = state;
+          state = ParsingState.STRING;
+        case [ParsingState.FUNCTION_ARGS, _, OPEN_PAREN, _]:
+          parenCount++;
+          retVal += '(';
+        case [ParsingState.FUNCTION_ARGS, _, CLOSE_PAREN, _]:
+          parenCount--;
+          retVal += ')';
+          if(parenCount == 0) {
+            state = ParsingState.NONE;
+          }
+        case [ParsingState.FUNCTION_ARGS, _, _, _]:
+          retVal += char;
+        case [ParsingState.NONE, _, _, _]:
+          retVal += char;
+          state = ParsingState.FUNCTION;
+        case _:
+      }
+    }
+    if(state == ParsingState.FUNCTION_ARGS && parenCount == 1) {
+      retVal += ')';
+    }
+
+    return retVal.trim();
   }
 
   private static inline function parseExpr(string: String): Array<Dynamic> {
@@ -546,14 +655,6 @@ ${patternAssignment}
         currentVal = currentStrVal.trim().atom();
         retVal.push(currentVal);
         currentVal = null;
-      case ParsingState.STRING:
-        throw new ParsingException();
-      case ParsingState.ESCAPE:
-        throw new ParsingException();
-      case ParsingState.ARRAY:
-        throw new ParsingException();
-      case ParsingState.HASH:
-        throw new ParsingException();
       case ParsingState.LEFT_RIGHT_FUNCTION:
         if(openCount == 1) {
           currentStrVal += CLOSE_PAREN;
@@ -576,10 +677,6 @@ ${patternAssignment}
         parseFunc(currentVal, currentStrVal);
         retVal.push(currentVal);
         currentVal = null;
-      case ParsingState.QUOATED_ATOM:
-        throw new ParsingException();
-      case ParsingState.QUOATED_ATOM_ESCAPE:
-        throw new ParsingException();
       case ParsingState.NONE:
         if(currentStrVal.length > 0) {
           currentVal = [null, [], null];
@@ -587,6 +684,8 @@ ${patternAssignment}
           retVal.push(currentVal);
           currentVal = null;
         }
+      case _:
+        throw new ParsingException();
     }
 
     if(retVal.length > 1) {

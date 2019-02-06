@@ -8,6 +8,41 @@ using StringTools;
 @:build(macros.ScriptMacros.script())
 class LangParserTest {
 
+  public static function shouldLeaveExpressionUnchangedIfIsOnlyData(): Void {
+    Assert.areEqual(LangParser.sanitizeExpr('"foo"'), '"foo"');
+    Assert.areEqual(LangParser.sanitizeExpr('549830'), '549830');
+    Assert.areEqual(LangParser.sanitizeExpr('549.830'), '549.830');
+    Assert.areEqual(LangParser.sanitizeExpr('%{"foo" => bar}'), '%{"foo" => bar}');
+    Assert.areEqual(LangParser.sanitizeExpr('{"foo", bar}'), '{"foo",bar}');
+    Assert.areEqual(LangParser.sanitizeExpr(':hello'), ':hello');
+    Assert.areEqual(LangParser.sanitizeExpr('"fkjd \\" {ja dk: kfj ( (0 aikd) (() \\" }{{} []))  "'), '"fkjd \" {ja dk: kfj ( (0 aikd) (() \" }{{} []))  "');
+  }
+
+  public static function shouldLeaveExpressionUnchangedWithComposableFunctions(): Void {
+    Assert.areEqual(LangParser.sanitizeExpr("foo()"), "foo()");
+    Assert.areEqual(LangParser.sanitizeExpr("foo(1, 2, :cat)"), "foo(1,2,:cat)");
+    Assert.areEqual(LangParser.sanitizeExpr("foo(cat(bear(hair())))"), "foo(cat(bear(hair())))");
+  }
+
+  public static function shouldAddParenthesisToObviousFunctionsWithNoParenthesis(): Void {
+    Assert.areEqual(LangParser.sanitizeExpr("foo    :bar, baz, 123, 'kdfj', {1, 22, 333}   "), "foo(:bar,baz,123,'kdfj',{1,22,333})");
+    Assert.areEqual(LangParser.sanitizeExpr("foo  (  :bar, baz, 123, 'kdfj', {1, 22, 333}  )   "), "foo(:bar,baz,123,'kdfj',{1,22,333})");
+  }
+
+  public static function shouldEcapsulateFunctionThatContainsNestedFunctionsAndData(): Void {
+    Assert.areEqual(LangParser.sanitizeExpr("foo  (  :bar, baz( {:foo, mars}), 123, 'kdfj', {1, 22, 333}   "), "foo(:bar,baz({:foo,mars}),123,'kdfj',{1,22,333})");
+  }
+
+  public static function shouldIgnoreBracesAndParensIfArgIsString(): Void {
+    Assert.areEqual(LangParser.sanitizeExpr('foo(398, "akdfj{})((0)0alkd-3)[]((((", bar(:baz, cat())'), 'foo(398,"akdfj{})((0)0alkd-3)[]((((",bar(:baz,cat()))');
+  }
+
+  public static function shouldExtractLeftRightFunctionsIntoStandardFunctionCalls(): Void {
+    Assert.areEqual(LangParser.sanitizeExpr('foo.bar'), '.(foo,bar)');
+    Assert.areEqual(LangParser.sanitizeExpr('foo +   \n bar'), '+(foo,bar)');
+    Assert.areEqual(LangParser.sanitizeExpr('560 - 389'), '-(560,389)');
+  }
+
   public static function shouldConvertStringToAst(): Void {
     Assert.areEqual(LangParser.toAST('"foo"'), 'foo');
     Assert.areNotEqual(LangParser.toAST('"foo"'), 'foobert');
