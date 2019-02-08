@@ -270,6 +270,8 @@ ${patternAssignment}
   private static inline var PERIOD: String = ".";
   private static inline var AT: String = "@";
   private static inline var HASH: String = "#";
+  private static inline var AMPHERSAND: String = "&";
+  private static inline var CARET: String = "^";
   private static inline var DO: String = "do";
   private static inline var END: String = "end";
 
@@ -280,10 +282,11 @@ ${patternAssignment}
   private static var SYMBOL: EReg = ~/\W/;
 
   private static var leftRightOperators: Array<String> = [EQUALS, PLUS, MINUS, MULTIPLY, DIVIDE, GREATER_THAN,
-    LESS_THAN, PERIOD, PIPE];
+    LESS_THAN, PERIOD, PIPE, AMPHERSAND];
 
-  public static function toAST(body: String): Dynamic {
-    var retVal: Array<Dynamic> = parseExpr(body);
+  public static function toAST(string: String): Dynamic {
+    string = sanitizeExpr(string);
+    var retVal: Array<Dynamic> = parseExpr(string);
     if(retVal.length == 1) {
       return retVal[0];
     }
@@ -296,8 +299,10 @@ ${patternAssignment}
     var prevState: ParsingState = ParsingState.NONE;
     var parenCount: Int = 0;
     var braceCount: Int = 0;
+    var i: Int = 0;
+    var operatorString: String = '';
 
-    for(i in 0...string.length) {
+    while(i < string.length) {
       var char: String = string.charAt(i);
       switch([state, NUMBER.match(char), char, SYMBOL.match(char)]) {
         case [ParsingState.NONE, true, _, _]:
@@ -316,6 +321,8 @@ ${patternAssignment}
           retVal += char;
           state = ParsingState.STRING;
         case [ParsingState.STRING, _, _, _]:
+          retVal += char;
+        case [ParsingState.NONE, _, COLON, _]:
           retVal += char;
         case [ParsingState.NONE, _, PERCENT, _]:
           retVal += char;
@@ -345,10 +352,11 @@ ${patternAssignment}
         case [ParsingState.HASH, _, _, _]:
           retVal += char;
         case [ParsingState.NUMBER, _, SPACE | NEWLINE, _]:
-          retVal += char;
           state = ParsingState.NONE;
-        case [ParsingState.NUMBER, _, _, true]:
+        case [ParsingState.NUMBER, _, PERIOD, _]:
           retVal += char;
+        case [ParsingState.NUMBER, _, _, true]:
+          operatorString += char;
           state = ParsingState.NONE;
         case [ParsingState.NUMBER, _, _, _]:
           retVal += char;
@@ -359,36 +367,63 @@ ${patternAssignment}
         case [ParsingState.FUNCTION, _, SPACE, _]:
           state = ParsingState.EXPRESSION_UNKNOWN;
         case [ParsingState.FUNCTION, _, _, _]:
-          retVal += char;
+          if(leftRightOperators.any(char)) {
+            operatorString += char;
+            state = ParsingState.LEFT_RIGHT_FUNCTION;
+          } else {
+            retVal += char;
+          }
         case [ParsingState.EXPRESSION_UNKNOWN, _, OPEN_PAREN, _]:
           state = ParsingState.FUNCTION;
         case [ParsingState.EXPRESSION_UNKNOWN, _, _, _]:
-          if(!WHITESPACE.match(char)) {
-            retVal += '(${char}';
+          if(leftRightOperators.any(char)) {
+            operatorString += char;
+            state = ParsingState.LEFT_RIGHT_FUNCTION;
+          } else if(!WHITESPACE.match(char)) {
+            retVal += '${OPEN_PAREN}${char}';
             parenCount++;
             state = ParsingState.FUNCTION_ARGS;
           }
-        case [ParsingState.FUNCTION_ARGS, _, SPACE, _]:
+        case [ParsingState.FUNCTION_ARGS, _, SPACE | NEWLINE, _]:
         case [ParsingState.FUNCTION_ARGS, _, DOUBLE_QUOTE, _]:
           retVal += char;
           prevState = state;
           state = ParsingState.STRING;
         case [ParsingState.FUNCTION_ARGS, _, OPEN_PAREN, _]:
           parenCount++;
-          retVal += '(';
+          retVal += OPEN_PAREN;
         case [ParsingState.FUNCTION_ARGS, _, CLOSE_PAREN, _]:
           parenCount--;
-          retVal += ')';
+          retVal += CLOSE_PAREN;
           if(parenCount == 0) {
             state = ParsingState.NONE;
           }
         case [ParsingState.FUNCTION_ARGS, _, _, _]:
           retVal += char;
+        case [ParsingState.LEFT_RIGHT_FUNCTION, _, _, _]:
+          if(!leftRightOperators.any(char)) {
+            state = ParsingState.FUNCTION_ARGS;
+            char = (WHITESPACE.match(char)) ? '' : char;
+            retVal = '${operatorString}${OPEN_PAREN}${retVal},';
+            var arg = sanitizeExpr(string.substr(i));
+            retVal = retVal + arg;
+            i = string.length;
+            parenCount++;
+          } else {
+            operatorString += char;
+          }
+        case [ParsingState.NONE, _, SPACE | NEWLINE, _]:
         case [ParsingState.NONE, _, _, _]:
-          retVal += char;
-          state = ParsingState.FUNCTION;
+          if(leftRightOperators.any(char)) {
+            operatorString += char;
+            state = ParsingState.LEFT_RIGHT_FUNCTION;
+          } else {
+            retVal += char;
+            state = ParsingState.FUNCTION;
+          }
         case _:
       }
+      i++;
     }
     if(state == ParsingState.FUNCTION_ARGS && parenCount == 1) {
       retVal += ')';
@@ -518,45 +553,45 @@ ${patternAssignment}
           leftStrVal = currentStrVal;
           currentVal = null;
           currentStrVal = "";
-        case [ParsingState.LEFT_RIGHT_FUNCTION, _, OPEN_PAREN | OPEN_BRACE | OPEN_BRACKET]:
-          openCount++;
-          currentStrVal += char;
-        case [ParsingState.LEFT_RIGHT_FUNCTION, _, CLOSE_PAREN | CLOSE_BRACE | CLOSE_BRACKET]:
-          openCount--;
-          currentStrVal += char;
-        case [ParsingState.LEFT_RIGHT_FUNCTION, _, NEWLINE]:
-          if(openCount == 1) {
-            currentStrVal += CLOSE_PAREN;
-            state = ParsingState.NONE;
-            currentVal = [null, [], null];
-            parseFunc(currentVal, currentStrVal);
-            retVal.push(currentVal);
-            leftStrVal = currentStrVal;
-            currentVal = null;
-            currentStrVal = "";
-          } else {
-            currentStrVal += char;
-          }
-        case [ParsingState.LEFT_RIGHT_FUNCTION, _, _]:
-          if(openCount == 0 && leftRightOperators.any(char)) {
-            operatorStrVal += char;
-          } else {
-            if(openCount == 0) {
-              openCount++;
-              currentStrVal = '${operatorStrVal}(${leftStrVal}, ${char}';
-            } else {
-              currentStrVal += char;
-            }
-          }
+//        case [ParsingState.LEFT_RIGHT_FUNCTION, _, OPEN_PAREN | OPEN_BRACE | OPEN_BRACKET]:
+//          openCount++;
+//          currentStrVal += char;
+//        case [ParsingState.LEFT_RIGHT_FUNCTION, _, CLOSE_PAREN | CLOSE_BRACE | CLOSE_BRACKET]:
+//          openCount--;
+//          currentStrVal += char;
+//        case [ParsingState.LEFT_RIGHT_FUNCTION, _, NEWLINE]:
+//          if(openCount == 1) {
+//            currentStrVal += CLOSE_PAREN;
+//            state = ParsingState.NONE;
+//            currentVal = [null, [], null];
+//            parseFunc(currentVal, currentStrVal);
+//            retVal.push(currentVal);
+//            leftStrVal = currentStrVal;
+//            currentVal = null;
+//            currentStrVal = "";
+//          } else {
+//            currentStrVal += char;
+//          }
+//        case [ParsingState.LEFT_RIGHT_FUNCTION, _, _]:
+//          if(openCount == 0 && leftRightOperators.any(char)) {
+//            operatorStrVal += char;
+//          } else {
+//            if(openCount == 0) {
+//              openCount++;
+//              currentStrVal = '${operatorStrVal}(${leftStrVal}, ${char}';
+//            } else {
+//              currentStrVal += char;
+//            }
+//          }
         case [ParsingState.FUNCTION, _, _]:
-          if(openCount == 0 && leftRightOperators.any(char)) {
-            operatorStrVal += char;
-            state = ParsingState.LEFT_RIGHT_FUNCTION;
-            leftStrVal = currentStrVal;
-            currentStrVal = '';
-          } else {
+//          if(openCount == 0 && leftRightOperators.any(char)) {
+//            operatorStrVal += char;
+//            state = ParsingState.LEFT_RIGHT_FUNCTION;
+//            leftStrVal = currentStrVal;
+//            currentStrVal = '';
+//          } else {
             currentStrVal += char;
-          }
+//          }
 
           if(currentStrVal.substr(currentStrVal.length - 2) == DO) {
             currentStrVal = currentStrVal.substr(0, currentStrVal.length - 2);
@@ -630,12 +665,12 @@ ${patternAssignment}
             state = ParsingState.FUNCTION;
             currentStrVal += char;
           }
-          if(leftRightOperators.any(char)) {
-            retVal.pop();
-            state = ParsingState.LEFT_RIGHT_FUNCTION;
-            openCount++;
-            currentStrVal = '${char}(${leftStrVal},';
-          }
+//          if(leftRightOperators.any(char)) {
+//            retVal.pop();
+//            state = ParsingState.LEFT_RIGHT_FUNCTION;
+//            openCount++;
+//            currentStrVal = '${char}(${leftStrVal},';
+//          }
       }
     }
 

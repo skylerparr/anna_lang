@@ -37,10 +37,30 @@ class LangParserTest {
     Assert.areEqual(LangParser.sanitizeExpr('foo(398, "akdfj{})((0)0alkd-3)[]((((", bar(:baz, cat())'), 'foo(398,"akdfj{})((0)0alkd-3)[]((((",bar(:baz,cat()))');
   }
 
+  public static function shouldIgnoreLeftRightOperatorsIfArgIsString(): Void {
+    Assert.areEqual(LangParser.sanitizeExpr(':"foo + 23"'), ':"foo + 23"');
+  }
+
   public static function shouldExtractLeftRightFunctionsIntoStandardFunctionCalls(): Void {
     Assert.areEqual(LangParser.sanitizeExpr('foo.bar'), '.(foo,bar)');
     Assert.areEqual(LangParser.sanitizeExpr('foo +   \n bar'), '+(foo,bar)');
     Assert.areEqual(LangParser.sanitizeExpr('560 - 389'), '-(560,389)');
+    Assert.areEqual(LangParser.sanitizeExpr('560 - abc'), '-(560,abc)');
+    Assert.areEqual(LangParser.sanitizeExpr('def - 123'), '-(def,123)');
+  }
+
+  public static function shouldHandleMultipleLeftRightFunctionsOfTheSameOperator(): Void {
+    Assert.areEqual(LangParser.sanitizeExpr('foo.bar.cat'), '.(foo,.(bar,cat))');
+    Assert.areEqual(LangParser.sanitizeExpr('foo.bar.cat.baz.boo'), '.(foo,.(bar,.(cat,.(baz,boo))))');
+    Assert.areEqual(LangParser.sanitizeExpr('foo + bar + cat + baz + boo'), '+(foo,+(bar,+(cat,+(baz,boo))))');
+  }
+
+  public static function shouldHandleOperatorsThatAreMoreThanOneCharacter(): Void {
+    Assert.areEqual(LangParser.sanitizeExpr('221 >= 532'), '>=(221,532)');
+    Assert.areEqual(LangParser.sanitizeExpr('124<=987'), '<=(124,987)');
+    Assert.areEqual(LangParser.sanitizeExpr('abc>=532'), '>=(abc,532)');
+    Assert.areEqual(LangParser.sanitizeExpr('325>=def'), '>=(325,def)');
+    Assert.areEqual(LangParser.sanitizeExpr('abc >=def && hij<= 849 || klm == 4903'), '>=(abc,&&(def,<=(hij,||(849,==(klm,4903)))))');
   }
 
   public static function shouldConvertStringToAst(): Void {
