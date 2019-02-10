@@ -30,11 +30,12 @@ class LangParserTest {
   }
 
   public static function shouldEcapsulateFunctionThatContainsNestedFunctionsAndData(): Void {
-    Assert.areEqual(LangParser.sanitizeExpr("foo  (  :bar, baz( {:foo, mars}), 123, 'kdfj', {1, 22, 333}   "), "foo(:bar,baz({:foo,mars}),123,'kdfj',{1,22,333})");
+    Assert.areEqual(LangParser.sanitizeExpr("foo  (  :bar, baz( {:foo, mars}), 123, 'kdfj', {1, 22, 333}   )   "), "foo(:bar,baz({:foo,mars}),123,'kdfj',{1,22,333})");
   }
 
-  public static function shouldIgnoreBracesAndParensIfArgIsString(): Void {
-    Assert.areEqual(LangParser.sanitizeExpr('foo(398, "akdfj{})((0)0alkd-3)[]((((", bar(:baz, cat()))'), 'foo(398,"akdfj{})((0)0alkd-3)[]((((",bar(:baz,cat()))');
+  public static function shouldIgnoreBracesParensAndCommasIfArgIsString(): Void {
+    Assert.areEqual(LangParser.sanitizeExpr('foo(398, "akdfj{},)((0)0al,kd-3),[]((((", bar(:baz,        cat(),        foo(),     more_cat()    )   )'),
+    'foo(398,"akdfj{},)((0)0al,kd-3),[]((((",bar(:baz,cat(),foo(),more_cat()))');
   }
 
   public static function shouldIgnoreLeftRightOperatorsIfArgIsString(): Void {
@@ -47,12 +48,13 @@ class LangParserTest {
     Assert.areEqual(LangParser.sanitizeExpr('560 - 389'), '-(560,389)');
     Assert.areEqual(LangParser.sanitizeExpr('560 - abc'), '-(560,abc)');
     Assert.areEqual(LangParser.sanitizeExpr('def - 123'), '-(def,123)');
+    Assert.areEqual(LangParser.sanitizeExpr('a + b'), '+(a,b)');
   }
 
   public static function shouldHandleMultipleLeftRightFunctionsOfTheSameOperator(): Void {
     Assert.areEqual(LangParser.sanitizeExpr('foo.bar.cat'), '.(foo,.(bar,cat))');
     Assert.areEqual(LangParser.sanitizeExpr('foo.bar.cat.baz.boo'), '.(foo,.(bar,.(cat,.(baz,boo))))');
-    Assert.areEqual(LangParser.sanitizeExpr('foo + bar + cat + baz + boo'), '+(foo,+(bar,+(cat,+(baz,boo))))');
+    Assert.areEqual(LangParser.sanitizeExpr('foo + bar + cat(1, abc, :three) + baz + boo'), '+(foo,+(bar,+(cat(1,abc,:three),+(baz,boo))))');
   }
 
   public static function shouldHandleOperatorsThatAreMoreThanOneCharacter(): Void {
@@ -63,12 +65,50 @@ class LangParserTest {
     Assert.areEqual(LangParser.sanitizeExpr('abc >=def && hij<= 849 || klm == 4903'), '>=(abc,&&(def,<=(hij,||(849,==(klm,4903)))))');
   }
 
-    public static function shouldSanitizeFunctionArgsWithLeftRightFunctions(): Void {
-    Assert.areEqual(LangParser.sanitizeExpr('cook(abc, def + 212)'), 'cook(abc,+(def,212))');
+  public static function shouldSanitizeFunctionArgsWithLeftRightFunctions(): Void {
+    Assert.areEqual(LangParser.sanitizeExpr('cook(     abc  -   xyz , def +    212   , cat()   )  '), 'cook(-(abc,xyz),+(def,212),cat())');
   }
 
-    public static function shouldSanitizeMultipleNestedLeftRightFunctions(): Void {
+  public static function shouldSanitizeMultipleNestedLeftRightFunctions(): Void {
     Assert.areEqual(LangParser.sanitizeExpr('%{"cost" => pza} = cook(a, b + 212)'), '=(%{"cost" => pza},cook(a,+(b,212)))');
+  }
+
+  public static function shouldSanitizeFunctionWithNoParensButHasCommas(): Void {
+    Assert.areEqual(LangParser.sanitizeExpr('foo "bar", 1, cat, :three'), 'foo("bar",1,cat,:three)');
+  }
+
+  public static function shouldSanitizeFunctionWithNoParensAndNoCommas(): Void {
+    Assert.areEqual(LangParser.sanitizeExpr('foo    "bar"   1   cat()     :three'), 'foo("bar",1,cat(),:three)');
+  }
+
+  public static function shouldIgnoreAllCharactersAfterHash(): Void {
+    Assert.areEqual(LangParser.sanitizeExpr('#world'), '');
+    Assert.areEqual(LangParser.sanitizeExpr('hello#world'), 'hello');
+  }
+
+  public static function shouldSanitizeWithArrayArgs(): Void {
+    Assert.areEqual(LangParser.sanitizeExpr('m(3, a({1, 2}))'), 'm(3,a({1,2}))');
+  }
+
+  public static function shouldSanitizeMultipleExpressions(): Void {
+    Assert.areEqual(LangParser.sanitizeExpr('    foo("bar", 1, 2, :three)
+    :hash
+    soo("baz", 3, 4, :five)
+    "hello world"
+    324
+    {}
+    a +  b
+    coo("cat", 5, 6, :seven)
+    %{}'),
+'foo("bar",1,2,:three)
+:hash
+soo("baz",3,4,:five)
+"hello world"
+324
+{}
+a+b
+coo("cat",5,6,:seven)
+%{}');
   }
 
   public static function shouldConvertStringToAst(): Void {
@@ -268,29 +308,29 @@ class LangParserTest {
     ['at_spec'.atom(), [], [['mod'.atom(), [], null], [['Int'.atom(), [], null], ['Int'.atom(), [], null]], ['Float'.atom(), [], null]]]);
   }
 
-//  public static function shouldParseMultipleExpressions(): Void {
-//    var expectation: Dynamic<Array<Dynamic>> = {__block__: [
-//      ['foo'.atom(), [], ['bar', 1, 2, 'three'.atom()]],
-//      'hash'.atom(),
-//      ['soo'.atom(), [], ['baz', 3, 4, 'five'.atom()]],
-//      "hello world",
-//      324,
-//      [],
-//      ['coo'.atom(), [], ['cat', 5, 6, 'seven'.atom()]],
-//      {}
-//    ]};
-//
-//    Assert.areEqual(LangParser.toAST('
-//    foo("bar", 1, 2, :three)
-//    :hash
-//    soo("baz", 3, 4, :five)
-//    "hello world"
-//    324
-//    {}
-//    coo("cat", 5, 6, :seven)
-//    %{}
-//    '), expectation);
-//  }
+  public static function shouldParseMultipleExpressions(): Void {
+    var expectation: Dynamic<Array<Dynamic>> = {__block__: [
+      ['foo'.atom(), [], ['bar', 1, 2, 'three'.atom()]],
+      'hash'.atom(),
+      ['soo'.atom(), [], ['baz', 3, 4, 'five'.atom()]],
+      "hello world",
+      324,
+      [],
+      ['coo'.atom(), [], ['cat', 5, 6, 'seven'.atom()]],
+      {}
+    ]};
+
+    Assert.areEqual(LangParser.toAST('
+    foo("bar", 1, 2, :three)
+    :hash
+    soo("baz", 3, 4, :five)
+    "hello world"
+    324
+    {}
+    coo("cat", 5, 6, :seven)
+    %{}
+    '), expectation);
+  }
 
   public static function shouldIgnoreCommentedLines(): Void {
     Assert.areEqual(LangParser.toAST('# this is a comment'), []);
@@ -400,16 +440,16 @@ class LangParserTest {
     Assert.areEqual(LangParser.toAST(string), ['defmodule'.atom(), [], [['Foo'.atom(), [], null], {__block__: [doBlock]}]]);
   }
 
-//  public static function shouldHandleDoBlocksWithParens(): Void {
-//    var string: String = "
-//      if(a > 29) do
-//        inject Ellie, :bear
-//      end
-//    ";
-//
-//    var doBlock: Array<Dynamic> = ['inject'.atom(),[],[['Ellie'.atom(),[],null],'bear'.atom()]];
-//    Assert.areEqual(LangParser.toAST(string), ['if'.atom(),[],[['>'.atom(),[],[['a'.atom(),[],null],29]], {__block__: [doBlock]}]]);
-//  }
+  public static function shouldHandleDoBlocksWithParens(): Void {
+    var string: String = "
+      if(a > 29) do
+        inject Ellie, :bear
+      end
+    ";
+
+    var doBlock: Array<Dynamic> = ['inject'.atom(),[],[['Ellie'.atom(),[],null],'bear'.atom()]];
+    Assert.areEqual(LangParser.toAST(string), ['if'.atom(),[],[['>'.atom(),[],[['a'.atom(),[],null],29]], {__block__: [doBlock]}]]);
+  }
 
   public static function shouldHandleNestedDoBlocks(): Void {
     var string: String = "
@@ -541,7 +581,7 @@ using lang.AtomSupport;
 class Foo {
   public static function bar() {
 
-    
+
     return "nil".atom();
   }
 }'
@@ -561,7 +601,7 @@ using lang.AtomSupport;
 class Foo {
   public static function bar() {
 
-    
+
     return Anna.add(1, 2);
   }
 }'
@@ -582,7 +622,7 @@ using lang.AtomSupport;
 class Foo {
   public static function bar(): Dynamic {
 
-    
+
     return "success".atom();
   }
 }'

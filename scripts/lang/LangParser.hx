@@ -294,154 +294,176 @@ ${patternAssignment}
   }
 
   public static function sanitizeExpr(string: String): String {
-    var retVal: String = '';
+    var currentStrVal: String = '';
     var state: ParsingState = ParsingState.NONE;
     var prevState: ParsingState = ParsingState.NONE;
     var parenCount: Int = 0;
     var braceCount: Int = 0;
     var i: Int = 0;
     var operatorString: String = '';
+    var functionArgsString: String = '';
 
     while(i < string.length) {
       var char: String = string.charAt(i);
-      switch([state, NUMBER.match(char), char, SYMBOL.match(char)]) {
-        case [ParsingState.NONE, true, _, _]:
-          retVal += char;
+      switch([state, NUMBER.match(char), char]) {
+        case [ParsingState.NONE, true, _]:
+          currentStrVal += char;
           state = ParsingState.NUMBER;
-        case [ParsingState.NONE, _, DOUBLE_QUOTE, _]:
-          retVal += char;
+        case [ParsingState.NONE, _, DOUBLE_QUOTE]:
+          currentStrVal += char;
           state = ParsingState.STRING;
-        case [ParsingState.STRING, _, DOUBLE_QUOTE, _]:
-          retVal += char;
+        case [ParsingState.NONE, _, NEWLINE]:
+          currentStrVal += char;
+        case [ParsingState.NONE, _, HASH]:
+          state = ParsingState.COMMENT;
+        case [ParsingState.COMMENT, _, NEWLINE]:
+          state = ParsingState.NONE;
+        case [ParsingState.STRING, _, DOUBLE_QUOTE]:
+          if(prevState == ParsingState.FUNCTION_ARGS) {
+            functionArgsString += char;
+          } else {
+            currentStrVal += char;
+          }
           state = prevState;
           prevState = ParsingState.NONE;
-        case [ParsingState.STRING, _, BACK_SLASH, _]:
+        case [ParsingState.STRING, _, BACK_SLASH]:
           state = ParsingState.ESCAPE;
-          retVal += char;
-        case [ParsingState.ESCAPE, _, _, _]:
-          retVal += char;
+          if(prevState == ParsingState.FUNCTION_ARGS) {
+            functionArgsString += char;
+          } else {
+            currentStrVal += char;
+          }
+        case [ParsingState.ESCAPE, _, _]:
+          if(prevState == ParsingState.FUNCTION_ARGS) {
+            functionArgsString += char;
+          } else {
+            currentStrVal += char;
+          }
           state = ParsingState.STRING;
-        case [ParsingState.STRING, _, _, _]:
-          retVal += char;
-        case [ParsingState.NONE, _, COLON, _]:
-          retVal += char;
-        case [ParsingState.NONE, _, PERCENT, _]:
-          retVal += char;
+        case [ParsingState.STRING, _, _]:
+          if(prevState == ParsingState.FUNCTION_ARGS) {
+            functionArgsString += char;
+          } else {
+            currentStrVal += char;
+          }
+        case [ParsingState.NONE, _, COLON]:
+          currentStrVal += char;
+        case [ParsingState.NONE, _, PERCENT]:
+          currentStrVal += char;
           state = ParsingState.HASH;
-        case [ParsingState.NONE, _, COMMA, _]:
-          retVal += char;
-          return retVal;
-        case [ParsingState.NONE | ParsingState.ARRAY, _, OPEN_BRACE, _]:
-          retVal += char;
+        case [ParsingState.NONE, _, COMMA]:
+          currentStrVal += char;
+          return currentStrVal;
+        case [ParsingState.NONE | ParsingState.ARRAY, _, OPEN_BRACE]:
+          currentStrVal += char;
           braceCount++;
           state = ParsingState.ARRAY;
-        case [ParsingState.ARRAY, _, CLOSE_BRACE, _]:
+        case [ParsingState.ARRAY, _, CLOSE_BRACE]:
           braceCount--;
-          retVal += char;
+          currentStrVal += char;
           if(braceCount == 0) {
             state = ParsingState.NONE;
           }
-        case [ParsingState.ARRAY, _, SPACE, _]:
-        case [ParsingState.ARRAY, _, _, _]:
-          retVal += char;
-        case [ParsingState.HASH, _, OPEN_BRACE, _]:
-          retVal += char;
+        case [ParsingState.ARRAY, _, SPACE]:
+        case [ParsingState.ARRAY, _, _]:
+          currentStrVal += char;
+        case [ParsingState.HASH, _, OPEN_BRACE]:
+          currentStrVal += char;
           braceCount++;
-        case [ParsingState.HASH, _, CLOSE_BRACE, _]:
-          retVal += char;
+        case [ParsingState.HASH, _, CLOSE_BRACE]:
+          currentStrVal += char;
           braceCount--;
           if(braceCount == 0) {
             state = ParsingState.NONE;
           }
-        case [ParsingState.HASH, _, _, _]:
-          retVal += char;
-        case [ParsingState.NUMBER, _, SPACE | NEWLINE, _]:
+        case [ParsingState.HASH, _, _]:
+          currentStrVal += char;
+        case [ParsingState.NUMBER, _, SPACE]:
           state = ParsingState.NONE;
-        case [ParsingState.NUMBER, _, PERIOD, _]:
-          retVal += char;
-        case [ParsingState.NUMBER, _, COMMA, _]:
-          retVal += char;
-          return retVal;
-        case [ParsingState.NUMBER, _, _, true]:
-          operatorString += char;
+        case [ParsingState.NUMBER, _, NEWLINE]:
+          currentStrVal += char;
           state = ParsingState.NONE;
-        case [ParsingState.NUMBER, _, _, _]:
-          retVal += char;
-        case [ParsingState.FUNCTION, _, OPEN_PAREN, _]:
-          retVal += char;
+        case [ParsingState.NUMBER, _, PERIOD]:
+          currentStrVal += char;
+        case [ParsingState.NUMBER, _, COMMA]:
+          currentStrVal += char;
+          return currentStrVal;
+        case [ParsingState.NUMBER, _, _]:
+          if(SYMBOL.match(char)) {
+            operatorString += char;
+            state = ParsingState.NONE;
+          } else {
+            currentStrVal += char;
+          }
+        case [ParsingState.FUNCTION, _, OPEN_PAREN]:
+          functionArgsString = '';
           state = ParsingState.FUNCTION_ARGS;
           parenCount++;
-          while(i < string.length - 1) {
-            var arg: String = sanitizeExpr(string.substr(i + 1));
-            retVal += arg;
-            i += arg.length;
-            while(string.charAt(i + 1) == COMMA || string.charAt(i + 1) == SPACE) {
-              i++;
-            }
-          }
-        case [ParsingState.FUNCTION, _, SPACE, _]:
+        case [ParsingState.FUNCTION, _, NEWLINE]:
+          currentStrVal += char;
+          state = ParsingState.NONE;
+        case [ParsingState.FUNCTION, _, SPACE]:
           state = ParsingState.EXPRESSION_UNKNOWN;
-        case [ParsingState.FUNCTION, _, COMMA, _]:
-          retVal += char;
-          return retVal;
-        case [ParsingState.FUNCTION, _, _, _]:
+        case [ParsingState.FUNCTION, _, COMMA]:
+          currentStrVal += char;
+          return currentStrVal;
+        case [ParsingState.FUNCTION, _, HASH]:
+          state = ParsingState.COMMENT;
+        case [ParsingState.FUNCTION, _, _]:
           if(leftRightOperators.any(char)) {
             operatorString += char;
             state = ParsingState.LEFT_RIGHT_FUNCTION;
           } else {
-            retVal += char;
+            currentStrVal += char;
           }
-        case [ParsingState.EXPRESSION_UNKNOWN, _, OPEN_PAREN, _]:
+        case [ParsingState.EXPRESSION_UNKNOWN, _, OPEN_PAREN]:
           state = ParsingState.FUNCTION;
-        case [ParsingState.EXPRESSION_UNKNOWN, _, _, _]:
+        case [ParsingState.EXPRESSION_UNKNOWN, _, _]:
           if(leftRightOperators.any(char)) {
             operatorString += char;
             state = ParsingState.LEFT_RIGHT_FUNCTION;
           } else if(!WHITESPACE.match(char)) {
-            retVal += '${OPEN_PAREN}${char}';
+            i--;
             parenCount++;
             state = ParsingState.FUNCTION_ARGS;
           }
-        case [ParsingState.FUNCTION_ARGS, _, SPACE | NEWLINE, _]:
-        case [ParsingState.FUNCTION_ARGS, _, DOUBLE_QUOTE, _]:
-          retVal += char;
+        case [ParsingState.FUNCTION_ARGS, _, DOUBLE_QUOTE]:
+          functionArgsString += char;
           prevState = state;
           state = ParsingState.STRING;
-        case [ParsingState.FUNCTION_ARGS, _, OPEN_PAREN, _]:
+        case [ParsingState.FUNCTION_ARGS, _, OPEN_PAREN]:
           parenCount++;
-          retVal += OPEN_PAREN;
-        case [ParsingState.FUNCTION_ARGS, _, CLOSE_PAREN, _]:
+          functionArgsString += OPEN_PAREN;
+        case [ParsingState.FUNCTION_ARGS, _, CLOSE_PAREN]:
           parenCount--;
-          retVal += CLOSE_PAREN;
           if(parenCount == 0) {
+            currentStrVal += parseStringArgs(functionArgsString);
+            functionArgsString = '';
             state = ParsingState.NONE;
-          }
-        case [ParsingState.FUNCTION_ARGS, _, _, _]:
-          if(leftRightOperators.any(char)) {
-            operatorString += char;
-            state = ParsingState.LEFT_RIGHT_FUNCTION;
           } else {
-            retVal += char;
+            functionArgsString += char;
           }
-        case [ParsingState.LEFT_RIGHT_FUNCTION, _, _, _]:
+        case [ParsingState.FUNCTION_ARGS, _, _]:
+          functionArgsString += char;
+        case [ParsingState.LEFT_RIGHT_FUNCTION, _, _]:
           if(!leftRightOperators.any(char)) {
             state = ParsingState.FUNCTION_ARGS;
             char = (WHITESPACE.match(char)) ? '' : char;
-            retVal = '${operatorString}${OPEN_PAREN}${retVal}${COMMA}';
+            currentStrVal = '${operatorString}${OPEN_PAREN}${currentStrVal}${COMMA}';
             var arg = sanitizeExpr(string.substr(i));
-            retVal = retVal + arg;
+            currentStrVal = currentStrVal + arg;
             i = string.length;
             parenCount++;
           } else {
             operatorString += char;
           }
-        case [ParsingState.NONE, _, SPACE | NEWLINE, _]:
-        case [ParsingState.NONE, _, _, _]:
+        case [ParsingState.NONE, _, SPACE | NEWLINE]:
+        case [ParsingState.NONE, _, _]:
           if(leftRightOperators.any(char)) {
             operatorString += char;
             state = ParsingState.LEFT_RIGHT_FUNCTION;
           } else {
-            retVal += char;
+            currentStrVal += char;
             state = ParsingState.FUNCTION;
           }
         case _:
@@ -449,10 +471,97 @@ ${patternAssignment}
       i++;
     }
     if(state == ParsingState.FUNCTION_ARGS && parenCount == 1) {
-      retVal += CLOSE_PAREN;
+      if(functionArgsString.trim().length > 0) {
+        currentStrVal += parseStringArgs(functionArgsString);
+      } else {
+        currentStrVal += CLOSE_PAREN;
+      }
     }
 
-    return retVal.trim();
+    return currentStrVal.trim();
+  }
+
+  public static function parseStringArgs(functionArgsString: String): String {
+    var args: Array<String> = [];
+    var arg: String = '';
+    var isString: Bool = false;
+    var openCount: Int = 0;
+    var delimiter: String = null;
+    var firstArg: Bool = true;
+    var couldBeSpaceDelimited: Bool = false;
+
+    var storeArg: String->Void = function(argChar: String):Void {
+      if(openCount == 0) {
+        var sanitizedArg: String = sanitizeExpr(arg.trim());
+        if(sanitizedArg.length > 0) {
+          args.push(sanitizedArg);
+        }
+        arg = '';
+      } else {
+        arg += argChar;
+      }
+    }
+
+    for(i in 0...functionArgsString.length) {
+      var argChar: String = functionArgsString.charAt(i);
+      switch([argChar, isString, delimiter, firstArg]) {
+        case [DOUBLE_QUOTE, false, _, _]:
+          isString = true;
+          arg += argChar;
+        case [DOUBLE_QUOTE, true, _, _]:
+          isString = false;
+          arg += argChar;
+        case [OPEN_PAREN | OPEN_BRACE | OPEN_BRACKET, false, _, _]:
+          openCount++;
+          arg += argChar;
+        case [CLOSE_PAREN | CLOSE_BRACE | CLOSE_BRACKET, false, _, _]:
+          openCount--;
+          arg += argChar;
+        case [_, true, _, _]:
+          arg += argChar;
+        case [_, false, null, true]:
+          if(arg.trim().length > 0 && openCount == 0) {
+            if(argChar == COMMA) {
+              firstArg = false;
+              delimiter = COMMA;
+              storeArg('');
+              continue;
+            }
+            if(!WHITESPACE.match(argChar)) {
+              if(couldBeSpaceDelimited && (CHAR.match(argChar) || NUMBER.match(argChar))) {
+                firstArg = false;
+                delimiter = SPACE;
+                storeArg(argChar);
+                arg = argChar;
+                continue;
+              } else {
+                arg += argChar;
+              }
+            } else if(arg.length > 0) {
+              couldBeSpaceDelimited = true;
+              continue;
+            }
+            if(SYMBOL.match(argChar)) {
+              firstArg = false;
+              delimiter = COMMA;
+            }
+          } else {
+            arg += argChar;
+          }
+        case [SPACE, false, SPACE, false]:
+          storeArg(argChar);
+        case [COMMA, false, COMMA, false]:
+          storeArg(argChar);
+        case _:
+          arg += argChar;
+      }
+    }
+    if(arg.length > 0) {
+      var sanitizedArg: String = sanitizeExpr(arg);
+      args.push(sanitizedArg);
+      arg = '';
+    }
+    return '${OPEN_PAREN}${args.join(',')}${CLOSE_PAREN}';
   }
 
   private static inline function parseExpr(string: String): Array<Dynamic> {
