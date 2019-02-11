@@ -92,6 +92,10 @@ class LangParserTest {
     Assert.areEqual(LangParser.sanitizeExpr('m(3, a({1, 2}))'), 'm(3,a({1,2}))');
   }
 
+  public static function shouldSantizeLeftRightWithinFunction(): Void {
+    Assert.areEqual(LangParser.sanitizeExpr('if(abc > def)'), 'if(>(abc,def))');
+  }
+
   public static function shouldSanitizeMultipleExpressions(): Void {
     Assert.areEqual(LangParser.sanitizeExpr('
     foo("bar", 1, 2, :three)
@@ -122,7 +126,7 @@ coo("cat",5,6,:seven)
 
   public static function shouldSanitizeExpressionsWithDo(): Void {
     var expr: String = '
-defmodule Foo do
+defmodule Foo      do          
   @spec(order, {Int, Int}, Int)
   def order(a, b) do
     rem(a, b)
@@ -140,6 +144,20 @@ end          ';
     cook(a, b + 212)
     a + b
   end))');
+  }
+
+  public static function shouldSanitizeFunctionWithDo(): Void {
+    var expr: String = 'if(abc > def   )     do        
+  foo(1 + 3)
+  face()
+end';
+    Assert.areEqual(LangParser.sanitizeExpr(expr), 'if(>(abc,def),do(foo(+(1,3)),face())');
+
+    expr = 'if(ellie > 5) do
+      inject Ellie, :bear
+    end';
+
+    Assert.areEqual(LangParser.sanitizeExpr(expr), 'if(>(ellie,5),do(inject Ellie, :bear))');
   }
 
   public static function shouldConvertStringToAst(): Void {
@@ -612,7 +630,7 @@ using lang.AtomSupport;
 class Foo {
   public static function bar() {
 
-
+    
     return "nil".atom();
   }
 }'
@@ -632,7 +650,7 @@ using lang.AtomSupport;
 class Foo {
   public static function bar() {
 
-
+    
     return Anna.add(1, 2);
   }
 }'
@@ -651,9 +669,9 @@ class Foo {
 using lang.AtomSupport;
 @:build(macros.ScriptMacros.script())
 class Foo {
-  public static function bar(): Dynamic {
+  public static function bar() {
 
-
+    
     return "success".atom();
   }
 }'

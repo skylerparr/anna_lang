@@ -412,7 +412,16 @@ ${patternAssignment}
           parenCount++;
         case [ParsingState.FUNCTION, _, NEWLINE]:
           state = ParsingState.NONE;
-          expressions.push(currentStrVal.trim());
+          var trimmed: String = currentStrVal.trim();
+          if(trimmed == DO) {
+            var doExp: String = expressions.pop();
+            var restStr: String = string.substr(i + 1).trim();
+            restStr = restStr.substr(0, restStr.length - END.length).trim();
+            doExp = doExp.substr(0, doExp.length - 1) + COMMA + DO + OPEN_PAREN + restStr + CLOSE_PAREN + CLOSE_PAREN;
+            return doExp;
+          } else {
+            expressions.push(trimmed);
+          }
           currentStrVal = '';
         case [ParsingState.FUNCTION, _, SPACE]:
           state = ParsingState.EXPRESSION_UNKNOWN;
@@ -508,6 +517,11 @@ ${patternAssignment}
     }
     if(currentStrVal.length > 0) {
       expressions.push(currentStrVal.trim());
+    }
+    if(expressions[1].startsWith('do(') && expressions[expressions.length - 1].endsWith('end)')) {
+      var left: String = expressions[0].substr(0, expressions[0].length - 1) + COMMA;
+      var right: String = expressions[1].substr(0, expressions[1].length - 5) + CLOSE_PAREN;
+      expressions = [left + right];
     }
 
     return expressions.join('\n');

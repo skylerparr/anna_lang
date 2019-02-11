@@ -12,7 +12,7 @@ class Assert {
   private static function areSameDataTypesEqual(args: Array<Dynamic>): Bool {
     var a: Dynamic = args[0];
     var b: Dynamic = args[1];
-    return Type.typeof(a) == Type.typeof(b);
+    return Type.typeof(a) == Type.typeof(b) && a == b;
   }
 
   public static function fail(errString: String): Void {
