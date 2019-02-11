@@ -54,7 +54,9 @@ class LangParserTest {
   public static function shouldHandleMultipleLeftRightFunctionsOfTheSameOperator(): Void {
     Assert.areEqual(LangParser.sanitizeExpr('foo.bar.cat'), '.(foo,.(bar,cat))');
     Assert.areEqual(LangParser.sanitizeExpr('foo.bar.cat.baz.boo'), '.(foo,.(bar,.(cat,.(baz,boo))))');
-    Assert.areEqual(LangParser.sanitizeExpr('foo + bar + cat(1, abc, :three) + baz + boo'), '+(foo,+(bar,+(cat(1,abc,:three),+(baz,boo))))');
+    Assert.areEqual(LangParser.sanitizeExpr('1+2'), '+(1,2)');
+    Assert.areEqual(LangParser.sanitizeExpr('baz(1 + 2)'), 'baz(+(1,2))');
+    Assert.areEqual(LangParser.sanitizeExpr('foo + bar + cat(1, abc, :three) + baz(2 + 1) + boo'), '+(foo,+(bar,+(cat(1,abc,:three),+(baz(+(2,1)),boo))))');
   }
 
   public static function shouldHandleOperatorsThatAreMoreThanOneCharacter(): Void {
@@ -91,13 +93,17 @@ class LangParserTest {
   }
 
   public static function shouldSanitizeMultipleExpressions(): Void {
-    Assert.areEqual(LangParser.sanitizeExpr('    foo("bar", 1, 2, :three)
+    Assert.areEqual(LangParser.sanitizeExpr('
+    foo("bar", 1, 2, :three)
     :hash
     soo("baz", 3, 4, :five)
     "hello world"
     324
     {}
     a +  b
+    rem(a, b)
+    cook(a, b + 212)
+    a + b
     coo("cat", 5, 6, :seven)
     %{}'),
 'foo("bar",1,2,:three)
@@ -106,7 +112,10 @@ soo("baz",3,4,:five)
 "hello world"
 324
 {}
-a+b
++(a,b)
+rem(a,b)
+cook(a,+(b,212))
++(a,b)
 coo("cat",5,6,:seven)
 %{}');
   }

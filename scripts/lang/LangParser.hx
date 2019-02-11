@@ -295,6 +295,7 @@ ${patternAssignment}
 
   public static function sanitizeExpr(string: String): String {
     var currentStrVal: String = '';
+    var expressions: Array<String> = [];
     var state: ParsingState = ParsingState.NONE;
     var prevState: ParsingState = ParsingState.NONE;
     var parenCount: Int = 0;
@@ -323,6 +324,8 @@ ${patternAssignment}
             functionArgsString += char;
           } else {
             currentStrVal += char;
+            expressions.push(currentStrVal.trim());
+            currentStrVal = '';
           }
           state = prevState;
           prevState = ParsingState.NONE;
@@ -363,6 +366,8 @@ ${patternAssignment}
           currentStrVal += char;
           if(braceCount == 0) {
             state = ParsingState.NONE;
+            expressions.push(currentStrVal);
+            currentStrVal = '';
           }
         case [ParsingState.ARRAY, _, SPACE]:
         case [ParsingState.ARRAY, _, _]:
@@ -381,7 +386,8 @@ ${patternAssignment}
         case [ParsingState.NUMBER, _, SPACE]:
           state = ParsingState.NONE;
         case [ParsingState.NUMBER, _, NEWLINE]:
-          currentStrVal += char;
+          expressions.push(currentStrVal.trim());
+          currentStrVal = '';
           state = ParsingState.NONE;
         case [ParsingState.NUMBER, _, PERIOD]:
           currentStrVal += char;
@@ -390,8 +396,13 @@ ${patternAssignment}
           return currentStrVal;
         case [ParsingState.NUMBER, _, _]:
           if(SYMBOL.match(char)) {
-            operatorString += char;
-            state = ParsingState.NONE;
+            if(leftRightOperators.any(char)) {
+              operatorString += char;
+              state = ParsingState.LEFT_RIGHT_FUNCTION;
+            } else {
+              operatorString += char;
+              state = ParsingState.NONE;
+            }
           } else {
             currentStrVal += char;
           }
@@ -400,8 +411,9 @@ ${patternAssignment}
           state = ParsingState.FUNCTION_ARGS;
           parenCount++;
         case [ParsingState.FUNCTION, _, NEWLINE]:
-          currentStrVal += char;
           state = ParsingState.NONE;
+          expressions.push(currentStrVal.trim());
+          currentStrVal = '';
         case [ParsingState.FUNCTION, _, SPACE]:
           state = ParsingState.EXPRESSION_UNKNOWN;
         case [ParsingState.FUNCTION, _, COMMA]:
@@ -438,7 +450,9 @@ ${patternAssignment}
           parenCount--;
           if(parenCount == 0) {
             currentStrVal += parseStringArgs(functionArgsString);
+            expressions.push(currentStrVal.trim());
             functionArgsString = '';
+            currentStrVal = '';
             state = ParsingState.NONE;
           } else {
             functionArgsString += char;
@@ -447,13 +461,28 @@ ${patternAssignment}
           functionArgsString += char;
         case [ParsingState.LEFT_RIGHT_FUNCTION, _, _]:
           if(!leftRightOperators.any(char)) {
-            state = ParsingState.FUNCTION_ARGS;
-            char = (WHITESPACE.match(char)) ? '' : char;
-            currentStrVal = '${operatorString}${OPEN_PAREN}${currentStrVal}${COMMA}';
-            var arg = sanitizeExpr(string.substr(i));
-            currentStrVal = currentStrVal + arg;
-            i = string.length;
-            parenCount++;
+            var rightSide: String = '';
+            do {
+              var rightSideChar = string.charAt(i++);
+              if(rightSideChar == NEWLINE) {
+                if(rightSide.trim().length == 0) {
+                  continue;
+                }
+                break;
+              }
+              rightSide += rightSideChar;
+            } while(i < string.length);
+            var arg = sanitizeExpr(rightSide);
+            if(currentStrVal.trim().length == 0) {
+              currentStrVal = expressions.pop();
+            }
+            currentStrVal = '${operatorString}${OPEN_PAREN}${currentStrVal.trim()}${COMMA}';
+            currentStrVal = currentStrVal + arg + CLOSE_PAREN;
+            expressions.push(currentStrVal);
+            state = ParsingState.NONE;
+            currentStrVal = '';
+            operatorString = '';
+            functionArgsString = '';
           } else {
             operatorString += char;
           }
@@ -477,8 +506,11 @@ ${patternAssignment}
         currentStrVal += CLOSE_PAREN;
       }
     }
+    if(currentStrVal.length > 0) {
+      expressions.push(currentStrVal.trim());
+    }
 
-    return currentStrVal.trim();
+    return expressions.join('\n');
   }
 
   public static function parseStringArgs(functionArgsString: String): String {
