@@ -276,7 +276,7 @@ ${patternAssignment}
   private static inline var END: String = "end";
 
   private static var NUMBER: EReg = ~/[0-9]|\./;
-  private static var CHAR: EReg = ~/[a-z][A-Z]/;
+  private static var CHAR: EReg = ~/[a-zA-Z]/;
   private static var DOT: EReg = ~/\./;
   private static var WHITESPACE: EReg = ~/\s/;
   private static var SYMBOL: EReg = ~/\W/;
@@ -581,6 +581,14 @@ ${patternAssignment}
             arg += argChar;
           }
         case [SPACE, false, SPACE, false]:
+          var trimmedStr: String = functionArgsString.trim();
+          if(arg.trim() == DO && trimmedStr.endsWith(END)) {
+            var doBlock: String = trimmedStr.substr(i);
+            doBlock = doBlock.substr(DO.length, doBlock.length - END.length - DO.length);
+            doBlock = doBlock.trim();
+            args.push('do(${doBlock})');
+            return '${OPEN_PAREN}${args.join(',')}${CLOSE_PAREN}';
+          }
           storeArg(argChar);
         case [COMMA, false, COMMA, false]:
           storeArg(argChar);
@@ -589,9 +597,7 @@ ${patternAssignment}
       }
     }
     if(arg.length > 0) {
-      var sanitizedArg: String = sanitizeExpr(arg);
-      args.push(sanitizedArg);
-      arg = '';
+      storeArg('');
     }
     return '${OPEN_PAREN}${args.join(',')}${CLOSE_PAREN}';
   }
@@ -649,9 +655,15 @@ ${patternAssignment}
         case [ParsingState.NONE, _, PERCENT]:
           state = ParsingState.HASH;
         case [ParsingState.FUNCTION, _, OPEN_PAREN]:
-          state = ParsingState.FUNCTION;
-          openCount++;
-          currentStrVal += char;
+          if(currentStrVal.substr(currentStrVal.length - 2) == DO) {
+            leftStrVal = currentStrVal.substr(0, currentStrVal.length - 3) + CLOSE_PAREN;
+            currentStrVal = '';
+            state = ParsingState.DO;
+          } else {
+            state = ParsingState.FUNCTION;
+            openCount++;
+            currentStrVal += char;
+          }
         case [ParsingState.HASH, _, OPEN_BRACE]:
           if(openCount > 0) {
             currentStrVal += char;
@@ -717,82 +729,10 @@ ${patternAssignment}
           leftStrVal = currentStrVal;
           currentVal = null;
           currentStrVal = "";
-//        case [ParsingState.LEFT_RIGHT_FUNCTION, _, OPEN_PAREN | OPEN_BRACE | OPEN_BRACKET]:
-//          openCount++;
-//          currentStrVal += char;
-//        case [ParsingState.LEFT_RIGHT_FUNCTION, _, CLOSE_PAREN | CLOSE_BRACE | CLOSE_BRACKET]:
-//          openCount--;
-//          currentStrVal += char;
-//        case [ParsingState.LEFT_RIGHT_FUNCTION, _, NEWLINE]:
-//          if(openCount == 1) {
-//            currentStrVal += CLOSE_PAREN;
-//            state = ParsingState.NONE;
-//            currentVal = [null, [], null];
-//            parseFunc(currentVal, currentStrVal);
-//            retVal.push(currentVal);
-//            leftStrVal = currentStrVal;
-//            currentVal = null;
-//            currentStrVal = "";
-//          } else {
-//            currentStrVal += char;
-//          }
-//        case [ParsingState.LEFT_RIGHT_FUNCTION, _, _]:
-//          if(openCount == 0 && leftRightOperators.any(char)) {
-//            operatorStrVal += char;
-//          } else {
-//            if(openCount == 0) {
-//              openCount++;
-//              currentStrVal = '${operatorStrVal}(${leftStrVal}, ${char}';
-//            } else {
-//              currentStrVal += char;
-//            }
-//          }
         case [ParsingState.FUNCTION, _, _]:
-//          if(openCount == 0 && leftRightOperators.any(char)) {
-//            operatorStrVal += char;
-//            state = ParsingState.LEFT_RIGHT_FUNCTION;
-//            leftStrVal = currentStrVal;
-//            currentStrVal = '';
-//          } else {
-            currentStrVal += char;
-//          }
-
-          if(currentStrVal.substr(currentStrVal.length - 2) == DO) {
-            currentStrVal = currentStrVal.substr(0, currentStrVal.length - 2);
-
-            currentVal = [null, [], null];
-            if(currentStrVal != '') {
-              parseFunc(currentVal, currentStrVal);
-              retVal.push(currentVal);
-              leftStrVal = currentStrVal;
-              currentVal = null;
-            }
-
-            currentStrVal = "";
-            state = ParsingState.DO;
-            openCount++;
-          }
+          currentStrVal += char;
         case [ParsingState.DO, _, _]:
           currentStrVal += char;
-          if(currentStrVal.substr(currentStrVal.length - 2) == DO) {
-            openCount++;
-          } else if(currentStrVal.substr(currentStrVal.length - 3) == END) {
-            openCount--;
-            if(openCount == 0) {
-              currentStrVal = currentStrVal.substr(0, currentStrVal.length - 3);
-              var val: Array<Dynamic> = parseExpr(currentStrVal);
-              if(retVal.length > 0) {
-                var lastArg: Array<Dynamic> = retVal[retVal.length - 1][2];
-                lastArg.push({__block__: val});
-              } else {
-                retVal.push(val);
-              }
-
-              leftStrVal = currentStrVal;
-              currentStrVal = '';
-              state = ParsingState.NONE;
-            }
-          }
         case [ParsingState.ATOM, _, _]:
           if(WHITESPACE.match(char)) {
             if(currentStrVal == '') {
@@ -833,12 +773,6 @@ ${patternAssignment}
             state = ParsingState.FUNCTION;
             currentStrVal += char;
           }
-//          if(leftRightOperators.any(char)) {
-//            retVal.pop();
-//            state = ParsingState.LEFT_RIGHT_FUNCTION;
-//            openCount++;
-//            currentStrVal = '${char}(${leftStrVal},';
-//          }
       }
     }
 
@@ -872,7 +806,13 @@ ${patternAssignment}
           throw new ParsingException();
         }
       case ParsingState.DO:
-        throw new ParsingException();
+        retVal = parseExpr(leftStrVal);
+        var bodyStr: String = currentStrVal.substr(0, currentStrVal.length - 2);
+        bodyStr = sanitizeExpr(bodyStr);
+        var body: Array<Dynamic> = parseExpr(bodyStr);
+        // AST: [[{ __type__ => ATOM, value => defmodule },[],[[{ __type__ => ATOM, value => Foo },[],null]]]]
+        retVal[0][2].push({ __block__: body});
+
       case ParsingState.COMMENT:
         //ignore
       case ParsingState.FUNCTION:

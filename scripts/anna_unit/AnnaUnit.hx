@@ -25,6 +25,9 @@ class AnnaUnit {
         continue;
       }
       var fun = Reflect.field(clazz, field);
+      if(fun == null) {
+        return;
+      }
       try {
         Reflect.callMethod(clazz, fun, []);
         successCounter++;
