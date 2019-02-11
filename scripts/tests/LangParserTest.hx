@@ -2,6 +2,8 @@ package tests;
 
 import anna_unit.Assert;
 import lang.LangParser;
+import anna_unit.Assert;
+import lang.LangParser;
 import lang.ParsingException;
 using lang.AtomSupport;
 using StringTools;
@@ -514,6 +516,22 @@ end';
     var doDefBody: Array<Dynamic> = ['if'.atom(),[],[['>'.atom(),[],[['ellie'.atom(),[],null],5]], {__block__: [doIfBody]}]];
     var doModuleBody: Array<Dynamic> = ['def'.atom(),[],[['bar'.atom(),[], []], {__block__: [doDefBody]}]];
     Assert.areEqual(LangParser.toAST(string), ['defmodule'.atom(), [], [['Foo'.atom(), [], null], {__block__: [doModuleBody]}]]);
+  }
+
+  public static function shouldHandleNestedBlocksWhenFunctionsHaveArgs(): Void {
+    var expr: String = '
+defmodule Foo do
+  @spec(order, {String, String}, Dynamic)
+  def order(ellie, bear) do
+    inject Ellie, :bear
+  end
+end';
+
+//    var sanitized: String = LangParser.sanitizeExpr(expr);
+//    Assert.areEqual(sanitized, 'def(order(ellie,bear),do(inject Ellie, :bear))');
+//    var defBody: Array<Dynamic> = ['inject'.atom(),[],[['Ellie'.atom(), [], null], 'bear'.atom()]];
+//    Assert.areEqual(LangParser.toAST(expr), ['def'.atom(),[],[['order'.atom(), [], [['ellie'.atom(),[],null],['bear'.atom(),[],null]]],{__block__: [defBody] }]]);
+//    Assert.areEqual(LangParser.toHaxe(LangParser.toAST(expr)), "");
   }
 
   public static function shouldConvertStringASTToHaxe(): Void {

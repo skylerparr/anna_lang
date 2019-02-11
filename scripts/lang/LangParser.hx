@@ -826,7 +826,6 @@ ${patternAssignment}
         var body: Array<Dynamic> = parseExpr(bodyStr);
         // AST: [[{ __type__ => ATOM, value => defmodule },[],[[{ __type__ => ATOM, value => Foo },[],null]]]]
         retVal[0][2].push({ __block__: body});
-
       case ParsingState.COMMENT:
         //ignore
       case ParsingState.FUNCTION:
