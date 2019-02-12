@@ -1,5 +1,6 @@
 package compiler;
 
+import sys.FileSystem;
 import haxe.macro.Printer;
 import hscript.Interp;
 import hscript.Parser;
@@ -49,7 +50,14 @@ class Compiler {
     var content: String = File.getContent(outputfilePath);
     var ast = LangParser.toAST(content);
     var haxeCode: String = LangParser.toHaxe(ast);
-    var outFile: String = '${Sys.getCwd()}/scripts/${filePath.replace(".anna", ".hx")}';
+    var packageName: String = haxeCode.split('\n')[0].replace('package', '').replace(';', '').trim().replace('.', '/');
+    var packageFrags: Array<String> = packageName.split('/');
+    var currentPackagePath: String = '';
+    for(pack in packageFrags) {
+      currentPackagePath += pack + '/';
+      FileSystem.createDirectory('${Sys.getCwd()}scripts/${currentPackagePath}');
+    }
+    var outFile: String = '${Sys.getCwd()}scripts/${packageName}/${filePath.replace(".anna", ".hx")}';
     File.saveContent(outFile, haxeCode);
     Native.callStatic("Runtime", "recompile", []);
   }

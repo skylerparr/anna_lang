@@ -38,6 +38,7 @@ class LangParser {
     builtinAliases.set('-', 'Anna.subtract');
     builtinAliases.set('*', 'Anna.multiply');
     builtinAliases.set('/', 'Anna.divide');
+    builtinAliases.set('=', 'patternMatch');
     builtinAliases.set('.', 'resolveScope');
     builtinAliases;
   };
@@ -60,11 +61,16 @@ class LangParser {
     #end
   }
 
-  public static function _defmodule(moduleDef: Array<Dynamic>, body: Dynamic, aliases: Map<String, String>, context: Dynamic): String {
-    var moduleName: String = moduleDef[0].value;
+  public static function _defmodule(moduleDef: Dynamic, body: Dynamic, aliases: Map<String, String>, context: Dynamic): String {
+    var moduleName: String = '';
+    var fqName: String = toHaxe(moduleDef, aliases, context);
+    var modName: String = fqName.split('(')[0];
+    var frags: Array<String> = modName.split('.');
+    moduleName = frags.pop();
+    var packageName: String = frags.join('.');
     context.moduleName = moduleName;
     var retVal: String =
-'package;
+'package ${packageName};
 using lang.AtomSupport;
 @:build(macros.ScriptMacros.script())
 class ${moduleName} {';
@@ -163,6 +169,16 @@ ${patternAssignment}
     return null;
   }
 
+  public static function _resolveScope(ast: Array<Dynamic>, body: Dynamic, aliases: Map<String, String>, context: Dynamic): String {
+    var retVal: Array<String> = [];
+    var scope: Dynamic = ast[0];
+    if(Reflect.hasField(scope, '__type__') && Reflect.field(scope, '__type__') == 'ATOM') {
+      retVal.push(Atom.toString(scope).toLowerCase());
+      retVal.push(toHaxe(body[0]));
+    }
+    return retVal.join('.');
+  }
+
   public static function toHaxe(ast: Dynamic, aliases: Map<String, String> = null, context: Dynamic = null): String {
     if(aliases == null) {
       aliases = new Map<String, String>();
@@ -238,6 +254,8 @@ ${patternAssignment}
           }
           retVal = '{${vals.join(", ")}}';
         }
+      case ValueType.TNull:
+        trace(retVal);
       case _:
         throw new ParsingException();
     }
@@ -536,7 +554,18 @@ ${patternAssignment}
     }
     if(state == ParsingState.FUNCTION_ARGS && parenCount == 1) {
       if(functionArgsString.trim().length > 0) {
-        currentStrVal += parseStringArgs(functionArgsString);
+        var doIndex: Int = functionArgsString.indexOf(SPACE + DO);
+        if(functionArgsString.endsWith(END) && doIndex != -1) {
+          var firstArg: String = functionArgsString.substr(0, doIndex);
+          firstArg = sanitizeExpr(firstArg);
+          currentStrVal += OPEN_PAREN + firstArg;
+          var doBlock: String = functionArgsString.substr(doIndex + 1);
+          doBlock = doBlock.substr(DO.length + 1, doBlock.length - END.length - DO.length - 2);
+          doBlock = doBlock.trim();
+          currentStrVal += COMMA + DO + OPEN_PAREN + doBlock + CLOSE_PAREN + CLOSE_PAREN;
+        } else {
+          currentStrVal += parseStringArgs(functionArgsString);
+        }
       } else {
         currentStrVal += CLOSE_PAREN;
       }

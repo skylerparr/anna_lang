@@ -1,4 +1,4 @@
-defmodule Sample do
+defmodule Foo.Bar.Sample do
 
   @spec(sum, {Int, Int}, Int)
   def sum(a, b) do

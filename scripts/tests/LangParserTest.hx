@@ -157,11 +157,11 @@ end          ';
 end';
     Assert.areEqual(LangParser.sanitizeExpr(expr), 'if(>(abc,def),do(foo(+(1,3)),face())');
 
-    expr = 'if(ellie > 5) do
+    expr = 'if(ellie > 5 && bear < ellie) do
       inject Ellie, :bear
     end';
 
-    Assert.areEqual(LangParser.sanitizeExpr(expr), 'if(>(ellie,5),do(inject Ellie, :bear))');
+    Assert.areEqual(LangParser.sanitizeExpr(expr), 'if(>(ellie,&&(5,<(bear,ellie))),do(inject Ellie, :bear))');
   }
 
   public static function shouldSanitizeMultipleDoBlocks(): Void {
@@ -218,6 +218,13 @@ end';
   def ellie() do
     :bear
   end))');
+  }
+
+  public static function shouldSanitizeMultipleLeftRightOperatorsWithTrailingDoEnd(): Void {
+    var string: String = 'defmodule Foo.Bar.Cat.Baz.Car do
+  inject Ellie, :bear
+end';
+    Assert.areEqual(LangParser.sanitizeExpr(string), 'defmodule(.(Foo,.(Bar,.(Cat,.(Baz,Car)))),do(inject Ellie, :bear))');
   }
 
   public static function shouldConvertStringToAst(): Void {
@@ -700,7 +707,7 @@ cost
   public static function shouldCallDefmoduleMacro(): Void {
     var string: String = "defmodule Foo do end";
     Assert.areEqual(LangParser.toHaxe(LangParser.toAST(string)),
-      'package;
+      'package ;
 using lang.AtomSupport;
 @:build(macros.ScriptMacros.script())
 class Foo {
@@ -715,7 +722,7 @@ class Foo {
       end
     end";
     Assert.areEqual(LangParser.toHaxe(LangParser.toAST(string)),
-    'package;
+    'package ;
 using lang.AtomSupport;
 @:build(macros.ScriptMacros.script())
 class Foo {
@@ -735,7 +742,7 @@ class Foo {
       end
     end";
     Assert.areEqual(LangParser.toHaxe(LangParser.toAST(string)),
-    'package;
+    'package ;
 using lang.AtomSupport;
 @:build(macros.ScriptMacros.script())
 class Foo {
@@ -759,7 +766,7 @@ class Foo {
       end
     end';
     Assert.areEqual(LangParser.toHaxe(LangParser.toAST(string)),
-    'package;
+    'package ;
 using lang.AtomSupport;
 @:build(macros.ScriptMacros.script())
 class Foo {
@@ -788,7 +795,7 @@ class Foo {
       end
     end";
     Assert.areEqual(LangParser.toHaxe(LangParser.toAST(string)),
-    'package;
+    'package ;
 using lang.AtomSupport;
 @:build(macros.ScriptMacros.script())
 class Foo {
@@ -806,5 +813,18 @@ class Foo {
   }
 }'
     );
+  }
+
+  public static function shouldResolveDotScopeForDefModule(): Void {
+    var string: String = 'defmodule Foo.Bar.Cat.Baz.Car do
+    end';
+
+    Assert.areEqual(LangParser.toHaxe(LangParser.toAST(string)),
+'package foo.bar.cat.baz;
+using lang.AtomSupport;
+@:build(macros.ScriptMacros.script())
+class Car {
+
+}');
   }
 }
