@@ -106,11 +106,10 @@ class ${moduleName} {';
     for(expr in cast(body[0].__block__, Array<Dynamic>)) {
       if(Reflect.hasField(expr, "__block__")) {
         for(expr in cast(expr.__block__, Array<Dynamic>)) {
-          counter++;
-          funBody.push('var v${counter} = ${toHaxe(expr)};');
+          funBody.push('var v${counter++} = ${toHaxe(expr)};');
         }
       } else {
-        funBody.push('var v${counter} = ${toHaxe(expr)};');
+        funBody.push('var v${counter++} = ${toHaxe(expr)};');
       }
     }
     var finalExpr: String = funBody.pop();
@@ -300,6 +299,7 @@ ${patternAssignment}
     var prevState: ParsingState = ParsingState.NONE;
     var parenCount: Int = 0;
     var braceCount: Int = 0;
+    var doCount: Int = 0;
     var i: Int = 0;
     var operatorString: String = '';
     var functionArgsString: String = '';
@@ -458,11 +458,37 @@ ${patternAssignment}
         case [ParsingState.FUNCTION_ARGS, _, CLOSE_PAREN]:
           parenCount--;
           if(parenCount == 0) {
-            currentStrVal += parseStringArgs(functionArgsString);
+            if(currentStrVal == DO) {
+              var sanitizedArgs: String = sanitizeExpr(functionArgsString);
+              currentStrVal = '${currentStrVal}${OPEN_PAREN}${sanitizedArgs}${CLOSE_PAREN}';
+            } else {
+              currentStrVal += parseStringArgs(functionArgsString);
+            }
             expressions.push(currentStrVal.trim());
             functionArgsString = '';
             currentStrVal = '';
             state = ParsingState.NONE;
+          } else {
+            functionArgsString += char;
+          }
+        case [ParsingState.FUNCTION_ARGS, _, NEWLINE]:
+          if(functionArgsString.endsWith(DO)) {
+            functionArgsString += char;
+            doCount++;
+          } else if(functionArgsString.endsWith(END)) {
+            doCount--;
+            if(doCount == 0) {
+              currentStrVal += parseStringArgs(functionArgsString.trim());
+              expressions.push(currentStrVal.trim());
+              functionArgsString = '';
+              currentStrVal = '';
+              parenCount = 0;
+              braceCount = 0;
+              doCount = 0;
+              state = ParsingState.NONE;
+            } else {
+              functionArgsString += char;
+            }
           } else {
             functionArgsString += char;
           }
@@ -672,6 +698,7 @@ ${patternAssignment}
           if(currentStrVal.substr(currentStrVal.length - 2) == DO) {
             leftStrVal = currentStrVal.substr(0, currentStrVal.length - 3) + CLOSE_PAREN;
             currentStrVal = '';
+            openCount = 2;
             state = ParsingState.DO;
           } else {
             state = ParsingState.FUNCTION;
@@ -745,6 +772,40 @@ ${patternAssignment}
           currentStrVal = "";
         case [ParsingState.FUNCTION, _, _]:
           currentStrVal += char;
+        case [ParsingState.DO, _, OPEN_PAREN | OPEN_BRACKET]:
+          currentStrVal += char;
+          openCount++;
+        case [ParsingState.DO, _, CLOSE_PAREN | CLOSE_BRACKET]:
+          currentStrVal += char;
+          openCount--;
+          if(openCount == 0) {
+            var astToUpdate: Array<Dynamic>;
+            if(retVal.length == 0) {
+              retVal = parseExpr(leftStrVal);
+              astToUpdate = retVal[0][2];
+            } else {
+              var expr: Array<Dynamic> = parseExpr(leftStrVal);
+              retVal.push(expr[0]);
+              astToUpdate = expr[0][2];
+            }
+            var bodyStr: String = currentStrVal.substr(0, currentStrVal.length - 2);
+            bodyStr = sanitizeExpr(bodyStr);
+            var body: Array<Dynamic> = parseExpr(bodyStr);
+            // AST: [[{ __type__ => ATOM, value => defmodule },[],[[{ __type__ => ATOM, value => Foo },[],null]]]]
+            if(body.length == 0) {
+              astToUpdate.push({ __block__: []});
+            } else {
+              if(Reflect.hasField(body[0], '__block__')) {
+                astToUpdate.push(body[0]);
+              } else {
+                astToUpdate.push({ __block__: body});
+              }
+            }
+
+            leftStrVal = '';
+            currentStrVal = '';
+            state = ParsingState.NONE;
+          }
         case [ParsingState.DO, _, _]:
           currentStrVal += char;
         case [ParsingState.ATOM, _, _]:
@@ -806,26 +867,28 @@ ${patternAssignment}
         currentVal = currentStrVal.trim().atom();
         retVal.push(currentVal);
         currentVal = null;
-      case ParsingState.LEFT_RIGHT_FUNCTION:
-        if(openCount == 1) {
-          currentStrVal += CLOSE_PAREN;
-          state = ParsingState.NONE;
-          currentVal = [null, [], null];
-          parseFunc(currentVal, currentStrVal);
-          retVal.push(currentVal);
-          leftStrVal = currentStrVal;
-          currentVal = null;
-          currentStrVal = "";
-        } else {
-          throw new ParsingException();
-        }
       case ParsingState.DO:
-        retVal = parseExpr(leftStrVal);
+        var astToUpdate: Array<Dynamic>;
+        if(retVal.length == 0) {
+          retVal = parseExpr(leftStrVal);
+          astToUpdate = retVal[0][2];
+        } else {
+          retVal.push(parseExpr(leftStrVal));
+          astToUpdate = retVal[retVal.length - 1][0][2];
+        }
         var bodyStr: String = currentStrVal.substr(0, currentStrVal.length - 2);
         bodyStr = sanitizeExpr(bodyStr);
         var body: Array<Dynamic> = parseExpr(bodyStr);
         // AST: [[{ __type__ => ATOM, value => defmodule },[],[[{ __type__ => ATOM, value => Foo },[],null]]]]
-        retVal[0][2].push({ __block__: body});
+        if(body.length == 0) {
+          astToUpdate.push({ __block__: []});
+        } else {
+          if(Reflect.hasField(body[0], '__block__')) {
+            astToUpdate.push(body[0]);
+          } else {
+            astToUpdate.push({ __block__: body});
+          }
+        }
       case ParsingState.COMMENT:
         //ignore
       case ParsingState.FUNCTION:

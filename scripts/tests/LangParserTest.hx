@@ -1,5 +1,6 @@
 package tests;
 
+import lang.LangParser;
 import anna_unit.Assert;
 import lang.LangParser;
 import anna_unit.Assert;
@@ -79,6 +80,7 @@ class LangParserTest {
 
   public static function shouldSanitizeFunctionWithNoParensButHasCommas(): Void {
     Assert.areEqual(LangParser.sanitizeExpr('foo "bar", 1, cat, :three'), 'foo("bar",1,cat,:three)');
+    Assert.areEqual(LangParser.sanitizeExpr('inject Ellie, :bear'), 'inject(Ellie,:bear)');
   }
 
   public static function shouldSanitizeFunctionWithNoParensAndNoCommas(): Void {
@@ -126,9 +128,9 @@ coo("cat",5,6,:seven)
 %{}');
   }
 
-  public static function shouldSanitizeExpressionsWithDo(): Void {
+  public static function shouldSanitizeNestedExpressionsWithDo(): Void {
     var expr: String = '
-defmodule Foo      do          
+defmodule Foo do
   @spec(order, {Int, Int}, Int)
   def order(a, b) do
     rem(a, b)
@@ -160,6 +162,62 @@ end';
     end';
 
     Assert.areEqual(LangParser.sanitizeExpr(expr), 'if(>(ellie,5),do(inject Ellie, :bear))');
+  }
+
+  public static function shouldSanitizeMultipleDoBlocks(): Void {
+    var expr: String = '
+  @spec(bar, null, Dynamic)
+  def bar() do
+    :cat
+    :bear
+  end
+
+  @spec(cat, null, Dynamic)
+  def cat() do
+    :baz
+  end
+
+  @spec(ellie, null, Dynamic)
+  def ellie() do
+    :bear
+  end
+';
+    Assert.areEqual(LangParser.sanitizeExpr(expr), '@spec(bar,null,Dynamic)
+def(bar(),do(:cat
+    :bear))
+@spec(cat,null,Dynamic)
+def(cat(),do(:baz))
+@spec(ellie,null,Dynamic)
+def(ellie(),do(:bear))');
+  }
+
+  public static function shouldSanitizeMultipleNestedDoBlocks(): Void {
+    var expr: String = 'defmodule Foo do
+  def bar() do
+    :cat
+    :bear
+  end
+
+  def cat() do
+    :baz
+  end
+
+  def ellie() do
+    :bear
+  end
+end';
+    Assert.areEqual(LangParser.sanitizeExpr(expr), 'defmodule(Foo,do(def bar() do
+    :cat
+    :bear
+  end
+
+  def cat() do
+    :baz
+  end
+
+  def ellie() do
+    :bear
+  end))');
   }
 
   public static function shouldConvertStringToAst(): Void {
@@ -381,6 +439,19 @@ end';
     coo("cat", 5, 6, :seven)
     %{}
     '), expectation);
+
+    var expr: String = '@spec(order,{String,String},Dynamic)
+def order(ellie,bear) do
+  inject Ellie, :bear
+end
+def hello(a) do
+  "hello world"
+end';
+    var specBlock: Array<Dynamic> = ['at_spec'.atom(),[],[['order'.atom(),[],null],[['String'.atom(),[],null],['String'.atom(),[],null]],['Dynamic'.atom(),[],null]]];
+    var orderBody: Array<Dynamic> = [['inject'.atom(),[],[['Ellie'.atom(),[],null],'bear'.atom()]]];
+    var orderBlock: Array<Dynamic> = ['def'.atom(),[],[['order'.atom(),[],[['ellie'.atom(),[],null],['bear'.atom(),[],null]]],{ __block__: orderBody }]];
+    var helloBlock: Array<Dynamic> = ['def'.atom(),[],[['hello'.atom(),[],[['a'.atom(),[],null]]],{ __block__: ["hello world"] }]];
+    Assert.areEqual(LangParser.toAST(expr), { __block__: [specBlock, orderBlock, helloBlock] });
   }
 
   public static function shouldIgnoreCommentedLines(): Void {
@@ -525,13 +596,15 @@ defmodule Foo do
   def order(ellie, bear) do
     inject Ellie, :bear
   end
-end';
 
-//    var sanitized: String = LangParser.sanitizeExpr(expr);
-//    Assert.areEqual(sanitized, 'def(order(ellie,bear),do(inject Ellie, :bear))');
-//    var defBody: Array<Dynamic> = ['inject'.atom(),[],[['Ellie'.atom(), [], null], 'bear'.atom()]];
-//    Assert.areEqual(LangParser.toAST(expr), ['def'.atom(),[],[['order'.atom(), [], [['ellie'.atom(),[],null],['bear'.atom(),[],null]]],{__block__: [defBody] }]]);
-//    Assert.areEqual(LangParser.toHaxe(LangParser.toAST(expr)), "");
+  def hello(a) do
+    "hello world"
+  end
+end';
+    var helloBody: Array<Dynamic> = ["hello world"];
+    var orderBody: Array<Dynamic> = [['inject'.atom(),[],[['Ellie'.atom(),[],null],'bear'.atom()]]];
+    var moduleBody: Array<Dynamic> = [['at_spec'.atom(),[],[['order'.atom(),[],null],[['String'.atom(),[],null],['String'.atom(),[],null]],['Dynamic'.atom(),[],null]]],['def'.atom(),[],[['order'.atom(),[],[['ellie'.atom(),[],null],['bear'.atom(),[],null]]],{ __block__: orderBody }]],['def'.atom(),[],[['hello'.atom(),[],[['a'.atom(),[],null]]],{ __block__: helloBody}]]];
+    Assert.areEqual(LangParser.toAST(expr), ['defmodule'.atom(),[],[['Foo'.atom(),[],null],{ __block__: moduleBody }]]);
   }
 
   public static function shouldConvertStringASTToHaxe(): Void {
@@ -676,17 +749,25 @@ class Foo {
   }
 
   public static function shouldCallDefMacroAndReturnAtom(): Void {
-    var string: String = "defmodule Foo do
-      @spec(bar, nil, Dynamic)
+    var string: String = 'defmodule Foo do
+      def cat() do
+        "hello cat"
+      end
+
       def bar() do
         :success
       end
-    end";
+    end';
     Assert.areEqual(LangParser.toHaxe(LangParser.toAST(string)),
     'package;
 using lang.AtomSupport;
 @:build(macros.ScriptMacros.script())
 class Foo {
+  public static function cat() {
+
+    
+    return "hello cat";
+  }
   public static function bar() {
 
     
@@ -696,34 +777,34 @@ class Foo {
     );
   }
 
-//  public static function shouldHandleMultipleExpressions(): Void {
-//    var string: String = "
-//    defmodule Foo do
-//      @spec(order, {Int, Int}, Int)
-//      def order(a, b) do
-//        rem(a, b)
-//        cook(a, b + 212)
-//        a + b
-//      end
-//    end";
-//    Assert.areEqual(LangParser.toHaxe(LangParser.toAST(string)),
-//    'package;
-//using lang.AtomSupport;
-//@:build(macros.ScriptMacros.script())
-//class Foo {
-//  public static function order(arg0: Int, arg1: Int): Int {
-//    var a: Int;
-//    var b: Int;
-//    switch([arg0, arg1]) {
-//      case _:
-//        a = arg0;
-//        b = arg1;
-//    }
-//    var v1 = rem(a, b);
-//    var v2 = cook(a, Anna.add(b, 212));
-//    return Anna.add(a, b);
-//  }
-//}'
-//    );
-//  }
+  public static function shouldHandleMultipleExpressions(): Void {
+    var string: String = "
+    defmodule Foo do
+      @spec(order, {Int, Int}, Int)
+      def order(a, b) do
+        rem(a, b)
+        cook(a, b + 212)
+        a + b
+      end
+    end";
+    Assert.areEqual(LangParser.toHaxe(LangParser.toAST(string)),
+    'package;
+using lang.AtomSupport;
+@:build(macros.ScriptMacros.script())
+class Foo {
+  public static function order(arg0: Int, arg1: Int): Int {
+    var a: Int;
+    var b: Int;
+    switch([arg0, arg1]) {
+      case _:
+        a = arg0;
+        b = arg1;
+    }
+    var v0 = rem(a, b);
+    var v1 = cook(a, Anna.add(b, 212));
+    return Anna.add(a, b);
+  }
+}'
+    );
+  }
 }
