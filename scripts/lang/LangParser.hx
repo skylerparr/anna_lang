@@ -779,28 +779,7 @@ ${patternAssignment}
           currentStrVal += char;
           openCount--;
           if(openCount == 0) {
-            var astToUpdate: Array<Dynamic>;
-            if(retVal.length == 0) {
-              retVal = parseExpr(leftStrVal);
-              astToUpdate = retVal[0][2];
-            } else {
-              var expr: Array<Dynamic> = parseExpr(leftStrVal);
-              retVal.push(expr[0]);
-              astToUpdate = expr[0][2];
-            }
-            var bodyStr: String = currentStrVal.substr(0, currentStrVal.length - 2);
-            bodyStr = sanitizeExpr(bodyStr);
-            var body: Array<Dynamic> = parseExpr(bodyStr);
-            // AST: [[{ __type__ => ATOM, value => defmodule },[],[[{ __type__ => ATOM, value => Foo },[],null]]]]
-            if(body.length == 0) {
-              astToUpdate.push({ __block__: []});
-            } else {
-              if(Reflect.hasField(body[0], '__block__')) {
-                astToUpdate.push(body[0]);
-              } else {
-                astToUpdate.push({ __block__: body});
-              }
-            }
+            retVal = parseDoBlock(retVal, leftStrVal, currentStrVal);
 
             leftStrVal = '';
             currentStrVal = '';
@@ -868,27 +847,7 @@ ${patternAssignment}
         retVal.push(currentVal);
         currentVal = null;
       case ParsingState.DO:
-        var astToUpdate: Array<Dynamic>;
-        if(retVal.length == 0) {
-          retVal = parseExpr(leftStrVal);
-          astToUpdate = retVal[0][2];
-        } else {
-          retVal.push(parseExpr(leftStrVal));
-          astToUpdate = retVal[retVal.length - 1][0][2];
-        }
-        var bodyStr: String = currentStrVal.substr(0, currentStrVal.length - 2);
-        bodyStr = sanitizeExpr(bodyStr);
-        var body: Array<Dynamic> = parseExpr(bodyStr);
-        // AST: [[{ __type__ => ATOM, value => defmodule },[],[[{ __type__ => ATOM, value => Foo },[],null]]]]
-        if(body.length == 0) {
-          astToUpdate.push({ __block__: []});
-        } else {
-          if(Reflect.hasField(body[0], '__block__')) {
-            astToUpdate.push(body[0]);
-          } else {
-            astToUpdate.push({ __block__: body});
-          }
-        }
+        retVal = parseDoBlock(retVal, leftStrVal, currentStrVal);
       case ParsingState.COMMENT:
         //ignore
       case ParsingState.FUNCTION:
@@ -914,7 +873,7 @@ ${patternAssignment}
     return retVal;
   }
 
-  private static inline function parseArray(array: Array<Dynamic>, string: String, spaceAsDelimiter: Bool = false): Array<Dynamic> {
+  private static inline function parseArray(array: Array<Dynamic>, string: String): Array<Dynamic> {
     var currentVal: String = "";
     var openCount: Int = 0;
     var state: ParsingState = ParsingState.NONE;
@@ -980,15 +939,7 @@ ${patternAssignment}
             currentVal += char;
           }
         case [ParsingState.NONE, _]:
-          if(spaceAsDelimiter && WHITESPACE.match(char)) {
-            var val: Array<Dynamic> = parseExpr(currentVal);
-            if(val.length > 0) {
-              array.push(val[0]);
-            }
-            currentVal = "";
-          } else {
-            currentVal += char;
-          }
+          currentVal += char;
         case _:
       }
     }
@@ -1001,6 +952,32 @@ ${patternAssignment}
       }
     }
     return array;
+  }
+
+  private static inline function parseDoBlock(currentAST: Array<Dynamic>, leftStrVal: String, currentStrVal: String): Array<Dynamic> {
+    var astToUpdate: Array<Dynamic>;
+    if(currentAST.length == 0) {
+      currentAST = parseExpr(leftStrVal);
+      astToUpdate = currentAST[0][2];
+    } else {
+      var expr: Array<Dynamic> = parseExpr(leftStrVal);
+      currentAST.push(expr[0]);
+      astToUpdate = expr[0][2];
+    }
+    var bodyStr: String = currentStrVal.substr(0, currentStrVal.length - 2);
+    bodyStr = sanitizeExpr(bodyStr);
+    var body: Array<Dynamic> = parseExpr(bodyStr);
+    // AST: [[{ __type__ => ATOM, value => defmodule },[],[[{ __type__ => ATOM, value => Foo },[],null]]]]
+    if(body.length == 0) {
+      astToUpdate.push({ __block__: []});
+    } else {
+      if(Reflect.hasField(body[0], '__block__')) {
+        astToUpdate.push(body[0]);
+      } else {
+        astToUpdate.push({ __block__: body});
+      }
+    }
+    return currentAST;
   }
 
   private static inline function parseHash(hash: Dynamic, string: String): Dynamic {
@@ -1105,12 +1082,7 @@ ${patternAssignment}
             currentVal += char;
           }
         case [ParsingState.ARRAY, _]:
-          if(leftRightOperators.any(char) && openCount == 0) {
-            retVal[0] = '${char}'.atom();
-            currentVal = firstVal + ",";
-          } else {
-            currentVal += char;
-          }
+          currentVal += char;
         case _:
           if(!WHITESPACE.match(char)) {
             state = ParsingState.FUNCTION;
@@ -1123,7 +1095,7 @@ ${patternAssignment}
         retVal[0] = parseExpr(":" + currentVal)[0];
       case [ParsingState.ARRAY, true]:
         if(currentVal.trim() != '') {
-          var val: Array<Dynamic> = parseArray([], currentVal, true);
+          var val: Array<Dynamic> = parseArray([], currentVal);
           if(val.length > 0) {
             retVal[2] = val;
           }
