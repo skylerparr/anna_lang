@@ -20,7 +20,7 @@ defmodule Foo.Bar.Sample do
   
   # Types can be inferred too
   def test() do
-  	"works"
+    "works"
   end
 end
 ```
