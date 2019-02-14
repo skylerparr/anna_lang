@@ -38,4 +38,5 @@ end
 - [ ] Tail call recursion
 - [ ] Syntax for Linked Lists 
 - [ ] Actor Model
-- [ ] Integration with 
+- [ ] Integration with target language 
+- [ ] Release compilation for various targets
