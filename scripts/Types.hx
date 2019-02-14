@@ -1,5 +1,6 @@
 typedef Turtle = {
-  color: String
+  color: String,
+  age: Int
 }
 
 @:build(macros.ScriptMacros.script())
