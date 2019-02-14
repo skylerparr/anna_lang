@@ -718,6 +718,7 @@ class Foo {
 
   public static function shouldCallDefMacro(): Void {
     var string: String = "defmodule Foo do
+      @spec(bar, null, Dynamic)
       def bar() do
       end
     end";
@@ -726,7 +727,7 @@ class Foo {
 using lang.AtomSupport;
 @:build(macros.ScriptMacros.script())
 class Foo {
-  public static function bar() {
+  public static function bar(): Dynamic {
 
     
     return "nil".atom();

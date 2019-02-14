@@ -3,13 +3,10 @@ package compiler;
 import hscript.Parser;
 import haxe.macro.Context;
 import haxe.macro.Expr;
+@:build(macros.ScriptMacros.script())
 class CodeGen {
 
-  public static function main(): Void {
-    
-  }
-
-  private static inline var fnBody: String = "function(args: Array<Dynamic>) {
+  private static inline var fnBody: String = "function(args) {
       return 'yo';
     }";
 

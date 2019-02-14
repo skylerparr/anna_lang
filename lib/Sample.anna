@@ -9,4 +9,9 @@ defmodule Foo.Bar.Sample do
   def hello_world() do
     "hello world"
   end
+
+  # Types can be inferred too
+  def test() do
+  	"works"
+  end
 end
