@@ -94,7 +94,19 @@ class ${moduleName} {';
     if(specs != null) {
       spec = specs.get(functionName);
       if(spec != null) {
-        retType = ': ${spec[1][0].value}';
+        var moduleAndPackage: Dynamic = resolveClassToPackage(spec[1], aliases, context);
+        if(moduleAndPackage.packageName != '') {
+          retType = ': ${moduleAndPackage.packageName}.__${moduleAndPackage.moduleName}__.${moduleAndPackage.moduleName}';
+        } else {
+          if(moduleAndPackage.moduleName != "String" &&
+            moduleAndPackage.moduleName != "Int" &&
+            moduleAndPackage.moduleName != "Float" &&
+            moduleAndPackage.moduleName != "Dynamic" ) {
+            retType = ': __${moduleAndPackage.moduleName}__.${moduleAndPackage.moduleName}';
+          } else {
+            retType = ': ${moduleAndPackage.moduleName}';
+          }
+        }
         for(i in 0...funArgs.length) {
           var type: String = spec[0][i][0].value;
           var argName: String = 'arg${i}';
@@ -180,7 +192,8 @@ ${patternAssignment}
     retVal += 'typedef ${fqName.moduleName} = ${OPEN_BRACE}${NEWLINE}';
     retVal += types.join(',\n');
     retVal += NEWLINE + CLOSE_BRACE + NEWLINE;
-    retVal += 'class __${fqName.moduleName}__ {}';
+    retVal += '@:build(macros.ScriptMacros.script())
+class __${fqName.moduleName}__ {}';
     return retVal;
   }
 

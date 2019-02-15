@@ -843,6 +843,7 @@ breed: String,
 age: Int,
 name: String
 }
+@:build(macros.ScriptMacros.script())
 class __Cat__ {}');
   }
 
@@ -860,6 +861,69 @@ breed: String,
 age: Int,
 name: String
 }
+@:build(macros.ScriptMacros.script())
 class __Cat__ {}');
+  }
+
+  public static function shouldPrependPackageToCustomType(): Void {
+    var string: String = '
+    defmodule Foo do
+      @spec(order, {Int, Int}, Cat.Ellie.Bear)
+      def order(a, b) do
+        rem(a, b)
+        cook(a, b + 212)
+        %{"feet" => 2, "mouth" => 1}
+      end
+    end';
+
+    Assert.areEqual(LangParser.toHaxe(LangParser.toAST(string)),
+    'package ;
+using lang.AtomSupport;
+@:build(macros.ScriptMacros.script())
+class Foo {
+  public static function order(arg0: Int, arg1: Int): cat.ellie.__Bear__.Bear {
+    var a: Int;
+    var b: Int;
+    switch([arg0, arg1]) {
+      case _:
+        a = arg0;
+        b = arg1;
+    }
+    var v0 = rem(a, b);
+    var v1 = cook(a, Anna.add(b, 212));
+    return {"feet": 2, "mouth": 1};
+  }
+}');
+  }
+
+  public static function shouldPrependTypeQualifierToCustomTypeIfDoesntHavePackage(): Void {
+    var string: String = '
+    defmodule Foo do
+      @spec(order, {Int, Int}, Bear)
+      def order(a, b) do
+        rem(a, b)
+        cook(a, b + 212)
+        %{"feet" => 2, "mouth" => 1}
+      end
+    end';
+
+    Assert.areEqual(LangParser.toHaxe(LangParser.toAST(string)),
+    'package ;
+using lang.AtomSupport;
+@:build(macros.ScriptMacros.script())
+class Foo {
+  public static function order(arg0: Int, arg1: Int): __Bear__.Bear {
+    var a: Int;
+    var b: Int;
+    switch([arg0, arg1]) {
+      case _:
+        a = arg0;
+        b = arg1;
+    }
+    var v0 = rem(a, b);
+    var v1 = cook(a, Anna.add(b, 212));
+    return {"feet": 2, "mouth": 1};
+  }
+}');
   }
 }

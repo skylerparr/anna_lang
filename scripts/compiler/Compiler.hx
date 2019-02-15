@@ -57,8 +57,22 @@ class Compiler {
       currentPackagePath += pack + '/';
       FileSystem.createDirectory('${Sys.getCwd()}scripts/${currentPackagePath}');
     }
-    var outFile: String = '${Sys.getCwd()}scripts/${packageName}/${filePath.replace(".anna", ".hx")}';
+    var fileName: String = getClassName(haxeCode);
+    var outFile: String = '${Sys.getCwd()}scripts/${packageName}/${fileName}.hx';
     File.saveContent(outFile, haxeCode);
     Native.callStatic("Runtime", "recompile", []);
+  }
+
+  private static inline function getClassName(code: String): String {
+    var classIndex: Int = code.indexOf('class ') + 'class '.length;
+    var className: String = '';
+    while(true) {
+      var char: String = code.charAt(classIndex++);
+      if(char == ' ') {
+        break;
+      }
+      className += char;
+    }
+    return className;
   }
 }
