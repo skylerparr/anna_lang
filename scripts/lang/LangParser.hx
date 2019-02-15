@@ -237,29 +237,31 @@ class __${fqName.moduleName}__ {}';
         var orig: Array<Dynamic> = cast ast;
         if(orig.length == 3) {
           switch(orig) {
-            case [fun, [], null]:
-              retVal = fun.value;
             case [fun, [], args]:
-              var funName: String = aliases.get(fun.value);
-              if(funName == null) {
-                funName = fun.value;
-              }
-              var langParserFields: Array<String> = Type.getClassFields(LangParser);
-              var macroFunc: Dynamic = null;
-              for(field in langParserFields) {
-                if('_${funName}' == field) {
-                  macroFunc = Reflect.getProperty(LangParser, field);
-                  break;
-                }
-              }
-              if(macroFunc != null) {
-                retVal = macroFunc(args.shift(), args, aliases, context);
+              if(args == 'nil'.atom()) {
+                retVal = fun.value;
               } else {
-                var parsedArgs: Array<String> = [];
-                for(arg in cast(args, Array<Dynamic>)) {
-                  parsedArgs.push(toHaxe(arg, aliases, context));
+                var funName: String = aliases.get(fun.value);
+                if(funName == null) {
+                  funName = fun.value;
                 }
-                retVal = '${funName}(${parsedArgs.join(", ")})';
+                var langParserFields: Array<String> = Type.getClassFields(LangParser);
+                var macroFunc: Dynamic = null;
+                for(field in langParserFields) {
+                  if('_${funName}' == field) {
+                    macroFunc = Reflect.getProperty(LangParser, field);
+                    break;
+                  }
+                }
+                if(macroFunc != null) {
+                  retVal = macroFunc(args.shift(), args, aliases, context);
+                } else {
+                  var parsedArgs: Array<String> = [];
+                  for(arg in cast(args, Array<Dynamic>)) {
+                    parsedArgs.push(toHaxe(arg, aliases, context));
+                  }
+                  retVal = '${funName}(${parsedArgs.join(", ")})';
+                }
               }
             case _:
               throw new ParsingException();
@@ -711,7 +713,7 @@ class __${fqName.moduleName}__ {}';
 
   private static inline function parseExpr(string: String): Array<Dynamic> {
     var retVal: Array<Dynamic> = [];
-    var currentVal: Dynamic = null;
+    var currentVal: Dynamic = 'nil'.atom();
     var currentStrVal: String = "";
     var leftStrVal: String = "";
     var operatorStrVal: String = "";
@@ -750,7 +752,7 @@ class __${fqName.moduleName}__ {}';
           state = ParsingState.NONE;
           retVal.push(currentStrVal.atom());
           leftStrVal = currentStrVal;
-          currentVal = null;
+          currentVal = 'nil'.atom();
           currentStrVal = "";
         case [ParsingState.QUOATED_ATOM, _, _]:
           currentStrVal += char;
@@ -790,7 +792,7 @@ class __${fqName.moduleName}__ {}';
             parseArray(currentVal, currentStrVal);
             retVal.push(currentVal);
             leftStrVal = currentStrVal;
-            currentVal = null;
+            currentVal = 'nil'.atom();
             currentStrVal = "";
           } else {
             currentStrVal += char;
@@ -805,7 +807,7 @@ class __${fqName.moduleName}__ {}';
             parseHash(currentVal, currentStrVal);
             leftStrVal = '%{${currentStrVal}}';
             retVal.push(currentVal);
-            currentVal = null;
+            currentVal = 'nil'.atom();
             currentStrVal = "";
           } else {
             currentStrVal += char;
@@ -818,11 +820,11 @@ class __${fqName.moduleName}__ {}';
           if(openCount <= 0) {
             openCount = 0;
             state = ParsingState.NONE;
-            currentVal = [null, [], null];
+            currentVal = ['nil'.atom(), [], 'nil'.atom()];
             parseFunc(currentVal, currentStrVal);
             retVal.push(currentVal);
             leftStrVal = currentStrVal;
-            currentVal = null;
+            currentVal = 'nil'.atom();
             currentStrVal = "";
           }
         case [ParsingState.ESCAPE, _, DOUBLE_QUOTE]:
@@ -835,7 +837,7 @@ class __${fqName.moduleName}__ {}';
           currentVal = currentStrVal;
           retVal.push(currentVal);
           leftStrVal = currentStrVal;
-          currentVal = null;
+          currentVal = 'nil'.atom();
           currentStrVal = "";
         case [ParsingState.FUNCTION, _, _]:
           currentStrVal += char;
@@ -862,7 +864,7 @@ class __${fqName.moduleName}__ {}';
             state = ParsingState.NONE;
             retVal.push(currentStrVal.trim().atom());
             leftStrVal = currentStrVal;
-            currentVal = null;
+            currentVal = 'nil'.atom();
             currentStrVal = "";
           } else {
             currentStrVal += char;
@@ -884,7 +886,7 @@ class __${fqName.moduleName}__ {}';
               retVal.push(Std.parseInt(currentStrVal));
             }
             leftStrVal = currentStrVal;
-            currentVal = null;
+            currentVal = 'nil'.atom();
             currentStrVal = "";
           } else {
             currentStrVal += char;
@@ -905,29 +907,29 @@ class __${fqName.moduleName}__ {}';
           currentVal = Std.parseInt(currentStrVal);
         }
         retVal.push(currentVal);
-        currentVal = null;
+        currentVal = 'nil'.atom();
       case ParsingState.ATOM:
         if(currentStrVal == '') {
           throw new ParsingException();
         }
         currentVal = currentStrVal.trim().atom();
         retVal.push(currentVal);
-        currentVal = null;
+        currentVal = 'nil'.atom();
       case ParsingState.DO:
         retVal = parseDoBlock(retVal, leftStrVal, currentStrVal);
       case ParsingState.COMMENT:
         //ignore
       case ParsingState.FUNCTION:
-        currentVal = [null, [], null];
+        currentVal = ['nil'.atom(), [], 'nil'.atom()];
         parseFunc(currentVal, currentStrVal);
         retVal.push(currentVal);
-        currentVal = null;
+        currentVal = 'nil'.atom();
       case ParsingState.NONE:
         if(currentStrVal.length > 0) {
-          currentVal = [null, [], null];
+          currentVal = ['nil'.atom(), [], 'nil'.atom()];
           parseFunc(currentVal, currentStrVal);
           retVal.push(currentVal);
-          currentVal = null;
+          currentVal = 'nil'.atom();
         }
       case _:
         throw new ParsingException();
@@ -1034,7 +1036,7 @@ class __${fqName.moduleName}__ {}';
     var bodyStr: String = currentStrVal.substr(0, currentStrVal.length - 2);
     bodyStr = sanitizeExpr(bodyStr);
     var body: Array<Dynamic> = parseExpr(bodyStr);
-    // AST: [[{ __type__ => ATOM, value => defmodule },[],[[{ __type__ => ATOM, value => Foo },[],null]]]]
+    // AST: [[{ __type__ => ATOM, value => defmodule },[],[[{ __type__ => ATOM, value => Foo },[],'nil'.atom()]]]]
     if(body.length == 0) {
       astToUpdate.push({ __block__: []});
     } else {

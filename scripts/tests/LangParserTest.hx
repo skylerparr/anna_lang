@@ -166,28 +166,28 @@ end';
 
   public static function shouldSanitizeMultipleDoBlocks(): Void {
     var expr: String = '
-  @spec(bar, null, Dynamic)
+  @spec(bar, nil, Dynamic)
   def bar() do
     :cat
     :bear
   end
 
-  @spec(cat, null, Dynamic)
+  @spec(cat, nil, Dynamic)
   def cat() do
     :baz
   end
 
-  @spec(ellie, null, Dynamic)
+  @spec(ellie, nil, Dynamic)
   def ellie() do
     :bear
   end
 ';
-    Assert.areEqual(LangParser.sanitizeExpr(expr), '@spec(bar,null,Dynamic)
+    Assert.areEqual(LangParser.sanitizeExpr(expr), '@spec(bar,nil,Dynamic)
 def(bar(),do(:cat
     :bear))
-@spec(cat,null,Dynamic)
+@spec(cat,nil,Dynamic)
 def(cat(),do(:baz))
-@spec(ellie,null,Dynamic)
+@spec(ellie,nil,Dynamic)
 def(ellie(),do(:bear))');
   }
 
@@ -285,7 +285,7 @@ end';
   }
 
   public static function shouldParseAnAtomWithDots(): Void {
-    Assert.areEqual(LangParser.toAST('Foo.Bar.Cat'), ['.'.atom(),[],[['Foo'.atom(),[],null],['.'.atom(),[],[['Bar'.atom(),[],null],['Cat'.atom(),[],null]]]]]);
+    Assert.areEqual(LangParser.toAST('Foo.Bar.Cat'), ['.'.atom(),[],[['Foo'.atom(),[],'nil'.atom()],['.'.atom(),[],[['Bar'.atom(),[],'nil'.atom()],['Cat'.atom(),[],'nil'.atom()]]]]]);
   }
 
   public static function shouldConvertArrayToAst(): Void {
@@ -370,27 +370,27 @@ end';
   }
 
   public static function shouldParseAFunctionWithNoParentheses(): Void {
-    Assert.areEqual(LangParser.toAST('foo'), ['foo'.atom(), [], null]);
+    Assert.areEqual(LangParser.toAST('foo'), ['foo'.atom(), [], 'nil'.atom()]);
   }
 
   public static function shouldParseAFunctionWithNoParenthesesAndSurroundedWithWhitespace(): Void {
-    Assert.areEqual(LangParser.toAST('   foo   '), ['foo'.atom(), [], null]);
+    Assert.areEqual(LangParser.toAST('   foo   '), ['foo'.atom(), [], 'nil'.atom()]);
   }
 
   public static function shouldParseASingleLetterFunction(): Void {
-    Assert.areEqual(LangParser.toAST('a '), ['a'.atom(), [], null]);
+    Assert.areEqual(LangParser.toAST('a '), ['a'.atom(), [], 'nil'.atom()]);
   }
 
   public static function shouldParseAFunctionArgsWithNoCommasOrParentheses(): Void {
-    Assert.areEqual(LangParser.toAST('foo "bar" 1 cat :three'), ['foo'.atom(), [], ['bar', 1, ['cat'.atom(), [], null], 'three'.atom()]]);
+    Assert.areEqual(LangParser.toAST('foo "bar" 1 cat :three'), ['foo'.atom(), [], ['bar', 1, ['cat'.atom(), [], 'nil'.atom()], 'three'.atom()]]);
   }
 
   public static function shouldParseAFunctionWithArgsAndNoParentheses(): Void {
-    Assert.areEqual(LangParser.toAST('foo "bar", 1, cat, :three'), ['foo'.atom(), [], ['bar', 1, ['cat'.atom(), [], null], 'three'.atom()]]);
+    Assert.areEqual(LangParser.toAST('foo "bar", 1, cat, :three'), ['foo'.atom(), [], ['bar', 1, ['cat'.atom(), [], 'nil'.atom()], 'three'.atom()]]);
   }
 
   public static function shouldParseFunctionWith2VarArgs(): Void {
-    Assert.areEqual(LangParser.toAST('foo a, b'), ['foo'.atom(), [], [['a'.atom(), [], null], ['b'.atom(), [], null]]]);
+    Assert.areEqual(LangParser.toAST('foo a, b'), ['foo'.atom(), [], [['a'.atom(), [], 'nil'.atom()], ['b'.atom(), [], 'nil'.atom()]]]);
   }
 
   public static function shouldParseFunctionWithNestedFunctionCalls(): Void {
@@ -421,7 +421,7 @@ end';
 
   public static function shouldParseAtFunctionWhenOneOfTheArgsIsAnArray(): Void {
     Assert.areEqual(LangParser.toAST('@spec(mod, {Int, Int}, Float)'),
-    ['at_spec'.atom(), [], [['mod'.atom(), [], null], [['Int'.atom(), [], null], ['Int'.atom(), [], null]], ['Float'.atom(), [], null]]]);
+    ['at_spec'.atom(), [], [['mod'.atom(), [], 'nil'.atom()], [['Int'.atom(), [], 'nil'.atom()], ['Int'.atom(), [], 'nil'.atom()]], ['Float'.atom(), [], 'nil'.atom()]]]);
   }
 
   public static function shouldParseMultipleExpressions(): Void {
@@ -454,10 +454,10 @@ end
 def hello(a) do
   "hello world"
 end';
-    var specBlock: Array<Dynamic> = ['at_spec'.atom(),[],[['order'.atom(),[],null],[['String'.atom(),[],null],['String'.atom(),[],null]],['Dynamic'.atom(),[],null]]];
-    var orderBody: Array<Dynamic> = [['inject'.atom(),[],[['Ellie'.atom(),[],null],'bear'.atom()]]];
-    var orderBlock: Array<Dynamic> = ['def'.atom(),[],[['order'.atom(),[],[['ellie'.atom(),[],null],['bear'.atom(),[],null]]],{ __block__: orderBody }]];
-    var helloBlock: Array<Dynamic> = ['def'.atom(),[],[['hello'.atom(),[],[['a'.atom(),[],null]]],{ __block__: ["hello world"] }]];
+    var specBlock: Array<Dynamic> = ['at_spec'.atom(),[],[['order'.atom(),[],'nil'.atom()],[['String'.atom(),[],'nil'.atom()],['String'.atom(),[],'nil'.atom()]],['Dynamic'.atom(),[],'nil'.atom()]]];
+    var orderBody: Array<Dynamic> = [['inject'.atom(),[],[['Ellie'.atom(),[],'nil'.atom()],'bear'.atom()]]];
+    var orderBlock: Array<Dynamic> = ['def'.atom(),[],[['order'.atom(),[],[['ellie'.atom(),[],'nil'.atom()],['bear'.atom(),[],'nil'.atom()]]],{ __block__: orderBody }]];
+    var helloBlock: Array<Dynamic> = ['def'.atom(),[],[['hello'.atom(),[],[['a'.atom(),[],'nil'.atom()]]],{ __block__: ["hello world"] }]];
     Assert.areEqual(LangParser.toAST(expr), { __block__: [specBlock, orderBlock, helloBlock] });
   }
 
@@ -486,70 +486,70 @@ end';
   }
 
   public static function shouldParseEqualsOperatorsWithVariables(): Void {
-    Assert.areEqual(LangParser.toAST("a=b"), ['='.atom(), [], [['a'.atom(), [] , null], ['b'.atom(), [], null]]]);
-    Assert.areEqual(LangParser.toAST("a = 1"), ['='.atom(), [], [['a'.atom(), [] , null], 1]]);
+    Assert.areEqual(LangParser.toAST("a=b"), ['='.atom(), [], [['a'.atom(), [] , 'nil'.atom()], ['b'.atom(), [], 'nil'.atom()]]]);
+    Assert.areEqual(LangParser.toAST("a = 1"), ['='.atom(), [], [['a'.atom(), [] , 'nil'.atom()], 1]]);
   }
 
   public static function shouldParseGreaterThanOperatorWithVariables(): Void {
-    Assert.areEqual(LangParser.toAST("a>b"), ['>'.atom(), [], [['a'.atom(), [] , null], ['b'.atom(), [], null]]]);
-    Assert.areEqual(LangParser.toAST("a > 1"), ['>'.atom(), [], [['a'.atom(), [] , null], 1]]);
+    Assert.areEqual(LangParser.toAST("a>b"), ['>'.atom(), [], [['a'.atom(), [] , 'nil'.atom()], ['b'.atom(), [], 'nil'.atom()]]]);
+    Assert.areEqual(LangParser.toAST("a > 1"), ['>'.atom(), [], [['a'.atom(), [] , 'nil'.atom()], 1]]);
   }
 
   public static function shouldParseLessThanOperatorWithVariables(): Void {
-    Assert.areEqual(LangParser.toAST("a<b"), ['<'.atom(), [], [['a'.atom(), [] , null], ['b'.atom(), [], null]]]);
-    Assert.areEqual(LangParser.toAST("a < 1"), ['<'.atom(), [], [['a'.atom(), [] , null], 1]]);
+    Assert.areEqual(LangParser.toAST("a<b"), ['<'.atom(), [], [['a'.atom(), [] , 'nil'.atom()], ['b'.atom(), [], 'nil'.atom()]]]);
+    Assert.areEqual(LangParser.toAST("a < 1"), ['<'.atom(), [], [['a'.atom(), [] , 'nil'.atom()], 1]]);
   }
 
   public static function shouldParsePlusOperatorWithVariables(): Void {
-    Assert.areEqual(LangParser.toAST("abc + xyz"), ['+'.atom(), [], [['abc'.atom(), [] , null], ['xyz'.atom(), [], null]]]);
-    Assert.areEqual(LangParser.toAST("abc + 224"), ['+'.atom(), [], [['abc'.atom(), [] , null], 224]]);
+    Assert.areEqual(LangParser.toAST("abc + xyz"), ['+'.atom(), [], [['abc'.atom(), [] , 'nil'.atom()], ['xyz'.atom(), [], 'nil'.atom()]]]);
+    Assert.areEqual(LangParser.toAST("abc + 224"), ['+'.atom(), [], [['abc'.atom(), [] , 'nil'.atom()], 224]]);
   }
 
   public static function shouldParseMultipleOperators(): Void {
-    Assert.areEqual(LangParser.toAST("abc + xyz - 15 * 29"), ['+'.atom(),[],[['abc'.atom(),[],null], ['-'.atom(),[],[['xyz'.atom(),[],null], ['*'.atom(),[],[15,29]]]]]]);
+    Assert.areEqual(LangParser.toAST("abc + xyz - 15 * 29"), ['+'.atom(),[],[['abc'.atom(),[],'nil'.atom()], ['-'.atom(),[],[['xyz'.atom(),[],'nil'.atom()], ['*'.atom(),[],[15,29]]]]]]);
   }
 
   public static function shouldParseMinusOperatorWithVariables(): Void {
-    Assert.areEqual(LangParser.toAST("abc - xyz"), ['-'.atom(), [], [['abc'.atom(), [] , null], ['xyz'.atom(), [], null]]]);
+    Assert.areEqual(LangParser.toAST("abc - xyz"), ['-'.atom(), [], [['abc'.atom(), [] , 'nil'.atom()], ['xyz'.atom(), [], 'nil'.atom()]]]);
   }
 
   public static function shouldParseMultiplyOperatorWithVariables(): Void {
-    Assert.areEqual(LangParser.toAST("abc * xyz"), ['*'.atom(), [], [['abc'.atom(), [] , null], ['xyz'.atom(), [], null]]]);
+    Assert.areEqual(LangParser.toAST("abc * xyz"), ['*'.atom(), [], [['abc'.atom(), [] , 'nil'.atom()], ['xyz'.atom(), [], 'nil'.atom()]]]);
   }
 
   public static function shouldParseDivideOperatorWithVariables(): Void {
-    Assert.areEqual(LangParser.toAST("abc / xyz"), ['/'.atom(), [], [['abc'.atom(), [] , null], ['xyz'.atom(), [], null]]]);
+    Assert.areEqual(LangParser.toAST("abc / xyz"), ['/'.atom(), [], [['abc'.atom(), [] , 'nil'.atom()], ['xyz'.atom(), [], 'nil'.atom()]]]);
   }
 
   public static function shouldParseDoubleEqualsOperatorWithVariables(): Void {
-    Assert.areEqual(LangParser.toAST("abc == xyz"), ['=='.atom(), [], [['abc'.atom(), [] , null], ['xyz'.atom(), [], null]]]);
+    Assert.areEqual(LangParser.toAST("abc == xyz"), ['=='.atom(), [], [['abc'.atom(), [] , 'nil'.atom()], ['xyz'.atom(), [], 'nil'.atom()]]]);
   }
 
   public static function shouldParseStabbyOperatorWithVariables(): Void {
-    Assert.areEqual(LangParser.toAST("abc -> xyz"), ['->'.atom(), [], [['abc'.atom(), [] , null], ['xyz'.atom(), [], null]]]);
+    Assert.areEqual(LangParser.toAST("abc -> xyz"), ['->'.atom(), [], [['abc'.atom(), [] , 'nil'.atom()], ['xyz'.atom(), [], 'nil'.atom()]]]);
   }
 
   public static function shouldHandleDotAsOperator(): Void {
-    Assert.areEqual(LangParser.toAST("foo.bar"), ['.'.atom(), [], [['foo'.atom(), [] , null], ['bar'.atom(), [], null]]]);
+    Assert.areEqual(LangParser.toAST("foo.bar"), ['.'.atom(), [], [['foo'.atom(), [] , 'nil'.atom()], ['bar'.atom(), [], 'nil'.atom()]]]);
   }
 
   public static function shouldHandleGreaterThanOrEqualOperator(): Void {
-    Assert.areEqual(LangParser.toAST("foo >= bar"), ['>='.atom(), [], [['foo'.atom(), [] , null], ['bar'.atom(), [], null]]]);
-    Assert.areEqual(LangParser.toAST("ellie>=bear"), ['>='.atom(), [], [['ellie'.atom(), [] , null], ['bear'.atom(), [], null]]]);
+    Assert.areEqual(LangParser.toAST("foo >= bar"), ['>='.atom(), [], [['foo'.atom(), [] , 'nil'.atom()], ['bar'.atom(), [], 'nil'.atom()]]]);
+    Assert.areEqual(LangParser.toAST("ellie>=bear"), ['>='.atom(), [], [['ellie'.atom(), [] , 'nil'.atom()], ['bear'.atom(), [], 'nil'.atom()]]]);
   }
 
   public static function shouldHandleLessThanOrEqualOperator(): Void {
-    Assert.areEqual(LangParser.toAST("foo <= bar"), ['<='.atom(), [], [['foo'.atom(), [] , null], ['bar'.atom(), [], null]]]);
-    Assert.areEqual(LangParser.toAST("ellie<=bear"), ['<='.atom(), [], [['ellie'.atom(), [] , null], ['bear'.atom(), [], null]]]);
+    Assert.areEqual(LangParser.toAST("foo <= bar"), ['<='.atom(), [], [['foo'.atom(), [] , 'nil'.atom()], ['bar'.atom(), [], 'nil'.atom()]]]);
+    Assert.areEqual(LangParser.toAST("ellie<=bear"), ['<='.atom(), [], [['ellie'.atom(), [] , 'nil'.atom()], ['bear'.atom(), [], 'nil'.atom()]]]);
   }
 
   public static function shouldParseAssigningFunctionToAPattern(): Void {
     var string: String = '%{"cost" => pza} = cook(a, b + 212)';
     var cost: Dynamic = {};
-    var value: Dynamic = ["pza".atom(), [], null];
+    var value: Dynamic = ["pza".atom(), [], 'nil'.atom()];
     Reflect.setField(cost, 'cost', value);
     Assert.areEqual(LangParser.toAST(string),
-      ['='.atom(), [], [cost, ['cook'.atom(), [], [['a'.atom(), [], null], ['+'.atom(), [], [['b'.atom(), [], null], 212]]]]]]);
+      ['='.atom(), [], [cost, ['cook'.atom(), [], [['a'.atom(), [], 'nil'.atom()], ['+'.atom(), [], [['b'.atom(), [], 'nil'.atom()], 212]]]]]]);
   }
 
   public static function shouldParseDoAndEndAsAST(): Void {
@@ -557,7 +557,7 @@ end';
       defmodule Foo do
       end
     ";
-    Assert.areEqual(LangParser.toAST(string), ['defmodule'.atom(), [], [['Foo'.atom(), [], null], {__block__: []}]]);
+    Assert.areEqual(LangParser.toAST(string), ['defmodule'.atom(), [], [['Foo'.atom(), [], 'nil'.atom()], {__block__: []}]]);
 
     var string: String = "
       defmodule Foo do
@@ -565,8 +565,8 @@ end';
       end
     ";
 
-    var doBlock: Array<Dynamic> = ['inject'.atom(),[],[['Ellie'.atom(),[],null],'bear'.atom()]];
-    Assert.areEqual(LangParser.toAST(string), ['defmodule'.atom(), [], [['Foo'.atom(), [], null], {__block__: [doBlock]}]]);
+    var doBlock: Array<Dynamic> = ['inject'.atom(),[],[['Ellie'.atom(),[],'nil'.atom()],'bear'.atom()]];
+    Assert.areEqual(LangParser.toAST(string), ['defmodule'.atom(), [], [['Foo'.atom(), [], 'nil'.atom()], {__block__: [doBlock]}]]);
   }
 
   public static function shouldHandleDoBlocksWithParens(): Void {
@@ -576,8 +576,8 @@ end';
       end
     ";
 
-    var doBlock: Array<Dynamic> = ['inject'.atom(),[],[['Ellie'.atom(),[],null],'bear'.atom()]];
-    Assert.areEqual(LangParser.toAST(string), ['if'.atom(),[],[['>'.atom(),[],[['a'.atom(),[],null],29]], {__block__: [doBlock]}]]);
+    var doBlock: Array<Dynamic> = ['inject'.atom(),[],[['Ellie'.atom(),[],'nil'.atom()],'bear'.atom()]];
+    Assert.areEqual(LangParser.toAST(string), ['if'.atom(),[],[['>'.atom(),[],[['a'.atom(),[],'nil'.atom()],29]], {__block__: [doBlock]}]]);
   }
 
   public static function shouldHandleNestedDoBlocks(): Void {
@@ -590,10 +590,10 @@ end';
         end
       end
     ";
-    var doIfBody: Array<Dynamic> = ['inject'.atom(),[],[['Ellie'.atom(),[],null],'bear'.atom()]];
-    var doDefBody: Array<Dynamic> = ['if'.atom(),[],[['>'.atom(),[],[['ellie'.atom(),[],null],5]], {__block__: [doIfBody]}]];
+    var doIfBody: Array<Dynamic> = ['inject'.atom(),[],[['Ellie'.atom(),[],'nil'.atom()],'bear'.atom()]];
+    var doDefBody: Array<Dynamic> = ['if'.atom(),[],[['>'.atom(),[],[['ellie'.atom(),[],'nil'.atom()],5]], {__block__: [doIfBody]}]];
     var doModuleBody: Array<Dynamic> = ['def'.atom(),[],[['bar'.atom(),[], []], {__block__: [doDefBody]}]];
-    Assert.areEqual(LangParser.toAST(string), ['defmodule'.atom(), [], [['Foo'.atom(), [], null], {__block__: [doModuleBody]}]]);
+    Assert.areEqual(LangParser.toAST(string), ['defmodule'.atom(), [], [['Foo'.atom(), [], 'nil'.atom()], {__block__: [doModuleBody]}]]);
   }
 
   public static function shouldHandleNestedBlocksWhenFunctionsHaveArgs(): Void {
@@ -609,9 +609,9 @@ defmodule Foo do
   end
 end';
     var helloBody: Array<Dynamic> = ["hello world"];
-    var orderBody: Array<Dynamic> = [['inject'.atom(),[],[['Ellie'.atom(),[],null],'bear'.atom()]]];
-    var moduleBody: Array<Dynamic> = [['at_spec'.atom(),[],[['order'.atom(),[],null],[['String'.atom(),[],null],['String'.atom(),[],null]],['Dynamic'.atom(),[],null]]],['def'.atom(),[],[['order'.atom(),[],[['ellie'.atom(),[],null],['bear'.atom(),[],null]]],{ __block__: orderBody }]],['def'.atom(),[],[['hello'.atom(),[],[['a'.atom(),[],null]]],{ __block__: helloBody}]]];
-    Assert.areEqual(LangParser.toAST(expr), ['defmodule'.atom(),[],[['Foo'.atom(),[],null],{ __block__: moduleBody }]]);
+    var orderBody: Array<Dynamic> = [['inject'.atom(),[],[['Ellie'.atom(),[],'nil'.atom()],'bear'.atom()]]];
+    var moduleBody: Array<Dynamic> = [['at_spec'.atom(),[],[['order'.atom(),[],'nil'.atom()],[['String'.atom(),[],'nil'.atom()],['String'.atom(),[],'nil'.atom()]],['Dynamic'.atom(),[],'nil'.atom()]]],['def'.atom(),[],[['order'.atom(),[],[['ellie'.atom(),[],'nil'.atom()],['bear'.atom(),[],'nil'.atom()]]],{ __block__: orderBody }]],['def'.atom(),[],[['hello'.atom(),[],[['a'.atom(),[],'nil'.atom()]]],{ __block__: helloBody}]]];
+    Assert.areEqual(LangParser.toAST(expr), ['defmodule'.atom(),[],[['Foo'.atom(),[],'nil'.atom()],{ __block__: moduleBody }]]);
   }
 
   public static function shouldConvertStringASTToHaxe(): Void {
@@ -718,7 +718,7 @@ class Foo {
 
   public static function shouldCallDefMacro(): Void {
     var string: String = "defmodule Foo do
-      @spec(bar, null, Dynamic)
+      @spec(bar, nil, Dynamic)
       def bar() do
       end
     end";
