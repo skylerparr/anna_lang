@@ -16,7 +16,7 @@ class Compiler {
   @field public static var interp: Interp;
   @field public static var printer: Printer;
 
-  public static function start(): lang.Types.Atom {
+  public static function start(): Atom {
     printer = new Printer();
     parser = Native.callStaticField('Main', 'parser');
     interp = Native.callStaticField('Main', 'interp');

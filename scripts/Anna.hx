@@ -5,7 +5,6 @@ import compiler.Compiler;
 import haxe.macro.Expr;
 import hscript.Interp;
 import hscript.Parser;
-import lang.Types.Atom;
 using lang.AtomSupport;
 @:build(macros.ValueClassImpl.build())
 class Anna {

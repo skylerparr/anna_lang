@@ -926,4 +926,57 @@ class Foo {
   }
 }');
   }
+
+  public static function shouldAllowArgumentTypes(): Void {
+    var string: String = '
+    defmodule Foo do
+      @spec(order, {Ellie, Int}, Bear)
+      def order(a, b) do
+      end
+    end';
+
+    Assert.areEqual(LangParser.toHaxe(LangParser.toAST(string)),
+    'package ;
+using lang.AtomSupport;
+@:build(macros.ScriptMacros.script())
+class Foo {
+  public static function order(arg0: __Ellie__.Ellie, arg1: Int): __Bear__.Bear {
+    var a: __Ellie__.Ellie;
+    var b: Int;
+    switch([arg0, arg1]) {
+      case _:
+        a = arg0;
+        b = arg1;
+    }
+    
+    return "nil".atom();
+  }
+}');
+
+    var string: String = '
+    defmodule Foo do
+      @spec(order, {Cat.Ellie.Bear, Int}, Atom)
+      def order(a, b) do
+      end
+    end';
+
+    Assert.areEqual(LangParser.toHaxe(LangParser.toAST(string)),
+    'package ;
+using lang.AtomSupport;
+@:build(macros.ScriptMacros.script())
+class Foo {
+  public static function order(arg0: cat.ellie.__Bear__.Bear, arg1: Int): Atom {
+    var a: cat.ellie.__Bear__.Bear;
+    var b: Int;
+    switch([arg0, arg1]) {
+      case _:
+        a = arg0;
+        b = arg1;
+    }
+    
+    return "nil".atom();
+  }
+}');
+  }
+
 }

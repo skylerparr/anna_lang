@@ -1,5 +1,4 @@
 package lang;
-import lang.Types.Atom;
 class HashTableAtoms implements Atoms {
 
   public static var NIL: Atom = {value: "nil", __type__: Types.ATOM};

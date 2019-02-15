@@ -1,6 +1,5 @@
 package lang;
 
-import lang.Types.Atom;
 class AtomSupport {
 
   public static var atoms: Atoms;

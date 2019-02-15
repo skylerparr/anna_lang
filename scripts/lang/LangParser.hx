@@ -75,6 +75,29 @@ class ${moduleName} {';
     return '${retVal}\n${moduleBody}\n}';
   }
 
+  private static inline function isBasicType(string: String): Bool {
+    return string != "String" &&
+    string != "Int" &&
+    string != "Float" &&
+    string != "Dynamic" &&
+    string != "Atom";
+  }
+
+  public static inline function getType(ast: Array<Dynamic>, aliases: Map<String, String>, context: Dynamic): String {
+    var retType: String;
+    var moduleAndPackage: Dynamic = resolveClassToPackage(ast, aliases, context);
+    if(moduleAndPackage.packageName != '') {
+      retType = ': ${moduleAndPackage.packageName.toLowerCase()}.__${moduleAndPackage.moduleName}__.${moduleAndPackage.moduleName}';
+    } else {
+      if(isBasicType(moduleAndPackage.moduleName)) {
+        retType = ': __${moduleAndPackage.moduleName}__.${moduleAndPackage.moduleName}';
+      } else {
+        retType = ': ${moduleAndPackage.moduleName}';
+      }
+    }
+    return retType;
+  }
+
   public static function _def(defDef: Array<Dynamic>, body: Dynamic, aliases: Map<String, String>, context: Dynamic): String {
     var retVal: String = null;
     var functionName: String = defDef[0].value;
@@ -94,23 +117,11 @@ class ${moduleName} {';
     if(specs != null) {
       spec = specs.get(functionName);
       if(spec != null) {
-        var moduleAndPackage: Dynamic = resolveClassToPackage(spec[1], aliases, context);
-        if(moduleAndPackage.packageName != '') {
-          retType = ': ${moduleAndPackage.packageName}.__${moduleAndPackage.moduleName}__.${moduleAndPackage.moduleName}';
-        } else {
-          if(moduleAndPackage.moduleName != "String" &&
-            moduleAndPackage.moduleName != "Int" &&
-            moduleAndPackage.moduleName != "Float" &&
-            moduleAndPackage.moduleName != "Dynamic" ) {
-            retType = ': __${moduleAndPackage.moduleName}__.${moduleAndPackage.moduleName}';
-          } else {
-            retType = ': ${moduleAndPackage.moduleName}';
-          }
-        }
+        retType = getType(spec[1], aliases, context);
         for(i in 0...funArgs.length) {
-          var type: String = spec[0][i][0].value;
+          var type: String = getType(spec[0][i], aliases, context);
           var argName: String = 'arg${i}';
-          typedArgs.push('${argName}: ${type}');
+          typedArgs.push('${argName}${type}');
           genericArgs.push(argName);
         }
       }
@@ -142,8 +153,8 @@ class ${moduleName} {';
       var patternArgsDeclarations: Array<String> = [];
       for(i in 0...funArgs.length) {
         patternAssignedArgs.push('        ${funArgs[i]} = ${genericArgs[i]};');
-        var type: String = spec[0][i][0].value;
-        patternArgsDeclarations.push('    var ${funArgs[i]}: ${type};');
+        var type: String = getType(spec[0][i], aliases, context);
+        patternArgsDeclarations.push('    var ${funArgs[i]}${type};');
       }
 
       patternAssignment = '${patternArgsDeclarations.join('\n')}

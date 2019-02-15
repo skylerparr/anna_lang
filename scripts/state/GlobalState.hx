@@ -1,7 +1,5 @@
 package state;
 
-import lang.Types.Atom;
-
 using lang.AtomSupport;
 
 @:build(macros.ScriptMacros.script())

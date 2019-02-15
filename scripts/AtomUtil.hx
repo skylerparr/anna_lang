@@ -3,7 +3,7 @@ using lang.AtomSupport;
 
 @:build(macros.ScriptMacros.script())
 class AtomUtil {
-  public static function toString(atom: lang.Types.Atom): String {
+  public static function toString(atom: Atom): String {
     return atom.value;
   }
 }
