@@ -1,5 +1,11 @@
 defmodule Foo.Bar.Sample do
 
+  deftype Turtle do
+    {:color, String}
+    {:age, Int}
+    {:name, String}
+  end
+
   @spec(sum, {Int, Int}, Int)
   def sum(a, b) do
     a + b

@@ -1,7 +1,8 @@
 package lang;
 
-import Type.ValueType;
+import lang.Types;
 import compiler.CodeGen;
+import Type.ValueType;
 using lang.AtomSupport;
 using StringTools;
 using lang.ArraySupport;
@@ -62,15 +63,11 @@ class LangParser {
   }
 
   public static function _defmodule(moduleDef: Dynamic, body: Dynamic, aliases: Map<String, String>, context: Dynamic): String {
-    var moduleName: String = '';
-    var fqName: String = toHaxe(moduleDef, aliases, context);
-    var modName: String = fqName.split('(')[0];
-    var frags: Array<String> = modName.split('.');
-    moduleName = frags.pop();
-    var packageName: String = frags.join('.');
+    var fqName: Dynamic = resolveClassToPackage(moduleDef, aliases, context);
+    var moduleName: String = fqName.moduleName;
     context.moduleName = moduleName;
     var retVal: String =
-'package ${packageName};
+'package ${fqName.packageName};
 using lang.AtomSupport;
 @:build(macros.ScriptMacros.script())
 class ${moduleName} {';
@@ -169,14 +166,41 @@ ${patternAssignment}
     return null;
   }
 
+  public static function _deftype(ast: Array<Dynamic>, body: Dynamic, aliases: Map<String, String>, context: Dynamic): String {
+
+    var types: Array<String> = [];
+    var definedTypes: Array<Dynamic> = body[0].__block__;
+    for(type in definedTypes) {
+      var name: Atom = type[0];
+      var type: Atom = type[1][0];
+      types.push('${name.value}: ${type.value}');
+    }
+    var fqName: Dynamic = resolveClassToPackage(ast, aliases, context);
+    var retVal: String = 'package ${fqName.packageName};${NEWLINE}';
+    retVal += 'typedef ${fqName.moduleName} = ${OPEN_BRACE}${NEWLINE}';
+    retVal += types.join(',\n');
+    retVal += NEWLINE + CLOSE_BRACE + NEWLINE;
+    retVal += 'class __${fqName.moduleName}__ {}';
+    return retVal;
+  }
+
   public static function _resolveScope(ast: Array<Dynamic>, body: Dynamic, aliases: Map<String, String>, context: Dynamic): String {
     var retVal: Array<String> = [];
     var scope: Dynamic = ast[0];
     if(Reflect.hasField(scope, '__type__') && Reflect.field(scope, '__type__') == 'ATOM') {
-      retVal.push(Atom.toString(scope).toLowerCase());
+      retVal.push(AtomUtil.toString(scope).toLowerCase());
       retVal.push(toHaxe(body[0]));
     }
     return retVal.join('.');
+  }
+
+  private static function resolveClassToPackage(ast: Array<Dynamic>, aliases: Map<String, String>, context: Dynamic): Dynamic {
+    var fqName: String = toHaxe(ast, aliases, context);
+    var modName: String = fqName.split('(')[0];
+    var frags: Array<String> = modName.split('.');
+    var moduleName: String = frags.pop();
+    var packageName: String = frags.join('.');
+    return {packageName: packageName, moduleName: moduleName};
   }
 
   public static function toHaxe(ast: Dynamic, aliases: Map<String, String> = null, context: Dynamic = null): String {
@@ -540,6 +564,7 @@ ${patternAssignment}
             operatorString += char;
           }
         case [ParsingState.NONE, _, SPACE | NEWLINE]:
+          //ignore
         case [ParsingState.NONE, _, _]:
           if(leftRightOperators.any(char)) {
             operatorString += char;

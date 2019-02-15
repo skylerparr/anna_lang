@@ -828,4 +828,38 @@ class Car {
 
 }');
   }
+
+  public static function shouldGenerateCustomType(): Void {
+    var string: String = 'deftype Cat do
+  {:breed, String}
+  {:age, Int}
+  {:name, String}
+end';
+
+    Assert.areEqual(LangParser.toHaxe(LangParser.toAST(string)),
+    'package ;
+typedef Cat = {
+breed: String,
+age: Int,
+name: String
+}
+class __Cat__ {}');
+  }
+
+  public static function shouldResolveLongCustomType(): Void {
+    var string: String = 'deftype Foo.Bar.Baz.Car.Dig.Duke.Cat do
+  {:breed, String}
+  {:age, Int}
+  {:name, String}
+end';
+
+    Assert.areEqual(LangParser.toHaxe(LangParser.toAST(string)),
+    'package foo.bar.baz.car.dig.duke;
+typedef Cat = {
+breed: String,
+age: Int,
+name: String
+}
+class __Cat__ {}');
+  }
 }
