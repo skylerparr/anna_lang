@@ -1,6 +1,5 @@
 package lang;
 
-import lang.Types;
 import compiler.CodeGen;
 import Type.ValueType;
 using lang.AtomSupport;
@@ -39,7 +38,6 @@ class LangParser {
     builtinAliases.set('-', 'Anna.subtract');
     builtinAliases.set('*', 'Anna.multiply');
     builtinAliases.set('/', 'Anna.divide');
-    builtinAliases.set('=', 'patternMatch');
     builtinAliases.set('.', 'resolveScope');
     builtinAliases;
   };
@@ -76,11 +74,12 @@ class ${moduleName} {';
   }
 
   private static inline function isBasicType(string: String): Bool {
-    return string != "String" &&
-    string != "Int" &&
-    string != "Float" &&
-    string != "Dynamic" &&
-    string != "Atom";
+    return string == "String" ||
+    string == "Int" ||
+    string == "Float" ||
+    string == "Dynamic" ||
+    string == "Atom" ||
+    string.startsWith("Array");
   }
 
   public static inline function getType(ast: Array<Dynamic>, aliases: Map<String, String>, context: Dynamic): String {
@@ -90,9 +89,9 @@ class ${moduleName} {';
       retType = ': ${moduleAndPackage.packageName.toLowerCase()}.__${moduleAndPackage.moduleName}__.${moduleAndPackage.moduleName}';
     } else {
       if(isBasicType(moduleAndPackage.moduleName)) {
-        retType = ': __${moduleAndPackage.moduleName}__.${moduleAndPackage.moduleName}';
-      } else {
         retType = ': ${moduleAndPackage.moduleName}';
+      } else {
+        retType = ': __${moduleAndPackage.moduleName}__.${moduleAndPackage.moduleName}';
       }
     }
     return retType;
@@ -182,15 +181,7 @@ ${patternAssignment}
     return null;
   }
 
-  public static function _patternMatch(patternDef: Array<Dynamic>, body: Dynamic, aliases: Map<String, String>, context: Dynamic): String {
-    trace('pattern match');
-    trace(patternDef);
-    trace(body);
-    return null;
-  }
-
   public static function _deftype(ast: Array<Dynamic>, body: Dynamic, aliases: Map<String, String>, context: Dynamic): String {
-
     var types: Array<String> = [];
     var definedTypes: Array<Dynamic> = body[0].__block__;
     for(type in definedTypes) {

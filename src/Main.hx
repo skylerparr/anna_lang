@@ -10,8 +10,6 @@ import hscript.Macro;
 import hscript.Interp;
 import hscript.Parser;
 import lang.HashTableAtoms;
-import lang.Atoms;
-import lang.Atoms;
 import lang.AtomSupport;
 import cpp.vm.Thread;
 import ihx.HScriptEval;

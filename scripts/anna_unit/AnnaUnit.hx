@@ -8,37 +8,57 @@ class AnnaUnit {
       return;
     }
 
-    var startTime: Float = Timer.stamp();
-    var clazz: Class<Dynamic> = Type.resolveClass('tests.LangParserTest');
-
-    var fields: Array<String> = [];
-    if(testName == null) {
-      fields = Type.getClassFields(clazz);
-    } else {
-      fields.push(testName);
-    }
-    fields = Native.callStatic('Random', 'shuffle', [fields]);
+    var classes: Array<String> = [
+      'tests.LangParserTest',
+      'tests.ModuleTest',
+      'tests.AnnaTest',
+    ];
     var successCounter: Int = 0;
     var failureCounter: Int = 0;
-    for(field in fields) {
-      if(field == "start" || field == 'main') {
-        continue;
+    var startTime: Float = Timer.stamp();
+
+    for(className in classes) {
+      var clazz: Class<Dynamic> = Type.resolveClass(className);
+
+      var fields: Array<String> = [];
+      if(testName == null) {
+        fields = Type.getClassFields(clazz);
+      } else {
+        fields.push(testName);
       }
-      var fun = Reflect.field(clazz, field);
-      if(fun == null) {
-        return;
+
+      if(Reflect.hasField(clazz, 'start')) {
+        var fun = Reflect.field(clazz, 'start');
+        fun();
       }
-      try {
-        Reflect.callMethod(clazz, fun, []);
-        successCounter++;
-      } catch(e: Dynamic) {
-        failureCounter++;
-        cpp.Lib.println('');
-        cpp.Lib.println('failure testing ${clazz}#${field}');
-        cpp.Lib.println(e.message);
-        continue;
+
+      fields = Native.callStatic('Random', 'shuffle', [fields]);
+
+      for(field in fields) {
+        if(field == 'start' || field == 'main') {
+          continue;
+        }
+        if(!Reflect.hasField(clazz, field)) {
+          continue;
+        }
+        if(Reflect.hasField(clazz, 'setup')) {
+          var fun = Reflect.field(clazz, 'setup');
+          fun();
+          continue;
+        }
+        var fun = Reflect.field(clazz, field);
+        try {
+          Reflect.callMethod(clazz, fun, []);
+          successCounter++;
+        } catch(e: Dynamic) {
+          failureCounter++;
+          cpp.Lib.println('');
+          cpp.Lib.println('failure testing ${clazz}#${field}');
+          cpp.Lib.println(e.message);
+          continue;
+        }
+        cpp.Lib.print('.');
       }
-      cpp.Lib.print('.');
     }
     cpp.Lib.println('');
     cpp.Lib.println('Success: ${successCounter} test(s).');
