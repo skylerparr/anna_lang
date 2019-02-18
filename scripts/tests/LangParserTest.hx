@@ -1,5 +1,7 @@
 package tests;
 
+import haxe.ds.ObjectMap;
+import haxe.ds.ObjectMap;
 import anna_unit.Assert;
 import lang.LangParser;
 import lang.ParsingException;
@@ -7,6 +9,8 @@ using lang.AtomSupport;
 using StringTools;
 @:build(macros.ScriptMacros.script())
 class LangParserTest {
+
+  public static var emptyMap: ObjectMap<Dynamic, Dynamic> = new ObjectMap<Dynamic, Dynamic>();
 
   public static function shouldLeaveExpressionUnchangedIfIsOnlyData(): Void {
     Assert.areEqual(LangParser.sanitizeExpr('"foo"'), '"foo"');
@@ -320,34 +324,40 @@ end';
   }
 
   public static function shouldConvertHashToAst(): Void {
-    Assert.areEqual(LangParser.toAST("%{      }"), {});
-    Assert.areNotEqual(LangParser.toAST('"%{}"'), {});
+    Assert.areEqual(LangParser.toAST("%{      }"), emptyMap);
+    Assert.areNotEqual(LangParser.toAST('"%{}"'), emptyMap);
   }
 
   public static function shouldConvertHashWithValues(): Void {
-    Assert.areEqual(LangParser.toAST('%{"foo" => :bar}'), {'foo': 'bar'.atom()});
+    var map: ObjectMap<Dynamic, Dynamic> = new ObjectMap<Dynamic, Dynamic>();
+    map.set('foo', 'bar'.atom());
+    Assert.areEqual(LangParser.toAST('%{"foo" => :bar}'), map);
   }
 
   public static function shouldConvertHashWithAtomKeys(): Void {
-    var expect: Dynamic = {};
-    var key: Dynamic = 'foo'.atom();
-    Reflect.setField(expect, key, 'bar'.atom());
-    Assert.areEqual(LangParser.toAST('%{:foo => :bar}'), expect);
+    var map: ObjectMap<Dynamic, Dynamic> = new ObjectMap<Dynamic, Dynamic>();
+    map.set('foo'.atom(), 'bar'.atom());
+    Assert.areEqual(LangParser.toAST('%{:foo => :bar}'), map);
   }
 
   public static function shouldConvertHashWithNestedHashes(): Void {
-    Assert.areEqual(LangParser.toAST('%{"foo" => :bar, "car" => %{}}'), {'foo': 'bar'.atom(), 'car': {}});
+    var map: ObjectMap<Dynamic, Dynamic> = new ObjectMap<Dynamic, Dynamic>();
+    map.set('foo', 'bar'.atom());
+    map.set('car', emptyMap);
+    Assert.areEqual(LangParser.toAST('%{"foo" => :bar, "car" => %{}}'), map);
   }
 
   public static function shouldConvertHashWithHashKeys(): Void {
-    var expect: Dynamic = {};
-    var key: Dynamic = {};
-    Reflect.setField(expect, key, "car");
-    Assert.areEqual(LangParser.toAST('%{%{} => "car"}'), expect);
+    var map: ObjectMap<Dynamic, Dynamic> = new ObjectMap<Dynamic, Dynamic>();
+    map.set(emptyMap, "car");
+    Assert.areEqual(LangParser.toAST('%{%{} => "car"}'), map);
   }
 
   public static function shouldParseHashWithArrayValues(): Void {
-    Assert.areEqual(LangParser.toAST('%{"foo" => :bar, "car" => {}}'), {'foo': 'bar'.atom(), 'car': []});
+    var map: ObjectMap<Dynamic, Dynamic> = new ObjectMap<Dynamic, Dynamic>();
+    map.set('foo', 'bar'.atom());
+    map.set('car', []);
+    Assert.areEqual(LangParser.toAST('%{"foo" => :bar, "car" => {}}'), map);
   }
 
   public static function shouldThrowParsingErrorIfHashIsLeftOpen(): Void {
@@ -399,21 +409,29 @@ end';
   }
 
   public static function shouldParseFunctionWithNestedFunctionCallThatHasHashArgs(): Void {
-    Assert.areEqual(LangParser.toAST('m(3, a(%{"b" => "ellie"}))'), ['m'.atom(), [], [3, ['a'.atom(), [], [{"b": "ellie"}]]]]);
+    var map: ObjectMap<Dynamic, Dynamic> = new ObjectMap<Dynamic, Dynamic>();
+    map.set('b', 'ellie');
+    Assert.areEqual(LangParser.toAST('m(3, a(%{"b" => "ellie"}))'), ['m'.atom(), [], [3, ['a'.atom(), [], [map]]]]);
   }
 
   public static function shouldParseFunctionWithNestedFunctionCallThatHasASingleHashArg(): Void {
-    Assert.areEqual(LangParser.toAST('nozy(%{"bar" => {:cat}})'), ['nozy'.atom(), [], [{"bar": ['cat'.atom()]}]]);
+    var map: ObjectMap<Dynamic, Dynamic> = new ObjectMap<Dynamic, Dynamic>();
+    map.set('bar', ['cat'.atom()]);
+    Assert.areEqual(LangParser.toAST('nozy(%{"bar" => {:cat}})'), ['nozy'.atom(), [], [map]]);
   }
 
   public static function shouldParseFunctionWithMultipleNestedFunctionCallsThatHasHashArgs(): Void {
-    Assert.areEqual(LangParser.toAST('qtip(nozy(%{"bar" => {:cat}}))'), ['qtip'.atom(), [], [['nozy'.atom(), [], [{"bar": ['cat'.atom()]}]]]]);
+    var map: ObjectMap<Dynamic, Dynamic> = new ObjectMap<Dynamic, Dynamic>();
+    map.set('bar', ['cat'.atom()]);    Assert.areEqual(LangParser.toAST('qtip(nozy(%{"bar" => {:cat}}))'), ['qtip'.atom(), [], [['nozy'.atom(), [], [map]]]]);
   }
 
   public static function shouldParseFunctionWithNestedFunctionCallsAndDataStructures(): Void {
+    var map: ObjectMap<Dynamic, Dynamic> = new ObjectMap<Dynamic, Dynamic>();
+    map.set("bar", ['cat'.atom()]);
+
     Assert.areEqual(LangParser.toAST('m(3, b(1, 2), ellie({:foo}), qtip(nozy(%{"bar" => {:cat}})))'),
       ['m'.atom(), [], [3, ['b'.atom(), [], [1,2]], ['ellie'.atom(), [], [['foo'.atom()]]],
-        ['qtip'.atom(), [], [['nozy'.atom(), [], [{'bar': ['cat'.atom()]}]]]]]]);
+        ['qtip'.atom(), [], [['nozy'.atom(), [], [map]]]]]]);
   }
 
   public static function shouldParseAtFunctionWhenOneOfTheArgsIsAnArray(): Void {
@@ -430,7 +448,7 @@ end';
       324,
       [],
       ['coo'.atom(), [], ['cat', 5, 6, 'seven'.atom()]],
-      {}
+      new ObjectMap<Dynamic, Dynamic>()
     ]};
 
     Assert.areEqual(LangParser.toAST('
@@ -542,9 +560,9 @@ end';
 
   public static function shouldParseAssigningFunctionToAPattern(): Void {
     var string: String = '%{"cost" => pza} = cook(a, b + 212)';
-    var cost: Dynamic = {};
+    var cost: ObjectMap<Dynamic, Dynamic> = new ObjectMap<Dynamic, Dynamic>();
     var value: Dynamic = ["pza".atom(), [], 'nil'.atom()];
-    Reflect.setField(cost, 'cost', value);
+    cost.set('cost', value);
     Assert.areEqual(LangParser.toAST(string),
       ['='.atom(), [], [cost, ['cook'.atom(), [], [['a'.atom(), [], 'nil'.atom()], ['+'.atom(), [], [['b'.atom(), [], 'nil'.atom()], 212]]]]]]);
   }
@@ -640,11 +658,11 @@ end';
   }
 
   public static function shouldConvertHashASTToHaxe(): Void {
-    Assert.areEqual(LangParser.toHaxe(LangParser.toAST('%{}')), '{}');
+    Assert.areEqual(LangParser.toHaxe(LangParser.toAST('%{}')), '[  ]');
   }
 
   public static function shouldConvertHashWithValuesASTToHaxe(): Void {
-    Assert.areEqual(LangParser.toHaxe(LangParser.toAST('%{"foo" => :bar, "car" => {}}')), '{"car": [], "foo": "bar".atom()}');
+    Assert.areEqual(LangParser.toHaxe(LangParser.toAST('%{"foo" => :bar, "car" => {}}')), '[ foo => "bar".atom(), car => [] ]');
   }
 
   public static function shouldConvertVariableToHaxe(): Void {
@@ -662,7 +680,7 @@ end';
   public static function shouldParseFunctionWithNestedFunctionCallsAndDataStructuresToHaxe(): Void {
     Assert.areEqual(LangParser.toHaxe(LangParser.toAST(
       'm(3, b(1, 2), ellie({:foo}), qtip(nozy(%{"bar" => {:cat}})))')),
-      'm(3, b(1, 2), ellie(["foo".atom()]), qtip(nozy({"bar": ["cat".atom()]})))');
+      'm(3, b(1, 2), ellie(["foo".atom()]), qtip(nozy([ bar => ["cat".atom()] ])))');
   }
 
   public static function shouldSubstituteAliasedFunctionsWhenConvertingToHaxe(): Void {
@@ -698,7 +716,7 @@ rem(a, b)
 cook(a, Anna.add(b, 212))
 Anna.add(a, b)
 cost
-{}');
+[  ]');
   }
 
   public static function shouldCallDefmoduleMacro(): Void {
@@ -888,7 +906,7 @@ class Foo {
     }
     var v0 = rem(a, b);
     var v1 = cook(a, Anna.add(b, 212));
-    return {"feet": 2, "mouth": 1};
+    return [ feet => 2, mouth => 1 ];
   }
 }');
   }
@@ -919,7 +937,7 @@ class Foo {
     }
     var v0 = rem(a, b);
     var v1 = cook(a, Anna.add(b, 212));
-    return {"feet": 2, "mouth": 1};
+    return [ feet => 2, mouth => 1 ];
   }
 }');
   }

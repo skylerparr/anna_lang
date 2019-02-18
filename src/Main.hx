@@ -1,3 +1,4 @@
+import haxe.ds.ObjectMap;
 import haxe.Timer;
 import haxe.CallStack;
 import haxe.Constraints.IMap;
@@ -29,8 +30,11 @@ class Main {
     CallStack.exceptionStack();
     CallStack.callStack();
     var m: IMap<String, String> = new Map<String, String>();
-    Timer.stamp();
     m.keys();
+    var map: ObjectMap<Dynamic, Dynamic> = new ObjectMap<Dynamic, Dynamic>();
+    for(v in map) {}
+    for(k in map.keys()) {}
+    Timer.stamp();
     new Date(2018, 1, 1, 0, 0, 0).getTime();
     new Printer().printExpr(macro 'foo');
     AtomSupport.atoms = new HashTableAtoms();

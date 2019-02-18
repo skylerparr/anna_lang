@@ -1,5 +1,6 @@
 package anna_unit;
 
+import Type;
 import lang.CustomTypes;
 import lang.StandardException;
 import anna_unit.TestFailureException;
@@ -31,7 +32,7 @@ class Assert {
     throw new TestFailureException(errString);
   }
 
-  public static function stringAreEqual(a: String, b: String): Void {
+  public static function stringsAreEqual(a: String, b: String): Void {
     if(a != b) {
       var errString = '';
       errString += '\n';
@@ -51,8 +52,8 @@ class Assert {
       errString += '\n';
       errString += 'are not equal, expected to be equal\n';
       errString += '\n';
-      errString += 'lhs: ${a}\n';
-      errString += 'rhs: ${b}\n';
+      errString += 'lhs: ${Anna.inspect(a)}\n';
+      errString += 'rhs: ${Anna.inspect(b)}\n';
       fail(errString);
     }
   }
@@ -65,8 +66,8 @@ class Assert {
       errString += '\n';
       errString += 'are equal, expected to not be equal\n';
       errString += '\n';
-      errString += 'lhs: ${a}\n';
-      errString += 'rhs: ${b}\n';
+      errString += 'lhs: ${Anna.inspect(a)}\n';
+      errString += 'rhs: ${Anna.inspect(b)}\n';
       fail(errString);
     }
   }

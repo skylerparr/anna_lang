@@ -1,10 +1,13 @@
 package lang;
 
+import haxe.ds.ObjectMap;
+import haxe.ds.ObjectMap;
 import compiler.CodeGen;
 import Type.ValueType;
 using lang.AtomSupport;
 using StringTools;
 using lang.ArraySupport;
+using lang.MapUtil;
 
 enum ParsingState {
   NONE;
@@ -202,8 +205,9 @@ class __${fqName.moduleName}__ {}';
   public static function _resolveScope(ast: Array<Dynamic>, body: Dynamic, aliases: Map<String, String>, context: Dynamic): String {
     var retVal: Array<String> = [];
     var scope: Dynamic = ast[0];
-    if(Reflect.hasField(scope, '__type__') && Reflect.field(scope, '__type__') == 'ATOM') {
-      retVal.push(AtomUtil.toString(scope).toLowerCase());
+    if(Std.is(scope, Atom)) {
+      var a: Atom = cast(scope, Atom);
+      retVal.push(a.value.toLowerCase());
       retVal.push(toHaxe(body[0]));
     }
     return retVal.join('.');
@@ -234,6 +238,11 @@ class __${fqName.moduleName}__ {}';
         retVal = ast;
       case ValueType.TClass(String):
         retVal = '"${ast}"';
+      case ValueType.TClass(ObjectMap):
+        var map: ObjectMap<Dynamic, Dynamic> = cast(ast, ObjectMap<Dynamic, Dynamic>);
+        var dy: Dynamic = map.toDynamic();
+        var dyString: String = '${dy}';
+        return '${Anna.inspect(dy)}';
       case ValueType.TClass(Array):
         var vals: Array<String> = [];
         var orig: Array<Dynamic> = cast ast;
@@ -274,10 +283,10 @@ class __${fqName.moduleName}__ {}';
           }
           retVal = '[${vals.join(", ")}]';
         }
+      case ValueType.TClass(Atom):
+        retVal = '"${ast.value}".atom()';
       case ValueType.TObject:
-        if(Reflect.hasField(ast, '__type__')) {
-          retVal = '"${ast.value}".atom()';
-        } else if(Reflect.hasField(ast, '__block__')) {
+        if(Reflect.hasField(ast, '__block__')) {
           var vals: Array<String> = [];
           var orig: Array<Dynamic> = cast(Reflect.field(ast, '__block__'));
           for(val in orig) {
@@ -805,7 +814,7 @@ class __${fqName.moduleName}__ {}';
           openCount--;
           if(openCount == 0) {
             state = ParsingState.NONE;
-            currentVal = {};
+            currentVal = new ObjectMap();
             parseHash(currentVal, currentStrVal);
             leftStrVal = '%{${currentStrVal}}';
             retVal.push(currentVal);
@@ -1051,7 +1060,7 @@ class __${fqName.moduleName}__ {}';
     return currentAST;
   }
 
-  private static inline function parseHash(hash: Dynamic, string: String): Dynamic {
+  private static inline function parseHash(hash: ObjectMap<Dynamic, Dynamic>, string: String): Dynamic {
     var currentVal: String = "";
     var braceCount: Int = 0;
     var key: Array<Dynamic> = null;
@@ -1075,7 +1084,7 @@ class __${fqName.moduleName}__ {}';
         case [ParsingState.NONE, COMMA, HashState.DEFINE_VALUE]:
           var val: Array<Dynamic> = parseExpr(currentVal);
           if(val.length > 0) {
-            Reflect.setField(hash, cast key, val[0]);
+            hash.set(key, val[0]);
           }
           currentVal = "";
           hashState = HashState.NONE;
@@ -1092,7 +1101,7 @@ class __${fqName.moduleName}__ {}';
           if(braceCount == 0) {
             var val: Array<Dynamic> = parseExpr(currentVal);
             if(val.length > 0) {
-              Reflect.setField(hash, cast key, val[0]);
+              hash.set(key, val[0]);
             }
             currentVal = "";
             hashState = HashState.NONE;
@@ -1108,7 +1117,7 @@ class __${fqName.moduleName}__ {}';
       if(braceCount == 0) {
         var val: Array<Dynamic> = parseExpr(currentVal);
         if(val.length > 0) {
-          Reflect.setField(hash, cast key, val[0]);
+          hash.set(key, val[0]);
         }
       }
     }

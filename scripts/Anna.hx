@@ -47,8 +47,10 @@ class Anna {
         return inspectMap((val : ObjectMap<Dynamic, Dynamic>));
       case TClass(Array):
         return inspectArray(val);
-      case TObject:
+      case TClass(Atom):
         return inspectAtom((val : Atom));
+      case TObject:
+        return inspectDynamic(val);
       case TInt | TFloat:
         return val;
       case TBool:
@@ -72,15 +74,21 @@ class Anna {
   }
 
   private static inline function inspectAtom(atom: Atom): String {
-    if(!Reflect.hasField(atom, '__type__')) {
-      return 'unknown';
-    }
+    var value: String = atom.value;
     var capitals: EReg = ~/[A-Z]/;
-    if(capitals.match(atom.value.charAt(0))) {
-      return '${atom.value}';
+    if(capitals.match(value.charAt(0))) {
+      return '${value}';
     } else {
-      return ':${atom.value}';
+      return ':${value}';
     }
+  }
+
+  private static inline function inspectDynamic(dyn: Dynamic): String {
+    var kv: Array<String> = [];
+    for(field in Reflect.fields(dyn)) {
+      kv.push('${field} => ${Reflect.field(dyn, field)}');
+    }
+    return '[ ${kv.join(', ')} ]';
   }
 
   private static inline function inspectArray(array: Array<Dynamic>): String {

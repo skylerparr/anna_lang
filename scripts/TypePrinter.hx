@@ -11,7 +11,16 @@ class TypePrinter {
 class MapPrinter {
   public static function asString(map: ObjectMap<Dynamic, Dynamic>): String {
     var kv: Array<String> = [];
+    var keys: Array<Dynamic> = [];
     for(key in map.keys()) {
+      keys.push(key);
+    }
+    keys.sort( function(a:Dynamic, b:Dynamic):Int {
+      if (a < b) return -1;
+      if (a > b) return 1;
+      return 0;
+    });
+    for(key in keys) {
       var keyString: String = Anna.inspect(key);
       var value: Dynamic = map.get(key);
       var valueString = Anna.inspect(value);
@@ -34,6 +43,12 @@ class ArrayPrinter {
       retVal.push(Anna.inspect(val));
     }
     return '{${retVal.join(', ')}}';
+  }
+}
+
+class DynamicPrinter {
+  public static function asString(obj: Dynamic): String {
+    return '';
   }
 }
 

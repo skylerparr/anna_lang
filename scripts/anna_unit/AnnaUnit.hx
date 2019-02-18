@@ -12,7 +12,9 @@ class AnnaUnit {
       'tests.LangParserTest',
       'tests.ModuleTest',
       'tests.AnnaTest',
+      'tests.MapUtilTest',
     ];
+    classes = Native.callStatic('Random', 'shuffle', [classes]);
     var successCounter: Int = 0;
     var failureCounter: Int = 0;
     var startTime: Float = Timer.stamp();

@@ -1,9 +1,9 @@
 package lang;
 class HashTableAtoms implements Atoms {
 
-  public static var NIL: Atom = {value: "nil", __type__: Types.ATOM};
-  public static var TRUE: Atom = {value: "true", __type__: Types.ATOM};
-  public static var FALSE: Atom = {value: "false", __type__: Types.ATOM};
+  public static var NIL: Atom = new Atom('nil');
+  public static var TRUE: Atom = new Atom('true');
+  public static var FALSE: Atom = new Atom('false');
 
   private var atomMap: Map<String, Atom>;
 
@@ -26,7 +26,7 @@ class HashTableAtoms implements Atoms {
   public inline function get(name:String):Atom {
     var retVal: Atom = atomMap.get(name);
     if(retVal == null) {
-      retVal = {value: name, __type__: Types.ATOM};
+      retVal = new Atom(name);
       atomMap.set(name, retVal);
     }
     return retVal;
