@@ -13,7 +13,7 @@ defmodule Foo.Bar.Sample do
     a + b
   end
 
-  @spec(hello_world, null, String)
+  @spec(hello_world, nil, String)
   def hello_world() do
     "hello world"
   end

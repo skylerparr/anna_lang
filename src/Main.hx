@@ -92,7 +92,7 @@ class Main {
       }
 
       Runtime.start('${basePath}scripts', '${basePath}out/',
-      ['${basePath}src/'], ['hscript', 'deep_equal'], onComplete);
+      ['${basePath}src/'], ['hscript'], onComplete);
     });
 
     pollChanges();
