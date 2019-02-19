@@ -72,6 +72,6 @@ class AnnaTest {
 
   public static function shouldPrintDynamicTypeToMap(): Void {
     var dyn: Dynamic = {foo: 'bar'.atom(), baz: 'cat'.atom()};
-    Assert.stringsAreEqual(Anna.inspect(dyn), '[ foo => "bar".atom(), baz => "cat".atom() ]');
+    Assert.stringsAreEqual(Anna.inspect(dyn), '[ baz => "cat".atom(), foo => "bar".atom() ]');
   }
 }

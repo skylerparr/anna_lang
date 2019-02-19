@@ -662,7 +662,7 @@ end';
   }
 
   public static function shouldConvertHashWithValuesASTToHaxe(): Void {
-    Assert.areEqual(LangParser.toHaxe(LangParser.toAST('%{"foo" => :bar, "car" => {}}')), '[ foo => "bar".atom(), car => [] ]');
+    Assert.anyEqual(LangParser.toHaxe(LangParser.toAST('%{"foo" => :bar, "car" => {}}')), ['[ foo => "bar".atom(), car => [] ]', '[ car => [], foo => "bar".atom() ]']);
   }
 
   public static function shouldConvertVariableToHaxe(): Void {

@@ -58,6 +58,26 @@ class Assert {
     }
   }
 
+  public static function anyEqual(a: Dynamic, b: Array<Dynamic>): Void {
+    var equal: Bool = false;
+    for(rhs in b) {
+      if(!areSameDataTypesEqual([a, rhs]) &&
+      !structuresAreEqual([a, rhs])) {
+        equal = true;
+        break;
+      }
+    }
+    if(!equal) {
+      var errString = '';
+      errString += '\n';
+      errString += 'are not equal, expected to be equal\n';
+      errString += '\n';
+      errString += 'lhs: ${Anna.inspect(a)}\n';
+      errString += 'rhs: ${Anna.inspect(b)}\n';
+      fail(errString);
+    }
+  }
+
   public static function areNotEqual(a: Dynamic, b: Dynamic): Void {
     var values = [a, b];
     if(areSameDataTypesEqual(values) &&

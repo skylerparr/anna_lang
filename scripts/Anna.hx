@@ -85,8 +85,26 @@ class Anna {
 
   private static inline function inspectDynamic(dyn: Dynamic): String {
     var kv: Array<String> = [];
+    var keys: Array<String> = [];
     for(field in Reflect.fields(dyn)) {
-      kv.push('${field} => ${Reflect.field(dyn, field)}');
+      keys.push(field);
+    }
+    keys.sort( function(a:Dynamic, b:Dynamic):Int {
+      if(Std.is(a, Atom) && Std.is(b, Atom)) {
+        if (a.value < b.value) return -1;
+        if (a.value > b.value) return 1;
+      } else if(Std.is(a, String) && Std.is(b, String)) {
+        if (a.toLowerCase() < b.toLowerCase()) return -1;
+        if (a.toLowerCase() > b.toLowerCase()) return 1;
+      } else {
+        if (a < b) return -1;
+        if (a > b) return 1;
+      }
+      return 0;
+    });
+    for(key in keys) {
+      var value: Dynamic = Reflect.field(dyn, key);
+      kv.push('${key} => ${value}');
     }
     return '[ ${kv.join(', ')} ]';
   }

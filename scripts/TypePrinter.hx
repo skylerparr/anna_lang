@@ -16,8 +16,16 @@ class MapPrinter {
       keys.push(key);
     }
     keys.sort( function(a:Dynamic, b:Dynamic):Int {
-      if (a < b) return -1;
-      if (a > b) return 1;
+      if(Std.is(a, Atom) && Std.is(b, Atom)) {
+        if (a.value < b.value) return -1;
+        if (a.value > b.value) return 1;
+      } else if(Std.is(a, String) && Std.is(b, String)) {
+        if (a.toLowerCase() < b.toLowerCase()) return -1;
+        if (a.toLowerCase() > b.toLowerCase()) return 1;
+      } else {
+        if (a < b) return -1;
+        if (a > b) return 1;
+      }
       return 0;
     });
     for(key in keys) {
