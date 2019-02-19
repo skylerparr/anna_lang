@@ -1,5 +1,6 @@
 package compiler;
 
+import lang.ASTParser;
 import sys.FileSystem;
 import haxe.macro.Printer;
 import hscript.Interp;
@@ -49,7 +50,7 @@ class Compiler {
     var outputfilePath = '${Sys.getCwd()}${lib}${filePath}';
     var content: String = File.getContent(outputfilePath);
     var ast = LangParser.toAST(content);
-    var haxeCode: String = LangParser.toHaxe(ast);
+    var haxeCode: String = ASTParser.toHaxe(ast);
     var packageName: String = haxeCode.split('\n')[0].replace('package', '').replace(';', '').trim().replace('.', '/');
     var packageFrags: Array<String> = packageName.split('/');
     var currentPackagePath: String = '';

@@ -66,8 +66,8 @@ class AnnaTest {
   }
 
   public static function shouldPrintCustomTypes(): Void {
-    var moduleSpec: ModuleSpec = new ModuleSpec('taser'.atom());
-    Assert.stringsAreEqual(Anna.inspect(moduleSpec), '%lang.ModuleSpec{:moduleName => :taser}');
+    var moduleSpec: ModuleSpec = new ModuleSpec('taser'.atom(), []);
+    Assert.stringsAreEqual(Anna.inspect(moduleSpec), '%lang.ModuleSpec{:moduleName => :taser, :functions => {}}');
   }
 
   public static function shouldPrintDynamicTypeToMap(): Void {

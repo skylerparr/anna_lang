@@ -107,7 +107,25 @@ class Assert {
     }
   }
 
-  public static function isNull(value: Dynamic): Bool {
-    return value == null;
+  public static function isNull(value: Dynamic): Void {
+    if(value != null) {
+      var errString = '';
+      errString += '\n';
+      errString += 'is NOT null, expected to be null\n';
+      errString += '\n';
+      errString += 'value: ${Anna.inspect(value)}\n';
+      fail(errString);
+    }
+  }
+
+  public static function isNotNull(value: Dynamic): Void {
+    if(value == null) {
+      var errString = '';
+      errString += '\n';
+      errString += 'is null, expected to not be null\n';
+      errString += '\n';
+      errString += 'value: ${Anna.inspect(value)}\n';
+      fail(errString);
+    }
   }
 }

@@ -12,6 +12,10 @@ class Module {
     }
   }
 
+  public static function stop(): Void {
+    moduleSpecMap = null;
+  }
+
   public static function define(moduleSpec: ModuleSpec): Atom {
     moduleSpecMap.set(moduleSpec.moduleName, moduleSpec);
     return 'ok'.atom();

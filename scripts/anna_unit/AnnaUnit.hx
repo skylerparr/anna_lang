@@ -1,6 +1,8 @@
 package anna_unit;
 
+import sys.FileSystem;
 import haxe.Timer;
+using StringTools;
 @:build(macros.ScriptMacros.script())
 class AnnaUnit {
   public static function start(testName: String = null): Void {
@@ -8,12 +10,7 @@ class AnnaUnit {
       return;
     }
 
-    var classes: Array<String> = [
-      'tests.LangParserTest',
-      'tests.ModuleTest',
-      'tests.AnnaTest',
-      'tests.MapUtilTest',
-    ];
+    var classes: Array<String> = getTests();
     classes = Native.callStatic('Random', 'shuffle', [classes]);
     var successCounter: Int = 0;
     var failureCounter: Int = 0;
@@ -46,7 +43,6 @@ class AnnaUnit {
         if(Reflect.hasField(clazz, 'setup')) {
           var fun = Reflect.field(clazz, 'setup');
           fun();
-          continue;
         }
         var fun = Reflect.field(clazz, field);
         try {
@@ -73,6 +69,15 @@ class AnnaUnit {
     } else {
       cpp.Lib.println('Total Time: ${Std.int(diff)}ms');
     }
+  }
+
+  private static function getTests(): Array<String> {
+    var files: Array<String> = FileSystem.readDirectory('scripts/tests');
+    var retVal: Array<String> = [];
+    for(file in files) {
+      retVal.push('tests.${file.replace('.hx', '')}');
+    }
+    return retVal;
   }
 
 }
