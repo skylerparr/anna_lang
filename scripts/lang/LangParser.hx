@@ -8,6 +8,7 @@ using lang.AtomSupport;
 using StringTools;
 using lang.ArraySupport;
 using lang.MapUtil;
+using TypePrinter.MapPrinter;
 
 enum ParsingState {
   NONE;
@@ -31,6 +32,7 @@ enum HashState {
   NONE;
   DEFINE_KEY;
   DEFINE_VALUE;
+  DEFINE_TYPE;
 }
 
 @:build(macros.ScriptMacros.script())
@@ -538,7 +540,9 @@ class LangParser {
             currentStrVal += char;
           }
         case [ParsingState.HASH, _, OPEN_BRACE]:
-          if(openCount > 0) {
+          if(openCount == 0) {
+            currentStrVal += HASH;
+          } else {
             currentStrVal += char;
           }
           openCount++;
@@ -817,7 +821,7 @@ class LangParser {
     var braceCount: Int = 0;
     var key: Array<Dynamic> = null;
     var state: ParsingState = ParsingState.NONE;
-    var hashState: HashState = HashState.NONE;
+    var hashState: HashState = HashState.DEFINE_TYPE;
     for(i in 0...string.length) {
       var char: String = string.charAt(i);
       switch([state, char, hashState]) {
@@ -838,10 +842,17 @@ class LangParser {
           if(val.length > 0) {
             hash.set(key, val[0]);
           }
-          currentVal = "";
+          currentVal = '';
           hashState = HashState.NONE;
+        case [ParsingState.NONE, HASH, HashState.DEFINE_TYPE]:
+          if(currentVal.length > 0) {
+            hash.set('__TYPE__'.atom(), currentVal.atom());
+          }
+          hashState = HashState.NONE;
+          currentVal = '';
         case [ParsingState.NONE, _, HashState.DEFINE_VALUE]:
           currentVal += char;
+        case [ParsingState.NONE, SPACE, _]:
         case [ParsingState.NONE, _, _]:
           currentVal += char;
         case [ParsingState.HASH, OPEN_BRACE, HashState.DEFINE_VALUE]:

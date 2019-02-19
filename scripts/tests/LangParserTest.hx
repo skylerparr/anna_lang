@@ -1,5 +1,6 @@
 package tests;
 
+import lang.ModuleSpec;
 import anna_unit.Assert;
 import haxe.ds.ObjectMap;
 import lang.LangParser;
@@ -629,5 +630,13 @@ end';
     Assert.areEqual(LangParser.toAST(expr), ['defmodule'.atom(),[],[['Foo'.atom(),[],'nil'.atom()],{ __block__: moduleBody }]]);
   }
 
+  public static function shouldParseCustomTypes(): Void {
+    var map: ObjectMap<Dynamic, Dynamic> = new ObjectMap<Dynamic, Dynamic>();
+    map.set('moduleName'.atom(), 'foo'.atom());
+    map.set('functions'.atom(), []);
+    map.set('__TYPE__'.atom(), 'lang.ModuleSpec'.atom());
+    var expr: String = '%lang.ModuleSpec{:moduleName => :foo, :functions => {}}';
+    Assert.areEqual(LangParser.toAST(expr), map);
+  }
 
 }

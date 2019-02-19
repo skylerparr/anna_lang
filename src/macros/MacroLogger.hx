@@ -8,10 +8,6 @@ import haxe.macro.Expr.Field;
 #end
 class MacroLogger {
 
-  public static function main(): Void {
-
-  }
-  
   #if macro
   public static var init: Bool = false;
 

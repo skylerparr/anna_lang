@@ -7,10 +7,6 @@ import haxe.macro.Type.Ref;
 
 class ValueClassImpl {
 
-  public static function main(): Void {
-    
-  }
-
   macro public static function build(): Array<Field> {
     var fields: Array<Field> = Context.getBuildFields();
 

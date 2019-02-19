@@ -12,7 +12,6 @@ using lang.MapUtil;
 @:build(macros.ScriptMacros.script())
 class ASTParser {
 
-
   public static function _defmodule(moduleDef: Dynamic, body: Dynamic, aliases: Map<String, String>, context: Dynamic): String {
     var fqName: Dynamic = resolveClassToPackage(moduleDef, aliases, context);
     var moduleName: String = fqName.moduleName;

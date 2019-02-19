@@ -5,10 +5,6 @@ import haxe.macro.Expr.Field;
 import haxe.macro.Expr;
 class ScriptMacros {
 
-  public static function main(): Void {
-
-  }
-
   macro public static function script(): Array<Field> {
     var fields: Array<Field> = Context.getBuildFields();
 
