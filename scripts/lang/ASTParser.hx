@@ -12,17 +12,14 @@ using lang.MapUtil;
 @:build(macros.ScriptMacros.script())
 class ASTParser {
 
-  public static function _defmodule(moduleDef: Dynamic, body: Dynamic, aliases: Map<String, String>, context: Dynamic): String {
+  public static function _defmodule(moduleDef: Dynamic, body: Dynamic, aliases: Map<String, String>, context: Dynamic): Void {
     var fqName: Dynamic = resolveClassToPackage(moduleDef, aliases, context);
     var moduleName: String = fqName.moduleName;
-    context.moduleName = moduleName;
-    var retVal: String =
-    'package ${fqName.packageName};
-using lang.AtomSupport;
-@:build(macros.ScriptMacros.script())
-class ${moduleName} {';
-    var moduleBody: String = toHaxe(body[0], aliases);
-    return '${retVal}\n${moduleBody}\n}';
+
+    Module.define(new ModuleSpec(moduleName.atom(), []));
+
+    context.moduleName = moduleName.atom();
+    toHaxe(body[0], aliases, context);
   }
 
   private static inline function isBasicType(string: String): Bool {
@@ -38,18 +35,18 @@ class ${moduleName} {';
     var retType: String;
     var moduleAndPackage: Dynamic = resolveClassToPackage(ast, aliases, context);
     if(moduleAndPackage.packageName != '') {
-      retType = ': ${moduleAndPackage.packageName.toLowerCase()}.__${moduleAndPackage.moduleName}__.${moduleAndPackage.moduleName}';
+      retType = '${moduleAndPackage.packageName.toLowerCase()}.__${moduleAndPackage.moduleName}__.${moduleAndPackage.moduleName}';
     } else {
       if(isBasicType(moduleAndPackage.moduleName)) {
-        retType = ': ${moduleAndPackage.moduleName}';
+        retType = '${moduleAndPackage.moduleName}';
       } else {
-        retType = ': __${moduleAndPackage.moduleName}__.${moduleAndPackage.moduleName}';
+        retType = '__${moduleAndPackage.moduleName}__.${moduleAndPackage.moduleName}';
       }
     }
     return retType;
   }
 
-  public static function _def(defDef: Array<Dynamic>, body: Dynamic, aliases: Map<String, String>, context: Dynamic): String {
+  public static function _def(defDef: Array<Dynamic>, body: Dynamic, aliases: Map<String, String>, context: Dynamic): Void {
     var retVal: String = null;
     var functionName: String = defDef[0].value;
     var functionArgsAST: Array<Dynamic> = defDef[2];
@@ -62,93 +59,44 @@ class ${moduleName} {';
 
     var retType: String = '';
     var specs: Map<String, Dynamic> = context.specs;
-    var typedArgs: Array<String> = [];
-    var genericArgs: Array<String> = [];
+    var signature: Array<Array<Atom>> = [];
     var spec: Dynamic = null;
-    if(specs != null) {
-      spec = specs.get(functionName);
-      if(spec != null) {
-        retType = getType(spec[1], aliases, context);
-        for(i in 0...funArgs.length) {
-          var type: String = getType(spec[0][i], aliases, context);
-          var argName: String = 'arg${i}';
-          typedArgs.push('${argName}${type}');
-          genericArgs.push(argName);
+    for(i in 0...funArgs.length) {
+      var type: String = '';
+      if(specs != null) {
+        spec = specs.get(functionName);
+        if(spec != null) {
+          retType = getType(spec[1], aliases, context);
+          type = getType(spec[0][i], aliases, context);
         }
       }
-    }
-
-    var funBody: Array<String> = [];
-    var counter: Int = 0;
-    for(expr in cast(body[0].__block__, Array<Dynamic>)) {
-      if(Reflect.hasField(expr, "__block__")) {
-        for(expr in cast(expr.__block__, Array<Dynamic>)) {
-          funBody.push('var v${counter++} = ${toHaxe(expr)};');
-        }
-      } else {
-        funBody.push('var v${counter++} = ${toHaxe(expr)};');
+      if(type == '') {
+        type = 'nil';
       }
-    }
-    var finalExpr: String = funBody.pop();
-    if(finalExpr != null) {
-      var regex: EReg = ~/var v[0-9].= /;
-      finalExpr = 'return ${regex.replace(finalExpr, "")}';
-    } else {
-      finalExpr = 'return "nil".atom();';
-    }
-
-    var patternAssignment: String = "";
-
-    if(funArgs.length > 0) {
-      var patternAssignedArgs: Array<String> = [];
-      var patternArgsDeclarations: Array<String> = [];
-      for(i in 0...funArgs.length) {
-        patternAssignedArgs.push('        ${funArgs[i]} = ${genericArgs[i]};');
-        var type: String = getType(spec[0][i], aliases, context);
-        patternArgsDeclarations.push('    var ${funArgs[i]}${type};');
+      if(retType == '') {
+        retType = 'nil';
       }
-
-      patternAssignment = '${patternArgsDeclarations.join('\n')}
-    switch([${genericArgs.join(', ')}]) {
-      case _:
-${patternAssignedArgs.join('\n')}
-    }';
+      signature.push([funArgs[i].atom(), type.atom()]);
     }
 
-    retVal = '  public static function ${functionName}(${typedArgs.join(', ')})${retType} {
-${patternAssignment}
-    ${funBody.join("\n    ")}
-    ${finalExpr}
-  }';
-    return retVal;
+    var functionArgs: Array<Array<Atom>> = [];
+    for(key in signature) {
+      functionArgs.push(key);
+    }
+
+    var moduleSpec: ModuleSpec = Module.getModule(context.moduleName);
+    var functionSpec: FunctionSpec = new FunctionSpec(functionName.atom(), functionArgs, retType.atom(), body[0].__block__);
+
+    moduleSpec.functions.push(functionSpec);
   }
 
-  public static function _at_spec(specDef: Array<Dynamic>, body: Dynamic, aliases: Map<String, String>, context: Dynamic): String {
+  public static function _at_spec(specDef: Array<Dynamic>, body: Dynamic, aliases: Map<String, String>, context: Dynamic): Void {
     var funcName: String = specDef[0].value;
     if(context.specs == null) {
       context.specs = new Map<String, Dynamic>();
     }
     var specs: Map<String, Dynamic> = context.specs;
     specs.set(funcName, body);
-    return null;
-  }
-
-  public static function _deftype(ast: Array<Dynamic>, body: Dynamic, aliases: Map<String, String>, context: Dynamic): String {
-    var types: Array<String> = [];
-    var definedTypes: Array<Dynamic> = body[0].__block__;
-    for(type in definedTypes) {
-      var name: Atom = type[0];
-      var type: Atom = type[1][0];
-      types.push('${name.value}: ${type.value}');
-    }
-    var fqName: Dynamic = resolveClassToPackage(ast, aliases, context);
-    var retVal: String = 'package ${fqName.packageName};${LangParser.NEWLINE}';
-    retVal += 'typedef ${fqName.moduleName} = ${LangParser.OPEN_BRACE}${LangParser.NEWLINE}';
-    retVal += types.join(',\n');
-    retVal += LangParser.NEWLINE + LangParser.CLOSE_BRACE + LangParser.NEWLINE;
-    retVal += '@:build(macros.ScriptMacros.script())
-class __${fqName.moduleName}__ {}';
-    return retVal;
   }
 
   public static function _resolveScope(ast: Array<Dynamic>, body: Dynamic, aliases: Map<String, String>, context: Dynamic): String {

@@ -75,12 +75,15 @@ class Anna {
 
   private static inline function inspectAtom(atom: Atom): String {
     var value: String = atom.value;
-    var capitals: EReg = ~/[A-Z]/;
-    if(capitals.match(value.charAt(0))) {
-      return '${value}';
-    } else {
-      return ':${value}';
+    switch(value) {
+      case 'nil' | 'true' | 'false':
+      case _:
+        var capitals: EReg = ~/[A-Z]/;
+        if(!capitals.match(value.charAt(0))) {
+          value = ':${value}';
+        }
     }
+    return value;
   }
 
   private static inline function inspectDynamic(dyn: Dynamic): String {
