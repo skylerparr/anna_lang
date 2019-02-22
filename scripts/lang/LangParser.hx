@@ -2,8 +2,7 @@ package lang;
 
 import lang.ASTParser;
 import haxe.ds.ObjectMap;
-import compiler.CodeGen;
-import Type.ValueType;
+
 using lang.AtomSupport;
 using StringTools;
 using lang.ArraySupport;
@@ -86,24 +85,6 @@ class LangParser {
 
   private static var leftRightOperators: Array<String> = [EQUALS, PLUS, MINUS, MULTIPLY, DIVIDE, GREATER_THAN,
     LESS_THAN, PERIOD, PIPE, AMPHERSAND];
-
-  public static function parse(body: String, aliases: Map<String, String> = null): #if macro haxe.macro.Expr #else hscript.Expr #end {
-    if(aliases == null) {
-      aliases = new Map<String, String>();
-    }
-    for(alias in builtinAliases.keys()) {
-      aliases.set(alias, builtinAliases.get(alias));
-    }
-
-    var ast: Dynamic = toAST(body);
-    var haxeStr: String = ASTParser.toHaxe(ast, aliases);
-
-    #if macro
-    return CodeGen._parse(haxeStr);
-    #else
-    return CodeGen.parse(haxeStr);
-    #end
-  }
 
   public static function toAST(string: String): Dynamic {
     string = sanitizeExpr(string);

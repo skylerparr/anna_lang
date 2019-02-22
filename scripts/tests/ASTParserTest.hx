@@ -138,295 +138,88 @@ cost
 
       def cat(tuv, xyz) do
       end
+
+      @spec(baz, nil, Atom)
+      def baz() do
+      end
     end';
     ASTParser.toHaxe(LangParser.toAST(string));
 
     var moduleSpec: ModuleSpec = Module.getModule('Foo'.atom());
-    Assert.areEqual(moduleSpec.functions.length, 2);
+    Assert.areEqual(moduleSpec.functions.length, 3);
     var fun1: FunctionSpec = moduleSpec.functions[0];
     var fun2: FunctionSpec = moduleSpec.functions[1];
+    var fun3: FunctionSpec = moduleSpec.functions[2];
+
+    Assert.areEqual(fun1.name, 'bar'.atom());
+    Assert.areEqual(fun2.name, 'cat'.atom());
+    Assert.areEqual(fun3.name, 'baz'.atom());
+
     Assert.areEqual(fun1.signature, [['abc'.atom(), 'String'.atom()], ['hij'.atom(), 'Int'.atom()]]);
     Assert.areEqual(fun2.signature, [['tuv'.atom(), 'nil'.atom()], ['xyz'.atom(), 'nil'.atom()]]);
+    Assert.areEqual(fun3.signature, []);
 
     Assert.areEqual(fun1.returnType, 'Atom'.atom());
     Assert.areEqual(fun2.returnType, 'nil'.atom());
+    Assert.areEqual(fun3.returnType, 'Atom'.atom());
 
     Assert.areEqual(fun1.body, [["call_foo".atom(),[],[]]]);
     Assert.areEqual(fun2.body, []);
+    Assert.areEqual(fun3.body, []);
   }
 
-//  public static function shouldCallDefmoduleMacro(): Void {
-//    var string: String = "defmodule Foo do end";
-//    Assert.areEqual(ASTParser.toHaxe(LangParser.toAST(string)),
-//    'package ;
-//using lang.AtomSupport;
-//@:build(macros.ScriptMacros.script())
-//class Foo {
-//
-//}'
-//    );
-//  }
-//
-//  public static function shouldCallDefMacro(): Void {
-//    var string: String = "defmodule Foo do
-//      @spec(bar, nil, Dynamic)
-//      def bar() do
-//      end
-//    end";
-//    Assert.areEqual(ASTParser.toHaxe(LangParser.toAST(string)),
-//    'package ;
-//using lang.AtomSupport;
-//@:build(macros.ScriptMacros.script())
-//class Foo {
-//  public static function bar(): Dynamic {
-//
-//
-//    return "nil".atom();
-//  }
-//}'
-//    );
-//  }
-//
-//  public static function shouldCallDefMacroWithSingleExpression(): Void {
-//    var string: String = "defmodule Foo do
-//      def bar() do
-//        1 + 2
-//      end
-//    end";
-//    Assert.areEqual(ASTParser.toHaxe(LangParser.toAST(string)),
-//    'package ;
-//using lang.AtomSupport;
-//@:build(macros.ScriptMacros.script())
-//class Foo {
-//  public static function bar() {
-//
-//
-//    return Anna.add(1, 2);
-//  }
-//}'
-//    );
-//  }
-//
-//  public static function shouldCallDefMacroAndReturnAtom(): Void {
-//    var string: String = 'defmodule Foo do
-//      def cat() do
-//        "hello cat"
-//      end
-//
-//      def bar() do
-//        :success
-//      end
-//    end';
-//    Assert.areEqual(ASTParser.toHaxe(LangParser.toAST(string)),
-//    'package ;
-//using lang.AtomSupport;
-//@:build(macros.ScriptMacros.script())
-//class Foo {
-//  public static function cat() {
-//
-//
-//    return "hello cat";
-//  }
-//  public static function bar() {
-//
-//
-//    return "success".atom();
-//  }
-//}'
-//    );
-//  }
-//
-//  public static function shouldHandleMultipleExpressions(): Void {
-//    var string: String = "
-//    defmodule Foo do
-//      @spec(order, {Int, Int}, Int)
-//      def order(a, b) do
-//        rem(a, b)
-//        cook(a, b + 212)
-//        a + b
-//      end
-//    end";
-//    Assert.areEqual(ASTParser.toHaxe(LangParser.toAST(string)),
-//    'package ;
-//using lang.AtomSupport;
-//@:build(macros.ScriptMacros.script())
-//class Foo {
-//  public static function order(arg0: Int, arg1: Int): Int {
-//    var a: Int;
-//    var b: Int;
-//    switch([arg0, arg1]) {
-//      case _:
-//        a = arg0;
-//        b = arg1;
-//    }
-//    var v0 = rem(a, b);
-//    var v1 = cook(a, Anna.add(b, 212));
-//    return Anna.add(a, b);
-//  }
-//}'
-//    );
-//  }
-//
-//  public static function shouldResolveDotScopeForDefModule(): Void {
-//    var string: String = 'defmodule Foo.Bar.Cat.Baz.Car do
-//    end';
-//
-//    Assert.areEqual(ASTParser.toHaxe(LangParser.toAST(string)),
-//    'package foo.bar.cat.baz;
-//using lang.AtomSupport;
-//@:build(macros.ScriptMacros.script())
-//class Car {
-//
-//}');
-//  }
-//
-//  public static function shouldGenerateCustomType(): Void {
-//    var string: String = 'deftype Cat do
-//  {:breed, String}
-//  {:age, Int}
-//  {:name, String}
-//end';
-//
-//    Assert.areEqual(ASTParser.toHaxe(LangParser.toAST(string)),
-//    'package ;
-//typedef Cat = {
-//breed: String,
-//age: Int,
-//name: String
-//}
-//@:build(macros.ScriptMacros.script())
-//class __Cat__ {}');
-//  }
-//
-//  public static function shouldResolveLongCustomType(): Void {
-//    var string: String = 'deftype Foo.Bar.Baz.Car.Dig.Duke.Cat do
-//  {:breed, String}
-//  {:age, Int}
-//  {:name, String}
-//end';
-//
-//    Assert.areEqual(ASTParser.toHaxe(LangParser.toAST(string)),
-//    'package foo.bar.baz.car.dig.duke;
-//typedef Cat = {
-//breed: String,
-//age: Int,
-//name: String
-//}
-//@:build(macros.ScriptMacros.script())
-//class __Cat__ {}');
-//  }
-//
-//  public static function shouldPrependPackageToCustomType(): Void {
-//    var string: String = '
-//    defmodule Foo do
-//      @spec(order, {Int, Int}, Cat.Ellie.Bear)
-//      def order(a, b) do
-//        rem(a, b)
-//        cook(a, b + 212)
-//        %{"feet" => 2, "mouth" => 1}
-//      end
-//    end';
-//
-//    Assert.areEqual(ASTParser.toHaxe(LangParser.toAST(string)),
-//    'package ;
-//using lang.AtomSupport;
-//@:build(macros.ScriptMacros.script())
-//class Foo {
-//  public static function order(arg0: Int, arg1: Int): cat.ellie.__Bear__.Bear {
-//    var a: Int;
-//    var b: Int;
-//    switch([arg0, arg1]) {
-//      case _:
-//        a = arg0;
-//        b = arg1;
-//    }
-//    var v0 = rem(a, b);
-//    var v1 = cook(a, Anna.add(b, 212));
-//    return [ feet => 2, mouth => 1 ];
-//  }
-//}');
-//  }
-//
-//  public static function shouldPrependTypeQualifierToCustomTypeIfDoesntHavePackage(): Void {
-//    var string: String = '
-//    defmodule Foo do
-//      @spec(order, {Int, Int}, Bear)
-//      def order(a, b) do
-//        rem(a, b)
-//        cook(a, b + 212)
-//        %{"feet" => 2, "mouth" => 1}
-//      end
-//    end';
-//
-//    Assert.areEqual(ASTParser.toHaxe(LangParser.toAST(string)),
-//    'package ;
-//using lang.AtomSupport;
-//@:build(macros.ScriptMacros.script())
-//class Foo {
-//  public static function order(arg0: Int, arg1: Int): __Bear__.Bear {
-//    var a: Int;
-//    var b: Int;
-//    switch([arg0, arg1]) {
-//      case _:
-//        a = arg0;
-//        b = arg1;
-//    }
-//    var v0 = rem(a, b);
-//    var v1 = cook(a, Anna.add(b, 212));
-//    return [ feet => 2, mouth => 1 ];
-//  }
-//}');
-//  }
-//
-//  public static function shouldAllowArgumentTypes(): Void {
-//    var string: String = '
-//    defmodule Foo do
-//      @spec(order, {Ellie, Int}, Bear)
-//      def order(a, b) do
-//      end
-//    end';
-//
-//    Assert.areEqual(ASTParser.toHaxe(LangParser.toAST(string)),
-//    'package ;
-//using lang.AtomSupport;
-//@:build(macros.ScriptMacros.script())
-//class Foo {
-//  public static function order(arg0: __Ellie__.Ellie, arg1: Int): __Bear__.Bear {
-//    var a: __Ellie__.Ellie;
-//    var b: Int;
-//    switch([arg0, arg1]) {
-//      case _:
-//        a = arg0;
-//        b = arg1;
-//    }
-//
-//    return "nil".atom();
-//  }
-//}');
-//
-//    var string: String = '
-//    defmodule Foo do
-//      @spec(order, {Cat.Ellie.Bear, Int}, Atom)
-//      def order(a, b) do
-//      end
-//    end';
-//
-//    Assert.areEqual(ASTParser.toHaxe(LangParser.toAST(string)),
-//    'package ;
-//using lang.AtomSupport;
-//@:build(macros.ScriptMacros.script())
-//class Foo {
-//  public static function order(arg0: cat.ellie.__Bear__.Bear, arg1: Int): Atom {
-//    var a: cat.ellie.__Bear__.Bear;
-//    var b: Int;
-//    switch([arg0, arg1]) {
-//      case _:
-//        a = arg0;
-//        b = arg1;
-//    }
-//
-//    return "nil".atom();
-//  }
-//}');
-//  }
+  public static function shouldAssignAnInternalFunctionName(): Void {
+    var string: String = 'defmodule Foo do
+      @spec(bar, {String, Int}, Atom)
+      def bar(abc, hij) do
+        call_foo()
+      end
+
+      def cat(tuv, xyz, lkj) do
+      end
+
+      @spec(baz, nil, Atom)
+      def baz() do
+      end
+    end';
+    ASTParser.toHaxe(LangParser.toAST(string));
+
+    var moduleSpec: ModuleSpec = Module.getModule('Foo'.atom());
+    Assert.areEqual(moduleSpec.functions.length, 3);
+    var fun1: FunctionSpec = moduleSpec.functions[0];
+    var fun2: FunctionSpec = moduleSpec.functions[1];
+    var fun3: FunctionSpec = moduleSpec.functions[2];
+
+    Assert.areEqual(fun1.internalName, "bar_2_String_Int__Atom");
+    Assert.areEqual(fun2.internalName, "cat_3_____");
+    Assert.areEqual(fun3.internalName, "baz_0___Atom");
+  }
+
+  public static function shouldOverloadFunction(): Void {
+    var string: String = 'defmodule Foo do
+      @spec(bar, {String, Int}, Atom)
+      def bar(abc, hij) do
+        call_foo()
+      end
+
+      def bar(tuv, xyz, lkj) do
+      end
+
+      @spec(bar, nil, Atom)
+      def bar() do
+      end
+    end';
+    ASTParser.toHaxe(LangParser.toAST(string));
+
+    var moduleSpec: ModuleSpec = Module.getModule('Foo'.atom());
+    Assert.areEqual(moduleSpec.functions.length, 3);
+    var fun1: FunctionSpec = moduleSpec.functions[0];
+    var fun2: FunctionSpec = moduleSpec.functions[1];
+    var fun3: FunctionSpec = moduleSpec.functions[2];
+
+    Assert.areEqual(fun1.name, 'bar'.atom());
+    Assert.areEqual(fun2.name, 'bar'.atom());
+    Assert.areEqual(fun3.name, 'bar'.atom());
+  }
+
 }

@@ -24,25 +24,8 @@ class Compiler {
     return 'ok'.atom();
   }
 
-  public static function inspect(): Void {
-    var expr = CodeGen.parse("'foo'");
-    trace(expr);
-  }
-
-  public static function fn(): #if macro haxe.macro.Expr #else Dynamic #end {
-    #if macro
-    return CodeGen.fn();
-    #else
-    return interp.execute(CodeGen._fn());
-    #end
-  }
-
-  public static function parse(string: String): #if macro haxe.macro.Expr #else hscript.Expr #end {
-    #if macro
-    return CodeGen.parse();
-    #else
-    return interp.execute(CodeGen._fn());
-    #end
+  public static function compileModule(moduleName: Atom): Atom {
+    return 'ok'.atom();
   }
 
   public static function compile(filePath: String): Void {

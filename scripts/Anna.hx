@@ -2,9 +2,7 @@ package ;
 
 import Reflect;
 import lang.CustomTypes.CustomType;
-import lang.ModuleSpec;
 import haxe.ds.ObjectMap;
-import compiler.CodeGen;
 import compiler.Compiler;
 import haxe.macro.Expr;
 import hscript.Interp;

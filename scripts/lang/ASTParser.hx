@@ -48,7 +48,7 @@ class ASTParser {
 
   public static function _def(defDef: Array<Dynamic>, body: Dynamic, aliases: Map<String, String>, context: Dynamic): Void {
     var retVal: String = null;
-    var functionName: String = defDef[0].value;
+    var functionName: Atom = defDef[0];
     var functionArgsAST: Array<Dynamic> = defDef[2];
 
     var funArgs: Array<String> = [];
@@ -58,25 +58,29 @@ class ASTParser {
     }
 
     var retType: String = '';
-    var specs: Map<String, Dynamic> = context.specs;
+    var specs: Map<Atom, Dynamic> = context.specs;
+    if(specs == null) {
+      specs = new Map<Atom, Dynamic>();
+    }
+    var spec: Dynamic = specs.get(functionName);
+
     var signature: Array<Array<Atom>> = [];
-    var spec: Dynamic = null;
     for(i in 0...funArgs.length) {
       var type: String = '';
-      if(specs != null) {
-        spec = specs.get(functionName);
-        if(spec != null) {
-          retType = getType(spec[1], aliases, context);
-          type = getType(spec[0][i], aliases, context);
-        }
+      if(spec != null) {
+        type = getType(spec[0][i], aliases, context);
       }
       if(type == '') {
         type = 'nil';
       }
-      if(retType == '') {
-        retType = 'nil';
-      }
       signature.push([funArgs[i].atom(), type.atom()]);
+    }
+
+    if(spec != null) {
+      retType = getType(spec[1], aliases, context);
+    }
+    if(retType == '') {
+      retType = 'nil';
     }
 
     var functionArgs: Array<Array<Atom>> = [];
@@ -85,20 +89,35 @@ class ASTParser {
     }
 
     var moduleSpec: ModuleSpec = Module.getModule(context.moduleName);
-    var functionSpec: FunctionSpec = new FunctionSpec(functionName.atom(), functionArgs, retType.atom(), body[0].__block__);
+    var argTypes: Array<String> = functionArgs.map(function(args): String {
+      var retVal: Atom = args[1];
+      if(retVal == 'nil'.atom()) {
+        return '';
+      }
+      return retVal.value;
+    });
+    var sigType: String = '';
+    if(retType == 'nil') {
+      sigType = '';
+    } else {
+      sigType = retType;
+    }
+    var internalName: String = '${functionName.value}_${funArgs.length}_${argTypes.join('_')}__${sigType}';
+    var functionSpec: FunctionSpec = new FunctionSpec(functionName, internalName, functionArgs, retType.atom(), body[0].__block__);
 
     moduleSpec.functions.push(functionSpec);
+    context.specs = null;
   }
 
   public static function _at_spec(specDef: Array<Dynamic>, body: Dynamic, aliases: Map<String, String>, context: Dynamic): Void {
-    var funcName: String = specDef[0].value;
+    var funcName: Atom = specDef[0];
     if(context.specs == null) {
-      context.specs = new Map<String, Dynamic>();
+      context.specs = new Map<Atom, Dynamic>();
     }
-    var specs: Map<String, Dynamic> = context.specs;
+    var specs: Map<Atom, Dynamic> = context.specs;
     specs.set(funcName, body);
   }
-
+  
   public static function _resolveScope(ast: Array<Dynamic>, body: Dynamic, aliases: Map<String, String>, context: Dynamic): String {
     var retVal: Array<String> = [];
     var scope: Dynamic = ast[0];
@@ -201,8 +220,6 @@ class ASTParser {
           }
           retVal = '{${vals.join(", ")}}';
         }
-      case ValueType.TNull:
-        trace(retVal);
       case _:
         throw new ParsingException();
     }

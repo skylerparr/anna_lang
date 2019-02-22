@@ -25,4 +25,12 @@ class Module {
     return moduleSpecMap.get(module);
   }
 
+  public static function moduleDefined(): Array<ModuleSpec> {
+    var retVal: Array<ModuleSpec> = [];
+    for(m in moduleSpecMap) {
+      retVal.push(m);
+    }
+    return retVal;
+  }
+
 }
