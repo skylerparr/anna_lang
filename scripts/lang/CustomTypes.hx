@@ -1,10 +1,6 @@
 package lang;
 
-interface CustomType {
-  
-}
+interface CustomType {}
 
 @:build(macros.ScriptMacros.script())
-class CustomTypes {
-  
-}
+class CustomTypes {}

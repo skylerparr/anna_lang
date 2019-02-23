@@ -25,7 +25,7 @@ class Module {
     return moduleSpecMap.get(module);
   }
 
-  public static function moduleDefined(): Array<ModuleSpec> {
+  public static function modulesDefined(): Array<ModuleSpec> {
     var retVal: Array<ModuleSpec> = [];
     for(m in moduleSpecMap) {
       retVal.push(m);

@@ -14,12 +14,26 @@ class ASTParser {
 
   public static function _defmodule(moduleDef: Dynamic, body: Dynamic, aliases: Map<String, String>, context: Dynamic): Void {
     var fqName: Dynamic = resolveClassToPackage(moduleDef, aliases, context);
-    var moduleName: String = fqName.moduleName;
+    var className: String = fqName.moduleName;
+    if(className == null) {
+      className = 'nil';
+    }
+    var moduleName: String = className;
+    var packageName: String = fqName.packageName;
+    if(packageName == null) {
+      packageName = 'nil';
+    } else {
+      if(packageName == '') {
+        moduleName = className;
+      } else {
+        moduleName = '${packageName}.${className}';
+      }
+    }
 
-    Module.define(new ModuleSpec(moduleName.atom(), []));
+    Module.define(new ModuleSpec(moduleName.atom(), [], className.atom(), packageName.toLowerCase().atom()));
 
     context.moduleName = moduleName.atom();
-    toHaxe(body[0], aliases, context);
+    parse(body[0], aliases, context);
   }
 
   private static inline function isBasicType(string: String): Bool {
@@ -53,7 +67,7 @@ class ASTParser {
 
     var funArgs: Array<String> = [];
     for(funArg in functionArgsAST) {
-      var haxeArg: String = toHaxe(funArg);
+      var haxeArg: String = parse(funArg);
       funArgs.push(haxeArg);
     }
 
@@ -123,14 +137,14 @@ class ASTParser {
     var scope: Dynamic = ast[0];
     if(Std.is(scope, Atom)) {
       var a: Atom = cast(scope, Atom);
-      retVal.push(a.value.toLowerCase());
-      retVal.push(toHaxe(body[0]));
+      retVal.push(a.value);
+      retVal.push(parse(body[0]));
     }
     return retVal.join('.');
   }
 
   private static function resolveClassToPackage(ast: Array<Dynamic>, aliases: Map<String, String>, context: Dynamic): Dynamic {
-    var fqName: String = toHaxe(ast, aliases, context);
+    var fqName: String = parse(ast, aliases, context);
     var modName: String = fqName.split('(')[0];
     var frags: Array<String> = modName.split('.');
     var moduleName: String = frags.pop();
@@ -138,7 +152,7 @@ class ASTParser {
     return {packageName: packageName, moduleName: moduleName};
   }
 
-  public static function toHaxe(ast: Dynamic, aliases: Map<String, String> = null, context: Dynamic = null): String {
+  public static function parse(ast: Dynamic, aliases: Map<String, String> = null, context: Dynamic = null): String {
     if(aliases == null) {
       aliases = new Map<String, String>();
       for(alias in LangParser.builtinAliases.keys()) {
@@ -185,7 +199,7 @@ class ASTParser {
                 } else {
                   var parsedArgs: Array<String> = [];
                   for(arg in cast(args, Array<Dynamic>)) {
-                    parsedArgs.push(toHaxe(arg, aliases, context));
+                    parsedArgs.push(parse(arg, aliases, context));
                   }
                   retVal = '${funName}(${parsedArgs.join(", ")})';
                 }
@@ -195,7 +209,7 @@ class ASTParser {
           }
         } else {
           for(val in orig) {
-            vals.push(toHaxe(val, aliases, context));
+            vals.push(parse(val, aliases, context));
           }
           retVal = '[${vals.join(", ")}]';
         }
@@ -206,7 +220,7 @@ class ASTParser {
           var vals: Array<String> = [];
           var orig: Array<Dynamic> = cast(Reflect.field(ast, '__block__'));
           for(val in orig) {
-            var haxeString: String = toHaxe(val, aliases, context);
+            var haxeString: String = parse(val, aliases, context);
             if(haxeString != null) {
               vals.push(haxeString);
             }
@@ -216,7 +230,7 @@ class ASTParser {
           var vals: Array<String> = [];
           var fields: Array<String> = Reflect.fields(ast);
           for(field in fields) {
-            vals.push('${toHaxe(field, aliases, context)}: ${toHaxe(Reflect.field(ast, field), aliases, context)}');
+            vals.push('${parse(field, aliases, context)}: ${parse(Reflect.field(ast, field), aliases, context)}');
           }
           retVal = '{${vals.join(", ")}}';
         }

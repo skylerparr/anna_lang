@@ -24,7 +24,7 @@ class Compiler {
     return 'ok'.atom();
   }
 
-  public static function compileModule(moduleName: Atom): Atom {
+  public static function compileAll(): Atom {
     return 'ok'.atom();
   }
 
@@ -33,7 +33,7 @@ class Compiler {
     var outputfilePath = '${Sys.getCwd()}${lib}${filePath}';
     var content: String = File.getContent(outputfilePath);
     var ast = LangParser.toAST(content);
-    var haxeCode: String = ASTParser.toHaxe(ast);
+    var haxeCode: String = ASTParser.parse(ast);
     var packageName: String = haxeCode.split('\n')[0].replace('package', '').replace(';', '').trim().replace('.', '/');
     var packageFrags: Array<String> = packageName.split('/');
     var currentPackagePath: String = '';

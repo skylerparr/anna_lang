@@ -1,6 +1,5 @@
 package lang;
 
-import lang.ASTParser;
 import haxe.ds.ObjectMap;
 
 using lang.AtomSupport;

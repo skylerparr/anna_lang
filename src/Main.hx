@@ -5,7 +5,6 @@ import haxe.Constraints.IMap;
 import haxe.macro.Context;
 import haxe.macro.Printer;
 import state.GlobalStore;
-import lang.Types;
 import core.PathSettings;
 import hscript.Macro;
 import hscript.Interp;
@@ -29,6 +28,8 @@ class Main {
     Random;
     CallStack.exceptionStack();
     CallStack.callStack();
+    var t = new haxe.Template("");
+    t.execute({});
     var m: IMap<String, String> = new Map<String, String>();
     m.keys();
     var map: ObjectMap<Dynamic, Dynamic> = new ObjectMap<Dynamic, Dynamic>();
@@ -55,7 +56,6 @@ class Main {
     variables.set("c", function(file: String) {
       Runtime.compile(file, null);
     });
-    variables.set('Types', Types);
     variables.set('a', function(arg: String): Atom {
       return arg.atom();
     });
