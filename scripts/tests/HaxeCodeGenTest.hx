@@ -1,4 +1,5 @@
 package tests;
+import lang.FunctionNotFoundException;
 import anna_unit.Assert;
 import lang.ModuleSpec;
 import lang.HaxeCodeGen;
@@ -50,17 +51,17 @@ class Cart {
   end
 end';
 
-    var haxeCode: String = "package ;
+    var haxeCode: String = 'package ;
 using lang.AtomSupport;
 
 @:build(macros.ScriptMacros.script())
 class Foo {
 
   public static function bar_0___() {
-    return 'nil'.atom();
+    return "nil".atom();
   }
 
-}";
+}';
     ASTParser.parse(LangParser.toAST(string));
     var module: ModuleSpec = Module.getModule('Foo'.atom());
     Assert.isNotNull(module);
@@ -81,25 +82,25 @@ class Foo {
   end
 end';
 
-    var haxeCode: String = "package ;
+    var haxeCode: String = 'package ;
 using lang.AtomSupport;
 
 @:build(macros.ScriptMacros.script())
 class Foo {
 
   public static function bar_0___() {
-    return 'nil'.atom();
+    return "nil".atom();
   }
 
   public static function cat_0___() {
-    return 'nil'.atom();
+    return "nil".atom();
   }
 
   public static function baz_0___() {
-    return 'nil'.atom();
+    return "nil".atom();
   }
 
-}";
+}';
     ASTParser.parse(LangParser.toAST(string));
     var module: ModuleSpec = Module.getModule('Foo'.atom());
     Assert.isNotNull(module);
@@ -114,22 +115,103 @@ class Foo {
   end
 end';
 
-    var haxeCode: String = "package ;
+    var haxeCode: String = 'package ;
 using lang.AtomSupport;
 
 @:build(macros.ScriptMacros.script())
 class Foo {
 
   public static function bar_3_____(abc, tuv, xyz) {
-    return 'nil'.atom();
+    return "nil".atom();
   }
 
-}";
+}';
     ASTParser.parse(LangParser.toAST(string));
     var module: ModuleSpec = Module.getModule('Foo'.atom());
     Assert.isNotNull(module);
     var genHaxe: String = HaxeCodeGen.generate(module);
 
     Assert.stringsAreEqual(haxeCode, genHaxe);
+  }
+
+  public static function shouldGenerateSingleHaxeFunctionWithTypedArgs(): Void {
+    var string: String = 'defmodule Foo do
+  @spec(bar, {Int, String, Float}, Atom)
+  def bar(abc, tuv, xyz) do
+  end
+end';
+
+    var haxeCode: String = 'package ;
+using lang.AtomSupport;
+
+@:build(macros.ScriptMacros.script())
+class Foo {
+
+  public static function bar_3_Int_String_Float__Atom(abc: Int, tuv: String, xyz: Float): Atom {
+    return "nil".atom();
+  }
+
+}';
+    ASTParser.parse(LangParser.toAST(string));
+    var module: ModuleSpec = Module.getModule('Foo'.atom());
+    Assert.isNotNull(module);
+    var genHaxe: String = HaxeCodeGen.generate(module);
+
+    Assert.stringsAreEqual(haxeCode, genHaxe);
+  }
+
+  public static function shouldCallInternalNameWhenBodyInvokesFunction(): Void {
+    var string: String = 'defmodule Foo do
+  @spec(bar, {Int, String, Float}, Atom)
+  def bar(abc, tuv, xyz) do
+  end
+
+  @spec(cat, {Int, String}, Atom)
+  def cat(age, name) do
+    bar(age, name, 43.1)
+  end
+end';
+
+    var haxeCode: String = 'package ;
+using lang.AtomSupport;
+
+@:build(macros.ScriptMacros.script())
+class Foo {
+
+  public static function bar_3_Int_String_Float__Atom(abc: Int, tuv: String, xyz: Float): Atom {
+    return "nil".atom();
+  }
+
+  public static function cat_2_Int_String__Atom(age: Int, name: String): Atom {
+    return bar_3_Int_String_Float__Atom(age, name, 43.1);
+  }
+
+}';
+    ASTParser.parse(LangParser.toAST(string));
+    var module: ModuleSpec = Module.getModule('Foo'.atom());
+    Assert.isNotNull(module);
+    var genHaxe: String = HaxeCodeGen.generate(module);
+
+    Assert.stringsAreEqual(haxeCode, genHaxe);
+  }
+
+  public static function shouldThrowFunctionNotFoundExceptionIfNotFunctionFound(): Void {
+    var string: String = 'defmodule Foo do
+  @spec(bar, {Int, String, Float}, Atom)
+  def bar(abc, tuv, xyz) do
+  end
+
+  @spec(cat, {Int, String}, Atom)
+  def cat(age, name) do
+    bar(age, 43.1)
+  end
+end';
+
+    ASTParser.parse(LangParser.toAST(string));
+    var module: ModuleSpec = Module.getModule('Foo'.atom());
+    Assert.isNotNull(module);
+    Assert.throwsException(function(): Void {
+      HaxeCodeGen.generate(module);
+    }, FunctionNotFoundException);
   }
 }

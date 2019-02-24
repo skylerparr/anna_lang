@@ -105,7 +105,7 @@ class Anna {
     });
     for(key in keys) {
       var value: Dynamic = Reflect.field(dyn, key);
-      kv.push('${key} => ${value}');
+      kv.push('${inspect(key)} => ${inspect(value)}');
     }
     return '[ ${kv.join(', ')} ]';
   }

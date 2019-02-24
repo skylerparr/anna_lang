@@ -1,6 +1,5 @@
 package lang;
 import lang.LangParser;
-import lang.LangParser;
 import haxe.ds.ObjectMap;
 import Type.ValueType;
 
@@ -103,6 +102,14 @@ class ASTParser {
     }
 
     var moduleSpec: ModuleSpec = Module.getModule(context.moduleName);
+    var internalName: String = generateInternalFunctionName(functionName, functionArgs, retType, context);
+    var functionSpec: FunctionSpec = new FunctionSpec(functionName, internalName, functionArgs, retType.atom(), body[0].__block__);
+
+    moduleSpec.functions.push(functionSpec);
+    context.specs = null;
+  }
+
+  public static function generateInternalFunctionName(functionName: Atom, functionArgs: Array<Array<Atom>>, retType: String, context: Dynamic): String {
     var argTypes: Array<String> = functionArgs.map(function(args): String {
       var retVal: Atom = args[1];
       if(retVal == 'nil'.atom()) {
@@ -116,11 +123,8 @@ class ASTParser {
     } else {
       sigType = retType;
     }
-    var internalName: String = '${functionName.value}_${funArgs.length}_${argTypes.join('_')}__${sigType}';
-    var functionSpec: FunctionSpec = new FunctionSpec(functionName, internalName, functionArgs, retType.atom(), body[0].__block__);
 
-    moduleSpec.functions.push(functionSpec);
-    context.specs = null;
+    return '${functionName.value}_${argTypes.length}_${argTypes.join('_')}__${sigType}';
   }
 
   public static function _at_spec(specDef: Array<Dynamic>, body: Dynamic, aliases: Map<String, String>, context: Dynamic): Void {

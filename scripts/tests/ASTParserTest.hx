@@ -66,7 +66,7 @@ class ASTParserTest {
   public static function shouldParseFunctionWithNestedFunctionCallsAndDataStructuresToHaxe(): Void {
     Assert.areEqual(ASTParser.parse(LangParser.toAST(
       'm(3, b(1, 2), ellie({:foo}), qtip(nozy(%{"bar" => {:cat}})))')),
-    'm(3, b(1, 2), ellie(["foo".atom()]), qtip(nozy([ bar => ["cat".atom()] ])))');
+    'm(3, b(1, 2), ellie(["foo".atom()]), qtip(nozy([ "bar" => {:cat} ])))');
   }
 
   public static function shouldSubstituteAliasedFunctionsWhenConvertingToHaxe(): Void {
