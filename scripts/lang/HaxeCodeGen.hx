@@ -3,6 +3,7 @@ import Type.ValueType;
 
 using lang.AtomSupport;
 using lang.ArraySupport;
+using StringTools;
 
 @:build(macros.ScriptMacros.script())
 class HaxeCodeGen {
@@ -73,7 +74,7 @@ class ::className:: {
   }
 
   private static inline function buildFunctionBody(funSpec: FunctionSpec, currentModule: ModuleSpec): String {
-    var retVal: String = '';
+    var retVal: String = 'return ';
     var scopeVars: Map<Atom, Atom> = new Map<Atom, Atom>();
     if(funSpec.body.length > 0) {
       for(sig in funSpec.signature) {
@@ -83,58 +84,103 @@ class ::className:: {
       for(i in 0...body.length) {
         var expr: Array<Dynamic> = body[i];
         var fun: Atom = expr[0];
-        var args: Array<Dynamic> = expr[2];
-        var matchingFunctions: Array<FunctionSpec> = getMatchingInternalFunctionNames(fun, currentModule.functions);
-        retVal += getFunctionToCall(fun, funSpec, args, scopeVars, matchingFunctions, i == body.length - 1);
+        var expr2: Dynamic = expr[2];
+        if(expr2 == 'nil'.atom()) {
+          retVal += '${fun.value}';
+        } else {
+          var args: Array<Dynamic> = expr2;
+          var matchingFunctions: Array<FunctionSpec> = getMatchingInternalFunctionNames(fun, currentModule.functions);
+          var expectedReturnType: Atom = funSpec.returnType;
+          retVal += getFunctionToCall(fun, expectedReturnType, args, currentModule, scopeVars, matchingFunctions);
+        }
       }
     } else {
-      retVal = 'return "nil".atom();';
+      retVal += '"nil".atom()';
     }
-    return retVal;
+    return '${retVal};';
   }
 
   private static inline function getMatchingInternalFunctionNames(fun: Atom, functions: Array<FunctionSpec>): Array<FunctionSpec> {
     return functions.filter(function(spec: FunctionSpec): Bool { return spec.name == fun; });
   }
 
-  private static inline function getFunctionToCall(fun: Atom, funSpec: FunctionSpec, args: Array<Dynamic>, scopeVars: Map<Atom, Atom>, matchingFunctions: Array<FunctionSpec>, isFinal: Bool): String {
+  private static inline function getFunctionToCall(fun: Atom, expectedReturnType: Atom, args: Array<Dynamic>, currentModule: ModuleSpec, scopeVars: Map<Atom, Atom>, matchingFunctions: Array<FunctionSpec>): String {
     var arity: Int = args.length;
     var argTypes: Array<String> = [];
     var argVals: Array<String> = [];
+    var argIndex: Int = 0;
     for(arg in args) {
       if(Std.is(arg, Array) && arg.length == 3) {
         if(arg[2] == 'nil'.atom()) {
           var type: Atom = scopeVars.get(arg[0]);
-          argTypes.push(type.value);
+          if(type == 'nil'.atom()) {
+            argTypes.push('');
+          } else {
+            argTypes.push(type.value);
+          }
           argVals.push(arg[0].value);
         } else {
-          //function call
+          var expr: Array<Dynamic> = arg;
+          var fun: Atom = expr[0];
+          var args: Array<Dynamic> = expr[2];
+          var matchingFunctions: Array<FunctionSpec> = getMatchingInternalFunctionNames(fun, currentModule.functions);
+          var possibleFunctionCalls: Array<String> = [];
+          var possibleFunctions: Array<FunctionSpec> = [];
+          for(functions in matchingFunctions) {
+            var returnType: Atom = functions.signature[argIndex][1];
+            var funStr: String = getFunctionToCall(fun, returnType, args, currentModule, scopeVars, matchingFunctions);
+            possibleFunctions.push(getFunctionSpec(funStr, currentModule));
+            possibleFunctionCalls.push(funStr);
+          }
+          if(possibleFunctions.length == 1) {
+            var func: FunctionSpec = possibleFunctions[0];
+            if(func.returnType == 'nil'.atom()) {
+              argTypes.push('');
+            } else {
+              argTypes.push(func.returnType.value);
+            }
+            argVals.push(possibleFunctionCalls[0]);
+          }
         }
       } else {
         argTypes.push(getType(arg));
         argVals.push(arg);
       }
+      argIndex++;
     }
 
-    var expectedReturnType: String = '';
-    var retVal: String = '';
-    if(isFinal) {
-      expectedReturnType = funSpec.returnType.value;
-      retVal = 'return ';
+    var expectedReturnTypeStr: String = expectedReturnType.value;
+    if(expectedReturnTypeStr == 'nil') {
+      expectedReturnTypeStr = '';
     }
-    var expectedFunction: String = '${fun.value}_${arity}_${argTypes.join('_')}__${expectedReturnType}';
-    var found: Bool = false;
+
+    var expectedFunction: String = '${fun.value}_${arity}_${argTypes.join('_')}__${expectedReturnTypeStr}';
+    var matchedFuncSpec: FunctionSpec = null;
     for(matchingFun in matchingFunctions) {
       if(matchingFun.internalName == expectedFunction) {
-        found = true;
+        matchedFuncSpec = matchingFun;
         break;
       }
     }
-    if(!found) {
-      throw new FunctionNotFoundException('Attempting to find function ${expectedFunction}');
+    if(matchedFuncSpec == null) {
+      throw new FunctionNotFoundException('Could not find function ${expectedFunction}');
     }
-    retVal += '${expectedFunction}(${argVals.join(', ')})';
-    return retVal + ';';
+    return '${expectedFunction}(${argVals.join(', ')})';
+  }
+
+  public static function getFunctionSpec(functionCall: String, moduleSpec: ModuleSpec): FunctionSpec {
+    var retVal: FunctionSpec = null;
+    var funcName: String = functionCall.split('(')[0];
+    for(func in moduleSpec.functions) {
+      if(func.internalName == funcName) {
+        retVal = func;
+      }
+    }
+    if(retVal == null) {
+      throw new FunctionNotFoundException('Could not find function spec for ${functionCall}');
+    }
+
+    return retVal;
   }
 
   private static inline function getType(val: Dynamic): String {
@@ -145,8 +191,11 @@ class ::className:: {
         "Float";
       case TClass(String):
         "String";
-      case _:
+      case TNull:
+        throw new FunctionNotFoundException('Encountered null type');
+      case t:
         //throw exception?
+        trace(t);
         '';
     }
   }

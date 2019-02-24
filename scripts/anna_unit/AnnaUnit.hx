@@ -52,7 +52,7 @@ class AnnaUnit {
           failureCounter++;
           cpp.Lib.println('');
           cpp.Lib.println('failure testing ${clazz}#${field}');
-          cpp.Lib.println(e.message);
+          cpp.Lib.println('Error message: ${e.message}');
           continue;
         }
         cpp.Lib.print('.');

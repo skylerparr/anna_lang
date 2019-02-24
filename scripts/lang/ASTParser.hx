@@ -208,8 +208,8 @@ class ASTParser {
                   retVal = '${funName}(${parsedArgs.join(", ")})';
                 }
               }
-            case _:
-              throw new ParsingException();
+            case err:
+              throw new ParsingException('Unexpected Type ${err}');
           }
         } else {
           for(val in orig) {
@@ -238,8 +238,8 @@ class ASTParser {
           }
           retVal = '{${vals.join(", ")}}';
         }
-      case _:
-        throw new ParsingException();
+      case err:
+        throw new ParsingException('Unexpected type ${err}');
     }
     return retVal;
   }

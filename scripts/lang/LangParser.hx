@@ -505,7 +505,7 @@ class LangParser {
           state = ParsingState.ARRAY;
           openCount++;
         case [ParsingState.NONE, _, CLOSE_BRACE]:
-          throw new ParsingException();
+          throw new ParsingException("Unexpected ${CLOSE_BRACE} at ${currentStrVal}");
         case [ParsingState.NONE, _, PERCENT]:
           state = ParsingState.HASH;
         case [ParsingState.FUNCTION, _, OPEN_PAREN]:
@@ -526,8 +526,6 @@ class LangParser {
             currentStrVal += char;
           }
           openCount++;
-        case [ParsingState.NONE, _, CLOSE_BRACE]:
-          throw new ParsingException();
         case [ParsingState.ARRAY, _, OPEN_BRACE]:
           currentStrVal += char;
           openCount++;
@@ -657,7 +655,7 @@ class LangParser {
         currentVal = 'nil'.atom();
       case ParsingState.ATOM:
         if(currentStrVal == '') {
-          throw new ParsingException();
+          throw new ParsingException('Empty atom defined at ${currentStrVal}');
         }
         currentVal = currentStrVal.trim().atom();
         retVal.push(currentVal);
@@ -679,7 +677,7 @@ class LangParser {
           currentVal = 'nil'.atom();
         }
       case _:
-        throw new ParsingException();
+        throw new ParsingException('Unexpect character found at ${currentStrVal}');
     }
 
     if(retVal.length > 1) {
@@ -878,7 +876,7 @@ class LangParser {
       var char: String = string.charAt(i);
       switch([state, char]) {
         case [ParsingState.NONE, OPEN_PAREN]:
-          throw new ParsingException();
+          throw new ParsingException("Unexpected open parent found at ${currentVal}");
         case [ParsingState.FUNCTION, SPACE]:
           firstVal = currentVal;
           openCount++;

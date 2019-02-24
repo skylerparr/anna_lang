@@ -17,4 +17,8 @@ class ModuleSpec implements CustomType {
     this.packageName = packageName;
   }
 
+  public function toString(): String {
+    return Anna.inspect(this);
+  }
+
 }
