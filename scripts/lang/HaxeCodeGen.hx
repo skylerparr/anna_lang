@@ -121,16 +121,33 @@ class ::className:: {
           argVals.push(arg[0].value);
         } else {
           var expr: Array<Dynamic> = arg;
-          var fun: Atom = expr[0];
           var args: Array<Dynamic> = expr[2];
-          var matchingFunctions: Array<FunctionSpec> = getMatchingInternalFunctionNames(fun, currentModule.functions);
+          var scopedModule: ModuleSpec = currentModule;
+          var packagePrefix: String = '';
+
+          var fun: Atom = expr[0];
+          if(fun == '.'.atom()) {
+            var astCopy: Array<Dynamic> = expr[2].copy();
+            var fullModuleName: String = ASTParser._resolveScope(astCopy.shift(), astCopy, null, null);
+            var functionAST = ASTParser.getScopedFunction(astCopy);
+
+            var classPack: Dynamic = ASTParser.annaModuleToHaxe(fullModuleName);
+            var module: Atom = '${classPack.packageName}.${classPack.moduleName}'.atom();
+            fun = functionAST[0];
+            args = functionAST[2];
+            scopedModule = Module.getModule(module);
+            packagePrefix = '${classPack.packageName.toLowerCase()}.${classPack.moduleName}.';
+          } else {
+            fun = expr[0];
+          }
+          var matchingFunctions: Array<FunctionSpec> = getMatchingInternalFunctionNames(fun, scopedModule.functions);
           var possibleFunctionCalls: Array<String> = [];
           var possibleFunctions: Array<FunctionSpec> = [];
           for(functions in matchingFunctions) {
             var returnType: Atom = functions.signature[argIndex][1];
-            var funStr: String = getFunctionToCall(fun, returnType, args, currentModule, scopeVars, matchingFunctions);
-            possibleFunctions.push(getFunctionSpec(funStr, currentModule));
-            possibleFunctionCalls.push(funStr);
+            var funStr: String = getFunctionToCall(fun, returnType, args, scopedModule, scopeVars, matchingFunctions);
+            possibleFunctions.push(getFunctionSpec(funStr, scopedModule));
+            possibleFunctionCalls.push('${packagePrefix}${funStr}');
           }
           if(possibleFunctions.length == 1) {
             var func: FunctionSpec = possibleFunctions[0];

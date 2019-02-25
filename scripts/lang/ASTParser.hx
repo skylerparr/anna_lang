@@ -142,14 +142,32 @@ class ASTParser {
     if(Std.is(scope, Atom)) {
       var a: Atom = cast(scope, Atom);
       retVal.push(a.value);
-      retVal.push(parse(body[0]));
+      var parsed: String = parse(body[0]);
+      if(~/[A-Z]/.match(parsed.charAt(0))) {
+        retVal.push(parsed);
+      }
     }
     return retVal.join('.');
+  }
+
+  public static function getScopedFunction(body: Dynamic): Array<Dynamic> {
+    while(true) {
+      if(body[0][0] == '.'.atom()) {
+        body = body[0][2];
+      } else {
+        return body[0];
+      }
+    }
+    return [];
   }
 
   private static function resolveClassToPackage(ast: Array<Dynamic>, aliases: Map<String, String>, context: Dynamic): Dynamic {
     var fqName: String = parse(ast, aliases, context);
     var modName: String = fqName.split('(')[0];
+    return annaModuleToHaxe(modName);
+  }
+
+  public static function annaModuleToHaxe(modName: String): Dynamic {
     var frags: Array<String> = modName.split('.');
     var moduleName: String = frags.pop();
     var packageName: String = frags.join('.');

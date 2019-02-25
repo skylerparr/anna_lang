@@ -69,13 +69,6 @@ class ASTParserTest {
     'm(3, b(1, 2), ellie(["foo".atom()]), qtip(nozy([ "bar" => {:cat} ])))');
   }
 
-  public static function shouldSubstituteAliasedFunctionsWhenConvertingToHaxe(): Void {
-    var aliases: Map<String, String> = new Map<String, String>();
-    aliases.set('+', 'add');
-    Assert.areEqual(ASTParser.parse(LangParser.toAST(
-      '193 + 230'), aliases), 'add(193, 230)');
-  }
-
   public static function shouldConvertMultipleStatementsToHaxe(): Void {
     Assert.areEqual(ASTParser.parse(LangParser.toAST('
     foo("bar", 1, 2, :three)
@@ -99,8 +92,8 @@ soo("baz", 3, 4, "five".atom())
 []
 coo("cat", 5, 6, "seven".atom())
 rem(a, b)
-cook(a, Anna.add(b, 212))
-Anna.add(a, b)
+cook(a, +(b, 212))
++(a, b)
 cost
 [  ]');
   }

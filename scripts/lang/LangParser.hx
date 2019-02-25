@@ -38,10 +38,6 @@ class LangParser {
 
   public static var builtinAliases: Map<String, String> = {
     builtinAliases = new Map<String, String>();
-    builtinAliases.set('+', 'Anna.add');
-    builtinAliases.set('-', 'Anna.subtract');
-    builtinAliases.set('*', 'Anna.multiply');
-    builtinAliases.set('/', 'Anna.divide');
     builtinAliases.set('.', 'resolveScope');
     builtinAliases;
   };
