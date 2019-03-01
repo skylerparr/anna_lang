@@ -35,7 +35,7 @@ class ::className:: {
     return output;
   }
 
-  private static function prepareFunctions(moduleSpec: ModuleSpec): Dynamic {
+  private static inline function prepareFunctions(moduleSpec: ModuleSpec): Dynamic {
     var retVal: Array<Dynamic> = [];
     var functionSpecs: Array<FunctionSpec> = moduleSpec.functions;
 
@@ -157,6 +157,8 @@ class ::className:: {
               argTypes.push(func.returnType.value);
             }
             argVals.push(possibleFunctionCalls[0]);
+          } else {
+
           }
         }
       } else {
@@ -185,7 +187,7 @@ class ::className:: {
     return '${expectedFunction}(${argVals.join(', ')})';
   }
 
-  public static function getFunctionSpec(functionCall: String, moduleSpec: ModuleSpec): FunctionSpec {
+  public static inline function getFunctionSpec(functionCall: String, moduleSpec: ModuleSpec): FunctionSpec {
     var retVal: FunctionSpec = null;
     var funcName: String = functionCall.split('(')[0];
     for(func in moduleSpec.functions) {

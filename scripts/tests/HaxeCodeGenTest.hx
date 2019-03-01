@@ -379,4 +379,54 @@ class Foo {
 
     Assert.stringsAreEqual(haxeCode, genHaxe);
   }
+
+  public static function shouldFigureOutWhichOverloadedFunctionToCall(): Void {
+    var string: String = 'defmodule Foo do
+  @spec(bar, {Int}, Atom)
+  def bar(cat_age) do
+  end
+
+  @spec(cat, {Int, String}, Atom)
+  def cat(age, name) do
+    bar(Foo.Cat.Bar.Baz.get_cat_age(age))
+  end
+
+end
+
+defmodule Foo.Cat.Bar.Baz do
+
+  @spec(get_cat_age, {Int}, Int)
+  def get_cat_age(age) do
+    age
+  end
+
+  @spec(get_cat_age, {Int, Int}, Int)
+  def get_cat_age(age, size) do
+    age
+  end
+
+end';
+
+    var haxeCode: String = 'package ;
+using lang.AtomSupport;
+
+@:build(macros.ScriptMacros.script())
+class Foo {
+
+  public static function bar_1_Int__Atom(cat_age: Int): Atom {
+    return "nil".atom();
+  }
+
+  public static function cat_2_Int_String__Atom(age: Int, name: String): Atom {
+    return bar_1_Int__Atom(foo.cat.bar.Baz.get_cat_age_1_Int__Int(age));
+  }
+
+}';
+    ASTParser.parse(LangParser.toAST(string));
+    var module: ModuleSpec = Module.getModule('Foo'.atom());
+    Assert.isNotNull(module);
+    var genHaxe: String = HaxeCodeGen.generate(module);
+
+    Assert.stringsAreEqual(haxeCode, genHaxe);
+  }
 }
