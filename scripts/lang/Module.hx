@@ -17,7 +17,7 @@ class Module {
   }
 
   public static function define(moduleSpec: ModuleSpec): Atom {
-    moduleSpecMap.set(moduleSpec.moduleName, moduleSpec);
+    moduleSpecMap.set(moduleSpec.module_name, moduleSpec);
     return 'ok'.atom();
   }
 

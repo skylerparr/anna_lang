@@ -1,5 +1,6 @@
 package tests;
 
+import haxe.Template;
 import lang.ModuleSpec;
 import haxe.ds.ObjectMap;
 using lang.AtomSupport;
@@ -67,11 +68,22 @@ class AnnaTest {
 
   public static function shouldPrintCustomTypes(): Void {
     var moduleSpec: ModuleSpec = new ModuleSpec('taser'.atom(), [], 'nil'.atom(), 'nil'.atom());
-    Assert.stringsAreEqual(Anna.inspect(moduleSpec), '%lang.ModuleSpec{:moduleName => :taser, :functions => {}, :className => nil, :packageName => nil}');
+    Assert.stringsAreEqual(Anna.inspect(moduleSpec), '%lang.ModuleSpec{:module_name => :taser, :functions => {}, :class_name => nil, :package_name => nil}');
   }
 
   public static function shouldPrintDynamicTypeToMap(): Void {
     var dyn: Dynamic = {foo: 'bar'.atom(), baz: 'cat'.atom()};
     Assert.stringsAreEqual(Anna.inspect(dyn), '[ "baz" => :cat, "foo" => :bar ]');
+  }
+
+  public static function shouldPrintBasicObject(): Void {
+    var template: Template = Anna.createInstance(Template, ['']);
+    Assert.areEqual(Anna.inspect(template), "#<haxe.Template>");
+  }
+
+  public static function shouldReturnValueIfNotNil(): Void {
+    var val: Dynamic = new ObjectMap();
+    Assert.areEqual(Anna.or(val, []), new ObjectMap());
+    Assert.areEqual(Anna.or('nil'.atom(), []), []);
   }
 }

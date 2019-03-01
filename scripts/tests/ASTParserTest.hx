@@ -152,9 +152,9 @@ cost
     Assert.areEqual(fun2.signature, [['tuv'.atom(), 'nil'.atom()], ['xyz'.atom(), 'nil'.atom()]]);
     Assert.areEqual(fun3.signature, []);
 
-    Assert.areEqual(fun1.returnType, 'Atom'.atom());
-    Assert.areEqual(fun2.returnType, 'nil'.atom());
-    Assert.areEqual(fun3.returnType, 'Atom'.atom());
+    Assert.areEqual(fun1.return_type, 'Atom'.atom());
+    Assert.areEqual(fun2.return_type, 'nil'.atom());
+    Assert.areEqual(fun3.return_type, 'Atom'.atom());
 
     Assert.areEqual(fun1.body, [["call_foo".atom(),[],[]]]);
     Assert.areEqual(fun2.body, []);
@@ -183,9 +183,9 @@ cost
     var fun2: FunctionSpec = moduleSpec.functions[1];
     var fun3: FunctionSpec = moduleSpec.functions[2];
 
-    Assert.areEqual(fun1.internalName, "bar_2_String_Int__Atom");
-    Assert.areEqual(fun2.internalName, "cat_3_____");
-    Assert.areEqual(fun3.internalName, "baz_0___Atom");
+    Assert.areEqual(fun1.internal_name, "bar_2_String_Int__Atom");
+    Assert.areEqual(fun2.internal_name, "cat_3_____");
+    Assert.areEqual(fun3.internal_name, "baz_0___Atom");
   }
 
   public static function shouldOverloadFunction(): Void {
@@ -222,9 +222,9 @@ cost
 
     var moduleSpec: ModuleSpec = Module.getModule('Foo.Bar.Cat.Baz'.atom());
     Assert.isNotNull(moduleSpec);
-    Assert.areEqual(moduleSpec.moduleName, 'Foo.Bar.Cat.Baz'.atom());
-    Assert.areEqual(moduleSpec.className, 'Baz'.atom());
-    Assert.areEqual(moduleSpec.packageName, 'foo.bar.cat'.atom());
+    Assert.areEqual(moduleSpec.module_name, 'Foo.Bar.Cat.Baz'.atom());
+    Assert.areEqual(moduleSpec.class_name, 'Baz'.atom());
+    Assert.areEqual(moduleSpec.package_name, 'foo.bar.cat'.atom());
   }
 
 }

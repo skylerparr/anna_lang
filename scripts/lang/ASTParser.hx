@@ -19,14 +19,10 @@ class ASTParser {
     }
     var moduleName: String = className;
     var packageName: String = fqName.packageName;
-    if(packageName == null) {
+    if(packageName == null || packageName == '') {
       packageName = 'nil';
     } else {
-      if(packageName == '') {
-        moduleName = className;
-      } else {
-        moduleName = '${packageName}.${className}';
-      }
+      moduleName = '${packageName}.${className}';
     }
 
     Module.define(new ModuleSpec(moduleName.atom(), [], className.atom(), packageName.toLowerCase().atom()));
