@@ -10,166 +10,172 @@ using lang.AtomSupport;
 @:build(macros.ScriptMacros.script())
 class HaxeCodeGenTest {
 
-//  public static function shouldGenerate1HaxeClassPerModuleDefinition(): Void {
-//    var string: String = 'defmodule Foo do end';
-//    var haxeCode: String = 'package ;
-//using lang.AtomSupport;
-//
-//@:build(macros.ScriptMacros.script())
-//class Foo {
-//
-//}';
-//    ASTParser.parse(LangParser.toAST(string));
-//    var module: ModuleSpec = Module.getModule('Foo'.atom());
-//    Assert.isNotNull(module);
-//    var genHaxe: String = HaxeCodeGen.generate(module);
-//
-//    Assert.areEqual(haxeCode, genHaxe);
-//  }
-//
-//  public static function shouldGenerateHaxeWithPackage(): Void {
-//    var string: String = 'defmodule Foo.Bar.Cat.Baz.Cart do end';
-//    var haxeCode: String = 'package foo.bar.cat.baz;
-//using lang.AtomSupport;
-//
-//@:build(macros.ScriptMacros.script())
-//class Cart {
-//
-//}';
-//    ASTParser.parse(LangParser.toAST(string));
-//    var module: ModuleSpec = Module.getModule('Foo.Bar.Cat.Baz.Cart'.atom());
-//    Assert.isNotNull(module);
-//    var genHaxe: String = HaxeCodeGen.generate(module);
-//
-//    Assert.areEqual(haxeCode, genHaxe);
-//  }
+  public static function shouldGenerate1HaxeClassPerModuleDefinition(): Void {
+    var string: String = 'defmodule Foo do end';
+    var haxeCode: String = 'package ;
+using lang.AtomSupport;
 
-//  public static function shouldGenerateASingleHaxeFunctionWithNoTypesOrArgs(): Void {
-//    var string: String = 'defmodule Foo do
-//  def bar() do
-//  end
-//end';
-//
-//    var haxeCode: String = 'package ;
-//using lang.AtomSupport;
-//
-//@:build(macros.ScriptMacros.script())
-//class Foo {
-//
-//  public static function bar_0___() {
-//    return {
-//      "nil".atom();
-//    }
-//  }
-//
-//}';
-//    ASTParser.parse(LangParser.toAST(string));
-//    var module: ModuleSpec = Module.getModule('Foo'.atom());
-//    Assert.isNotNull(module);
-//    var genHaxe: String = HaxeCodeGen.generate(module);
-//
-//    Assert.stringsAreEqual(haxeCode, genHaxe);
-//  }
+@:build(macros.ScriptMacros.script())
+class Foo {
 
-//  public static function shouldGenerateMultipleFunctionsWithNoTypesOrArgs(): Void {
-//    var string: String = 'defmodule Foo do
-//  def bar() do
-//  end
-//
-//  def cat() do
-//  end
-//
-//  def baz() do
-//  end
-//end';
-//
-//    var haxeCode: String = 'package ;
-//using lang.AtomSupport;
-//
-//@:build(macros.ScriptMacros.script())
-//class Foo {
-//
-//  public static function bar_0___() {
-//    return {
-//      "nil".atom();
-//    }
-//  }
-//
-//  public static function cat_0___() {
-//    return {
-//      "nil".atom();
-//    }
-//  }
-//
-//  public static function baz_0___() {
-//    return {
-//      "nil".atom();
-//    }
-//  }
-//
-//}';
-//    ASTParser.parse(LangParser.toAST(string));
-//    var module: ModuleSpec = Module.getModule('Foo'.atom());
-//    Assert.isNotNull(module);
-//    var genHaxe: String = HaxeCodeGen.generate(module);
-//
-//    Assert.stringsAreEqual(haxeCode, genHaxe);
-//  }
+}';
+    ASTParser.parse(LangParser.toAST(string));
+    var module: ModuleSpec = Module.getModule('Foo'.atom());
+    Assert.isNotNull(module);
+    var genHaxe: String = HaxeCodeGen.generate(module);
 
-//  public static function shouldGenerateASingleHaxeFunctionWithArgsWithNoTypes(): Void {
-//    var string: String = 'defmodule Foo do
-//  def bar(abc, tuv, xyz) do
-//  end
-//end';
-//
-//    var haxeCode: String = 'package ;
-//using lang.AtomSupport;
-//
-//@:build(macros.ScriptMacros.script())
-//class Foo {
-//
-//  public static function bar_3_____(abc, tuv, xyz) {
-//    return {
-//      "nil".atom();
-//    }
-//  }
-//
-//}';
-//    ASTParser.parse(LangParser.toAST(string));
-//    var module: ModuleSpec = Module.getModule('Foo'.atom());
-//    Assert.isNotNull(module);
-//    var genHaxe: String = HaxeCodeGen.generate(module);
-//
-//    Assert.stringsAreEqual(haxeCode, genHaxe);
-//  }
+    Assert.areEqual(haxeCode, genHaxe);
+  }
 
-//  public static function shouldGenerateSingleHaxeFunctionWithTypedArgs(): Void {
-//    var string: String = 'defmodule Foo do
-//  @spec(bar, {Int, String, Float}, Atom)
-//  def bar(abc, tuv, xyz) do
-//  end
-//end';
-//
-//    var haxeCode: String = 'package ;
-//using lang.AtomSupport;
-//
-//@:build(macros.ScriptMacros.script())
-//class Foo {
-//
-//  public static function bar_3_Int_String_Float__Atom(abc: Int, tuv: String, xyz: Float): Atom {
-//    return {
-//      "nil".atom();
-//    }
-//  }
-//
-//}';
-//    ASTParser.parse(LangParser.toAST(string));
-//    var module: ModuleSpec = Module.getModule('Foo'.atom());
-//    Assert.isNotNull(module);
-//    var genHaxe: String = HaxeCodeGen.generate(module);
-//
-//    Assert.stringsAreEqual(haxeCode, genHaxe);
-//  }
+  public static function shouldGenerateHaxeWithPackage(): Void {
+    var string: String = 'defmodule Foo.Bar.Cat.Baz.Cart do end';
+    var haxeCode: String = 'package foo.bar.cat.baz;
+using lang.AtomSupport;
+
+@:build(macros.ScriptMacros.script())
+class Cart {
+
+}';
+    ASTParser.parse(LangParser.toAST(string));
+    var module: ModuleSpec = Module.getModule('Foo.Bar.Cat.Baz.Cart'.atom());
+    Assert.isNotNull(module);
+    var genHaxe: String = HaxeCodeGen.generate(module);
+
+    Assert.areEqual(haxeCode, genHaxe);
+  }
+
+  public static function shouldGenerateASingleHaxeFunctionWithNoTypesOrArgs(): Void {
+    var string: String = 'defmodule Foo do
+  def bar() do
+  end
+end';
+
+    var haxeCode: String = 'package ;
+using lang.AtomSupport;
+
+@:build(macros.ScriptMacros.script())
+class Foo {
+
+  public static function bar_0___() {
+    return {
+      "nil".atom();
+    }
+  }
+
+}';
+    ASTParser.parse(LangParser.toAST(string));
+    var module: ModuleSpec = Module.getModule('Foo'.atom());
+    Assert.isNotNull(module);
+    var genHaxe: String = HaxeCodeGen.generate(module);
+
+    Assert.stringsAreEqual(haxeCode, genHaxe);
+  }
+
+  public static function shouldGenerateMultipleFunctionsWithNoTypesOrArgs(): Void {
+    var string: String = 'defmodule Foo do
+  def bar() do
+  end
+
+  def cat() do
+  end
+
+  def baz() do
+  end
+end';
+
+    var haxeCode: String = 'package ;
+using lang.AtomSupport;
+
+@:build(macros.ScriptMacros.script())
+class Foo {
+
+  public static function cat_0___() {
+    return {
+      "nil".atom();
+    }
+  }
+
+  public static function baz_0___() {
+    return {
+      "nil".atom();
+    }
+  }
+
+  public static function bar_0___() {
+    return {
+      "nil".atom();
+    }
+  }
+
+}';
+    ASTParser.parse(LangParser.toAST(string));
+    var module: ModuleSpec = Module.getModule('Foo'.atom());
+    Assert.isNotNull(module);
+    var genHaxe: String = HaxeCodeGen.generate(module);
+
+    Assert.stringsAreEqual(haxeCode, genHaxe);
+  }
+
+  public static function shouldGenerateASingleHaxeFunctionWithArgsWithNoTypes(): Void {
+    var string: String = 'defmodule Foo do
+  def bar(abc, tuv, xyz) do
+  end
+end';
+
+    var haxeCode: String = 'package ;
+using lang.AtomSupport;
+
+@:build(macros.ScriptMacros.script())
+class Foo {
+
+  public static function bar_3_____(v0, v1, v2) {
+    return {
+      switch([v0, v1, v2]) {
+        case [abc, tuv, xyz]:
+          "nil".atom();
+      }
+    }
+  }
+
+}';
+    ASTParser.parse(LangParser.toAST(string));
+    var module: ModuleSpec = Module.getModule('Foo'.atom());
+    Assert.isNotNull(module);
+    var genHaxe: String = HaxeCodeGen.generate(module);
+
+    Assert.stringsAreEqual(haxeCode, genHaxe);
+  }
+
+  public static function shouldGenerateSingleHaxeFunctionWithTypedArgs(): Void {
+    var string: String = 'defmodule Foo do
+  @spec(bar, {Int, String, Float}, Atom)
+  def bar(abc, tuv, xyz) do
+  end
+end';
+
+    var haxeCode: String = 'package ;
+using lang.AtomSupport;
+
+@:build(macros.ScriptMacros.script())
+class Foo {
+
+  public static function bar_3_Int_String_Float__Atom(v0: Int, v1: String, v2: Float): Atom {
+    return {
+      switch([v0, v1, v2]) {
+        case [abc, tuv, xyz]:
+          "nil".atom();
+      }
+    }
+  }
+
+}';
+    ASTParser.parse(LangParser.toAST(string));
+    var module: ModuleSpec = Module.getModule('Foo'.atom());
+    Assert.isNotNull(module);
+    var genHaxe: String = HaxeCodeGen.generate(module);
+
+    Assert.stringsAreEqual(haxeCode, genHaxe);
+  }
 
   public static function shouldHandleFunctionSignaturePatternMatchingWithMapsAndBasicDataTypes(): Void {
     var string: String = 'defmodule Foo do
@@ -188,7 +194,7 @@ class Foo {
   public static function bar_3_lang_FunctionSpec_String_Int__Atom(v0: lang.FunctionSpec, v1: String, v2: Int): Atom {
     return {
       switch([v0, v1, v2]) {
-        case [{ internal_name: internal_name, name: name }, foo, 39]:
+        case [{ name: name, internal_name: internal_name }, foo, 39]:
           name;
       }
     }
@@ -221,12 +227,22 @@ class Foo {
 //@:build(macros.ScriptMacros.script())
 //class Foo {
 //
-//  public static function bar_3_Int_String_Float__Atom(abc: Int, tuv: String, xyz: Float): Atom {
-//    return "nil".atom();
+//  public static function cat_2_Int_String__Atom(v0: Int, v1: String): Atom {
+//    return {
+//      switch([v0, v1]) {
+//        case [age, name]:
+//          bar_3_Int_String_Float__Atom(age, name, 43.1);
+//      }
+//    }
 //  }
 //
-//  public static function cat_2_Int_String__Atom(age: Int, name: String): Atom {
-//    return bar_3_Int_String_Float__Atom(age, name, 43.1);
+//  public static function bar_3_Int_String_Float__Atom(v0: Int, v1: String, v2: Float): Atom {
+//    return {
+//      switch([v0, v1, v2]) {
+//        case [abc, tuv, xyz]:
+//          "nil".atom();
+//      }
+//    }
 //  }
 //
 //}';

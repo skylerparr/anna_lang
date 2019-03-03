@@ -85,7 +85,11 @@ class ::class_name:: {
           var funGenMap: Map<String, FunctionGen> = ArrayToMapEnum.reduce(v0, new Map<String, FunctionGen>(), function(spec: FunctionSpec, acc: Map<String, FunctionGen>): Map<String, FunctionGen> {
             var args: String = build_args_string(spec.signature);
 
-            var matching_header: String = 'return {\n      switch([${get_arg_string(spec.signature)}]) {\n';
+            var matching_args: String = get_arg_string(spec.signature);
+            var matching_header: String = 'return {\n      switch([${matching_args}]) {\n';
+            if(matching_args == '') {
+              matching_header = 'return {';
+            }
             var funcGen: FunctionGen = AnnaMap.get(acc, spec.internal_name, new FunctionGen(spec.internal_name, args, get_type_string(spec.return_type), [], matching_header));
 
             var body: String = get_body(spec);
@@ -109,7 +113,11 @@ class ::class_name:: {
                   }
                 }
                 var fun_body: String = ArrayEnum.join(matching_bodies, '\n');
-                body += '        case [${fun_body}\n      }\n    }';
+                if(fun_body == ']:\n          "nil".atom();') {
+                  body += '\n      "nil".atom();\n    }';
+                } else {
+                  body += '        case [${fun_body}\n      }\n    }';
+                }
                 Reflect.setField(fun_gen, 'body', body);
                 return fun_gen;
               case _:
@@ -186,19 +194,24 @@ class ::class_name:: {
 
           var pattern: String = ArrayEnum.join(pattern_string, ', ');
           pattern += ']:\n';
-
-          var exprs: Array<String> = ArrayEnum.into(body, [], function(expr: Array<Dynamic>): String {
-            return {
-              switch(expr) {
-                case [_v0, [], _v1]:
-                  var _var: Atom = _v0;
-                  var _args: Atom = _v1;
-                  '          ${_var.value};';
-                case _:
-                  throw new FunctionClauseNotFound("Function clause not found");
+          var exprs: Array<String> = [];
+          if(body.length == 0) {
+            exprs.push('          "nil".atom();');
+          } else {
+            exprs = ArrayEnum.into(body, [], function(expr: Array<Dynamic>): String {
+              return {
+                switch(expr) {
+                  case [_v0, [], _v1]:
+                    var _var: Atom = _v0;
+                    var _args: Atom = _v1;
+                    '          ${_var.value};';
+                  case _:
+                    throw new FunctionClauseNotFound("Function clause not found");
+                }
               }
-            }
-          });
+            });
+          }
+
 
           pattern + ArrayEnum.join(exprs, '\n');
         case _:
