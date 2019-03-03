@@ -1,5 +1,6 @@
 package compiler;
 
+import lang.AtomSupport;
 import lang.ASTParser;
 import sys.FileSystem;
 import haxe.macro.Printer;
@@ -22,6 +23,12 @@ class Compiler {
     parser = Native.callStaticField('Main', 'parser');
     interp = Native.callStaticField('Main', 'interp');
     return 'ok'.atom();
+  }
+
+  public static function interpHaxe(string: String): Dynamic {
+    var ast = parser.parseString(string);
+    interp.variables.set('AtomSupport', AtomSupport);
+    return interp.execute(ast);
   }
 
   public static function compileAll(): Atom {

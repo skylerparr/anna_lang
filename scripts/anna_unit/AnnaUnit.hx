@@ -34,7 +34,7 @@ class AnnaUnit {
       fields = Native.callStatic('Random', 'shuffle', [fields]);
 
       for(field in fields) {
-        if(field == 'start' || field == 'main') {
+        if(field == 'start' || field == 'main' || field == 'setup') {
           continue;
         }
         if(!Reflect.hasField(clazz, field)) {
@@ -52,7 +52,7 @@ class AnnaUnit {
           failureCounter++;
           cpp.Lib.println('');
           cpp.Lib.println('failure testing ${clazz}#${field}');
-          cpp.Lib.println('Error message: ${e.message}');
+          cpp.Lib.println('Error ${e} message: ${e.message}');
           continue;
         }
         cpp.Lib.print('.');

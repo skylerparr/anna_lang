@@ -20,7 +20,12 @@ class MapUtil {
       kv.push({key: key, val: val});
     }
     for(vals in kv) {
-      Reflect.setField(retVal, vals.key, vals.val);
+      switch(vals.val) {
+        case [name, _, _]:
+          Reflect.setField(retVal, vals.key, name);
+        case _:
+          Reflect.setField(retVal, vals.key, vals.val);
+      }
     }
     return retVal;
   }

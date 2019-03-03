@@ -6,6 +6,7 @@ import haxe.ds.ObjectMap;
 using lang.AtomSupport;
 
 import anna_unit.Assert;
+using TypePrinter.MapPrinter;
 @:build(macros.ScriptMacros.script())
 class AnnaTest {
   public static function shouldPrintString(): Void {
@@ -57,13 +58,29 @@ class AnnaTest {
     Assert.stringsAreEqual(Anna.inspect(new ObjectMap()), '%{}');
   }
 
-  public static function shouldPrintMapWithMixedValues(): Void {
+  public static function shouldPrintMapWithMixedTypes(): Void {
     var values: Array<Dynamic> = [348, 349.54, 'foo', 'bar'.atom(), 'Cat'.atom()];
     var map: ObjectMap<Dynamic, Dynamic> = new ObjectMap();
     map.set('foo'.atom(), "bar");
     map.set('bar'.atom(), 234);
     map.set('cat'.atom(), values);
     Assert.stringsAreEqual(Anna.inspect(map), '%{:bar => 234, :cat => {348, 349.54, "foo", :bar, Cat}, :foo => "bar"}');
+  }
+
+  public static function shouldPrintMapWithSameTypes(): Void {
+    var map: ObjectMap<Dynamic, Dynamic> = new ObjectMap();
+    map.set('foo'.atom(), "foo");
+    map.set('bar'.atom(), "bar");
+    map.set('cat'.atom(), "cat");
+    Assert.stringsAreEqual(Anna.inspect(map), '%{:bar => "bar", :cat => "cat", :foo => "foo"}');
+  }
+
+  public static function shouldPrintMapAsHaxeMap(): Void {
+    var map: ObjectMap<Dynamic, Dynamic> = new ObjectMap();
+    map.set('foo'.atom(), "foo");
+    map.set('bar'.atom(), "bar".atom());
+    map.set('cat'.atom(), "cat");
+    Assert.stringsAreEqual(map.asHaxeString(), '[AtomSupport.atom("bar") => AtomSupport.atom("bar"), AtomSupport.atom("cat") => "cat", AtomSupport.atom("foo") => "foo"]');
   }
 
   public static function shouldPrintCustomTypes(): Void {

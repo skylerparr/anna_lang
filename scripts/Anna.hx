@@ -11,6 +11,7 @@ using TypePrinter.StringPrinter;
 using TypePrinter.MapPrinter;
 using TypePrinter.ArrayPrinter;
 using TypePrinter.CustomTypePrinter;
+using TypePrinter.StringMapPrinter;
 using lang.AtomSupport;
 using StringTools;
 @:build(macros.ValueClassImpl.build())
@@ -49,6 +50,7 @@ class Anna {
   }
 
   public static function print(val: Any): Any {
+    trace(inspect(val));
     return val;
   }
 
@@ -58,6 +60,8 @@ class Anna {
         return inspectString((val : String));
       case TClass(haxe.ds.ObjectMap):
         return inspectMap((val : ObjectMap<Dynamic, Dynamic>));
+      case TClass(haxe.ds.StringMap):
+        return inspectStringMap((val : Map<String, Dynamic>));
       case TClass(Array):
         return inspectArray(val);
       case TClass(Atom):
@@ -87,6 +91,10 @@ class Anna {
   }
 
   private static inline function inspectMap(map: ObjectMap<Dynamic, Dynamic>): String {
+    return map.asString();
+  }
+
+  private static inline function inspectStringMap(map: Map<String, Dynamic>): String {
     return map.asString();
   }
 

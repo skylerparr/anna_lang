@@ -1,4 +1,3 @@
-using lang.AtomSupport;
 class Atom {
   public var value(default, never): String;
 
@@ -7,7 +6,7 @@ class Atom {
   }
 
   public function toString(): String {
-    return '"${value}".atom()';
+    return 'AtomSupport.atom("${value}")';
   }
 
   public static function to_string(atom: Atom): String {
