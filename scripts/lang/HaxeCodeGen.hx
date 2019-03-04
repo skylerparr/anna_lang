@@ -179,7 +179,7 @@ class ::class_name:: {
   private static inline function get_body(v0: FunctionSpec): String {
     return {
       switch(v0) {
-        case {signature: signature, body: body}:
+        case {signature: signature, body: body, return_type: return_type}:
           var pattern_string: Array<String> = ArrayEnum.into(signature, [], function(sig: Array<Atom>): String {
             return {
               switch(sig) {
@@ -190,6 +190,16 @@ class ::class_name:: {
                   throw new FunctionClauseNotFound("Function clause not found");
               }
             }
+          });
+
+          var type_scope: Map<Atom, Atom> = ArrayToMapEnum.reduce(signature, new Map<Atom, Atom>(), function(arg: Array<Atom>, acc: Map<Atom, Atom>): Map<Atom, Atom> {
+            switch(arg) {
+              case [name, type]:
+                AnnaMap.put(acc, name, type);
+              case _:
+                throw new FunctionClauseNotFound("Function clause not found");
+            }
+            return acc;
           });
 
           var pattern: String = ArrayEnum.join(pattern_string, ', ');
@@ -203,15 +213,74 @@ class ::class_name:: {
                 switch(expr) {
                   case [_v0, [], _v1]:
                     var _var: Atom = _v0;
-                    var _args: Atom = _v1;
-                    '          ${_var.value};';
+                    var _args: Dynamic = _v1;
+                    if(_args == 'nil'.atom()) {
+                      '          ${_var.value};';
+                    } else {
+                      var types: Array<Array<String>> = ArrayEnum.reduce(_args, [[], []], function(t: Any, acc: Array<Array<String>>): Array<Array<String>> {
+                        return {
+                          var types: Array<String>;
+                          var values: Array<String>;
+                          switch(acc) {
+                            case [t, v]:
+                              types = t;
+                              values = v;
+                            case _:
+                              throw new FunctionClauseNotFound("Unexpected number of arguments");
+                          }
+
+                          switch(Type.typeof(t)) {
+                            case ValueType.TClass(Array):
+                              //fooling the haxe compiler here. This isn't the correct type
+                              //but the pattern match will still succeed, it's actually
+                              //Array<Dynamic>
+                              var varOrFunction: Array<Atom> = (t : Array<Atom>);
+                              switch(varOrFunction) {
+                                case [name, _, {value: 'nil'}]:
+                                  var type: Atom = AnnaMap.get(type_scope, name, 'nil'.atom());
+                                  if(type == 'nil'.atom()) {
+                                    Anna.print("Some sort of error here?");
+                                  }
+                                  types.push(type.value);
+                                  values.push(name.value);
+                                case [name, _, functionArgs]:
+                                  Anna.print(functionArgs, 'function args');
+                                case badarg:
+                                  throw new UnexpectedArgumentException('Received unexpected ast structure ${Anna.inspect(badarg)}');
+                              }
+                            case constType:
+                              values.push(t);
+                              switch(constType) {
+                                case ValueType.TClass(String):
+                                  types.push('String');
+                                case ValueType.TInt:
+                                  types.push('Int');
+                                case ValueType.TFloat:
+                                  types.push('Float');
+                                case _:
+                                  Anna.print(constType, 'bad!');
+                              }
+                          }
+                          acc;
+                        }
+                      });
+                      var strTypes: Array<String>;
+                      var strArgs: Array<String>;
+                      switch(types) {
+                        case [_v0, _v1]:
+                          strTypes = _v0;
+                          strArgs = _v1;
+                        case _:
+                          throw new UnexpectedArgumentException('Array size mismatch');
+                      }
+                      '          ${_var.value}_${_args.length}_${ArrayEnum.join(strTypes, '_')}__${return_type.value}(${ArrayEnum.join(strArgs, ', ')});';
+                    }
                   case _:
                     throw new FunctionClauseNotFound("Function clause not found");
                 }
               }
             });
           }
-
 
           pattern + ArrayEnum.join(exprs, '\n');
         case _:

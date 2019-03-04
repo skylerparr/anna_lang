@@ -49,8 +49,13 @@ class Anna {
     return val;
   }
 
-  public static function print(val: Any): Any {
-    trace(inspect(val));
+  public static function print(val: Any, label: String = null): Any {
+    if(label == null) {
+      label = '';
+    } else {
+      label = '${label}: ';
+    }
+    trace('${label}${inspect(val)}');
     return val;
   }
 
