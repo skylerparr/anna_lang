@@ -93,7 +93,7 @@ class Main {
         }
       }
 
-      Runtime.start('${basePath}scripts', '${basePath}out/',
+      Runtime.start('AnnaLang', '${basePath}scripts', '${basePath}out/',
       ['${basePath}src/'], ['hscript'], onComplete);
     });
 
