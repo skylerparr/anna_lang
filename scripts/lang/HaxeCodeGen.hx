@@ -1,4 +1,5 @@
 package lang;
+import ArrayEnum;
 import lang.ModuleSpec;
 import ArrayEnum;
 import haxe.ds.ObjectMap;
@@ -196,8 +197,7 @@ class ::class_name:: {
             return {
               switch(sig) {
                 case [args, _]:
-                  var patternHeader: String = convertPatternToString(args);
-                  patternHeader;
+                  convertPatternToString(args);
                 case _:
                   throw new FunctionClauseNotFound("Function clause not found");
               }
@@ -229,7 +229,7 @@ class ::class_name:: {
                     if(_args == 'nil'.atom()) {
                       '          ${_var.value};';
                     } else {
-                      get_function_string(_var, _args, type_scope, return_type, module_spec);
+                      '          ${get_function_string(_var, _args, type_scope, return_type, module_spec)};';
                     }
                   case _:
                     throw new FunctionClauseNotFound("Function clause not found");
@@ -288,10 +288,10 @@ class ::class_name:: {
         case [_var, args, type_scope, return_type, module_spec]:
           var module_functions = module_spec.functions;
           var args_with_index: Array<Dynamic> = ArrayEnum.with_index(args);
-          var possible_type_args: Array<Array<Array<String>>> = ArrayEnum.reduce(args_with_index, [[], []], function(t_index: Array<Dynamic>, acc: Array<Array<Array<String>>>): Array<Array<Array<String>>> {
+          var possible_type_args: Array<Array<String>> = ArrayEnum.reduce(args_with_index, [[], []], function(t_index: Array<Dynamic>, acc: Array<Array<String>>): Array<Array<String>> {
             return {
-              var types: Array<Array<String>>;
-              var values: Array<Array<String>>;
+              var types: Array<String>;
+              var values: Array<String>;
               switch(acc) {
                 case [t, v]:
                   types = t;
@@ -322,23 +322,34 @@ class ::class_name:: {
                       if(type == 'nil'.atom()) {
                         Anna.print("Some sort of error here?");
                       }
-                      types.push([type.value]);
-                      values.push([name.value]);
+                      types.push(type.value);
+                      values.push(name.value);
                     case [name, _, _]:
                       var function_args = (t : Array<Dynamic>)[2];
-                      var func: Array<FunctionSpec> = get_matching_functions(module_spec, _var, args, return_type, type_scope);
+                      var funcs: Array<FunctionSpec> = get_matching_functions(module_spec, _var, args, return_type, type_scope);
+                      if(funcs.length == 1) {
+                        var func: FunctionSpec = ArrayEnum.at(funcs, 0, FunctionSpec.nil);
+                        var arg_and_type: Array<Atom> = ArrayEnum.at(func.signature, index, []);
+                        var type: Atom = ArrayEnum.at(arg_and_type, 1, 'nil'.atom());
+                        types.push(type.value);
+
+                        var arg_string = get_function_string(name, function_args, type_scope, type, module_spec);
+                        values.push(arg_string);
+                      } else {
+                        throw new AmbiguousFunctionException('Could not find appropriate function to call for ${Anna.inspect(name)} with args ${Anna.inspect(function_args)}');
+                      }
                     case badarg:
                       throw new UnexpectedArgumentException('Received unexpected ast structure ${Anna.inspect(badarg)}');
                   }
                 case constType:
-                  values.push([t]);
+                  values.push(t);
                   switch(constType) {
                     case ValueType.TClass(String):
-                      types.push(['String']);
+                      types.push('String');
                     case ValueType.TInt:
-                      types.push(['Int']);
+                      types.push('Int');
                     case ValueType.TFloat:
-                      types.push(['Float']);
+                      types.push('Float');
                     case _:
                       Anna.print(constType, 'bad!');
                   }
@@ -346,8 +357,8 @@ class ::class_name:: {
               acc;
             }
           });
-          var str_types: Array<Array<String>>;
-          var str_args: Array<Array<String>>;
+          var str_types: Array<String>;
+          var str_args: Array<String>;
           switch(possible_type_args) {
             case [_v0, _v1]:
               str_types = _v0;
@@ -355,25 +366,24 @@ class ::class_name:: {
             case _:
               throw new UnexpectedArgumentException('Array size mismatch');
           }
-//          var funcString: String = '${_var.value}_${args.length}_${ArrayEnum.join(str_types, '_')}__${return_type.value}';
-//          var argsString: String = '(${ArrayEnum.join(str_args, ', ')})';
-//
-//          var moduleFuns: Array<String> = ArrayEnum.into(module_functions, [], function(spec: FunctionSpec): String {
-//            return {
-//              spec.internal_name;
-//            }
-//          });
-//
-//          var found: FunctionSpec = ArrayEnum.find(module_functions, FunctionSpec.nil, function(funSpec: FunctionSpec): Bool {
-//            return funSpec.internal_name == funcString;
-//          });
-//
-//          if(found == FunctionSpec.nil) {
-//            throw new FunctionClauseNotFound('No matching function found for ${_var.value}${argsString}');
-            throw new FunctionClauseNotFound('No matching function found for ${_var.value}');
-//          }
-//
-//          '          ${found.internal_name}${argsString};';
+          var funcString: String = '${_var.value}_${args.length}_${ArrayEnum.join(str_types, '_')}__${return_type.value}';
+          var argsString: String = '(${ArrayEnum.join(str_args, ', ')})';
+
+          var moduleFuns: Array<String> = ArrayEnum.into(module_functions, [], function(spec: FunctionSpec): String {
+            return {
+              spec.internal_name;
+            }
+          });
+
+          var found: FunctionSpec = ArrayEnum.find(module_functions, FunctionSpec.nil, function(funSpec: FunctionSpec): Bool {
+            return funSpec.internal_name == funcString;
+          });
+
+          if(found == FunctionSpec.nil) {
+            throw new FunctionClauseNotFound('No matching function found for ${_var.value}${argsString}');
+          }
+
+          '${found.internal_name}${argsString}';
         case _:
           throw new UnexpectedArgumentException('This should not be possible');
       }

@@ -463,16 +463,40 @@ using lang.AtomSupport;
 @:build(macros.ScriptMacros.script())
 class Foo {
 
-  public static function bar_1_Int__Atom(cat_age: Int): Atom {
-    return "nil".atom();
+  public static function cat_2_Int_String__Atom(v0: Int, v1: String): Atom {
+    return {
+      switch([v0, v1]) {
+        case [age, name]:
+          bar_2_String_Float__Atom(name, calc_age_2_String_Float__Float(name, get_cat_age_1_Int__Float(age)));
+      }
+    }
   }
 
-  public static function cat_2_Int_String__Atom(age: Int, name: String): Atom {
-    return bar_1_Int__Atom(get_cat_age_1_Int__Int(age));
+  public static function bar_2_String_Float__Atom(v0: String, v1: Float): Atom {
+    return {
+      switch([v0, v1]) {
+        case [name, cat_age]:
+          "nil".atom();
+      }
+    }
   }
 
-  public static function get_cat_age_1_Int__Int(age: Int): Int {
-    return age;
+  public static function calc_age_2_String_Float__Float(v0: String, v1: Float): Float {
+    return {
+      switch([v0, v1]) {
+        case [name, age]:
+          age;
+      }
+    }
+  }
+
+  public static function get_cat_age_1_Int__Float(v0: Int): Float {
+    return {
+      switch([v0]) {
+        case [age]:
+          age;
+      }
+    }
   }
 
 }';
