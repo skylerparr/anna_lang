@@ -10,7 +10,6 @@ using lang.ArraySupport;
 using lang.MapUtil;
 using TypePrinter.MapPrinter;
 
-@:build(macros.ScriptMacros.script())
 class ASTParser {
 
   public static function _defmodule(moduleDef: Dynamic, body: Dynamic, aliases: Map<String, String>, context: Dynamic): Void {

@@ -1,6 +1,5 @@
 package ;
 using lang.AtomSupport;
-@:build(macros.ScriptMacros.script())
 class ArrayEnum {
   @:generic
   public static inline function reduce<T, K>(coll: Array<T>, iterator: Array<K>, fun: T->Array<K>->Array<K>): Array<K> {

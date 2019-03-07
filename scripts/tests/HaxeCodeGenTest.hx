@@ -9,7 +9,6 @@ import lang.ASTParser;
 import lang.LangParser;
 using lang.AtomSupport;
 
-@:build(macros.ScriptMacros.script())
 class HaxeCodeGenTest {
 
   public static function setup(): Void {

@@ -4,7 +4,7 @@ using lang.AtomSupport;
 
 @:build(macros.ValueClassImpl.build())
 class Module {
-  @field public var moduleSpecMap: Map<Atom, ModuleSpec>;
+  @field public static var moduleSpecMap: Map<Atom, ModuleSpec>;
 
   public static function start(): Void {
     if(moduleSpecMap == null) {

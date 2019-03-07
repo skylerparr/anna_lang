@@ -5,7 +5,6 @@ import anna_unit.Assert;
 using lang.MapUtil;
 using lang.AtomSupport;
 using TypePrinter.MapPrinter;
-@:build(macros.ScriptMacros.script())
 class MapUtilTest {
   public static var emptyMap: ObjectMap<Dynamic, Dynamic> = new ObjectMap<Dynamic, Dynamic>();
 

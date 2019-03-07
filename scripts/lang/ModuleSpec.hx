@@ -3,7 +3,6 @@ package lang;
 import lang.CustomTypes.CustomType;
 using lang.AtomSupport;
 
-@:build(macros.ScriptMacros.script())
 class ModuleSpec implements CustomType {
   public var module_name(default, never): Atom;
   public var functions(default, never): Array<FunctionSpec>;

@@ -8,7 +8,6 @@ import lang.Module;
 import lang.ParsingException;
 using lang.AtomSupport;
 using StringTools;
-@:build(macros.ScriptMacros.script())
 class LangParserTest {
 
   private static var emptyMap: ObjectMap<Dynamic, Dynamic> = new ObjectMap<Dynamic, Dynamic>();

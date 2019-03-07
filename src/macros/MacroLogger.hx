@@ -24,7 +24,7 @@ class MacroLogger {
   }
 
   public static function printFields(fields: Array<Field>):Void {
-    var p: Printer = Main Printer();
+    var p: Printer = new Printer();
     for(field in fields) {
       MacroLogger.log(p.printField(field));
     }

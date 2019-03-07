@@ -33,7 +33,6 @@ enum HashState {
   DEFINE_TYPE;
 }
 
-@:build(macros.ScriptMacros.script())
 class LangParser {
 
   public static var builtinAliases: Map<String, String> = {

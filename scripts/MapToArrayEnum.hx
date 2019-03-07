@@ -1,6 +1,5 @@
 package;
 
-@:build(macros.ScriptMacros.script())
 class MapToArrayEnum {
   @:generic
   public static inline function reduce<K, V, T>(map: Map<K, V>, accumulator: Array<T>, fun: KeyValue<K, V>->Array<T>->Array<T>): Array<T> {

@@ -7,7 +7,6 @@ using lang.AtomSupport;
 
 import anna_unit.Assert;
 using TypePrinter.MapPrinter;
-@:build(macros.ScriptMacros.script())
 class AnnaTest {
   public static function shouldPrintString(): Void {
     Assert.stringsAreEqual(Anna.inspect('foo'), '"foo"');

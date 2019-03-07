@@ -29,7 +29,6 @@ class FunctionGen implements CustomType {
   }
 }
 
-@:build(macros.ScriptMacros.script())
 class HaxeCodeGen {
 
   private static inline var classTemplate: String = "package ::package_name::;

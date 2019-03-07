@@ -2,7 +2,6 @@ package;
 
 using lang.AtomSupport;
 
-@:build(macros.ScriptMacros.script())
 class MapEnum {
 
   @:generic

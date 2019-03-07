@@ -3,7 +3,6 @@ package tests;
 using lang.AtomSupport;
 
 import anna_unit.Assert;
-@:build(macros.ScriptMacros.script())
 class ArrayEnumTest {
 
   public static function shouldJoinCollectionWithString(): Void {

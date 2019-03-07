@@ -7,7 +7,6 @@ import anna_unit.Assert;
 import lang.LangParser;
 import lang.Module;
 using lang.AtomSupport;
-@:build(macros.ScriptMacros.script())
 class ASTParserTest {
 
   public static function setup(): Void {

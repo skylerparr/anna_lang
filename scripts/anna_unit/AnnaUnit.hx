@@ -3,7 +3,6 @@ package anna_unit;
 import sys.FileSystem;
 import haxe.Timer;
 using StringTools;
-@:build(macros.ScriptMacros.script())
 class AnnaUnit {
   public static function start(testName: String = null): Void {
     if(Native.callStatic('Runtime', 'recompile', []).length == 0){

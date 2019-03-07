@@ -1,6 +1,5 @@
 package lang;
 
-@:build(macros.ScriptMacros.script())
 class StandardException {
 
   public var message: String;

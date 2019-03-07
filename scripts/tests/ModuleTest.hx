@@ -3,7 +3,6 @@ import anna_unit.Assert;
 import lang.Module;
 using lang.AtomSupport;
 import lang.ModuleSpec;
-@:build(macros.ScriptMacros.script())
 class ModuleTest {
 
   public static function setup(): Void {

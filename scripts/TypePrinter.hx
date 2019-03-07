@@ -3,7 +3,6 @@ package;
 import lang.CustomTypes.CustomType;
 import haxe.ds.ObjectMap;
 using lang.AtomSupport;
-@:build(macros.ScriptMacros.script())
 class TypePrinter {
 
 }

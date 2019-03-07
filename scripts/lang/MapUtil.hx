@@ -2,7 +2,6 @@ package lang;
 
 using lang.AtomSupport;
 import haxe.ds.ObjectMap;
-@:build(macros.ScriptMacros.script())
 class MapUtil {
   public static function toMap(obj: Dynamic): ObjectMap<Dynamic, Dynamic> {
     var retVal: ObjectMap<Dynamic, Dynamic> = new ObjectMap<Dynamic, Dynamic>();
