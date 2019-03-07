@@ -18,6 +18,6 @@ class MapToArrayEnum {
       var val: T = fun(kv);
       iterator.push(val);
     }
-    return iterator.copy();
+    return iterator;
   }
 }

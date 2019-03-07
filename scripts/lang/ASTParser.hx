@@ -27,8 +27,8 @@ class ASTParser {
       moduleName = '${packageName}.${className}';
     }
 
-    Module.define(new ModuleSpec(moduleName.atom(), [], className.atom(), packageName.toLowerCase().atom()));
-
+    var moduleSpec: ModuleSpec = new ModuleSpec(moduleName.atom(), [], className.atom(), packageName.toLowerCase().atom());
+    Module.define(moduleSpec);
     context.moduleName = moduleName.atom();
     parse(body[0], aliases, context);
   }

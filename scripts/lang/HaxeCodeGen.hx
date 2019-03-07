@@ -1,4 +1,6 @@
 package lang;
+import lang.ModuleSpec;
+import ArrayEnum;
 import haxe.ds.ObjectMap;
 import compiler.Compiler;
 import ArrayEnum;
@@ -57,13 +59,22 @@ class ::class_name:: {
   public static function generate(v0: lang.ModuleSpec): String {
     return {
       switch(v0) {
-        case({class_name: class_name, package_name: package_name, functions: functions}):
+        case(module_spec):
+          var class_name;
+          var package_name;
+          var functions;
+          switch(module_spec) {
+            case {class_name: _class_name, package_name: _package_name, functions: _functions}:
+              class_name = _class_name;
+              package_name = _package_name;
+              functions = _functions;
+          }
           var template = Anna.createInstance(haxe.Template, [classTemplate]);
           Native.call(template, 'execute', [
             {
               class_name: Atom.to_string(class_name),
               package_name: Anna.or(package_name, ''.atom()).value,
-              functions: generate_functions(functions)
+              functions: generate_functions(functions, v0)
             }
           ]);
       }
@@ -78,10 +89,10 @@ class ::class_name:: {
       end)
     end
    */
-  private static inline function generate_functions(v0: Array<FunctionSpec>): Array<FunctionGen> {
+  private static inline function generate_functions(v0: Array<FunctionSpec>, v1: ModuleSpec): Array<FunctionGen> {
     return {
-      switch(v0) {
-        case functions:
+      switch([v0, v1]) {
+        case [functions, module_spec]:
           var funGenMap: Map<String, FunctionGen> = ArrayToMapEnum.reduce(v0, new Map<String, FunctionGen>(), function(spec: FunctionSpec, acc: Map<String, FunctionGen>): Map<String, FunctionGen> {
             var args: String = build_args_string(spec.signature);
 
@@ -92,7 +103,7 @@ class ::class_name:: {
             }
             var funcGen: FunctionGen = AnnaMap.get(acc, spec.internal_name, new FunctionGen(spec.internal_name, args, get_type_string(spec.return_type), [], matching_header));
 
-            var body: String = get_body(spec);
+            var body: String = get_body(spec, module_spec);
             funcGen.matching_bodies.push(body);
 
             acc = AnnaMap.put(acc, spec.internal_name, funcGen);
@@ -124,6 +135,8 @@ class ::class_name:: {
                 throw new FunctionClauseNotFound("Function clause not found");
             }
           });
+        case _:
+          throw new UnexpectedArgumentException('this should not be possible');
       }
     }
   }
@@ -176,10 +189,10 @@ class ::class_name:: {
     }
   }
 
-  private static inline function get_body(v0: FunctionSpec): String {
+  private static inline function get_body(v0: FunctionSpec, v1: ModuleSpec): String {
     return {
-      switch(v0) {
-        case {signature: signature, body: body, return_type: return_type}:
+      switch([v0, v1]) {
+        case [{signature: signature, body: body, return_type: return_type}, module_spec]:
           var pattern_string: Array<String> = ArrayEnum.into(signature, [], function(sig: Array<Atom>): String {
             return {
               switch(sig) {
@@ -211,69 +224,13 @@ class ::class_name:: {
             exprs = ArrayEnum.into(body, [], function(expr: Array<Dynamic>): String {
               return {
                 switch(expr) {
-                  case [_v0, [], _v1]:
+                  case [_v0, _, _v1]:
                     var _var: Atom = _v0;
                     var _args: Dynamic = _v1;
                     if(_args == 'nil'.atom()) {
                       '          ${_var.value};';
                     } else {
-                      var types: Array<Array<String>> = ArrayEnum.reduce(_args, [[], []], function(t: Any, acc: Array<Array<String>>): Array<Array<String>> {
-                        return {
-                          var types: Array<String>;
-                          var values: Array<String>;
-                          switch(acc) {
-                            case [t, v]:
-                              types = t;
-                              values = v;
-                            case _:
-                              throw new FunctionClauseNotFound("Unexpected number of arguments");
-                          }
-
-                          switch(Type.typeof(t)) {
-                            case ValueType.TClass(Array):
-                              //fooling the haxe compiler here. This isn't the correct type
-                              //but the pattern match will still succeed, it's actually
-                              //Array<Dynamic>
-                              var varOrFunction: Array<Atom> = (t : Array<Atom>);
-                              switch(varOrFunction) {
-                                case [name, _, {value: 'nil'}]:
-                                  var type: Atom = AnnaMap.get(type_scope, name, 'nil'.atom());
-                                  if(type == 'nil'.atom()) {
-                                    Anna.print("Some sort of error here?");
-                                  }
-                                  types.push(type.value);
-                                  values.push(name.value);
-                                case [name, _, functionArgs]:
-                                  Anna.print(functionArgs, 'function args');
-                                case badarg:
-                                  throw new UnexpectedArgumentException('Received unexpected ast structure ${Anna.inspect(badarg)}');
-                              }
-                            case constType:
-                              values.push(t);
-                              switch(constType) {
-                                case ValueType.TClass(String):
-                                  types.push('String');
-                                case ValueType.TInt:
-                                  types.push('Int');
-                                case ValueType.TFloat:
-                                  types.push('Float');
-                                case _:
-                                  Anna.print(constType, 'bad!');
-                              }
-                          }
-                          acc;
-                        }
-                      });
-                      var strTypes: Array<String>;
-                      var strArgs: Array<String>;
-                      switch(types) {
-                        case [_v0, _v1]:
-                          strTypes = _v0;
-                          strArgs = _v1;
-                        case _:
-                          throw new UnexpectedArgumentException('Array size mismatch');
-                      }
-                      '          ${_var.value}_${_args.length}_${ArrayEnum.join(strTypes, '_')}__${return_type.value}(${ArrayEnum.join(strArgs, ', ')});';
+                      get_function_string(_var, _args, type_scope, return_type, module_spec);
                     }
                   case _:
                     throw new FunctionClauseNotFound("Function clause not found");
@@ -323,6 +280,217 @@ class ::class_name:: {
       }
     } else {
       keyVals.push('${key}: ${val}');
+    }
+  }
+
+  private static inline function get_function_string(v0: Atom, v1: Array<Dynamic>, v2: Map<Atom, Atom>, v3: Atom, v4: ModuleSpec): String {
+    return {
+      switch([v0, v1, v2, v3, v4]) {
+        case [_var, args, type_scope, return_type, module_spec]:
+          var module_functions = module_spec.functions;
+          var args_with_index: Array<Dynamic> = ArrayEnum.with_index(args);
+          var possible_type_args: Array<Array<Array<String>>> = ArrayEnum.reduce(args_with_index, [[], []], function(t_index: Array<Dynamic>, acc: Array<Array<Array<String>>>): Array<Array<Array<String>>> {
+            return {
+              var types: Array<Array<String>>;
+              var values: Array<Array<String>>;
+              switch(acc) {
+                case [t, v]:
+                  types = t;
+                  values = v;
+                case _:
+                  throw new FunctionClauseNotFound("Unexpected number of arguments");
+              }
+
+              var t: Any;
+              var index: Int;
+              switch(t_index) {
+                case [_t, _index]:
+                  t = _t;
+                  index = _index;
+                case _:
+                  throw new FunctionClauseNotFound("Unexpected number of arguments");
+              }
+
+              switch(Type.typeof(t)) {
+                case ValueType.TClass(Array):
+                  //fooling the haxe compiler here. This isn't the correct type
+                  //but the pattern match will still succeed, it's actually
+                  //Array<Dynamic>
+                  var var_or_function: Array<Atom> = (t : Array<Atom>);
+                  switch(var_or_function) {
+                    case [name, _, {value: 'nil'}]:
+                      var type: Atom = AnnaMap.get(type_scope, name, 'nil'.atom());
+                      if(type == 'nil'.atom()) {
+                        Anna.print("Some sort of error here?");
+                      }
+                      types.push([type.value]);
+                      values.push([name.value]);
+                    case [name, _, _]:
+                      var function_args = (t : Array<Dynamic>)[2];
+                      var func: Array<FunctionSpec> = get_matching_functions(module_spec, _var, args, return_type, type_scope);
+                    case badarg:
+                      throw new UnexpectedArgumentException('Received unexpected ast structure ${Anna.inspect(badarg)}');
+                  }
+                case constType:
+                  values.push([t]);
+                  switch(constType) {
+                    case ValueType.TClass(String):
+                      types.push(['String']);
+                    case ValueType.TInt:
+                      types.push(['Int']);
+                    case ValueType.TFloat:
+                      types.push(['Float']);
+                    case _:
+                      Anna.print(constType, 'bad!');
+                  }
+              }
+              acc;
+            }
+          });
+          var str_types: Array<Array<String>>;
+          var str_args: Array<Array<String>>;
+          switch(possible_type_args) {
+            case [_v0, _v1]:
+              str_types = _v0;
+              str_args = _v1;
+            case _:
+              throw new UnexpectedArgumentException('Array size mismatch');
+          }
+//          var funcString: String = '${_var.value}_${args.length}_${ArrayEnum.join(str_types, '_')}__${return_type.value}';
+//          var argsString: String = '(${ArrayEnum.join(str_args, ', ')})';
+//
+//          var moduleFuns: Array<String> = ArrayEnum.into(module_functions, [], function(spec: FunctionSpec): String {
+//            return {
+//              spec.internal_name;
+//            }
+//          });
+//
+//          var found: FunctionSpec = ArrayEnum.find(module_functions, FunctionSpec.nil, function(funSpec: FunctionSpec): Bool {
+//            return funSpec.internal_name == funcString;
+//          });
+//
+//          if(found == FunctionSpec.nil) {
+//            throw new FunctionClauseNotFound('No matching function found for ${_var.value}${argsString}');
+            throw new FunctionClauseNotFound('No matching function found for ${_var.value}');
+//          }
+//
+//          '          ${found.internal_name}${argsString};';
+        case _:
+          throw new UnexpectedArgumentException('This should not be possible');
+      }
+    }
+  }
+
+  public static inline function get_matching_functions(v0: ModuleSpec, v1: Atom, v2: Array<Dynamic>, v3: Atom, v4: Map<Atom, Atom>): Array<FunctionSpec> {
+    return {
+      switch([v0, v1, v2, v3, v4]) {
+        case [module_spec, name, function_args, required_return, type_scope]:
+          var functions = get_functions_by_name(module_spec, name);
+          ArrayEnum.filter(functions, function(func: FunctionSpec): Bool {
+            return {
+              var arity: Int = function_args.length;
+              var arg_types;
+              try {
+                arg_types = get_internal_signature_args(module_spec, func, name, function_args, type_scope);
+                var fun_name: String = '${name.value}_${arity}_${ArrayEnum.join(arg_types, '_')}__${required_return.value}';
+                (func.internal_name == fun_name);
+              } catch(e: AmbiguousFunctionException) {
+                false;
+              }
+            }
+          });
+      }
+    }
+  }
+
+  private static inline function get_arg_types(v0: FunctionSpec): Array<String> {
+    return {
+      ArrayEnum.into(v0.signature, [], function(arg: Array<Atom>): String {
+        return arg[1].value;
+      });
+    }
+  }
+
+  private static inline function get_functions_by_name(v0: ModuleSpec, v1: Atom): Array<FunctionSpec> {
+    return {
+      switch([v0, v1]) {
+        case([{functions: functions}, function_name]):
+          ArrayEnum.filter(functions, function(func: FunctionSpec): Bool {
+            return func.name == function_name;
+          });
+      }
+    }
+  }
+
+  private static inline function get_internal_signature_args(v0: ModuleSpec, v1: FunctionSpec, v2: Atom, v3: Array<Dynamic>, v4: Map<Atom, Atom>): Array<String> {
+    return {
+      switch([v0, v1, v2, v3, v4]) {
+        case [module_spec, func_spec, name, function_args, type_scope]:
+          var function_args_with_index: Array<Dynamic> = ArrayEnum.with_index(function_args);
+          ArrayEnum.into(function_args_with_index, [], function(arg_with_index: Array<Dynamic>): String {
+            return {
+              switch(arg_with_index) {
+                case [arg, index]:
+                  switch(Type.typeof(arg)) {
+                    case ValueType.TClass(Array):
+                      switch(arg) {
+                        case [var_name, _, var_args]:
+                          var var_name = arg[0];
+                          var var_args: Any = arg[2];
+                          if(var_args == 'nil'.atom()) {
+                            var type = AnnaMap.get(type_scope, var_name, 'nil'.atom());
+                            type.value;
+                          } else {
+                            var required_return = get_type_for_arg_index(func_spec, index);
+                            var matching = get_matching_functions(module_spec, var_name, var_args, required_return, type_scope);
+                            if(matching.length > 1) {
+                              throw new AmbiguousFunctionException('Unable to find appropriate matching function for ${Anna.inspect(var_name)} with args ${Anna.inspect(var_args)}');
+                            }
+                            var func: FunctionSpec = ArrayEnum.at(matching, 0, FunctionSpec.nil);
+                            if(func == FunctionSpec.nil) {
+                              throw new AmbiguousFunctionException('Unable to find appropriate matching function for ${Anna.inspect(var_name)} with args ${Anna.inspect(var_args)}');
+                            }
+                            func.return_type.value;
+                          }
+                        case _:
+                          throw new UnexpectedArgumentException('This should not be possible');
+                      }
+                    case const:
+                      get_type(arg);
+                  }
+                case _:
+                  throw new UnexpectedArgumentException('This should not be possible');
+
+              }
+            }
+          });
+      }
+    }
+  }
+
+  private static inline function get_type_for_arg_index(v0: FunctionSpec, v1: Int): Atom {
+    return {
+      switch([v0, v1]) {
+        case [{signature: signature}, index]:
+          var sig: Array<Atom> = ArrayEnum.at(signature, index, ['nil'.atom(), 'nil'.atom()]);
+          ArrayEnum.at(sig, 1, 'nil'.atom());
+      }
+    }
+  }
+
+  private static inline function get_type(val: Dynamic): String {
+    return {
+      switch(Type.typeof(val)) {
+        case ValueType.TClass(String):
+          'String';
+        case ValueType.TInt:
+          'Int';
+        case ValueType.TFloat:
+          'Float';
+        case _:
+          Anna.print(val, 'bad!');
+          'nil';
+      }
     }
   }
 }

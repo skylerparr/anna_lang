@@ -1,4 +1,5 @@
-class Atom {
+import lang.CustomTypes.CustomType;
+class Atom implements CustomType {
   public var value(default, never): String;
 
   public inline function new(value: String) {

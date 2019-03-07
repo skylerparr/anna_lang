@@ -42,7 +42,11 @@ class AnnaUnit {
         }
         if(Reflect.hasField(clazz, 'setup')) {
           var fun = Reflect.field(clazz, 'setup');
-          fun();
+          try {
+            fun();
+          } catch(e: Dynamic) {
+            trace(e);
+          }
         }
         var fun = Reflect.field(clazz, field);
         try {

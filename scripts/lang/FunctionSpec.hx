@@ -11,6 +11,8 @@ class FunctionSpec implements CustomType {
   public var return_type(default, never): Atom;
   public var body(default, never): Array<Dynamic>;
 
+  public static var nil: FunctionSpec = new FunctionSpec('nil'.atom(), '', [[]], 'nil'.atom(), []);
+
   public inline function new(name: Atom, internalName: String, signature: Array<Array<Atom>>, returnType: Atom, body: Array<Dynamic>) {
     Reflect.setField(this, 'name', name);
     Reflect.setField(this, 'internal_name', internalName);
