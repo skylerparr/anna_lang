@@ -4,7 +4,7 @@ using lang.AtomSupport;
 
 @:build(macros.ValueClassImpl.build())
 class Module {
-  @field public var moduleSpecMap: Map<Atom, ModuleSpec>;
+  @field public static var moduleSpecMap: Map<Atom, ModuleSpec>;
 
   public static function start(): Void {
     if(moduleSpecMap == null) {
@@ -17,7 +17,7 @@ class Module {
   }
 
   public static function define(moduleSpec: ModuleSpec): Atom {
-    moduleSpecMap.set(moduleSpec.moduleName, moduleSpec);
+    moduleSpecMap.set(moduleSpec.module_name, moduleSpec);
     return 'ok'.atom();
   }
 

@@ -3,7 +3,6 @@ package anna_unit;
 import sys.FileSystem;
 import haxe.Timer;
 using StringTools;
-@:build(macros.ScriptMacros.script())
 class AnnaUnit {
   public static function start(testName: String = null): Void {
     if(Native.callStatic('Runtime', 'recompile', []).length == 0){
@@ -34,7 +33,7 @@ class AnnaUnit {
       fields = Native.callStatic('Random', 'shuffle', [fields]);
 
       for(field in fields) {
-        if(field == 'start' || field == 'main') {
+        if(field == 'start' || field == 'main' || field == 'setup') {
           continue;
         }
         if(!Reflect.hasField(clazz, field)) {
@@ -42,7 +41,11 @@ class AnnaUnit {
         }
         if(Reflect.hasField(clazz, 'setup')) {
           var fun = Reflect.field(clazz, 'setup');
-          fun();
+          try {
+            fun();
+          } catch(e: Dynamic) {
+            trace(e);
+          }
         }
         var fun = Reflect.field(clazz, field);
         try {
@@ -52,7 +55,7 @@ class AnnaUnit {
           failureCounter++;
           cpp.Lib.println('');
           cpp.Lib.println('failure testing ${clazz}#${field}');
-          cpp.Lib.println('Error message: ${e.message}');
+          cpp.Lib.println('${Type.getClassName(Type.getClass(e))} message: ${e.message}');
           continue;
         }
         cpp.Lib.print('.');

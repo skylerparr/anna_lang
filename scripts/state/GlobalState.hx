@@ -2,7 +2,6 @@ package state;
 
 using lang.AtomSupport;
 
-@:build(macros.ScriptMacros.script())
 class GlobalState {
   private static inline var globalState: String = "state.GlobalStore";
 

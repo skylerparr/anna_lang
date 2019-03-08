@@ -4,7 +4,6 @@ import Type;
 import lang.CustomTypes;
 import lang.StandardException;
 import anna_unit.TestFailureException;
-@:build(macros.ScriptMacros.script())
 class Assert {
 
   private static function structuresAreEqual(args: Array<Dynamic>): Bool {

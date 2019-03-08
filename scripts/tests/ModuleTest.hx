@@ -3,7 +3,6 @@ import anna_unit.Assert;
 import lang.Module;
 using lang.AtomSupport;
 import lang.ModuleSpec;
-@:build(macros.ScriptMacros.script())
 class ModuleTest {
 
   public static function setup(): Void {
@@ -30,8 +29,8 @@ class ModuleTest {
 
     var allModules: Array<ModuleSpec> = Module.modulesDefined();
     allModules.sort(function(a: ModuleSpec, b: ModuleSpec): Int {
-      if(a.moduleName.value < b.moduleName.value) return 1;
-      if(a.moduleName.value > b.moduleName.value) return -1;
+      if(a.module_name.value < b.module_name.value) return 1;
+      if(a.module_name.value > b.module_name.value) return -1;
       return 0;
     });
     Assert.areEqual(moduleSpec1, allModules[0]);

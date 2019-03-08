@@ -1,4 +1,5 @@
 package lang;
+import haxe.ds.StringMap;
 import lang.LangParser;
 import haxe.ds.ObjectMap;
 import Type.ValueType;
@@ -7,8 +8,8 @@ using lang.AtomSupport;
 using StringTools;
 using lang.ArraySupport;
 using lang.MapUtil;
+using TypePrinter.MapPrinter;
 
-@:build(macros.ScriptMacros.script())
 class ASTParser {
 
   public static function _defmodule(moduleDef: Dynamic, body: Dynamic, aliases: Map<String, String>, context: Dynamic): Void {
@@ -19,18 +20,14 @@ class ASTParser {
     }
     var moduleName: String = className;
     var packageName: String = fqName.packageName;
-    if(packageName == null) {
+    if(packageName == null || packageName == '') {
       packageName = 'nil';
     } else {
-      if(packageName == '') {
-        moduleName = className;
-      } else {
-        moduleName = '${packageName}.${className}';
-      }
+      moduleName = '${packageName}.${className}';
     }
 
-    Module.define(new ModuleSpec(moduleName.atom(), [], className.atom(), packageName.toLowerCase().atom()));
-
+    var moduleSpec: ModuleSpec = new ModuleSpec(moduleName.atom(), [], className.atom(), packageName.toLowerCase().atom());
+    Module.define(moduleSpec);
     context.moduleName = moduleName.atom();
     parse(body[0], aliases, context);
   }
@@ -41,6 +38,7 @@ class ASTParser {
     string == "Float" ||
     string == "Dynamic" ||
     string == "Atom" ||
+    string == "Map" ||
     string.startsWith("Array");
   }
 
@@ -48,13 +46,9 @@ class ASTParser {
     var retType: String;
     var moduleAndPackage: Dynamic = resolveClassToPackage(ast, aliases, context);
     if(moduleAndPackage.packageName != '') {
-      retType = '${moduleAndPackage.packageName.toLowerCase()}.__${moduleAndPackage.moduleName}__.${moduleAndPackage.moduleName}';
+      retType = '${moduleAndPackage.packageName.toLowerCase()}.${moduleAndPackage.moduleName}';
     } else {
-      if(isBasicType(moduleAndPackage.moduleName)) {
-        retType = '${moduleAndPackage.moduleName}';
-      } else {
-        retType = '__${moduleAndPackage.moduleName}__.${moduleAndPackage.moduleName}';
-      }
+      retType = '${moduleAndPackage.moduleName}';
     }
     return retType;
   }
@@ -124,7 +118,7 @@ class ASTParser {
       sigType = retType;
     }
 
-    return '${functionName.value}_${argTypes.length}_${argTypes.join('_')}__${sigType}';
+    return '${functionName.value}_${argTypes.length}_${argTypes.join('_').replace('.', '_')}__${sigType}';
   }
 
   public static function _at_spec(specDef: Array<Dynamic>, body: Dynamic, aliases: Map<String, String>, context: Dynamic): Void {
@@ -150,8 +144,11 @@ class ASTParser {
     return retVal.join('.');
   }
 
-  public static function getScopedFunction(body: Dynamic): Array<Dynamic> {
+  public static function getScopedFunction(body: Array<Dynamic>): Array<Dynamic> {
+    trace(body[0]);
+    trace(body[1]);
     while(true) {
+      trace(body[0][0]);
       if(body[0][0] == '.'.atom()) {
         body = body[0][2];
       } else {
@@ -174,7 +171,7 @@ class ASTParser {
     return {packageName: packageName, moduleName: moduleName};
   }
 
-  public static function parse(ast: Dynamic, aliases: Map<String, String> = null, context: Dynamic = null): String {
+  public static function parse(ast: Dynamic, aliases: Map<String, String> = null, context: Dynamic = null): Dynamic {
     if(aliases == null) {
       aliases = new Map<String, String>();
       for(alias in LangParser.builtinAliases.keys()) {
@@ -192,9 +189,7 @@ class ASTParser {
         retVal = '"${ast}"';
       case ValueType.TClass(ObjectMap):
         var map: ObjectMap<Dynamic, Dynamic> = cast(ast, ObjectMap<Dynamic, Dynamic>);
-        var dy: Dynamic = map.toDynamic();
-        var dyString: String = '${dy}';
-        return '${Anna.inspect(dy)}';
+        return '${map.asHaxeString()}';
       case ValueType.TClass(Array):
         var vals: Array<String> = [];
         var orig: Array<Dynamic> = cast ast;

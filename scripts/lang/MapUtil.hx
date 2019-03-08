@@ -2,7 +2,6 @@ package lang;
 
 using lang.AtomSupport;
 import haxe.ds.ObjectMap;
-@:build(macros.ScriptMacros.script())
 class MapUtil {
   public static function toMap(obj: Dynamic): ObjectMap<Dynamic, Dynamic> {
     var retVal: ObjectMap<Dynamic, Dynamic> = new ObjectMap<Dynamic, Dynamic>();
@@ -20,7 +19,12 @@ class MapUtil {
       kv.push({key: key, val: val});
     }
     for(vals in kv) {
-      Reflect.setField(retVal, vals.key, vals.val);
+      switch(vals.val) {
+        case [name, _, _]:
+          Reflect.setField(retVal, vals.key, name);
+        case _:
+          Reflect.setField(retVal, vals.key, vals.val);
+      }
     }
     return retVal;
   }

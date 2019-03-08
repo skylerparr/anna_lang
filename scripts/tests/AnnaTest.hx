@@ -1,11 +1,12 @@
 package tests;
 
+import haxe.Template;
 import lang.ModuleSpec;
 import haxe.ds.ObjectMap;
 using lang.AtomSupport;
 
 import anna_unit.Assert;
-@:build(macros.ScriptMacros.script())
+using TypePrinter.MapPrinter;
 class AnnaTest {
   public static function shouldPrintString(): Void {
     Assert.stringsAreEqual(Anna.inspect('foo'), '"foo"');
@@ -56,7 +57,7 @@ class AnnaTest {
     Assert.stringsAreEqual(Anna.inspect(new ObjectMap()), '%{}');
   }
 
-  public static function shouldPrintMapWithMixedValues(): Void {
+  public static function shouldPrintMapWithMixedTypes(): Void {
     var values: Array<Dynamic> = [348, 349.54, 'foo', 'bar'.atom(), 'Cat'.atom()];
     var map: ObjectMap<Dynamic, Dynamic> = new ObjectMap();
     map.set('foo'.atom(), "bar");
@@ -65,13 +66,40 @@ class AnnaTest {
     Assert.stringsAreEqual(Anna.inspect(map), '%{:bar => 234, :cat => {348, 349.54, "foo", :bar, Cat}, :foo => "bar"}');
   }
 
+  public static function shouldPrintMapWithSameTypes(): Void {
+    var map: ObjectMap<Dynamic, Dynamic> = new ObjectMap();
+    map.set('foo'.atom(), "foo");
+    map.set('bar'.atom(), "bar");
+    map.set('cat'.atom(), "cat");
+    Assert.stringsAreEqual(Anna.inspect(map), '%{:bar => "bar", :cat => "cat", :foo => "foo"}');
+  }
+
+  public static function shouldPrintMapAsHaxeMap(): Void {
+    var map: ObjectMap<Dynamic, Dynamic> = new ObjectMap();
+    map.set('foo'.atom(), "foo");
+    map.set('bar'.atom(), "bar".atom());
+    map.set('cat'.atom(), "cat");
+    Assert.stringsAreEqual(map.asHaxeString(), '[AtomSupport.atom("bar") => AtomSupport.atom("bar"), AtomSupport.atom("cat") => "cat", AtomSupport.atom("foo") => "foo"]');
+  }
+
   public static function shouldPrintCustomTypes(): Void {
     var moduleSpec: ModuleSpec = new ModuleSpec('taser'.atom(), [], 'nil'.atom(), 'nil'.atom());
-    Assert.stringsAreEqual(Anna.inspect(moduleSpec), '%lang.ModuleSpec{:moduleName => :taser, :functions => {}, :className => nil, :packageName => nil}');
+    Assert.stringsAreEqual(Anna.inspect(moduleSpec), '%lang.ModuleSpec{:module_name => :taser, :functions => {}, :class_name => nil, :package_name => nil}');
   }
 
   public static function shouldPrintDynamicTypeToMap(): Void {
     var dyn: Dynamic = {foo: 'bar'.atom(), baz: 'cat'.atom()};
     Assert.stringsAreEqual(Anna.inspect(dyn), '[ "baz" => :cat, "foo" => :bar ]');
+  }
+
+  public static function shouldPrintBasicObject(): Void {
+    var template: Template = Anna.createInstance(Template, ['']);
+    Assert.areEqual(Anna.inspect(template), "#<haxe.Template>");
+  }
+
+  public static function shouldReturnValueIfNotNil(): Void {
+    var val: Dynamic = new ObjectMap();
+    Assert.areEqual(Anna.or(val, []), new ObjectMap());
+    Assert.areEqual(Anna.or('nil'.atom(), []), []);
   }
 }

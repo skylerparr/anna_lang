@@ -11,6 +11,7 @@ using TypePrinter.StringPrinter;
 using TypePrinter.MapPrinter;
 using TypePrinter.ArrayPrinter;
 using TypePrinter.CustomTypePrinter;
+using TypePrinter.StringMapPrinter;
 using lang.AtomSupport;
 using StringTools;
 @:build(macros.ValueClassImpl.build())
@@ -37,12 +38,35 @@ class Anna {
     return a % b;
   }
 
+  public static function createInstance(type: Class<Dynamic>, constructorArgs: Array<Dynamic>): Dynamic {
+    return Type.createInstance(type, constructorArgs);
+  }
+
+  public static function or(val: Dynamic, val2: Dynamic): Dynamic {
+    if(val == 'nil'.atom()) {
+      return val2;
+    }
+    return val;
+  }
+
+  public static function print(val: Any, label: String = null): Any {
+    if(label == null) {
+      label = '';
+    } else {
+      label = '${label}: ';
+    }
+    trace('${label}${inspect(val)}');
+    return val;
+  }
+
   public static function inspect(val: Any): String {
     switch(Type.typeof(val)) {
       case TClass(String):
         return inspectString((val : String));
       case TClass(haxe.ds.ObjectMap):
         return inspectMap((val : ObjectMap<Dynamic, Dynamic>));
+      case TClass(haxe.ds.StringMap):
+        return inspectStringMap((val : Map<String, Dynamic>));
       case TClass(Array):
         return inspectArray(val);
       case TClass(Atom):
@@ -58,7 +82,11 @@ class Anna {
       case TEnum(_) | TFunction | TUnknown:
         return '${val}';
       case _:
-        return inspectCustomType(val);
+        if(Std.is(val, CustomType)) {
+          return inspectCustomType(val);
+        } else {
+          return inspectObject(val);
+        }
     }
     return '';
   }
@@ -68,6 +96,10 @@ class Anna {
   }
 
   private static inline function inspectMap(map: ObjectMap<Dynamic, Dynamic>): String {
+    return map.asString();
+  }
+
+  private static inline function inspectStringMap(map: Map<String, Dynamic>): String {
     return map.asString();
   }
 
@@ -116,5 +148,10 @@ class Anna {
 
   private static inline function inspectCustomType(type: CustomType): String {
     return type.asString();
+  }
+
+  public static function inspectObject(obj: Dynamic): String {
+    var fqClassName: String = Type.getClassName(Type.getClass(obj));
+    return '#<${fqClassName}>';
   }
 }
