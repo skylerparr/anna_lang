@@ -1,4 +1,5 @@
 package lang;
+import anna_unit.AnnaUnit;
 import ArrayEnum;
 import lang.ModuleSpec;
 import ArrayEnum;
@@ -35,7 +36,6 @@ class HaxeCodeGen {
   private static inline var classTemplate: String = "package ::package_name::;
 using lang.AtomSupport;
 
-@:build(macros.ScriptMacros.script())
 class ::class_name:: {
 ::foreach functions::
   public static function ::internal_name::(::signature_string::)::return_type_string:: {
@@ -320,9 +320,10 @@ class ::class_name:: {
                     case [name, _, {value: 'nil'}]:
                       var type: Atom = AnnaMap.get(type_scope, name, 'nil'.atom());
                       if(type == 'nil'.atom()) {
-                        Anna.print("Some sort of error here?");
+                        types.push('');
+                      } else {
+                        types.push(type.value);
                       }
-                      types.push(type.value);
                       values.push(name.value);
                     case [name, _, _]:
                       var function_args = (t : Array<Dynamic>)[2];
@@ -331,9 +332,20 @@ class ::class_name:: {
                         var func: FunctionSpec = ArrayEnum.at(funcs, 0, FunctionSpec.nil);
                         var arg_and_type: Array<Atom> = ArrayEnum.at(func.signature, index, []);
                         var type: Atom = ArrayEnum.at(arg_and_type, 1, 'nil'.atom());
-                        types.push(type.value);
+                        var type_string = type.value;
+                        if(type == 'nil'.atom()) {
+                          type_string = '';
+                        }
+                        types.push(type_string);
 
-                        var arg_string = get_function_string(name, function_args, type_scope, type, module_spec);
+                        var mod_spec = get_module(name, function_args, module_spec);
+                        var fun_name_and_args = get_function_name(name, function_args);
+                        switch(fun_name_and_args) {
+                          case [_name, _function_args]:
+                            name = _name;
+                            function_args = _function_args;
+                        }
+                        var arg_string = get_function_string(name, function_args, type_scope, type, mod_spec);
                         values.push(arg_string);
                       } else {
                         throw new AmbiguousFunctionException('Could not find appropriate function to call for ${Anna.inspect(name)} with args ${Anna.inspect(function_args)}');
@@ -366,7 +378,11 @@ class ::class_name:: {
             case _:
               throw new UnexpectedArgumentException('Array size mismatch');
           }
-          var funcString: String = '${_var.value}_${args.length}_${ArrayEnum.join(str_types, '_')}__${return_type.value}';
+          var return_type_string = return_type.value;
+          if(return_type == 'nil'.atom()) {
+            return_type_string = '';
+          }
+          var funcString: String = '${_var.value}_${args.length}_${ArrayEnum.join(str_types, '_')}__${return_type_string}';
           var argsString: String = '(${ArrayEnum.join(str_args, ', ')})';
 
           var moduleFuns: Array<String> = ArrayEnum.into(module_functions, [], function(spec: FunctionSpec): String {
@@ -383,7 +399,17 @@ class ::class_name:: {
             throw new FunctionClauseNotFound('No matching function found for ${_var.value}${argsString}');
           }
 
-          '${found.internal_name}${argsString}';
+          var func_path: Array<String> = [];
+
+          var package_name: String = module_spec.package_name.value;
+          if(module_spec.package_name != 'nil'.atom()) {
+            func_path.push(package_name);
+          }
+          func_path.push(module_spec.class_name.value);
+          func_path.push(found.internal_name);
+
+
+          '${ArrayEnum.join(func_path, '.')}${argsString}';
         case _:
           throw new UnexpectedArgumentException('This should not be possible');
       }
@@ -394,6 +420,20 @@ class ::class_name:: {
     return {
       switch([v0, v1, v2, v3, v4]) {
         case [module_spec, name, function_args, required_return, type_scope]:
+          var return_string = required_return.value;
+          if(required_return == 'nil'.atom()) {
+            return_string = '';
+          }
+          var m_spec = get_module(name, function_args, module_spec);
+          if(m_spec != null) {
+            module_spec = m_spec;
+          }
+          var fun_name_and_args = get_function_name(name, function_args);
+          switch(fun_name_and_args) {
+            case [_name, _function_args]:
+              name = _name;
+              function_args = _function_args;
+          }
           var functions = get_functions_by_name(module_spec, name);
           ArrayEnum.filter(functions, function(func: FunctionSpec): Bool {
             return {
@@ -401,13 +441,59 @@ class ::class_name:: {
               var arg_types;
               try {
                 arg_types = get_internal_signature_args(module_spec, func, name, function_args, type_scope);
-                var fun_name: String = '${name.value}_${arity}_${ArrayEnum.join(arg_types, '_')}__${required_return.value}';
+                var fun_name: String = '${name.value}_${arity}_${ArrayEnum.join(arg_types, '_')}__${return_string}';
                 (func.internal_name == fun_name);
               } catch(e: AmbiguousFunctionException) {
                 false;
               }
             }
           });
+      }
+    }
+  }
+
+  private static function get_function_name(v0: Atom, v1: Array<Dynamic>): Array<Dynamic> {
+    return {
+      switch([v0, v1]) {
+        case [name, function_args]:
+          if(name == '.'.atom()) {
+            var first_frag: Atom = function_args[1][0];
+            function_args = function_args[1][2];
+            var fun_and_args = get_function_name(first_frag, function_args);
+            [fun_and_args[0], fun_and_args[1]];
+          } else {
+            [name, function_args];
+          }
+      }
+    }
+  }
+
+  private static inline function get_module(v0: Atom, v1: Array<Dynamic>, v2: ModuleSpec): ModuleSpec {
+    return {
+      switch([v0, v1, v2]) {
+        case [name, function_args, default_module]:
+          if(name == '.'.atom()) {
+            var first_frag: Atom = function_args[0][0];
+            var mod_str = get_full_module_string(first_frag.value, function_args[1]);
+            Module.getModule(mod_str.atom());
+          } else {
+            default_module;
+          }
+      }
+    }
+  }
+
+  private static function get_full_module_string(v0: String, v1: Array<Dynamic>): String {
+    return {
+      switch([v0, v1]) {
+        case([mod_str, ast]):
+          if(ast[0] == '.'.atom()) {
+            mod_str += '.${ast[2][0][0].value}';
+            var new_ast = ast[2][1];
+            get_full_module_string(mod_str, new_ast);
+          } else {
+            mod_str;
+          }
       }
     }
   }
@@ -448,7 +534,11 @@ class ::class_name:: {
                           var var_args: Any = arg[2];
                           if(var_args == 'nil'.atom()) {
                             var type = AnnaMap.get(type_scope, var_name, 'nil'.atom());
-                            type.value;
+                            var type_string = type.value;
+                            if(type == 'nil'.atom()) {
+                              type_string = '';
+                            }
+                            type_string;
                           } else {
                             var required_return = get_type_for_arg_index(func_spec, index);
                             var matching = get_matching_functions(module_spec, var_name, var_args, required_return, type_scope);
@@ -459,13 +549,22 @@ class ::class_name:: {
                             if(func == FunctionSpec.nil) {
                               throw new AmbiguousFunctionException('Unable to find appropriate matching function for ${Anna.inspect(var_name)} with args ${Anna.inspect(var_args)}');
                             }
-                            func.return_type.value;
+                            var type_string = func.return_type.value;
+                            if(func.return_type == 'nil'.atom()) {
+                              type_string = '';
+                            }
+                            type_string;
                           }
                         case _:
                           throw new UnexpectedArgumentException('This should not be possible');
                       }
                     case const:
-                      get_type(arg);
+                      var type = get_type_for_arg_index(func_spec, index);
+                      if(type == 'nil'.atom()) {
+                        '';
+                      } else {
+                        get_type(arg);
+                      }
                   }
                 case _:
                   throw new UnexpectedArgumentException('This should not be possible');

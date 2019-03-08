@@ -38,6 +38,7 @@ class ASTParser {
     string == "Float" ||
     string == "Dynamic" ||
     string == "Atom" ||
+    string == "Map" ||
     string.startsWith("Array");
   }
 
@@ -143,8 +144,11 @@ class ASTParser {
     return retVal.join('.');
   }
 
-  public static function getScopedFunction(body: Dynamic): Array<Dynamic> {
+  public static function getScopedFunction(body: Array<Dynamic>): Array<Dynamic> {
+    trace(body[0]);
+    trace(body[1]);
     while(true) {
+      trace(body[0][0]);
       if(body[0][0] == '.'.atom()) {
         body = body[0][2];
       } else {
