@@ -7,11 +7,7 @@ import anna_unit.TestFailureException;
 class Assert {
 
   private static function structuresAreEqual(args: Array<Dynamic>): Bool {
-    if(areCustomTypes(args)) {
-      return args[0] == args[1];
-    } else {
-      return (Anna.inspect(args[0])) == (Anna.inspect(args[1]));
-    }
+    return (Anna.inspect(args[0])) == (Anna.inspect(args[1]));
   }
 
   private static function areSameDataTypesEqual(args: Array<Dynamic>): Bool {
