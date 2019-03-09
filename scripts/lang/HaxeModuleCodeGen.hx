@@ -1,13 +1,7 @@
 package lang;
-import anna_unit.AnnaUnit;
 import ArrayEnum;
-import lang.ModuleSpec;
-import ArrayEnum;
-import haxe.ds.ObjectMap;
 import compiler.Compiler;
-import ArrayEnum;
 import lang.CustomTypes.CustomType;
-import haxe.Template;
 import Type.ValueType;
 
 using lang.AtomSupport;
@@ -31,7 +25,7 @@ class FunctionGen implements CustomType {
   }
 }
 
-class HaxeCodeGen {
+class HaxeModuleCodeGen {
 
   private static inline var classTemplate: String = "package ::package_name::;
 using lang.AtomSupport;

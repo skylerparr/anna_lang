@@ -106,7 +106,6 @@ class ValueClassImpl {
       }
     }
 
-    MacroLogger.printFields(fields);
     return fields;
   }
 

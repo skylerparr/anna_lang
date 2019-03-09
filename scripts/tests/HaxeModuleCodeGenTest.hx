@@ -1,19 +1,24 @@
 package tests;
+import lang.TypeSpec;
+import lang.DefinedTypes;
 import lang.FunctionSpec;
 import lang.FunctionClauseNotFound;
 import anna_unit.Assert;
 import lang.ModuleSpec;
-import lang.HaxeCodeGen;
+import lang.HaxeModuleCodeGen;
 import lang.Module;
 import lang.ASTParser;
 import lang.LangParser;
 using lang.AtomSupport;
 
-class HaxeCodeGenTest {
+class HaxeModuleCodeGenTest {
 
   public static function setup(): Void {
     Module.stop();
     Module.start();
+
+    DefinedTypes.stop();
+    DefinedTypes.start();
   }
 
   public static function shouldGenerate1HaxeClassPerModuleDefinition(): Void {
@@ -27,7 +32,7 @@ class Foo {
     ASTParser.parse(LangParser.toAST(string));
     var module: ModuleSpec = Module.getModule('Foo'.atom());
     Assert.isNotNull(module);
-    var genHaxe: String = HaxeCodeGen.generate(module);
+    var genHaxe: String = HaxeModuleCodeGen.generate(module);
 
     Assert.areEqual(haxeCode, genHaxe);
   }
@@ -43,7 +48,7 @@ class Cart {
     ASTParser.parse(LangParser.toAST(string));
     var module: ModuleSpec = Module.getModule('Foo.Bar.Cat.Baz.Cart'.atom());
     Assert.isNotNull(module);
-    var genHaxe: String = HaxeCodeGen.generate(module);
+    var genHaxe: String = HaxeModuleCodeGen.generate(module);
 
     Assert.areEqual(haxeCode, genHaxe);
   }
@@ -69,7 +74,7 @@ class Foo {
     ASTParser.parse(LangParser.toAST(string));
     var module: ModuleSpec = Module.getModule('Foo'.atom());
     Assert.isNotNull(module);
-    var genHaxe: String = HaxeCodeGen.generate(module);
+    var genHaxe: String = HaxeModuleCodeGen.generate(module);
 
     Assert.stringsAreEqual(haxeCode, genHaxe);
   }
@@ -113,7 +118,7 @@ class Foo {
     ASTParser.parse(LangParser.toAST(string));
     var module: ModuleSpec = Module.getModule('Foo'.atom());
     Assert.isNotNull(module);
-    var genHaxe: String = HaxeCodeGen.generate(module);
+    var genHaxe: String = HaxeModuleCodeGen.generate(module);
 
     Assert.stringsAreEqual(haxeCode, genHaxe);
   }
@@ -142,7 +147,7 @@ class Foo {
     ASTParser.parse(LangParser.toAST(string));
     var module: ModuleSpec = Module.getModule('Foo'.atom());
     Assert.isNotNull(module);
-    var genHaxe: String = HaxeCodeGen.generate(module);
+    var genHaxe: String = HaxeModuleCodeGen.generate(module);
 
     Assert.stringsAreEqual(haxeCode, genHaxe);
   }
@@ -172,7 +177,7 @@ class Foo {
     ASTParser.parse(LangParser.toAST(string));
     var module: ModuleSpec = Module.getModule('Foo'.atom());
     Assert.isNotNull(module);
-    var genHaxe: String = HaxeCodeGen.generate(module);
+    var genHaxe: String = HaxeModuleCodeGen.generate(module);
 
     Assert.stringsAreEqual(haxeCode, genHaxe);
   }
@@ -203,7 +208,7 @@ class Foo {
     ASTParser.parse(LangParser.toAST(string));
     var module: ModuleSpec = Module.getModule('Foo'.atom());
     Assert.isNotNull(module);
-    var genHaxe: String = HaxeCodeGen.generate(module);
+    var genHaxe: String = HaxeModuleCodeGen.generate(module);
 
     Assert.stringsAreEqual(haxeCode, genHaxe);
   }
@@ -247,7 +252,7 @@ class Foo {
     ASTParser.parse(LangParser.toAST(string));
     var module: ModuleSpec = Module.getModule('Foo'.atom());
     Assert.isNotNull(module);
-    var genHaxe: String = HaxeCodeGen.generate(module);
+    var genHaxe: String = HaxeModuleCodeGen.generate(module);
 
     Assert.stringsAreEqual(haxeCode, genHaxe);
   }
@@ -268,7 +273,7 @@ end';
     var module: ModuleSpec = Module.getModule('Foo'.atom());
     Assert.isNotNull(module);
     Assert.throwsException(function(): Void {
-      HaxeCodeGen.generate(module);
+      HaxeModuleCodeGen.generate(module);
     }, FunctionClauseNotFound);
   }
 
@@ -308,7 +313,7 @@ class Foo {
     ASTParser.parse(LangParser.toAST(string));
     var module: ModuleSpec = Module.getModule('Foo'.atom());
     Assert.isNotNull(module);
-    var genHaxe: String = HaxeCodeGen.generate(module);
+    var genHaxe: String = HaxeModuleCodeGen.generate(module);
 
     Assert.stringsAreEqual(haxeCode, genHaxe);
   }
@@ -374,7 +379,7 @@ end';
     var args: Array<Dynamic> = ast[2];
     var type_scope: Map<Atom, Atom> = ['nil'.atom() => 'Atom'.atom()];
 
-    var possible: Array<FunctionSpec> = HaxeCodeGen.get_matching_functions(module, var_name, args, required_return, type_scope);
+    var possible: Array<FunctionSpec> = HaxeModuleCodeGen.get_matching_functions(module, var_name, args, required_return, type_scope);
     Assert.areEqual(possible.length, 1);
     Assert.areEqual(possible[0].internal_name, 'no_args_0___Atom');
 
@@ -382,7 +387,7 @@ end';
     var var_name: Atom = ast[0];
     var args: Array<Dynamic> = ast[2];
     var type_scope: Map<Atom, Atom> = ['nil'.atom() => 'Atom'.atom()];
-    var possible: Array<FunctionSpec> = HaxeCodeGen.get_matching_functions(module, var_name, args, required_return, type_scope);
+    var possible: Array<FunctionSpec> = HaxeModuleCodeGen.get_matching_functions(module, var_name, args, required_return, type_scope);
     Assert.areEqual(possible.length, 1);
     Assert.areEqual(possible[0].internal_name, 'with_args_2_String_Int__Atom');
 
@@ -390,7 +395,7 @@ end';
     var var_name: Atom = ast[0];
     var args: Array<Dynamic> = ast[2];
     var type_scope: Map<Atom, Atom> = ['name'.atom() => 'String'.atom()];
-    var possible: Array<FunctionSpec> = HaxeCodeGen.get_matching_functions(module, var_name, args, required_return, type_scope);
+    var possible: Array<FunctionSpec> = HaxeModuleCodeGen.get_matching_functions(module, var_name, args, required_return, type_scope);
     Assert.areEqual(possible.length, 1);
     Assert.areEqual(possible[0].internal_name, 'with_args_2_String_Int__Atom');
 
@@ -398,7 +403,7 @@ end';
     var var_name: Atom = ast[0];
     var args: Array<Dynamic> = ast[2];
     var type_scope: Map<Atom, Atom> = ['name'.atom() => 'String'.atom()];
-    var possible: Array<FunctionSpec> = HaxeCodeGen.get_matching_functions(module, var_name, args, required_return, type_scope);
+    var possible: Array<FunctionSpec> = HaxeModuleCodeGen.get_matching_functions(module, var_name, args, required_return, type_scope);
     Assert.areEqual(possible.length, 1);
     Assert.areEqual(possible[0].internal_name, 'with_args_2_Int_String__Atom');
 
@@ -406,7 +411,7 @@ end';
     var var_name: Atom = ast[0];
     var args: Array<Dynamic> = ast[2];
     var type_scope: Map<Atom, Atom> = ['name'.atom() => 'String'.atom(), 'age'.atom() => 'Int'.atom(), 'weight'.atom() => 'Float'.atom()];
-    var possible: Array<FunctionSpec> = HaxeCodeGen.get_matching_functions(module, var_name, args, required_return, type_scope);
+    var possible: Array<FunctionSpec> = HaxeModuleCodeGen.get_matching_functions(module, var_name, args, required_return, type_scope);
     Assert.areEqual(possible.length, 1);
     Assert.areEqual(possible[0].internal_name, 'with_args_3_String_Int_Float__Atom');
 
@@ -414,14 +419,14 @@ end';
     var var_name: Atom = ast[0];
     var args: Array<Dynamic> = ast[2];
     var type_scope: Map<Atom, Atom> = ['name'.atom() => 'String'.atom(), 'age'.atom() => 'Int'.atom(), 'weight'.atom() => 'Float'.atom()];
-    var possible: Array<FunctionSpec> = HaxeCodeGen.get_matching_functions(module, var_name, args, required_return, type_scope);
+    var possible: Array<FunctionSpec> = HaxeModuleCodeGen.get_matching_functions(module, var_name, args, required_return, type_scope);
     Assert.areEqual(possible.length, 0);
 
     var ast: Array<Dynamic> = LangParser.toAST('with_args(name, 19, get_cat_age(42))');
     var var_name: Atom = ast[0];
     var args: Array<Dynamic> = ast[2];
     var type_scope: Map<Atom, Atom> = ['name'.atom() => 'String'.atom(), 'age'.atom() => 'Int'.atom(), 'weight'.atom() => 'Float'.atom()];
-    var possible: Array<FunctionSpec> = HaxeCodeGen.get_matching_functions(module, var_name, args, required_return, type_scope);
+    var possible: Array<FunctionSpec> = HaxeModuleCodeGen.get_matching_functions(module, var_name, args, required_return, type_scope);
     Assert.areEqual(possible.length, 1);
     Assert.areEqual(possible[0].internal_name, 'with_args_3_String_Int_Float__Atom');
 
@@ -429,7 +434,7 @@ end';
     var var_name: Atom = ast[0];
     var args: Array<Dynamic> = ast[2];
     var type_scope: Map<Atom, Atom> = ['name'.atom() => 'String'.atom(), 'age'.atom() => 'Int'.atom(), 'weight'.atom() => 'Float'.atom()];
-    var possible: Array<FunctionSpec> = HaxeCodeGen.get_matching_functions(module, var_name, args, required_return, type_scope);
+    var possible: Array<FunctionSpec> = HaxeModuleCodeGen.get_matching_functions(module, var_name, args, required_return, type_scope);
     Assert.areEqual(possible.length, 1);
     Assert.areEqual(possible[0].internal_name, 'bar_2_String_Float__Atom');
 
@@ -437,7 +442,7 @@ end';
     var var_name: Atom = ast[0];
     var args: Array<Dynamic> = ast[2];
     var type_scope: Map<Atom, Atom> = ['dance'.atom() => 'String'.atom()];
-    var possible: Array<FunctionSpec> = HaxeCodeGen.get_matching_functions(module, var_name, args, required_return, type_scope);
+    var possible: Array<FunctionSpec> = HaxeModuleCodeGen.get_matching_functions(module, var_name, args, required_return, type_scope);
     Assert.areEqual(possible.length, 1);
     var ellieModule: ModuleSpec = Module.getModule('Foo.Bar.Baz.Cat.Ellie'.atom());
     Assert.areEqual('${ellieModule.package_name.value}.${ellieModule.class_name.value}.${possible[0].internal_name}', 'foo.bar.baz.cat.Ellie.play_2_String_String__Atom');
@@ -467,7 +472,7 @@ end';
     var var_name: Atom = ast[0];
     var args: Array<Dynamic> = ast[2];
     var type_scope: Map<Atom, Atom> = ['nil'.atom() => 'Atom'.atom()];
-    var possible: Array<FunctionSpec> = HaxeCodeGen.get_matching_functions(module, var_name, args, required_return, type_scope);
+    var possible: Array<FunctionSpec> = HaxeModuleCodeGen.get_matching_functions(module, var_name, args, required_return, type_scope);
     Assert.areEqual(possible.length, 1);
     Assert.areEqual(possible[0].internal_name, 'no_args_0___');
 
@@ -475,7 +480,7 @@ end';
     var var_name: Atom = ast[0];
     var args: Array<Dynamic> = ast[2];
     var type_scope: Map<Atom, Atom> = ['nil'.atom() => 'Atom'.atom()];
-    var possible: Array<FunctionSpec> = HaxeCodeGen.get_matching_functions(module, var_name, args, required_return, type_scope);
+    var possible: Array<FunctionSpec> = HaxeModuleCodeGen.get_matching_functions(module, var_name, args, required_return, type_scope);
     Assert.areEqual(possible.length, 1);
     Assert.areEqual(possible[0].internal_name, 'with_args_2____');
 
@@ -483,7 +488,7 @@ end';
     var var_name: Atom = ast[0];
     var args: Array<Dynamic> = ast[2];
     var type_scope: Map<Atom, Atom> = ['weight'.atom() => 'nil'.atom()];
-    var possible: Array<FunctionSpec> = HaxeCodeGen.get_matching_functions(module, var_name, args, required_return, type_scope);
+    var possible: Array<FunctionSpec> = HaxeModuleCodeGen.get_matching_functions(module, var_name, args, required_return, type_scope);
     Assert.areEqual(possible.length, 1);
     Assert.areEqual(possible[0].internal_name, 'with_args_3_____');
   }
@@ -556,7 +561,7 @@ class Foo {
     ASTParser.parse(LangParser.toAST(string));
     var module: ModuleSpec = Module.getModule('Foo'.atom());
     Assert.isNotNull(module);
-    var genHaxe: String = HaxeCodeGen.generate(module);
+    var genHaxe: String = HaxeModuleCodeGen.generate(module);
 
     Assert.stringsAreEqual(haxeCode, genHaxe);
   }
@@ -611,7 +616,7 @@ class Foo {
     ASTParser.parse(LangParser.toAST(string));
     var module: ModuleSpec = Module.getModule('Foo'.atom());
     Assert.isNotNull(module);
-    var genHaxe: String = HaxeCodeGen.generate(module);
+    var genHaxe: String = HaxeModuleCodeGen.generate(module);
 
     Assert.stringsAreEqual(haxeCode, genHaxe);
   }
@@ -666,7 +671,7 @@ class Foo {
 }';
     var module: ModuleSpec = Module.getModule('Foo'.atom());
     Assert.isNotNull(module);
-    var genHaxe: String = HaxeCodeGen.generate(module);
+    var genHaxe: String = HaxeModuleCodeGen.generate(module);
     Assert.stringsAreEqual(haxeCode, genHaxe);
   }
 
@@ -724,8 +729,9 @@ class Foo {
     ASTParser.parse(LangParser.toAST(string));
     var module: ModuleSpec = Module.getModule('Foo'.atom());
     Assert.isNotNull(module);
-    var genHaxe: String = HaxeCodeGen.generate(module);
+    var genHaxe: String = HaxeModuleCodeGen.generate(module);
 
     Assert.stringsAreEqual(haxeCode, genHaxe);
   }
+
 }

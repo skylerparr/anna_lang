@@ -1,5 +1,4 @@
 package lang;
-import haxe.ds.StringMap;
 import lang.LangParser;
 import haxe.ds.ObjectMap;
 import Type.ValueType;
@@ -38,7 +37,7 @@ class ASTParser {
     string == "Float" ||
     string == "Dynamic" ||
     string == "Atom" ||
-    string == "Map" ||
+    string.startsWith("Map") ||
     string.startsWith("Array");
   }
 
@@ -101,6 +100,31 @@ class ASTParser {
 
     moduleSpec.functions.push(functionSpec);
     context.specs = null;
+  }
+
+  public static function _deftype(typeDef: Dynamic, body: Dynamic, aliases: Map<String, String>, context: Dynamic): Void {
+    var fqName: Dynamic = resolveClassToPackage(typeDef, aliases, context);
+    var className: String = fqName.moduleName;
+    if(className == null) {
+      className = 'nil';
+    }
+    var typeName: String = className;
+    var packageName: String = fqName.packageName;
+    if(packageName == null || packageName == '') {
+      packageName = 'nil';
+    } else {
+      typeName = '${packageName}.${className}';
+    }
+
+    var fields: Array<FieldSpec> = [];
+    var fieldTypes: Array<Dynamic> = body[0].__block__;
+    for(field in fieldTypes) {
+      var fieldSpec: FieldSpec = new FieldSpec(field[0], field[1][0]);
+      fields.push(fieldSpec);
+    }
+
+    var typeSpec: TypeSpec = new TypeSpec(typeName.atom(), fields, className.atom(), packageName.toLowerCase().atom());
+    DefinedTypes.define(typeSpec);
   }
 
   public static function generateInternalFunctionName(functionName: Atom, functionArgs: Array<Array<Atom>>, retType: String, context: Dynamic): String {

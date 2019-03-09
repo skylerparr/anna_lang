@@ -1,5 +1,8 @@
 package tests;
 
+import lang.FieldSpec;
+import lang.DefinedTypes;
+import lang.TypeSpec;
 import lang.FunctionSpec;
 import lang.ModuleSpec;
 import lang.ASTParser;
@@ -12,6 +15,9 @@ class ASTParserTest {
   public static function setup(): Void {
     Module.stop();
     Module.start();
+
+    DefinedTypes.stop();
+    DefinedTypes.start();
   }
 
   public static function shouldConvertStringASTToHaxe(): Void {
@@ -224,6 +230,29 @@ cost
     Assert.areEqual(moduleSpec.module_name, 'Foo.Bar.Cat.Baz'.atom());
     Assert.areEqual(moduleSpec.class_name, 'Baz'.atom());
     Assert.areEqual(moduleSpec.package_name, 'foo.bar.cat'.atom());
+  }
+
+  public static function shouldDefineCustomType(): Void {
+    var string: String = '
+deftype Foo.Bar.MyType do
+  {:name, String}
+  {:age, Int}
+  {:weight, Float}
+end';
+    ASTParser.parse(LangParser.toAST(string));
+    var typeSpec: TypeSpec = DefinedTypes.getType('Foo.Bar.MyType'.atom());
+    Assert.isNotNull(typeSpec);
+    Assert.areEqual(typeSpec.class_name, 'MyType'.atom());
+    Assert.areEqual(typeSpec.package_name, 'foo.bar'.atom());
+    Assert.areEqual(typeSpec.name, 'Foo.Bar.MyType'.atom());
+    var fields: Array<FieldSpec> = typeSpec.fields;
+    Assert.areEqual(fields.length, 3);
+    Assert.areEqual(fields[0].name, 'name'.atom());
+    Assert.areEqual(fields[0].type, 'String'.atom());
+    Assert.areEqual(fields[1].name, 'age'.atom());
+    Assert.areEqual(fields[1].type, 'Int'.atom());
+    Assert.areEqual(fields[2].name, 'weight'.atom());
+    Assert.areEqual(fields[2].type, 'Float'.atom());
   }
 
 }

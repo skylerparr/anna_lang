@@ -19,5 +19,4 @@ class TypeSpec implements CustomType {
     return Anna.inspect(this);
   }
 
-
 }
