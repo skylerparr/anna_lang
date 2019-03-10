@@ -27,6 +27,51 @@ class StringMapPrinter {
     }
     return '%{${kv.join(', ')}}';
   }
+
+  public static function asHaxeString(map: Map<String, Dynamic>): String {
+    var kv: Array<String> = [];
+    var keys: Array<Dynamic> = [];
+    for(key in map.keys()) {
+      keys.push(key);
+    }
+    keys.sort( function(a:Dynamic, b:Dynamic):Int {
+      if(Std.is(a, Atom) && Std.is(b, Atom)) {
+        if (a.value < b.value) return -1;
+        if (a.value > b.value) return 1;
+      } else if(Std.is(a, String) && Std.is(b, String)) {
+        if (a.toLowerCase() < b.toLowerCase()) return -1;
+        if (a.toLowerCase() > b.toLowerCase()) return 1;
+      } else {
+        if (a < b) return -1;
+        if (a > b) return 1;
+      }
+      return 0;
+    });
+    for(key in keys) {
+      var keyString: String = '';
+      if(key == null) {
+        key = 'nil'.atom();
+      }
+      if(Std.is(key, String)) {
+        keyString = '"${key}"';
+      } else {
+        keyString = key.toString();
+      }
+      var value: Dynamic = map.get(key);
+      var valueString: String = '';
+      if(value == null) {
+        value = 'nil'.atom();
+      }
+      if(Std.is(value, String)) {
+        valueString = '"${value}"';
+      } else {
+        valueString = value.toString();
+      }
+
+      kv.push('${keyString} => ${valueString}');
+    }
+    return '[${kv.join(', ')}]';
+  }
 }
 
 class MapPrinter {
@@ -106,6 +151,10 @@ class MapPrinter {
 
 class StringPrinter {
   public static function asString(string: String): String {
+    return '"${string}"';
+  }
+
+  public static function toString(string: String): String {
     return '"${string}"';
   }
 }

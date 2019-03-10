@@ -32,6 +32,9 @@ class Main {
     t.execute({});
     var m: IMap<String, String> = new Map<String, String>();
     m.keys();
+    m.remove('');
+    for(v in m) {}
+    m.toString();
     var map: ObjectMap<Dynamic, Dynamic> = new ObjectMap<Dynamic, Dynamic>();
     for(v in map) {}
     for(k in map.keys()) {}

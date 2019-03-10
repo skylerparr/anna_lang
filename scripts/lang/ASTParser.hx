@@ -133,7 +133,7 @@ class ASTParser {
       if(retVal == 'nil'.atom()) {
         return '';
       }
-      return retVal.value;
+      return retVal.value.replace('<', '_').replace('>', '_');
     });
     var sigType: String = '';
     if(retType == 'nil') {
@@ -168,20 +168,6 @@ class ASTParser {
     return retVal.join('.');
   }
 
-  public static function getScopedFunction(body: Array<Dynamic>): Array<Dynamic> {
-    trace(body[0]);
-    trace(body[1]);
-    while(true) {
-      trace(body[0][0]);
-      if(body[0][0] == '.'.atom()) {
-        body = body[0][2];
-      } else {
-        return body[0];
-      }
-    }
-    return [];
-  }
-
   private static function resolveClassToPackage(ast: Array<Dynamic>, aliases: Map<String, String>, context: Dynamic): Dynamic {
     var fqName: String = parse(ast, aliases, context);
     var modName: String = fqName.split('(')[0];
@@ -189,10 +175,16 @@ class ASTParser {
   }
 
   public static function annaModuleToHaxe(modName: String): Dynamic {
-    var frags: Array<String> = modName.split('.');
-    var moduleName: String = frags.pop();
-    var packageName: String = frags.join('.');
-    return {packageName: packageName, moduleName: moduleName};
+    if(modName.startsWith('Array')) {
+      var frags: Array<String> = modName.split('<');
+      var modAndPackage: Dynamic = annaModuleToHaxe(frags[1].split('>')[0]);
+      return {packageName: '', moduleName: 'Array<${modAndPackage.packageName.toLowerCase()}.${modAndPackage.moduleName}>'};
+    } else {
+      var frags: Array<String> = modName.split('.');
+      var moduleName: String = frags.pop();
+      var packageName: String = frags.join('.');
+      return {packageName: packageName, moduleName: moduleName};
+    }
   }
 
   public static function parse(ast: Dynamic, aliases: Map<String, String> = null, context: Dynamic = null): Dynamic {

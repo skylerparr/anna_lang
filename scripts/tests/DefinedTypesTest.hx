@@ -30,7 +30,7 @@ class DefinedTypesTest {
     var typeSpec2: TypeSpec = new TypeSpec("Bar".atom(), [], 'nil'.atom(), 'nil'.atom());
     DefinedTypes.define(typeSpec2);
 
-    var allTypes: Array<TypeSpec> = DefinedTypes.modulesDefined();
+    var allTypes: Array<TypeSpec> = DefinedTypes.typesDefined();
     allTypes.sort(function(a: TypeSpec, b: TypeSpec): Int {
       if(a.name.value < b.name.value) return 1;
       if(a.name.value > b.name.value) return -1;

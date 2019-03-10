@@ -26,7 +26,7 @@ class DefinedTypes {
     return typeSpecMap.get(type);
   }
 
-  public static function modulesDefined(): Array<TypeSpec> {
+  public static function typesDefined(): Array<TypeSpec> {
     var retVal: Array<TypeSpec> = [];
     for(m in typeSpecMap) {
       retVal.push(m);

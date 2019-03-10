@@ -1,23 +1,13 @@
 defmodule Foo.Bar.Sample do
 
-  @spec(sum, {Int, Int}, Int)
-  def sum(a, b) do
-    a + b
+  @spec(turtle, {Foo.Bar.Turtle}, String)
+  def turtle(%{name => "Ellie", age => age}) do
+    "Ellie has an age"
   end
 
-  @spec(hello_world, nil, String)
-  def hello_world() do
-    "hello world"
-  end
-
-  # Types can be inferred too
-  def test() do
-    "works"
-  end
-
-  @spec(get_a_turtle, nil, Foo.Bar.Turtle)
-  def get_a_turtle() do
-    %{"name" => "bae", "age" => 25, "type" => "green"}
+  @spec(turtle, {Foo.Bar.Turtle}, String)
+  def turtle(%{name => name}) do
+    name
   end
 
 end

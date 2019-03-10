@@ -746,7 +746,7 @@ class Foo {
     Assert.stringsAreEqual(haxeCode, genHaxe);
   }
 
-  public static function shouldGeneratePatternMatchFunctionHead(): Void {
+  public static function shouldGeneratePatternMatchFunctionHeadForMaps(): Void {
     var string = '
 defmodule Foo do
 
@@ -775,6 +775,117 @@ class Foo {
           AtomSupport.atom("foo");
         case [{ name: name }]:
           name;
+      }
+    }
+  }
+
+}';
+    ASTParser.parse(LangParser.toAST(string));
+    var module: ModuleSpec = Module.getModule('Foo'.atom());
+    Assert.isNotNull(module);
+    var genHaxe: String = HaxeModuleCodeGen.generate(module);
+
+    Assert.stringsAreEqual(haxeCode, genHaxe);
+  }
+
+  public static function shouldGeneratePatternMatchFunctionHeadForArrays(): Void {
+    var string = '
+defmodule Foo do
+
+  @spec(bar, {Array<Lang.FunctionSpec>}, Atom)
+  def bar({%{name => :foo}}) do
+    :foo
+  end
+
+  @spec(bar, {Array<Lang.FunctionSpec>}, Atom)
+  def bar({%{name => name}}) do
+    name
+  end
+
+end';
+
+    var haxeCode: String = 'package ;
+import lang.AtomSupport;
+using lang.AtomSupport;
+
+class Foo {
+
+  public static function bar_1_Array_lang_FunctionSpec___Atom(v0: Array<lang.FunctionSpec>): Atom {
+    return {
+      switch([v0]) {
+        case [[ { name: {value: "foo"} } ]]:
+          AtomSupport.atom("foo");
+        case [[ { name: name } ]]:
+          name;
+      }
+    }
+  }
+
+}';
+    ASTParser.parse(LangParser.toAST(string));
+    var module: ModuleSpec = Module.getModule('Foo'.atom());
+    Assert.isNotNull(module);
+    var genHaxe: String = HaxeModuleCodeGen.generate(module);
+
+    Assert.stringsAreEqual(haxeCode, genHaxe);
+  }
+
+  public static function shouldPatternMatchStringConstants(): Void {
+    var string = '
+defmodule Foo do
+
+  @spec(bar, {Lang.FunctionSpec}, String)
+  def bar(%{internal_name => "Foo"}) do
+    :foo
+  end
+
+end';
+
+    var haxeCode: String = 'package ;
+import lang.AtomSupport;
+using lang.AtomSupport;
+
+class Foo {
+
+  public static function bar_1_lang_FunctionSpec__String(v0: lang.FunctionSpec): String {
+    return {
+      switch([v0]) {
+        case [{ internal_name: "Foo" }]:
+          AtomSupport.atom("foo");
+      }
+    }
+  }
+
+}';
+    ASTParser.parse(LangParser.toAST(string));
+    var module: ModuleSpec = Module.getModule('Foo'.atom());
+    Assert.isNotNull(module);
+    var genHaxe: String = HaxeModuleCodeGen.generate(module);
+
+    Assert.stringsAreEqual(haxeCode, genHaxe);
+  }
+  public static function shouldReturnStringConstants(): Void {
+    var string = '
+defmodule Foo do
+
+  @spec(bar, {Lang.FunctionSpec}, String)
+  def bar(%{internal_name => "Foo"}) do
+    "foo"
+  end
+
+end';
+
+    var haxeCode: String = 'package ;
+import lang.AtomSupport;
+using lang.AtomSupport;
+
+class Foo {
+
+  public static function bar_1_lang_FunctionSpec__String(v0: lang.FunctionSpec): String {
+    return {
+      switch([v0]) {
+        case [{ internal_name: "Foo" }]:
+          "foo";
       }
     }
   }

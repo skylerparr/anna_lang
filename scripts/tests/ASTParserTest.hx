@@ -193,6 +193,22 @@ cost
     Assert.areEqual(fun3.internal_name, "baz_0___Atom");
   }
 
+  public static function shouldStoreArrayTypesWithCorrectCasing(): Void {
+    var string: String = 'defmodule Foo do
+      @spec(bar, {Array<Lang.FunctionSpec>}, Atom)
+      def bar(abc) do
+      end
+    end';
+    ASTParser.parse(LangParser.toAST(string));
+
+    var moduleSpec: ModuleSpec = Module.getModule('Foo'.atom());
+    Assert.areEqual(moduleSpec.functions.length, 1);
+    var fun1: FunctionSpec = moduleSpec.functions[0];
+
+    Assert.areEqual(fun1.signature[0][1], 'Array<lang.FunctionSpec>'.atom());
+    Assert.areEqual(fun1.internal_name, "bar_1_Array_lang_FunctionSpec___Atom");
+  }
+
   public static function shouldOverloadFunction(): Void {
     var string: String = 'defmodule Foo do
       @spec(bar, {String, Int}, Atom)

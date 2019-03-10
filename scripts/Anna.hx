@@ -1,5 +1,7 @@
 package ;
 
+import TypePrinter.StringMapPrinter;
+import TypePrinter.MapPrinter;
 import haxe.ds.ObjectMap;
 import Reflect;
 import lang.CustomTypes.CustomType;
@@ -57,6 +59,70 @@ class Anna {
     }
     trace('${label}${inspect(val)}');
     return val;
+  }
+
+  public static function toHaxeString(val: Any): String {
+    switch(Type.typeof(val)) {
+      case TClass(String):
+        return '"${val}"';
+      case TClass(haxe.ds.ObjectMap):
+        return MapPrinter.asHaxeString((val : ObjectMap<Dynamic, Dynamic>));
+      case TClass(haxe.ds.StringMap):
+        return StringMapPrinter.asHaxeString((val : Map<String, Dynamic>));
+      case TClass(Array):
+        return '${val}';
+      case TClass(Atom):
+        return '{value: "${((val : Atom).value)}"}';
+      case TObject:
+        return '${val}';
+      case TInt | TFloat:
+        return val;
+      case TBool:
+        return '${(val : Bool)}';
+      case TNull:
+        return 'nil';
+      case TEnum(_) | TFunction | TUnknown:
+        return '${val}';
+      case _:
+        if(Std.is(val, CustomType)) {
+          return inspectCustomType(val);
+        } else {
+          return inspectObject(val);
+        }
+    }
+    return '';
+  }
+
+  public static function toHaxeBodyString(val: Any): String {
+    switch(Type.typeof(val)) {
+      case TClass(String):
+        return '"${val}"';
+      case TClass(haxe.ds.ObjectMap):
+        return MapPrinter.asHaxeString((val : ObjectMap<Dynamic, Dynamic>));
+      case TClass(haxe.ds.StringMap):
+        return StringMapPrinter.asHaxeString((val : Map<String, Dynamic>));
+      case TClass(Array):
+        return '${val}';
+      case TClass(Atom):
+        return '${((val : Atom).toString())}';
+      case TObject:
+        return '${val}';
+      case TInt | TFloat:
+        return val;
+      case TBool:
+        return '${(val : Bool)}';
+      case TNull:
+        return 'nil';
+      case TEnum(_) | TFunction | TUnknown:
+        return '${val}';
+      case _:
+        if(Std.is(val, CustomType)) {
+          return inspectCustomType(val);
+        } else {
+          return inspectObject(val);
+        }
+    }
+    return '';
   }
 
   public static function inspect(val: Any): String {

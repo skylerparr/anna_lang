@@ -1,5 +1,11 @@
 package compiler;
 
+import lang.HaxeModuleCodeGen;
+import lang.ModuleSpec;
+import lang.TypeSpec;
+import lang.DefinedTypes;
+import lang.Module;
+import lang.HaxeTypeCodeGen;
 import lang.AtomSupport;
 import lang.ASTParser;
 import sys.FileSystem;
@@ -32,15 +38,35 @@ class Compiler {
   }
 
   public static function compileAll(): Atom {
+    Module.stop();
+    Module.start();
+    DefinedTypes.stop();
+    DefinedTypes.start();
+
+    var lib: String = '${Sys.getCwd()}lib/';
+    var files: Array<String> = FileSystem.readDirectory(lib);
+    for(file in files) {
+      compile(file);
+    }
+
+    var types: Array<TypeSpec> = DefinedTypes.typesDefined();
+    for(type in types) {
+      var haxeCode = HaxeTypeCodeGen.generate(type);
+      saveHaxe(haxeCode);
+    }
+
+    var modules: Array<ModuleSpec> = Module.modulesDefined();
+    for(module in modules) {
+      var haxeCode = HaxeModuleCodeGen.generate(module);
+
+      saveHaxe(haxeCode);
+    }
+
+    Native.callStatic("Runtime", "recompile", []);
     return 'ok'.atom();
   }
 
-  public static function compile(filePath: String): Void {
-    var lib: String = 'lib/';
-    var outputfilePath = '${Sys.getCwd()}${lib}${filePath}';
-    var content: String = File.getContent(outputfilePath);
-    var ast = LangParser.toAST(content);
-    var haxeCode: String = ASTParser.parse(ast);
+  public static function saveHaxe(haxeCode: String): Void {
     var packageName: String = haxeCode.split('\n')[0].replace('package', '').replace(';', '').trim().replace('.', '/');
     var packageFrags: Array<String> = packageName.split('/');
     var currentPackagePath: String = '';
@@ -51,7 +77,14 @@ class Compiler {
     var fileName: String = getClassName(haxeCode);
     var outFile: String = '${Sys.getCwd()}scripts/${packageName}/${fileName}.hx';
     File.saveContent(outFile, haxeCode);
-    Native.callStatic("Runtime", "recompile", []);
+  }
+
+  public static function compile(filePath: String): Void {
+    var lib: String = 'lib/';
+    var outputfilePath = '${Sys.getCwd()}${lib}${filePath}';
+    var content: String = File.getContent(outputfilePath);
+    var ast = LangParser.toAST(content);
+    ASTParser.parse(ast);
   }
 
   private static inline function getClassName(code: String): String {

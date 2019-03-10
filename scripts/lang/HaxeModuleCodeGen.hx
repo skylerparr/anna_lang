@@ -1,4 +1,5 @@
 package lang;
+import TypePrinter.MapPrinter;
 import ArrayEnum;
 import compiler.Compiler;
 import lang.CustomTypes.CustomType;
@@ -8,6 +9,7 @@ using lang.AtomSupport;
 using lang.ArraySupport;
 using StringTools;
 using TypePrinter.MapPrinter;
+using TypePrinter.StringPrinter;
 
 class FunctionGen implements CustomType {
   public var internal_name(default, never): String;
@@ -226,17 +228,22 @@ class ::class_name:: {
           } else {
             exprs = ArrayEnum.into(body, [], function(expr: Array<Dynamic>): String {
               return {
-                switch(expr) {
-                  case [_v0, _, _v1]:
-                    var _var: Atom = _v0;
-                    var _args: Dynamic = _v1;
-                    if(_args == 'nil'.atom()) {
-                      '          ${_var.value};';
-                    } else {
-                      '          ${get_function_string(_var, _args, type_scope, return_type, module_spec)};';
+                switch(Type.typeof(expr)) {
+                  case TClass(Array):
+                    switch(expr) {
+                      case [_v0, _, _v1]:
+                        var _var: Atom = _v0;
+                        var _args: Dynamic = _v1;
+                        if(_args == 'nil'.atom()) {
+                          '          ${_var.value};';
+                        } else {
+                          '          ${get_function_string(_var, _args, type_scope, return_type, module_spec)};';
+                        }
+                      case constant:
+                        '          ${Anna.toHaxeString(constant)};';
                     }
                   case constant:
-                    '          ${constant};';
+                    '          ${Anna.toHaxeBodyString(expr)};';
                 }
               }
             });
@@ -254,13 +261,44 @@ class ::class_name:: {
       switch(v0) {
         case {value: value}:
           if(value.startsWith('[')) {
-            var map: Map<Dynamic, Dynamic> = Compiler.interpHaxe(value);
-            var keyVals: Array<String> = [];
-            for(key in map.keys()) {
-              var val: Dynamic = map.get(key);
-              pushKeyVal(keyVals, key, val);
+            var interp_value: Dynamic = Compiler.interpHaxe(value);
+            switch(Type.typeof(interp_value)) {
+              case TClass(Array):
+                var arrayVals: Array<String> = [];
+                var array: Array<Dynamic> = interp_value;
+                for(v in array) {
+                  var strValue: String;
+                  switch(Type.typeof(v)) {
+                    case TClass(haxe.ds.ObjectMap):
+                      strValue = convertPatternToString('${MapPrinter.asHaxeString(v)}'.atom());
+                    case _:
+                      strValue = convertPatternToString('${v}'.atom());
+                  }
+                  arrayVals.push(strValue);
+                }
+                '[ ${ArrayEnum.join(arrayVals, ', ')} ]';
+              case TClass(haxe.ds.ObjectMap):
+                var keyVals: Array<String> = [];
+                var map: Map<Dynamic, Dynamic> = interp_value;
+                for(key in map.keys()) {
+                  var val: Dynamic = map.get(key);
+                  val = switch(Type.typeof(val)) {
+                    case TClass(Array):
+                      switch(val) {
+                        case [name, _, meta]:
+                          val = name.value;
+                        case _:
+                          val;
+                      }
+                    case _:
+                      Anna.toHaxeString(val);
+                  }
+                  pushKeyVal(keyVals, key, val);
+                }
+                '{ ${keyVals.join(', ')} }';
+              case t:
+                '';
             }
-            '{ ${keyVals.join(', ')} }';
           } else {
             value;
           }

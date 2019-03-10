@@ -114,6 +114,7 @@ class LangParserTest {
     cook(a, b + 212)
     a + b
     coo("cat", 5, 6, :seven)
+    { %{ foo => "bar" } }
     %{}'),
 'foo("bar",1,2,:three)
 :hash
@@ -126,6 +127,8 @@ rem(a,b)
 cook(a,+(b,212))
 +(a,b)
 coo("cat",5,6,:seven)
+
+{%{foo=>"bar"}}
 %{}');
   }
 
