@@ -37,7 +37,7 @@ class ASTParserTest {
   }
 
   public static function shouldConvertAtomASTToHaxe(): Void {
-    Assert.areEqual(ASTParser.parse(LangParser.toAST(':pretty')), '"pretty".atom()');
+    Assert.areEqual(ASTParser.parse(LangParser.toAST(':pretty')), 'AtomSupport.atom("pretty")');
   }
 
   public static function shouldConvertArrayASTToHaxe(): Void {
@@ -45,7 +45,7 @@ class ASTParserTest {
   }
 
   public static function shouldConvertArrayWithValuesToHaxe(): Void {
-    Assert.areEqual(ASTParser.parse(LangParser.toAST('{2,  :foo, "house", 292}')), '[2, "foo".atom(), "house", 292]');
+    Assert.areEqual(ASTParser.parse(LangParser.toAST('{2,  :foo, "house", 292}')), '[2, AtomSupport.atom("foo"), "house", 292]');
   }
 
   public static function shouldConvertHashASTToHaxe(): Void {
@@ -65,13 +65,13 @@ class ASTParserTest {
   }
 
   public static function shouldConvertFunctionCallWithArgsFromASTToHaxe(): Void {
-    Assert.areEqual(ASTParser.parse(LangParser.toAST('foo(1, :two, three)')), 'foo(1, "two".atom(), three)');
+    Assert.areEqual(ASTParser.parse(LangParser.toAST('foo(1, :two, three)')), 'foo(1, AtomSupport.atom("two"), three)');
   }
 
   public static function shouldParseFunctionWithNestedFunctionCallsAndDataStructuresToHaxe(): Void {
     Assert.areEqual(ASTParser.parse(LangParser.toAST(
       'm(3, b(1, 2), ellie({:foo}), qtip(nozy(%{"bar" => {:cat}})))')),
-    'm(3, b(1, 2), ellie(["foo".atom()]), qtip(nozy(["bar" => AtomSupport.atom("nil")])))');
+    'm(3, b(1, 2), ellie([AtomSupport.atom("foo")]), qtip(nozy(["bar" => AtomSupport.atom("nil")])))');
   }
 
   public static function shouldConvertMultipleStatementsToHaxe(): Void {
@@ -89,13 +89,13 @@ class ASTParserTest {
     #%{cost => pza} = cook(a, b + 212)
     cost
     %{"internal_name" => foo}')),
-    'foo("bar", 1, 2, "three".atom())
-"hash".atom()
-soo("baz", 3, 4, "five".atom())
+    'foo("bar", 1, 2, AtomSupport.atom("three"))
+AtomSupport.atom("hash")
+soo("baz", 3, 4, AtomSupport.atom("five"))
 "hello world"
 324
 []
-coo("cat", 5, 6, "seven".atom())
+coo("cat", 5, 6, AtomSupport.atom("seven"))
 rem(a, b)
 cook(a, +(b, 212))
 +(a, b)

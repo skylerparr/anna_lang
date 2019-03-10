@@ -864,6 +864,42 @@ class Foo {
 
     Assert.stringsAreEqual(haxeCode, genHaxe);
   }
+
+  public static function shouldPatternMatchAtoms(): Void {
+    var string = '
+defmodule Foo do
+
+  @spec(bar, {Atom}, Atom)
+  def bar(:bar) do
+    :foo
+  end
+
+end';
+
+    var haxeCode: String = 'package ;
+import lang.AtomSupport;
+using lang.AtomSupport;
+
+class Foo {
+
+  public static function bar_1_Atom__Atom(v0: Atom): Atom {
+    return {
+      switch([v0]) {
+        case [{value: "bar"}]:
+          AtomSupport.atom("foo");
+      }
+    }
+  }
+
+}';
+    ASTParser.parse(LangParser.toAST(string));
+    var module: ModuleSpec = Module.getModule('Foo'.atom());
+    Assert.isNotNull(module);
+    var genHaxe: String = HaxeModuleCodeGen.generate(module);
+
+    Assert.stringsAreEqual(haxeCode, genHaxe);
+  }
+
   public static function shouldReturnStringConstants(): Void {
     var string = '
 defmodule Foo do

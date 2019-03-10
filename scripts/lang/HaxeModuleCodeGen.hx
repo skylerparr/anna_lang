@@ -300,7 +300,13 @@ class ::class_name:: {
                 '';
             }
           } else {
-            value;
+            var interp_value: Dynamic;
+            try {
+              interp_value = Compiler.interpHaxe(value);
+              Anna.toHaxeString(interp_value);
+            } catch(e: Dynamic) {
+              value;
+            }
           }
         case _:
           throw new FunctionClauseNotFound("Function clause not found");

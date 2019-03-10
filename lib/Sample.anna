@@ -10,4 +10,23 @@ defmodule Foo.Bar.Sample do
     name
   end
 
+  @spec(test, {Atom}, String)
+  def test(:test) do
+    "success"
+  end
+
+  @spec(test, {Atom}, String)
+  def test(other) do
+    "fail"
+  end
+
+  @spec(pattern, {Lang.FunctionSpec}, Atom)
+  def pattern(%{name => :Foo}) do
+    :ok
+  end
+
+  @spec(pattern, {Lang.FunctionSpec}, Atom)
+  def pattern(%{name => name}) do
+    name
+  end
 end
