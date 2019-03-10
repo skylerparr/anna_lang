@@ -28,6 +28,7 @@ class FunctionGen implements CustomType {
 class HaxeModuleCodeGen {
 
   private static inline var classTemplate: String = "package ::package_name::;
+import lang.AtomSupport;
 using lang.AtomSupport;
 
 class ::class_name:: {
@@ -117,11 +118,20 @@ class ::class_name:: {
                       throw new FunctionClauseNotFound("Function clause not found");
                   }
                 }
-                var fun_body: String = ArrayEnum.join(matching_bodies, '\n');
-                if(fun_body == ']:\n          "nil".atom();') {
+                var fun_bodies: Array<String> = ArrayEnum.into(matching_bodies, [], function(body: String): String {
+                  return {
+                    if(body == ']:\n          "nil".atom();') {
+                      '';
+                    } else {
+                      '        case [${body}';
+                    }
+                  }
+                });
+                var fun_body: String = ArrayEnum.join(fun_bodies, '\n');
+                if(fun_body == '') {
                   body += '\n      "nil".atom();\n    }';
                 } else {
-                  body += '        case [${fun_body}\n      }\n    }';
+                  body += '${fun_body}\n      }\n    }';
                 }
                 Reflect.setField(fun_gen, 'body', body);
                 return fun_gen;
@@ -225,8 +235,8 @@ class ::class_name:: {
                     } else {
                       '          ${get_function_string(_var, _args, type_scope, return_type, module_spec)};';
                     }
-                  case _:
-                    throw new FunctionClauseNotFound("Function clause not found");
+                  case constant:
+                    '          ${constant};';
                 }
               }
             });
@@ -248,9 +258,6 @@ class ::class_name:: {
             var keyVals: Array<String> = [];
             for(key in map.keys()) {
               var val: Dynamic = map.get(key);
-              if(Std.is(val, Atom)) {
-                val = cast(val, Atom).value;
-              }
               pushKeyVal(keyVals, key, val);
             }
             '{ ${keyVals.join(', ')} }';
@@ -264,6 +271,14 @@ class ::class_name:: {
   }
 
   private static function pushKeyVal(keyVals: Array<String>, key: Dynamic, val: Dynamic): Void {
+    if(Std.is(key, Array) && key.length == 3) {
+      switch(key) {
+        case [varName, [], meta] if (meta.value == 'nil'):
+          key = varName;
+        case _:
+          throw new FunctionClauseNotFound("Pattern matching with function calls is not supported.");
+      }
+    }
     if(Std.is(val, Array) && val.length == 3) {
       switch(val) {
         case [varName, [], meta] if (meta.value == 'nil'):
@@ -272,7 +287,11 @@ class ::class_name:: {
           throw new FunctionClauseNotFound("Pattern matching with function calls is not supported.");
       }
     } else {
-      keyVals.push('${key}: ${val}');
+      var strVal: String = val;
+      if(Std.is(val, Atom)) {
+        strVal = '{value: "${val.value}"}';
+      }
+      keyVals.push('${key.value}: ${strVal}');
     }
   }
 
@@ -357,7 +376,7 @@ class ::class_name:: {
                     case ValueType.TFloat:
                       types.push('Float');
                     case _:
-                      Anna.print(constType, 'bad!');
+                      Logger.inspect(constType, 'bad!');
                   }
               }
               acc;
@@ -590,7 +609,7 @@ class ::class_name:: {
         case ValueType.TFloat:
           'Float';
         case _:
-          Anna.print(val, 'bad!');
+          Logger.inspect(val, 'bad!');
           'nil';
       }
     }

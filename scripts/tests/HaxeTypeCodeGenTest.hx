@@ -55,4 +55,31 @@ class MyType implements CustomType {
 
     Assert.stringsAreEqual(haxeCode, genHaxe);
   }
+
+  public static function shouldGenerateAnEmptyCustomType(): Void {
+    var string: String = '
+deftype Foo.Bar.MyType do
+end';
+
+    var haxeCode: String = 'package foo.bar;
+import lang.CustomTypes.CustomType;
+class MyType implements CustomType {
+
+
+  public inline function new() {
+    
+  }
+
+  public function toString(): String {
+    return Anna.inspect(this);
+  }
+
+}';
+    ASTParser.parse(LangParser.toAST(string));
+    var type: TypeSpec = DefinedTypes.getType('Foo.Bar.MyType'.atom());
+    Assert.isNotNull(type);
+    var genHaxe: String = HaxeTypeCodeGen.generate(type);
+
+    Assert.stringsAreEqual(haxeCode, genHaxe);
+  }
 }

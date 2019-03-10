@@ -1,5 +1,4 @@
 package tests;
-import lang.TypeSpec;
 import lang.DefinedTypes;
 import lang.FunctionSpec;
 import lang.FunctionClauseNotFound;
@@ -24,6 +23,7 @@ class HaxeModuleCodeGenTest {
   public static function shouldGenerate1HaxeClassPerModuleDefinition(): Void {
     var string: String = 'defmodule Foo do end';
     var haxeCode: String = 'package ;
+import lang.AtomSupport;
 using lang.AtomSupport;
 
 class Foo {
@@ -40,6 +40,7 @@ class Foo {
   public static function shouldGenerateHaxeWithPackage(): Void {
     var string: String = 'defmodule Foo.Bar.Cat.Baz.Cart do end';
     var haxeCode: String = 'package foo.bar.cat.baz;
+import lang.AtomSupport;
 using lang.AtomSupport;
 
 class Cart {
@@ -60,6 +61,7 @@ class Cart {
 end';
 
     var haxeCode: String = 'package ;
+import lang.AtomSupport;
 using lang.AtomSupport;
 
 class Foo {
@@ -92,6 +94,7 @@ class Foo {
 end';
 
     var haxeCode: String = 'package ;
+import lang.AtomSupport;
 using lang.AtomSupport;
 
 class Foo {
@@ -130,6 +133,7 @@ class Foo {
 end';
 
     var haxeCode: String = 'package ;
+import lang.AtomSupport;
 using lang.AtomSupport;
 
 class Foo {
@@ -160,6 +164,7 @@ class Foo {
 end';
 
     var haxeCode: String = 'package ;
+import lang.AtomSupport;
 using lang.AtomSupport;
 
 class Foo {
@@ -191,6 +196,7 @@ class Foo {
 end';
 
     var haxeCode: String = 'package ;
+import lang.AtomSupport;
 using lang.AtomSupport;
 
 class Foo {
@@ -226,6 +232,7 @@ class Foo {
 end';
 
     var haxeCode: String = 'package ;
+import lang.AtomSupport;
 using lang.AtomSupport;
 
 class Foo {
@@ -290,6 +297,7 @@ end';
 end';
 
     var haxeCode: String = 'package ;
+import lang.AtomSupport;
 using lang.AtomSupport;
 
 class Foo {
@@ -517,6 +525,7 @@ defmodule Foo do
 end';
 
     var haxeCode: String = 'package ;
+import lang.AtomSupport;
 using lang.AtomSupport;
 
 class Foo {
@@ -581,6 +590,7 @@ class Foo {
 end';
 
     var haxeCode: String = 'package ;
+import lang.AtomSupport;
 using lang.AtomSupport;
 
 class Foo {
@@ -646,6 +656,7 @@ end';
     ASTParser.parse(LangParser.toAST(string));
 
     var haxeCode: String = 'package ;
+import lang.AtomSupport;
 using lang.AtomSupport;
 
 class Foo {
@@ -703,6 +714,7 @@ defmodule Foo.Cat.Bar.Baz do
 end';
 
     var haxeCode: String = 'package ;
+import lang.AtomSupport;
 using lang.AtomSupport;
 
 class Foo {
@@ -721,6 +733,48 @@ class Foo {
       switch([v0]) {
         case [cat_age]:
           "nil".atom();
+      }
+    }
+  }
+
+}';
+    ASTParser.parse(LangParser.toAST(string));
+    var module: ModuleSpec = Module.getModule('Foo'.atom());
+    Assert.isNotNull(module);
+    var genHaxe: String = HaxeModuleCodeGen.generate(module);
+
+    Assert.stringsAreEqual(haxeCode, genHaxe);
+  }
+
+  public static function shouldGeneratePatternMatchFunctionHead(): Void {
+    var string = '
+defmodule Foo do
+
+  @spec(bar, {Lang.FunctionSpec}, Atom)
+  def bar(%{name => :foo}) do
+    :foo
+  end
+
+  @spec(bar, {Lang.FunctionSpec}, Atom)
+  def bar(%{name => name}) do
+    name
+  end
+
+end';
+
+    var haxeCode: String = 'package ;
+import lang.AtomSupport;
+using lang.AtomSupport;
+
+class Foo {
+
+  public static function bar_1_lang_FunctionSpec__Atom(v0: lang.FunctionSpec): Atom {
+    return {
+      switch([v0]) {
+        case [{ name: {value: "foo"} }]:
+          AtomSupport.atom("foo");
+        case [{ name: name }]:
+          name;
       }
     }
   }

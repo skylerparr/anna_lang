@@ -1,8 +1,8 @@
 package ;
 
+import haxe.ds.ObjectMap;
 import Reflect;
 import lang.CustomTypes.CustomType;
-import haxe.ds.ObjectMap;
 import compiler.Compiler;
 import haxe.macro.Expr;
 import hscript.Interp;
