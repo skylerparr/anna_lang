@@ -143,6 +143,8 @@ class Foo {
       switch([v0, v1, v2]) {
         case [abc, tuv, xyz]:
           "nil".atom();
+        case _:
+          throw new lang.FunctionClauseNotFound("Function clause not found");
       }
     }
   }
@@ -174,6 +176,8 @@ class Foo {
       switch([v0, v1, v2]) {
         case [abc, tuv, xyz]:
           "nil".atom();
+        case _:
+          throw new lang.FunctionClauseNotFound("Function clause not found");
       }
     }
   }
@@ -206,6 +210,8 @@ class Foo {
       switch([v0, v1, v2]) {
         case [{ name: name, internal_name: internal_name }, foo, 39]:
           name;
+        case _:
+          throw new lang.FunctionClauseNotFound("Function clause not found");
       }
     }
   }
@@ -242,6 +248,8 @@ class Foo {
       switch([v0, v1]) {
         case [age, name]:
           Foo.bar_3_Int_String_Float__Atom(age, name, 43.1);
+        case _:
+          throw new lang.FunctionClauseNotFound("Function clause not found");
       }
     }
   }
@@ -251,6 +259,8 @@ class Foo {
       switch([v0, v1, v2]) {
         case [abc, tuv, xyz]:
           "nil".atom();
+        case _:
+          throw new lang.FunctionClauseNotFound("Function clause not found");
       }
     }
   }
@@ -307,6 +317,8 @@ class Foo {
       switch([v0, v1]) {
         case [age, name]:
           Foo.bar_0___Atom();
+        case _:
+          throw new lang.FunctionClauseNotFound("Function clause not found");
       }
     }
   }
@@ -535,6 +547,8 @@ class Foo {
       switch([v0, v1]) {
         case [age, name]:
           Foo.bar_2_String_Float__Atom(name, Foo.calc_age_2_String_Float__Float(name, Foo.get_cat_age_1_Int__Float(age)));
+        case _:
+          throw new lang.FunctionClauseNotFound("Function clause not found");
       }
     }
   }
@@ -544,6 +558,8 @@ class Foo {
       switch([v0, v1]) {
         case [name, cat_age]:
           "nil".atom();
+        case _:
+          throw new lang.FunctionClauseNotFound("Function clause not found");
       }
     }
   }
@@ -553,6 +569,8 @@ class Foo {
       switch([v0, v1]) {
         case [name, age]:
           age;
+        case _:
+          throw new lang.FunctionClauseNotFound("Function clause not found");
       }
     }
   }
@@ -562,6 +580,8 @@ class Foo {
       switch([v0]) {
         case [age]:
           age;
+        case _:
+          throw new lang.FunctionClauseNotFound("Function clause not found");
       }
     }
   }
@@ -600,6 +620,8 @@ class Foo {
       switch([v0]) {
         case [age]:
           age;
+        case _:
+          throw new lang.FunctionClauseNotFound("Function clause not found");
       }
     }
   }
@@ -609,6 +631,8 @@ class Foo {
       switch([v0]) {
         case [cat_age]:
           "nil".atom();
+        case _:
+          throw new lang.FunctionClauseNotFound("Function clause not found");
       }
     }
   }
@@ -618,6 +642,8 @@ class Foo {
       switch([v0, v1]) {
         case [age, name]:
           Foo.bar_1___(Foo.get_cat_age_1___(age));
+        case _:
+          throw new lang.FunctionClauseNotFound("Function clause not found");
       }
     }
   }
@@ -666,6 +692,8 @@ class Foo {
       switch([v0, v1]) {
         case [age, name]:
           Foo.bar_1_Int__Atom(foo.cat.bar.Baz.get_cat_age_1_Int__Int(age));
+        case _:
+          throw new lang.FunctionClauseNotFound("Function clause not found");
       }
     }
   }
@@ -675,6 +703,8 @@ class Foo {
       switch([v0]) {
         case [cat_age]:
           "nil".atom();
+        case _:
+          throw new lang.FunctionClauseNotFound("Function clause not found");
       }
     }
   }
@@ -724,6 +754,8 @@ class Foo {
       switch([v0, v1]) {
         case [age, name]:
           Foo.bar_1_Int__Atom(foo.cat.bar.Baz.get_cat_age_1_Int__Int(age));
+        case _:
+          throw new lang.FunctionClauseNotFound("Function clause not found");
       }
     }
   }
@@ -733,6 +765,8 @@ class Foo {
       switch([v0]) {
         case [cat_age]:
           "nil".atom();
+        case _:
+          throw new lang.FunctionClauseNotFound("Function clause not found");
       }
     }
   }
@@ -775,6 +809,8 @@ class Foo {
           AtomSupport.atom("foo");
         case [{ name: name }]:
           name;
+        case _:
+          throw new lang.FunctionClauseNotFound("Function clause not found");
       }
     }
   }
@@ -817,6 +853,8 @@ class Foo {
           AtomSupport.atom("foo");
         case [[ { name: name } ]]:
           name;
+        case _:
+          throw new lang.FunctionClauseNotFound("Function clause not found");
       }
     }
   }
@@ -852,6 +890,8 @@ class Foo {
       switch([v0]) {
         case [{ internal_name: "Foo" }]:
           AtomSupport.atom("foo");
+        case _:
+          throw new lang.FunctionClauseNotFound("Function clause not found");
       }
     }
   }
@@ -887,6 +927,8 @@ class Foo {
       switch([v0]) {
         case [{value: "bar"}]:
           AtomSupport.atom("foo");
+        case _:
+          throw new lang.FunctionClauseNotFound("Function clause not found");
       }
     }
   }
@@ -922,6 +964,8 @@ class Foo {
       switch([v0]) {
         case [{ internal_name: "Foo" }]:
           "foo";
+        case _:
+          throw new lang.FunctionClauseNotFound("Function clause not found");
       }
     }
   }

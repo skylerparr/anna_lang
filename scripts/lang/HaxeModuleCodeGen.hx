@@ -120,15 +120,18 @@ class ::class_name:: {
                       throw new FunctionClauseNotFound("Function clause not found");
                   }
                 }
-                var fun_bodies: Array<String> = ArrayEnum.into(matching_bodies, [], function(body: String): String {
+                var fun_bodies: Array<String> = ArrayEnum.reduce(matching_bodies, [], function(body: String, acc: Array<String>): Array<String> {
                   return {
-                    if(body == ']:\n          "nil".atom();') {
-                      '';
-                    } else {
-                      '        case [${body}';
+                    if(body != ']:\n          "nil".atom();') {
+                      acc.push('        case [${body}');
                     }
+                    acc;
                   }
                 });
+
+                if(fun_bodies.length > 0) {
+                  fun_bodies.push('        case _:\n          throw new lang.FunctionClauseNotFound("Function clause not found");');
+                }
                 var fun_body: String = ArrayEnum.join(fun_bodies, '\n');
                 if(fun_body == '') {
                   body += '\n      "nil".atom();\n    }';
@@ -248,7 +251,6 @@ class ::class_name:: {
               }
             });
           }
-
           pattern + ArrayEnum.join(exprs, '\n');
         case _:
           throw new FunctionClauseNotFound("Function clause not found");
@@ -419,6 +421,8 @@ class ::class_name:: {
                       types.push('Int');
                     case ValueType.TFloat:
                       types.push('Float');
+                    case ValueType.TClass(Atom):
+                      types.push('Atom');
                     case _:
                       Logger.inspect(constType, 'bad!');
                   }
@@ -441,7 +445,6 @@ class ::class_name:: {
           }
           var funcString: String = '${_var.value}_${args.length}_${ArrayEnum.join(str_types, '_')}__${return_type_string}';
           var argsString: String = '(${ArrayEnum.join(str_args, ', ')})';
-
           var moduleFuns: Array<String> = ArrayEnum.into(module_functions, [], function(spec: FunctionSpec): String {
             return {
               spec.internal_name;
