@@ -25,6 +25,18 @@ class FunctionGen implements CustomType {
     Reflect.setField(this, 'matching_bodies', matching_bodies);
     Reflect.setField(this, 'body', body);
   }
+  
+  public function toAnnaString(): String {
+    return '';
+  }
+
+  public function toHaxeString(): String {
+    return '';
+  }
+
+  public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
+    return '';
+  }
 }
 
 class HaxeModuleCodeGen {
@@ -69,7 +81,7 @@ class ::class_name:: {
           var template = Anna.createInstance(haxe.Template, [classTemplate]);
           Native.call(template, 'execute', [
             {
-              class_name: Atom.to_string(class_name),
+              class_name: Atom.to_s(class_name),
               package_name: Anna.or(package_name, ''.atom()).value,
               functions: generate_functions(functions, v0)
             }
@@ -246,7 +258,7 @@ class ::class_name:: {
                         '          ${Anna.toHaxeString(constant)};';
                     }
                   case constant:
-                    '          ${Anna.toHaxeBodyString(expr)};';
+                    '          ${Anna.toHaxePattern(expr)};';
                 }
               }
             });
@@ -304,10 +316,9 @@ class ::class_name:: {
           } else {
             var interp_value: Dynamic;
             try {
-              interp_value = Compiler.interpHaxe(value);
-              Anna.toHaxeString(interp_value);
+              Compiler.interpHaxe(value);
             } catch(e: Dynamic) {
-              value;
+              Anna.toHaxeString(value);
             }
           }
         case _:
@@ -376,7 +387,7 @@ class ::class_name:: {
                   //Array<Dynamic>
                   var var_or_function: Array<Atom> = (t : Array<Atom>);
                   switch(var_or_function) {
-                    case [name, _, {value: 'nil'}]:
+                    case [name, _, _]:
                       var type: Atom = AnnaMap.get(type_scope, name, 'nil'.atom());
                       if(type == 'nil'.atom()) {
                         types.push('');
@@ -384,33 +395,35 @@ class ::class_name:: {
                         types.push(type.value);
                       }
                       values.push(name.value);
-                    case [name, _, _]:
-                      var function_args = (t : Array<Dynamic>)[2];
-                      var funcs: Array<FunctionSpec> = get_matching_functions(module_spec, _var, args, return_type, type_scope);
-                      if(funcs.length == 1) {
-                        var func: FunctionSpec = ArrayEnum.at(funcs, 0, FunctionSpec.nil);
-                        var arg_and_type: Array<Atom> = ArrayEnum.at(func.signature, index, []);
-                        var type: Atom = ArrayEnum.at(arg_and_type, 1, 'nil'.atom());
-                        var type_string = type.value;
-                        if(type == 'nil'.atom()) {
-                          type_string = '';
-                        }
-                        types.push(type_string);
-
-                        var mod_spec = get_module(name, function_args, module_spec);
-                        var fun_name_and_args = get_function_name(name, function_args);
-                        switch(fun_name_and_args) {
-                          case [_name, _function_args]:
-                            name = _name;
-                            function_args = _function_args;
-                        }
-                        var arg_string = get_function_string(name, function_args, type_scope, type, mod_spec);
-                        values.push(arg_string);
-                      } else {
-                        throw new AmbiguousFunctionException('Could not find appropriate function to call for ${Anna.inspect(name)} with args ${Anna.inspect(function_args)}');
-                      }
+//                    case [name, _, _]:
+//                      Logger.inspect('function');
+//                      var function_args = (t : Array<Dynamic>)[2];
+//                      var funcs: Array<FunctionSpec> = get_matching_functions(module_spec, _var, args, return_type, type_scope);
+//                      if(funcs.length == 1) {
+//                        var func: FunctionSpec = ArrayEnum.at(funcs, 0, FunctionSpec.nil);
+//                        var arg_and_type: Array<Atom> = ArrayEnum.at(func.signature, index, []);
+//                        var type: Atom = ArrayEnum.at(arg_and_type, 1, 'nil'.atom());
+//                        var type_string = type.value;
+//                        if(type == 'nil'.atom()) {
+//                          type_string = '';
+//                        }
+//                        types.push(type_string);
+//
+//                        var mod_spec = get_module(name, function_args, module_spec);
+//                        var fun_name_and_args = get_function_name(name, function_args);
+//                        switch(fun_name_and_args) {
+//                          case [_name, _function_args]:
+//                            name = _name;
+//                            function_args = _function_args;
+//                        }
+//                        var arg_string = get_function_string(name, function_args, type_scope, type, mod_spec);
+//                        values.push(arg_string);
+//                      } else {
+//                        throw new AmbiguousFunctionException('Could not find appropriate function to call for ${Anna.inspect(name)} with args ${Anna.inspect(function_args)}');
+//                      }
                     case badarg:
-                      throw new UnexpectedArgumentException('Received unexpected ast structure ${Anna.inspect(badarg)}');
+
+//                      throw new UnexpectedArgumentException('Received unexpected ast structure ${Anna.inspect(badarg)}');
                   }
                 case constType:
                   values.push(t);
@@ -467,7 +480,6 @@ class ::class_name:: {
           }
           func_path.push(module_spec.class_name.value);
           func_path.push(found.internal_name);
-
 
           '${ArrayEnum.join(func_path, '.')}${argsString}';
         case _:

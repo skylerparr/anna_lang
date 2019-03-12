@@ -1,5 +1,6 @@
 package tests;
 
+import lang.MapUtil;
 import haxe.ds.ObjectMap;
 import anna_unit.Assert;
 using lang.MapUtil;
@@ -30,6 +31,6 @@ class MapUtilTest {
     var map: ObjectMap<Dynamic, Dynamic> = new ObjectMap<Dynamic, Dynamic>();
     map.set('foo', 'bar'.atom());
     map.set('cat', 'baz'.atom());
-    Assert.areEqual(map.toDynamic(), d);
+    Assert.areEqual(MapUtil.toDynamic(map), d);
   }
 }

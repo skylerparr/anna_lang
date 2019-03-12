@@ -1,5 +1,6 @@
 package lang;
 
+import TypePrinter.CustomTypePrinter;
 import lang.CustomTypes.CustomType;
 import Atom;
 using lang.AtomSupport;
@@ -21,6 +22,18 @@ class FunctionSpec implements CustomType {
   }
 
   public function toString(): String {
-    return Anna.inspect({name: name, internalName: internal_name, signature: signature, returnType: return_type, body: "[...]"});
+    return toHaxeString();
+  }
+
+  public function toAnnaString(): String {
+    return CustomTypePrinter.asString(this);
+  }
+
+  public function toHaxeString(): String {
+    return '';
+  }
+
+  public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
+    return '';
   }
 }

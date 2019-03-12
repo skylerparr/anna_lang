@@ -2,7 +2,7 @@ package lang;
 
 using lang.AtomSupport;
 
-@:build(macros.ValueClassImpl.build())
+@:build(lang.macros.ValueClassImpl.build())
 class DefinedTypes {
 
   @field public static var typeSpecMap: Map<Atom, TypeSpec>;

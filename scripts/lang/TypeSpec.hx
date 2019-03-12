@@ -1,5 +1,6 @@
 package lang;
 
+import TypePrinter.CustomTypePrinter;
 import lang.CustomTypes.CustomType;
 class TypeSpec implements CustomType {
 
@@ -17,6 +18,18 @@ class TypeSpec implements CustomType {
 
   public function toString(): String {
     return Anna.inspect(this);
+  }
+
+  public function toAnnaString(): String {
+    return CustomTypePrinter.asString(this);
+  }
+
+  public function toHaxeString(): String {
+    return '';
+  }
+
+  public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
+    return '';
   }
 
 }

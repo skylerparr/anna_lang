@@ -1,4 +1,4 @@
-package macros;
+package lang.macros;
 #if macro
 import haxe.io.Output;
 import sys.FileSystem;

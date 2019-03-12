@@ -16,7 +16,7 @@ using TypePrinter.CustomTypePrinter;
 using TypePrinter.StringMapPrinter;
 using lang.AtomSupport;
 using StringTools;
-@:build(macros.ValueClassImpl.build())
+@:build(lang.macros.ValueClassImpl.build())
 class Anna {
   @field public static var parser: Parser;
   @field public static var interp: Interp;
@@ -51,135 +51,112 @@ class Anna {
     return val;
   }
 
-  public static function print(val: Any, label: String = null): Any {
-    if(label == null) {
-      label = '';
-    } else {
-      label = '${label}: ';
+  public static inline function toHaxeString(val: Any): String {
+    return {
+      switch(Type.typeof(val)) {
+        case TClass(String):
+          '"${val}"';
+        case TClass(haxe.ds.ObjectMap):
+          MapPrinter.asHaxeString((val : ObjectMap<Dynamic, Dynamic>));
+        case TClass(haxe.ds.StringMap):
+          StringMapPrinter.asHaxeString((val : Map<String, Dynamic>));
+        case TClass(Array):
+          '${val}';
+        case TClass(Atom):
+          '${((val : Atom).toHaxeString())}';
+        case TObject:
+          Logger.inspect("object");
+          inspectDynamic(val);
+        case TInt | TFloat:
+          val;
+        case TBool:
+          '${(val : Bool)}';
+        case TNull:
+          'nil';
+        case TEnum(_) | TFunction | TUnknown:
+          '${val}';
+        case _:
+          if(Std.is(val, CustomType)) {
+            (val : CustomType).toHaxeString();
+          } else {
+            inspectObject(val);
+          }
+      }  
     }
-    trace('${label}${inspect(val)}');
-    return val;
   }
 
-  public static function toHaxeString(val: Any): String {
-    switch(Type.typeof(val)) {
-      case TClass(String):
-        return '"${val}"';
-      case TClass(haxe.ds.ObjectMap):
-        return MapPrinter.asHaxeString((val : ObjectMap<Dynamic, Dynamic>));
-      case TClass(haxe.ds.StringMap):
-        return StringMapPrinter.asHaxeString((val : Map<String, Dynamic>));
-      case TClass(Array):
-        return '${val}';
-      case TClass(Atom):
-        return '{value: "${((val : Atom).value)}"}';
-      case TObject:
-        return '${val}';
-      case TInt | TFloat:
-        return val;
-      case TBool:
-        return '${(val : Bool)}';
-      case TNull:
-        return 'nil';
-      case TEnum(_) | TFunction | TUnknown:
-        return '${val}';
-      case _:
-        if(Std.is(val, CustomType)) {
-          return inspectCustomType(val);
-        } else {
-          return inspectObject(val);
-        }
+  public static inline function toAnnaString(val: Any): String {
+    return {
+      switch(Type.typeof(val)) {
+        case TClass(String):
+          '"${val}"';
+        case TClass(haxe.ds.ObjectMap):
+          MapPrinter.asAnnaString((val : ObjectMap<Dynamic, Dynamic>));
+        case TClass(haxe.ds.StringMap):
+          StringMapPrinter.asAnnaString((val : Map<String, Dynamic>));
+        case TClass(Array):
+          var retVal: Array<String> = [];
+          for(v in (val : Array<Dynamic>)) {
+            retVal.push(Anna.toAnnaString(v));
+          }
+          "{" + retVal.join(', ') + "}";
+        case TClass(Atom):
+          '${((val : Atom).toAnnaString())}';
+        case TObject:
+          inspectDynamic(val);
+        case TInt | TFloat:
+          val;
+        case TBool:
+          '${(val : Bool)}';
+        case TNull:
+          'nil';
+        case TEnum(_) | TFunction | TUnknown:
+          '${val}';
+        case _:
+          if(Std.is(val, CustomType)) {
+            (val : CustomType).toAnnaString();
+          } else {
+            inspectObject(val);
+          }
+      }
     }
-    return '';
   }
 
-  public static function toHaxeBodyString(val: Any): String {
-    switch(Type.typeof(val)) {
-      case TClass(String):
-        return '"${val}"';
-      case TClass(haxe.ds.ObjectMap):
-        return MapPrinter.asHaxeString((val : ObjectMap<Dynamic, Dynamic>));
-      case TClass(haxe.ds.StringMap):
-        return StringMapPrinter.asHaxeString((val : Map<String, Dynamic>));
-      case TClass(Array):
-        return '${val}';
-      case TClass(Atom):
-        return '${((val : Atom).toString())}';
-      case TObject:
-        return '${val}';
-      case TInt | TFloat:
-        return val;
-      case TBool:
-        return '${(val : Bool)}';
-      case TNull:
-        return 'nil';
-      case TEnum(_) | TFunction | TUnknown:
-        return '${val}';
-      case _:
-        if(Std.is(val, CustomType)) {
-          return inspectCustomType(val);
-        } else {
-          return inspectObject(val);
-        }
+  public static inline function toHaxePattern(val: Any, patternArgs: Array<KeyValue<String, String>> = null): String {
+    return {
+      switch(Type.typeof(val)) {
+        case TClass(String):
+          '"${val}"';
+        case TClass(haxe.ds.ObjectMap):
+          MapPrinter.asHaxeString((val : ObjectMap<Dynamic, Dynamic>));
+        case TClass(haxe.ds.StringMap):
+          StringMapPrinter.asHaxeString((val : Map<String, Dynamic>));
+        case TClass(Array):
+          '${val}';
+        case TClass(Atom):
+          '${((val : Atom).toPattern(patternArgs))}';
+        case TObject:
+          '${val}';
+        case TInt | TFloat:
+          val;
+        case TBool:
+          '${(val : Bool)}';
+        case TNull:
+          'nil';
+        case TEnum(_) | TFunction | TUnknown:
+          '${val}';
+        case _:
+          if(Std.is(val, CustomType)) {
+            (val : CustomType).toPattern(patternArgs);
+          } else {
+            inspectObject(val);
+          }
+      }
     }
-    return '';
   }
 
   public static function inspect(val: Any): String {
-    switch(Type.typeof(val)) {
-      case TClass(String):
-        return inspectString((val : String));
-      case TClass(haxe.ds.ObjectMap):
-        return inspectMap((val : ObjectMap<Dynamic, Dynamic>));
-      case TClass(haxe.ds.StringMap):
-        return inspectStringMap((val : Map<String, Dynamic>));
-      case TClass(Array):
-        return inspectArray(val);
-      case TClass(Atom):
-        return inspectAtom((val : Atom));
-      case TObject:
-        return inspectDynamic(val);
-      case TInt | TFloat:
-        return val;
-      case TBool:
-        return '${(val : Bool)}';
-      case TNull:
-        return 'nil';
-      case TEnum(_) | TFunction | TUnknown:
-        return '${val}';
-      case _:
-        if(Std.is(val, CustomType)) {
-          return inspectCustomType(val);
-        } else {
-          return inspectObject(val);
-        }
-    }
-    return '';
-  }
-
-  private static inline function inspectString(string: String): String {
-    return string.asString();
-  }
-
-  private static inline function inspectMap(map: ObjectMap<Dynamic, Dynamic>): String {
-    return map.asString();
-  }
-
-  private static inline function inspectStringMap(map: Map<String, Dynamic>): String {
-    return map.asString();
-  }
-
-  private static inline function inspectAtom(atom: Atom): String {
-    var value: String = atom.value;
-    switch(value) {
-      case 'nil' | 'true' | 'false':
-      case _:
-        var capitals: EReg = ~/[A-Z]/;
-        if(!capitals.match(value.charAt(0))) {
-          value = ':${value}';
-        }
-    }
-    return value;
+    return toAnnaString(val);
   }
 
   private static inline function inspectDynamic(dyn: Dynamic): String {
@@ -203,17 +180,9 @@ class Anna {
     });
     for(key in keys) {
       var value: Dynamic = Reflect.field(dyn, key);
-      kv.push('${inspect(key)} => ${inspect(value)}');
+      kv.push('${key}: ${toHaxeString(value)}');
     }
-    return '[ ${kv.join(', ')} ]';
-  }
-
-  private static inline function inspectArray(array: Array<Dynamic>): String {
-    return array.asString();
-  }
-
-  private static inline function inspectCustomType(type: CustomType): String {
-    return type.asString();
+    return '{ ${kv.join(', ')} }';
   }
 
   public static function inspectObject(obj: Dynamic): String {

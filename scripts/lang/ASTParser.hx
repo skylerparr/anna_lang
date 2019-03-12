@@ -247,7 +247,7 @@ class ASTParser {
           retVal = '[${vals.join(", ")}]';
         }
       case ValueType.TClass(Atom):
-        retVal = 'AtomSupport.atom("${ast.value}")';
+        retVal = (ast : Atom).toHaxeString();
       case ValueType.TObject:
         if(Reflect.hasField(ast, '__block__')) {
           var vals: Array<String> = [];

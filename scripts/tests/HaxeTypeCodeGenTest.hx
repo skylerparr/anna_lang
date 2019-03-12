@@ -29,7 +29,7 @@ deftype Foo.Bar.MyType do
 end';
 
     var haxeCode: String = 'package foo.bar;
-import lang.CustomTypes.CustomType;
+import lang.CustomType;
 class MyType implements CustomType {
 
   public var name(default, never): String;
@@ -62,7 +62,7 @@ deftype Foo.Bar.MyType do
 end';
 
     var haxeCode: String = 'package foo.bar;
-import lang.CustomTypes.CustomType;
+import lang.CustomType;
 class MyType implements CustomType {
 
 

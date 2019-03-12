@@ -9,12 +9,8 @@ import core.PathSettings;
 import hscript.Macro;
 import hscript.Interp;
 import hscript.Parser;
-import lang.HashTableAtoms;
-import lang.AtomSupport;
 import cpp.vm.Thread;
 import ihx.HScriptEval;
-
-using lang.AtomSupport;
 
 class Main {
   public static var parser: Parser = new Parser();
@@ -41,7 +37,6 @@ class Main {
     Timer.stamp();
     new Date(2018, 1, 1, 0, 0, 0).getTime();
     new Printer().printExpr(macro 'foo');
-    AtomSupport.atoms = new HashTableAtoms();
     GlobalStore.start();
     new Main();
   }
@@ -58,9 +53,6 @@ class Main {
     });
     variables.set("c", function(file: String) {
       Runtime.compile(file, null);
-    });
-    variables.set('a', function(arg: String): Atom {
-      return arg.atom();
     });
     variables.set("s", function(o: Dynamic): Bool {
       o.parser = parser;

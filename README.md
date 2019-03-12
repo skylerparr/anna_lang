@@ -31,6 +31,7 @@ end
 - [x] Functions
 - [x] Basic types: Arrays, Maps, Strings, Ints, Floats, Atoms
 - [x] Type checking
+- [ ] Tuples
 - [ ] Function Overloading
 - [ ] Custom Types
 - [ ] Function head pattern matching

@@ -4,7 +4,7 @@ import haxe.Template;
 class HaxeTypeCodeGen {
 
   private static inline var classTemplate: String = 'package ::package_name::;
-import lang.CustomTypes.CustomType;
+import lang.CustomType;
 class ::class_name:: implements CustomType {
 ::foreach fields::
   public var ::name.value::(default, never): ::type.value::;::end::

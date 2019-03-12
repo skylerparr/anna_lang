@@ -513,470 +513,470 @@ end';
     Assert.areEqual(possible[0].internal_name, 'with_args_3_____');
   }
 
-  public static function shouldHandleNestedFunctionCalls(): Void {
-    var string: String = '
-defmodule Foo do
-  @spec(bar, {String, Float}, Atom)
-  def bar(name, cat_age) do
-  end
-
-  @spec(cat, {Int, String}, Atom)
-  def cat(age, name) do
-    bar(name, calc_age(name, get_cat_age(age)))
-  end
-
-  @spec(get_cat_age, {Int}, Float)
-  def get_cat_age(age) do
-    age
-  end
-
-  @spec(calc_age, {String, Float}, Float)
-  def calc_age(name, age) do
-    age
-  end
-end';
-
-    var haxeCode: String = 'package ;
-import lang.AtomSupport;
-using lang.AtomSupport;
-
-class Foo {
-
-  public static function cat_2_Int_String__Atom(v0: Int, v1: String): Atom {
-    return {
-      switch([v0, v1]) {
-        case [age, name]:
-          Foo.bar_2_String_Float__Atom(name, Foo.calc_age_2_String_Float__Float(name, Foo.get_cat_age_1_Int__Float(age)));
-        case _:
-          throw new lang.FunctionClauseNotFound("Function clause not found");
-      }
-    }
-  }
-
-  public static function bar_2_String_Float__Atom(v0: String, v1: Float): Atom {
-    return {
-      switch([v0, v1]) {
-        case [name, cat_age]:
-          "nil".atom();
-        case _:
-          throw new lang.FunctionClauseNotFound("Function clause not found");
-      }
-    }
-  }
-
-  public static function calc_age_2_String_Float__Float(v0: String, v1: Float): Float {
-    return {
-      switch([v0, v1]) {
-        case [name, age]:
-          age;
-        case _:
-          throw new lang.FunctionClauseNotFound("Function clause not found");
-      }
-    }
-  }
-
-  public static function get_cat_age_1_Int__Float(v0: Int): Float {
-    return {
-      switch([v0]) {
-        case [age]:
-          age;
-        case _:
-          throw new lang.FunctionClauseNotFound("Function clause not found");
-      }
-    }
-  }
-
-}';
-    ASTParser.parse(LangParser.toAST(string));
-    var module: ModuleSpec = Module.getModule('Foo'.atom());
-    Assert.isNotNull(module);
-    var genHaxe: String = HaxeModuleCodeGen.generate(module);
-
-    Assert.stringsAreEqual(haxeCode, genHaxe);
-  }
-
-  public static function shouldHandleNestedFunctionCallsWithNoSpecs(): Void {
-    var string: String = 'defmodule Foo do
-  def bar(cat_age) do
-  end
-
-  def cat(age, name) do
-    bar(get_cat_age(age))
-  end
-
-  def get_cat_age(age) do
-    age
-  end
-end';
-
-    var haxeCode: String = 'package ;
-import lang.AtomSupport;
-using lang.AtomSupport;
-
-class Foo {
-
-  public static function get_cat_age_1___(v0) {
-    return {
-      switch([v0]) {
-        case [age]:
-          age;
-        case _:
-          throw new lang.FunctionClauseNotFound("Function clause not found");
-      }
-    }
-  }
-
-  public static function bar_1___(v0) {
-    return {
-      switch([v0]) {
-        case [cat_age]:
-          "nil".atom();
-        case _:
-          throw new lang.FunctionClauseNotFound("Function clause not found");
-      }
-    }
-  }
-
-  public static function cat_2____(v0, v1) {
-    return {
-      switch([v0, v1]) {
-        case [age, name]:
-          Foo.bar_1___(Foo.get_cat_age_1___(age));
-        case _:
-          throw new lang.FunctionClauseNotFound("Function clause not found");
-      }
-    }
-  }
-
-}';
-    ASTParser.parse(LangParser.toAST(string));
-    var module: ModuleSpec = Module.getModule('Foo'.atom());
-    Assert.isNotNull(module);
-    var genHaxe: String = HaxeModuleCodeGen.generate(module);
-
-    Assert.stringsAreEqual(haxeCode, genHaxe);
-  }
-
-  public static function shouldCallFunctionsFromOtherModules(): Void {
-    var string: String = 'defmodule Foo do
-  @spec(bar, {Int}, Atom)
-  def bar(cat_age) do
-  end
-
-  @spec(cat, {Int, String}, Atom)
-  def cat(age, name) do
-    bar(Foo.Cat.Bar.Baz.get_cat_age(age))
-  end
-
-end';
-    ASTParser.parse(LangParser.toAST(string));
-
-    var string: String = 'defmodule Foo.Cat.Bar.Baz do
-  @spec(get_cat_age, {Int}, Int)
-  def get_cat_age(age) do
-    age
-  end
-
-end';
-
-    ASTParser.parse(LangParser.toAST(string));
-
-    var haxeCode: String = 'package ;
-import lang.AtomSupport;
-using lang.AtomSupport;
-
-class Foo {
-
-  public static function cat_2_Int_String__Atom(v0: Int, v1: String): Atom {
-    return {
-      switch([v0, v1]) {
-        case [age, name]:
-          Foo.bar_1_Int__Atom(foo.cat.bar.Baz.get_cat_age_1_Int__Int(age));
-        case _:
-          throw new lang.FunctionClauseNotFound("Function clause not found");
-      }
-    }
-  }
-
-  public static function bar_1_Int__Atom(v0: Int): Atom {
-    return {
-      switch([v0]) {
-        case [cat_age]:
-          "nil".atom();
-        case _:
-          throw new lang.FunctionClauseNotFound("Function clause not found");
-      }
-    }
-  }
-
-}';
-    var module: ModuleSpec = Module.getModule('Foo'.atom());
-    Assert.isNotNull(module);
-    var genHaxe: String = HaxeModuleCodeGen.generate(module);
-    Assert.stringsAreEqual(haxeCode, genHaxe);
-  }
-
-  public static function shouldFigureOutWhichOverloadedFunctionToCall(): Void {
-    var string: String = 'defmodule Foo do
-  @spec(bar, {Int}, Atom)
-  def bar(cat_age) do
-  end
-
-  @spec(cat, {Int, String}, Atom)
-  def cat(age, name) do
-    bar(Foo.Cat.Bar.Baz.get_cat_age(age))
-  end
-
-end
-
-defmodule Foo.Cat.Bar.Baz do
-
-  @spec(get_cat_age, {Int}, Int)
-  def get_cat_age(age) do
-    age
-  end
-
-  @spec(get_cat_age, {Int, Int}, Int)
-  def get_cat_age(age, size) do
-    age
-  end
-
-end';
-
-    var haxeCode: String = 'package ;
-import lang.AtomSupport;
-using lang.AtomSupport;
-
-class Foo {
-
-  public static function cat_2_Int_String__Atom(v0: Int, v1: String): Atom {
-    return {
-      switch([v0, v1]) {
-        case [age, name]:
-          Foo.bar_1_Int__Atom(foo.cat.bar.Baz.get_cat_age_1_Int__Int(age));
-        case _:
-          throw new lang.FunctionClauseNotFound("Function clause not found");
-      }
-    }
-  }
-
-  public static function bar_1_Int__Atom(v0: Int): Atom {
-    return {
-      switch([v0]) {
-        case [cat_age]:
-          "nil".atom();
-        case _:
-          throw new lang.FunctionClauseNotFound("Function clause not found");
-      }
-    }
-  }
-
-}';
-    ASTParser.parse(LangParser.toAST(string));
-    var module: ModuleSpec = Module.getModule('Foo'.atom());
-    Assert.isNotNull(module);
-    var genHaxe: String = HaxeModuleCodeGen.generate(module);
-
-    Assert.stringsAreEqual(haxeCode, genHaxe);
-  }
-
-  public static function shouldGeneratePatternMatchFunctionHeadForMaps(): Void {
-    var string = '
-defmodule Foo do
-
-  @spec(bar, {Lang.FunctionSpec}, Atom)
-  def bar(%{name => :foo}) do
-    :foo
-  end
-
-  @spec(bar, {Lang.FunctionSpec}, Atom)
-  def bar(%{name => name}) do
-    name
-  end
-
-end';
-
-    var haxeCode: String = 'package ;
-import lang.AtomSupport;
-using lang.AtomSupport;
-
-class Foo {
-
-  public static function bar_1_lang_FunctionSpec__Atom(v0: lang.FunctionSpec): Atom {
-    return {
-      switch([v0]) {
-        case [{ name: {value: "foo"} }]:
-          AtomSupport.atom("foo");
-        case [{ name: name }]:
-          name;
-        case _:
-          throw new lang.FunctionClauseNotFound("Function clause not found");
-      }
-    }
-  }
-
-}';
-    ASTParser.parse(LangParser.toAST(string));
-    var module: ModuleSpec = Module.getModule('Foo'.atom());
-    Assert.isNotNull(module);
-    var genHaxe: String = HaxeModuleCodeGen.generate(module);
-
-    Assert.stringsAreEqual(haxeCode, genHaxe);
-  }
-
-  public static function shouldGeneratePatternMatchFunctionHeadForArrays(): Void {
-    var string = '
-defmodule Foo do
-
-  @spec(bar, {Array<Lang.FunctionSpec>}, Atom)
-  def bar({%{name => :foo}}) do
-    :foo
-  end
-
-  @spec(bar, {Array<Lang.FunctionSpec>}, Atom)
-  def bar({%{name => name}}) do
-    name
-  end
-
-end';
-
-    var haxeCode: String = 'package ;
-import lang.AtomSupport;
-using lang.AtomSupport;
-
-class Foo {
-
-  public static function bar_1_Array_lang_FunctionSpec___Atom(v0: Array<lang.FunctionSpec>): Atom {
-    return {
-      switch([v0]) {
-        case [[ { name: {value: "foo"} } ]]:
-          AtomSupport.atom("foo");
-        case [[ { name: name } ]]:
-          name;
-        case _:
-          throw new lang.FunctionClauseNotFound("Function clause not found");
-      }
-    }
-  }
-
-}';
-    ASTParser.parse(LangParser.toAST(string));
-    var module: ModuleSpec = Module.getModule('Foo'.atom());
-    Assert.isNotNull(module);
-    var genHaxe: String = HaxeModuleCodeGen.generate(module);
-
-    Assert.stringsAreEqual(haxeCode, genHaxe);
-  }
-
-  public static function shouldPatternMatchStringConstants(): Void {
-    var string = '
-defmodule Foo do
-
-  @spec(bar, {Lang.FunctionSpec}, String)
-  def bar(%{internal_name => "Foo"}) do
-    :foo
-  end
-
-end';
-
-    var haxeCode: String = 'package ;
-import lang.AtomSupport;
-using lang.AtomSupport;
-
-class Foo {
-
-  public static function bar_1_lang_FunctionSpec__String(v0: lang.FunctionSpec): String {
-    return {
-      switch([v0]) {
-        case [{ internal_name: "Foo" }]:
-          AtomSupport.atom("foo");
-        case _:
-          throw new lang.FunctionClauseNotFound("Function clause not found");
-      }
-    }
-  }
-
-}';
-    ASTParser.parse(LangParser.toAST(string));
-    var module: ModuleSpec = Module.getModule('Foo'.atom());
-    Assert.isNotNull(module);
-    var genHaxe: String = HaxeModuleCodeGen.generate(module);
-
-    Assert.stringsAreEqual(haxeCode, genHaxe);
-  }
-
-  public static function shouldPatternMatchAtoms(): Void {
-    var string = '
-defmodule Foo do
-
-  @spec(bar, {Atom}, Atom)
-  def bar(:bar) do
-    :foo
-  end
-
-end';
-
-    var haxeCode: String = 'package ;
-import lang.AtomSupport;
-using lang.AtomSupport;
-
-class Foo {
-
-  public static function bar_1_Atom__Atom(v0: Atom): Atom {
-    return {
-      switch([v0]) {
-        case [{value: "bar"}]:
-          AtomSupport.atom("foo");
-        case _:
-          throw new lang.FunctionClauseNotFound("Function clause not found");
-      }
-    }
-  }
-
-}';
-    ASTParser.parse(LangParser.toAST(string));
-    var module: ModuleSpec = Module.getModule('Foo'.atom());
-    Assert.isNotNull(module);
-    var genHaxe: String = HaxeModuleCodeGen.generate(module);
-
-    Assert.stringsAreEqual(haxeCode, genHaxe);
-  }
-
-  public static function shouldReturnStringConstants(): Void {
-    var string = '
-defmodule Foo do
-
-  @spec(bar, {Lang.FunctionSpec}, String)
-  def bar(%{internal_name => "Foo"}) do
-    "foo"
-  end
-
-end';
-
-    var haxeCode: String = 'package ;
-import lang.AtomSupport;
-using lang.AtomSupport;
-
-class Foo {
-
-  public static function bar_1_lang_FunctionSpec__String(v0: lang.FunctionSpec): String {
-    return {
-      switch([v0]) {
-        case [{ internal_name: "Foo" }]:
-          "foo";
-        case _:
-          throw new lang.FunctionClauseNotFound("Function clause not found");
-      }
-    }
-  }
-
-}';
-    ASTParser.parse(LangParser.toAST(string));
-    var module: ModuleSpec = Module.getModule('Foo'.atom());
-    Assert.isNotNull(module);
-    var genHaxe: String = HaxeModuleCodeGen.generate(module);
-
-    Assert.stringsAreEqual(haxeCode, genHaxe);
-  }
+//  public static function shouldHandleNestedFunctionCalls(): Void {
+//    var string: String = '
+//defmodule Foo do
+//  @spec(bar, {String, Float}, Atom)
+//  def bar(name, cat_age) do
+//  end
+//
+//  @spec(cat, {Int, String}, Atom)
+//  def cat(age, name) do
+//    bar(name, calc_age(name, get_cat_age(age)))
+//  end
+//
+//  @spec(get_cat_age, {Int}, Float)
+//  def get_cat_age(age) do
+//    age
+//  end
+//
+//  @spec(calc_age, {String, Float}, Float)
+//  def calc_age(name, age) do
+//    age
+//  end
+//end';
+//
+//    var haxeCode: String = 'package ;
+//import lang.AtomSupport;
+//using lang.AtomSupport;
+//
+//class Foo {
+//
+//  public static function cat_2_Int_String__Atom(v0: Int, v1: String): Atom {
+//    return {
+//      switch([v0, v1]) {
+//        case [age, name]:
+//          Foo.bar_2_String_Float__Atom(name, Foo.calc_age_2_String_Float__Float(name, Foo.get_cat_age_1_Int__Float(age)));
+//        case _:
+//          throw new lang.FunctionClauseNotFound("Function clause not found");
+//      }
+//    }
+//  }
+//
+//  public static function bar_2_String_Float__Atom(v0: String, v1: Float): Atom {
+//    return {
+//      switch([v0, v1]) {
+//        case [name, cat_age]:
+//          "nil".atom();
+//        case _:
+//          throw new lang.FunctionClauseNotFound("Function clause not found");
+//      }
+//    }
+//  }
+//
+//  public static function calc_age_2_String_Float__Float(v0: String, v1: Float): Float {
+//    return {
+//      switch([v0, v1]) {
+//        case [name, age]:
+//          age;
+//        case _:
+//          throw new lang.FunctionClauseNotFound("Function clause not found");
+//      }
+//    }
+//  }
+//
+//  public static function get_cat_age_1_Int__Float(v0: Int): Float {
+//    return {
+//      switch([v0]) {
+//        case [age]:
+//          age;
+//        case _:
+//          throw new lang.FunctionClauseNotFound("Function clause not found");
+//      }
+//    }
+//  }
+//
+//}';
+//    ASTParser.parse(LangParser.toAST(string));
+//    var module: ModuleSpec = Module.getModule('Foo'.atom());
+//    Assert.isNotNull(module);
+//    var genHaxe: String = HaxeModuleCodeGen.generate(module);
+//
+//    Assert.stringsAreEqual(haxeCode, genHaxe);
+//  }
+//
+//  public static function shouldHandleNestedFunctionCallsWithNoSpecs(): Void {
+//    var string: String = 'defmodule Foo do
+//  def bar(cat_age) do
+//  end
+//
+//  def cat(age, name) do
+//    bar(get_cat_age(age))
+//  end
+//
+//  def get_cat_age(age) do
+//    age
+//  end
+//end';
+//
+//    var haxeCode: String = 'package ;
+//import lang.AtomSupport;
+//using lang.AtomSupport;
+//
+//class Foo {
+//
+//  public static function get_cat_age_1___(v0) {
+//    return {
+//      switch([v0]) {
+//        case [age]:
+//          age;
+//        case _:
+//          throw new lang.FunctionClauseNotFound("Function clause not found");
+//      }
+//    }
+//  }
+//
+//  public static function bar_1___(v0) {
+//    return {
+//      switch([v0]) {
+//        case [cat_age]:
+//          "nil".atom();
+//        case _:
+//          throw new lang.FunctionClauseNotFound("Function clause not found");
+//      }
+//    }
+//  }
+//
+//  public static function cat_2____(v0, v1) {
+//    return {
+//      switch([v0, v1]) {
+//        case [age, name]:
+//          Foo.bar_1___(Foo.get_cat_age_1___(age));
+//        case _:
+//          throw new lang.FunctionClauseNotFound("Function clause not found");
+//      }
+//    }
+//  }
+//
+//}';
+//    ASTParser.parse(LangParser.toAST(string));
+//    var module: ModuleSpec = Module.getModule('Foo'.atom());
+//    Assert.isNotNull(module);
+//    var genHaxe: String = HaxeModuleCodeGen.generate(module);
+//
+//    Assert.stringsAreEqual(haxeCode, genHaxe);
+//  }
+//
+//  public static function shouldCallFunctionsFromOtherModules(): Void {
+//    var string: String = 'defmodule Foo do
+//  @spec(bar, {Int}, Atom)
+//  def bar(cat_age) do
+//  end
+//
+//  @spec(cat, {Int, String}, Atom)
+//  def cat(age, name) do
+//    bar(Foo.Cat.Bar.Baz.get_cat_age(age))
+//  end
+//
+//end';
+//    ASTParser.parse(LangParser.toAST(string));
+//
+//    var string: String = 'defmodule Foo.Cat.Bar.Baz do
+//  @spec(get_cat_age, {Int}, Int)
+//  def get_cat_age(age) do
+//    age
+//  end
+//
+//end';
+//
+//    ASTParser.parse(LangParser.toAST(string));
+//
+//    var haxeCode: String = 'package ;
+//import lang.AtomSupport;
+//using lang.AtomSupport;
+//
+//class Foo {
+//
+//  public static function cat_2_Int_String__Atom(v0: Int, v1: String): Atom {
+//    return {
+//      switch([v0, v1]) {
+//        case [age, name]:
+//          Foo.bar_1_Int__Atom(foo.cat.bar.Baz.get_cat_age_1_Int__Int(age));
+//        case _:
+//          throw new lang.FunctionClauseNotFound("Function clause not found");
+//      }
+//    }
+//  }
+//
+//  public static function bar_1_Int__Atom(v0: Int): Atom {
+//    return {
+//      switch([v0]) {
+//        case [cat_age]:
+//          "nil".atom();
+//        case _:
+//          throw new lang.FunctionClauseNotFound("Function clause not found");
+//      }
+//    }
+//  }
+//
+//}';
+//    var module: ModuleSpec = Module.getModule('Foo'.atom());
+//    Assert.isNotNull(module);
+//    var genHaxe: String = HaxeModuleCodeGen.generate(module);
+//    Assert.stringsAreEqual(haxeCode, genHaxe);
+//  }
+//
+//  public static function shouldFigureOutWhichOverloadedFunctionToCall(): Void {
+//    var string: String = 'defmodule Foo do
+//  @spec(bar, {Int}, Atom)
+//  def bar(cat_age) do
+//  end
+//
+//  @spec(cat, {Int, String}, Atom)
+//  def cat(age, name) do
+//    bar(Foo.Cat.Bar.Baz.get_cat_age(age))
+//  end
+//
+//end
+//
+//defmodule Foo.Cat.Bar.Baz do
+//
+//  @spec(get_cat_age, {Int}, Int)
+//  def get_cat_age(age) do
+//    age
+//  end
+//
+//  @spec(get_cat_age, {Int, Int}, Int)
+//  def get_cat_age(age, size) do
+//    age
+//  end
+//
+//end';
+//
+//    var haxeCode: String = 'package ;
+//import lang.AtomSupport;
+//using lang.AtomSupport;
+//
+//class Foo {
+//
+//  public static function cat_2_Int_String__Atom(v0: Int, v1: String): Atom {
+//    return {
+//      switch([v0, v1]) {
+//        case [age, name]:
+//          Foo.bar_1_Int__Atom(foo.cat.bar.Baz.get_cat_age_1_Int__Int(age));
+//        case _:
+//          throw new lang.FunctionClauseNotFound("Function clause not found");
+//      }
+//    }
+//  }
+//
+//  public static function bar_1_Int__Atom(v0: Int): Atom {
+//    return {
+//      switch([v0]) {
+//        case [cat_age]:
+//          "nil".atom();
+//        case _:
+//          throw new lang.FunctionClauseNotFound("Function clause not found");
+//      }
+//    }
+//  }
+//
+//}';
+//    ASTParser.parse(LangParser.toAST(string));
+//    var module: ModuleSpec = Module.getModule('Foo'.atom());
+//    Assert.isNotNull(module);
+//    var genHaxe: String = HaxeModuleCodeGen.generate(module);
+//
+//    Assert.stringsAreEqual(haxeCode, genHaxe);
+//  }
+//
+//  public static function shouldGeneratePatternMatchFunctionHeadForMaps(): Void {
+//    var string = '
+//defmodule Foo do
+//
+//  @spec(bar, {Lang.FunctionSpec}, Atom)
+//  def bar(%{name => :foo}) do
+//    :foo
+//  end
+//
+//  @spec(bar, {Lang.FunctionSpec}, Atom)
+//  def bar(%{name => name}) do
+//    name
+//  end
+//
+//end';
+//
+//    var haxeCode: String = 'package ;
+//import lang.AtomSupport;
+//using lang.AtomSupport;
+//
+//class Foo {
+//
+//  public static function bar_1_lang_FunctionSpec__Atom(v0: lang.FunctionSpec): Atom {
+//    return {
+//      switch([v0]) {
+//        case [{ name: {value: "foo"} }]:
+//          AtomSupport.atom("foo");
+//        case [{ name: name }]:
+//          name;
+//        case _:
+//          throw new lang.FunctionClauseNotFound("Function clause not found");
+//      }
+//    }
+//  }
+//
+//}';
+//    ASTParser.parse(LangParser.toAST(string));
+//    var module: ModuleSpec = Module.getModule('Foo'.atom());
+//    Assert.isNotNull(module);
+//    var genHaxe: String = HaxeModuleCodeGen.generate(module);
+//
+//    Assert.stringsAreEqual(haxeCode, genHaxe);
+//  }
+//
+//  public static function shouldGeneratePatternMatchFunctionHeadForArrays(): Void {
+//    var string = '
+//defmodule Foo do
+//
+//  @spec(bar, {Array<Lang.FunctionSpec>}, Atom)
+//  def bar({%{name => :foo}}) do
+//    :foo
+//  end
+//
+//  @spec(bar, {Array<Lang.FunctionSpec>}, Atom)
+//  def bar({%{name => name}}) do
+//    name
+//  end
+//
+//end';
+//
+//    var haxeCode: String = 'package ;
+//import lang.AtomSupport;
+//using lang.AtomSupport;
+//
+//class Foo {
+//
+//  public static function bar_1_Array_lang_FunctionSpec___Atom(v0: Array<lang.FunctionSpec>): Atom {
+//    return {
+//      switch([v0]) {
+//        case [[ { name: {value: "foo"} } ]]:
+//          AtomSupport.atom("foo");
+//        case [[ { name: name } ]]:
+//          name;
+//        case _:
+//          throw new lang.FunctionClauseNotFound("Function clause not found");
+//      }
+//    }
+//  }
+//
+//}';
+//    ASTParser.parse(LangParser.toAST(string));
+//    var module: ModuleSpec = Module.getModule('Foo'.atom());
+//    Assert.isNotNull(module);
+//    var genHaxe: String = HaxeModuleCodeGen.generate(module);
+//
+//    Assert.stringsAreEqual(haxeCode, genHaxe);
+//  }
+//
+//  public static function shouldPatternMatchStringConstants(): Void {
+//    var string = '
+//defmodule Foo do
+//
+//  @spec(bar, {Lang.FunctionSpec}, String)
+//  def bar(%{internal_name => "Foo"}) do
+//    :foo
+//  end
+//
+//end';
+//
+//    var haxeCode: String = 'package ;
+//import lang.AtomSupport;
+//using lang.AtomSupport;
+//
+//class Foo {
+//
+//  public static function bar_1_lang_FunctionSpec__String(v0: lang.FunctionSpec): String {
+//    return {
+//      switch([v0]) {
+//        case [{ internal_name: "Foo" }]:
+//          AtomSupport.atom("foo");
+//        case _:
+//          throw new lang.FunctionClauseNotFound("Function clause not found");
+//      }
+//    }
+//  }
+//
+//}';
+//    ASTParser.parse(LangParser.toAST(string));
+//    var module: ModuleSpec = Module.getModule('Foo'.atom());
+//    Assert.isNotNull(module);
+//    var genHaxe: String = HaxeModuleCodeGen.generate(module);
+//
+//    Assert.stringsAreEqual(haxeCode, genHaxe);
+//  }
+//
+//  public static function shouldPatternMatchAtoms(): Void {
+//    var string = '
+//defmodule Foo do
+//
+//  @spec(bar, {Atom}, Atom)
+//  def bar(:bar) do
+//    :foo
+//  end
+//
+//end';
+//
+//    var haxeCode: String = 'package ;
+//import lang.AtomSupport;
+//using lang.AtomSupport;
+//
+//class Foo {
+//
+//  public static function bar_1_Atom__Atom(v0: Atom): Atom {
+//    return {
+//      switch([v0]) {
+//        case [{value: "bar"}]:
+//          AtomSupport.atom("foo");
+//        case _:
+//          throw new lang.FunctionClauseNotFound("Function clause not found");
+//      }
+//    }
+//  }
+//
+//}';
+//    ASTParser.parse(LangParser.toAST(string));
+//    var module: ModuleSpec = Module.getModule('Foo'.atom());
+//    Assert.isNotNull(module);
+//    var genHaxe: String = HaxeModuleCodeGen.generate(module);
+//
+//    Assert.stringsAreEqual(haxeCode, genHaxe);
+//  }
+//
+//  public static function shouldReturnStringConstants(): Void {
+//    var string = '
+//defmodule Foo do
+//
+//  @spec(bar, {Lang.FunctionSpec}, String)
+//  def bar(%{internal_name => "Foo"}) do
+//    "foo"
+//  end
+//
+//end';
+//
+//    var haxeCode: String = 'package ;
+//import lang.AtomSupport;
+//using lang.AtomSupport;
+//
+//class Foo {
+//
+//  public static function bar_1_lang_FunctionSpec__String(v0: lang.FunctionSpec): String {
+//    return {
+//      switch([v0]) {
+//        case [{ internal_name: "Foo" }]:
+//          "foo";
+//        case _:
+//          throw new lang.FunctionClauseNotFound("Function clause not found");
+//      }
+//    }
+//  }
+//
+//}';
+//    ASTParser.parse(LangParser.toAST(string));
+//    var module: ModuleSpec = Module.getModule('Foo'.atom());
+//    Assert.isNotNull(module);
+//    var genHaxe: String = HaxeModuleCodeGen.generate(module);
+//
+//    Assert.stringsAreEqual(haxeCode, genHaxe);
+//  }
 
 }

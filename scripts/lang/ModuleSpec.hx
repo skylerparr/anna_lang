@@ -1,5 +1,6 @@
 package lang;
 
+import TypePrinter.CustomTypePrinter;
 import lang.CustomTypes.CustomType;
 using lang.AtomSupport;
 
@@ -20,4 +21,15 @@ class ModuleSpec implements CustomType {
     return Anna.inspect(this);
   }
 
+  public function toAnnaString(): String {
+    return CustomTypePrinter.asString(this);
+  }
+
+  public function toHaxeString(): String {
+    return 'new ModuleSpec(${Anna.toHaxeString(module_name)}, ${Anna.toHaxeString(functions)}, ${Anna.toHaxeString(class_name)}, ${Anna.toHaxeString(package_name)})';
+  }
+
+  public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
+    return '';
+  }
 }

@@ -18,7 +18,7 @@ import sys.io.File;
 using lang.AtomSupport;
 using StringTools;
 
-@:build(macros.ValueClassImpl.build())
+@:build(lang.macros.ValueClassImpl.build())
 class Compiler {
   @field public static var parser: Parser;
   @field public static var interp: Interp;
@@ -34,7 +34,11 @@ class Compiler {
   public static function interpHaxe(string: String): Dynamic {
     var ast = parser.parseString(string);
     interp.variables.set('AtomSupport', AtomSupport);
-    return interp.execute(ast);
+    try {
+      return interp.execute(ast);
+    } catch(e: Dynamic) {
+      return string;
+    }
   }
 
   public static function compileAll(): Atom {

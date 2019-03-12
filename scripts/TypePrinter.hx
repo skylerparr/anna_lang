@@ -8,7 +8,7 @@ class TypePrinter {
 }
 
 class StringMapPrinter {
-  public static function asString(map: Map<String, Dynamic>): String {
+  public static function asAnnaString(map: Map<String, Dynamic>): String {
     var kv: Array<String> = [];
     var keys: Array<Dynamic> = [];
     for(key in map.keys()) {
@@ -75,7 +75,7 @@ class StringMapPrinter {
 }
 
 class MapPrinter {
-  public static function asString(map: ObjectMap<Dynamic, Dynamic>): String {
+  public static function asAnnaString(map: ObjectMap<Dynamic, Dynamic>): String {
     var kv: Array<String> = [];
     var keys: Array<Dynamic> = [];
     for(key in map.keys()) {
@@ -130,7 +130,7 @@ class MapPrinter {
       if(Std.is(key, String)) {
         keyString = '"${key}"';
       } else {
-        keyString = key.toString();
+        keyString = Anna.toHaxeString(key);
       }
       var value: Dynamic = map.get(key);
       var valueString: String = '';
@@ -140,7 +140,7 @@ class MapPrinter {
       if(Std.is(value, String)) {
         valueString = '"${value}"';
       } else {
-        valueString = value.toString();
+        valueString = Anna.toHaxeString(value);
       }
 
       kv.push('${keyString} => ${valueString}');

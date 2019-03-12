@@ -1,5 +1,5 @@
 package lang;
-class HashTableAtoms implements Atoms {
+class HashTableAtoms {
 
   public static var NIL: Atom = new Atom('nil');
   public static var TRUE: Atom = new Atom('true');

@@ -500,7 +500,7 @@ class LangParser {
           state = ParsingState.ARRAY;
           openCount++;
         case [ParsingState.NONE, _, CLOSE_BRACE]:
-          throw new ParsingException("Unexpected ${CLOSE_BRACE} at ${currentStrVal}");
+          throw new ParsingException('Unexpected ${CLOSE_BRACE} at ${currentStrVal}');
         case [ParsingState.NONE, _, PERCENT]:
           state = ParsingState.HASH;
         case [ParsingState.FUNCTION, _, OPEN_PAREN]:
@@ -672,7 +672,7 @@ class LangParser {
           currentVal = 'nil'.atom();
         }
       case _:
-        throw new ParsingException('Unexpect character found at ${currentStrVal}');
+        throw new ParsingException('Unexpected character found at ${currentStrVal}');
     }
 
     if(retVal.length > 1) {
@@ -871,7 +871,7 @@ class LangParser {
       var char: String = string.charAt(i);
       switch([state, char]) {
         case [ParsingState.NONE, OPEN_PAREN]:
-          throw new ParsingException("Unexpected open parent found at ${currentVal}");
+          throw new ParsingException('Unexpected open parent found at ${currentVal}');
         case [ParsingState.FUNCTION, SPACE]:
           firstVal = currentVal;
           openCount++;
