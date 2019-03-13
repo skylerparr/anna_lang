@@ -54,6 +54,10 @@ class Anna {
   public static inline function toHaxeString(val: Any): String {
     return {
       switch(Type.typeof(val)) {
+        case TInt | TFloat:
+          val;
+        case TClass(Atom):
+          '${((val : Atom).toHaxeString())}';
         case TClass(String):
           '"${val}"';
         case TClass(haxe.ds.ObjectMap):
@@ -62,13 +66,9 @@ class Anna {
           StringMapPrinter.asHaxeString((val : Map<String, Dynamic>));
         case TClass(Array):
           '${val}';
-        case TClass(Atom):
-          '${((val : Atom).toHaxeString())}';
         case TObject:
           Logger.inspect("object");
           inspectDynamic(val);
-        case TInt | TFloat:
-          val;
         case TBool:
           '${(val : Bool)}';
         case TNull:
@@ -88,24 +88,26 @@ class Anna {
   public static inline function toAnnaString(val: Any): String {
     return {
       switch(Type.typeof(val)) {
+        case TInt | TFloat:
+          val;
+        case TClass(Atom):
+          '${((val : Atom).toAnnaString())}';
         case TClass(String):
           '"${val}"';
         case TClass(haxe.ds.ObjectMap):
           MapPrinter.asAnnaString((val : ObjectMap<Dynamic, Dynamic>));
         case TClass(haxe.ds.StringMap):
           StringMapPrinter.asAnnaString((val : Map<String, Dynamic>));
+        case TClass(AnnaList):
+          (val : AnnaList<Dynamic>).toAnnaString();
         case TClass(Array):
           var retVal: Array<String> = [];
           for(v in (val : Array<Dynamic>)) {
             retVal.push(Anna.toAnnaString(v));
           }
           "{" + retVal.join(', ') + "}";
-        case TClass(Atom):
-          '${((val : Atom).toAnnaString())}';
         case TObject:
           inspectDynamic(val);
-        case TInt | TFloat:
-          val;
         case TBool:
           '${(val : Bool)}';
         case TNull:

@@ -1,7 +1,7 @@
 package lang;
 
-import TypePrinter.CustomTypePrinter;
 import lang.CustomTypes.CustomType;
+import TypePrinter.CustomTypePrinter;
 using lang.AtomSupport;
 
 class ModuleSpec implements CustomType {
@@ -9,6 +9,8 @@ class ModuleSpec implements CustomType {
   public var functions(default, never): Array<FunctionSpec>;
   public var class_name(default, never): Atom;
   public var package_name(default, never): Atom;
+
+  public static var nil: ModuleSpec = new ModuleSpec('nil'.atom(), [], 'nil'.atom(), 'nil'.atom());
 
   public inline function new(moduleName: Atom, functions: Array<FunctionSpec>, className: Atom, packageName: Atom) {
     Reflect.setField(this, 'module_name', moduleName);

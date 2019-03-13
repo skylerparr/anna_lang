@@ -1,5 +1,6 @@
 package;
 
+import util.StringUtil;
 import lang.CustomTypes.CustomType;
 import haxe.ds.ObjectMap;
 using lang.AtomSupport;
@@ -179,6 +180,8 @@ class CustomTypePrinter {
   public static function asString(obj: CustomType): String {
     var kv: Array<String> = [];
     var typeName: String = Type.getClassName(Type.getClass(obj));
+    typeName = StringUtil.capitalizePackage(typeName);
+
     var fields: Array<String> = Reflect.fields(obj);
     for(field in fields) {
       var keyString: String = Anna.inspect(field.atom());

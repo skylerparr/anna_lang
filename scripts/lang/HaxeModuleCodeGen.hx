@@ -110,12 +110,12 @@ class ::class_name:: {
             if(matching_args == '') {
               matching_header = 'return {';
             }
-            var funcGen: FunctionGen = AnnaMap.get(acc, spec.internal_name, new FunctionGen(spec.internal_name, args, get_type_string(spec.return_type), [], matching_header));
+            var funcGen: FunctionGen = MapTools.get(acc, spec.internal_name, new FunctionGen(spec.internal_name, args, get_type_string(spec.return_type), [], matching_header));
 
             var body: String = get_body(spec, module_spec);
             funcGen.matching_bodies.push(body);
 
-            acc = AnnaMap.put(acc, spec.internal_name, funcGen);
+            acc = MapTools.put(acc, spec.internal_name, funcGen);
             return acc;
           });
           MapToArrayEnum.into(funGenMap, [], function(kv: KeyValue<String, FunctionGen>): FunctionGen {
@@ -228,7 +228,7 @@ class ::class_name:: {
           var type_scope: Map<Atom, Atom> = ArrayToMapEnum.reduce(signature, new Map<Atom, Atom>(), function(arg: Array<Atom>, acc: Map<Atom, Atom>): Map<Atom, Atom> {
             switch(arg) {
               case [name, type]:
-                AnnaMap.put(acc, name, type);
+                MapTools.put(acc, name, type);
               case _:
                 throw new FunctionClauseNotFound("Function clause not found");
             }
@@ -388,7 +388,7 @@ class ::class_name:: {
                   var var_or_function: Array<Atom> = (t : Array<Atom>);
                   switch(var_or_function) {
                     case [name, _, _]:
-                      var type: Atom = AnnaMap.get(type_scope, name, 'nil'.atom());
+                      var type: Atom = MapTools.get(type_scope, name, 'nil'.atom());
                       if(type == 'nil'.atom()) {
                         types.push('');
                       } else {
@@ -605,7 +605,7 @@ class ::class_name:: {
                           var var_name = arg[0];
                           var var_args: Any = arg[2];
                           if(var_args == 'nil'.atom()) {
-                            var type = AnnaMap.get(type_scope, var_name, 'nil'.atom());
+                            var type = MapTools.get(type_scope, var_name, 'nil'.atom());
                             var type_string = type.value;
                             if(type == 'nil'.atom()) {
                               type_string = '';

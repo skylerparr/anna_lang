@@ -30,7 +30,7 @@ class FunctionSpec implements CustomType {
   }
 
   public function toHaxeString(): String {
-    return '';
+    return 'new lang.FunctionSpec(${Anna.toHaxeString(name)}, ${Anna.toHaxeString(internal_name)}, ${Anna.toHaxeString(signature)}, ${Anna.toHaxeString(return_type)}, ${Anna.toHaxeString(body)})';
   }
 
   public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {

@@ -10,3 +10,4 @@
 -lib deep_equal
 -lib hx-color-trace
 -lib ihx
+-lib haxe-strings
