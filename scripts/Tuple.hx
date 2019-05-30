@@ -73,6 +73,14 @@ class Tuple {
       }
     }
   }
+
+  public function asArray(): Array<Any> {
+    return [];
+  }
+
+  public static function array(tuple: Tuple): Array<Any> {
+    return tuple.asArray();
+  }
 }
 @:generic
 class Tuple1<A> extends Tuple implements CustomType {
@@ -83,7 +91,7 @@ class Tuple1<A> extends Tuple implements CustomType {
     Reflect.setField(this, 'var1', var1);
   }
 
-  private inline function asArray(): Array<Any> {
+  override public inline function asArray(): Array<Any> {
     return [var1];
   }
 
@@ -128,7 +136,7 @@ class Tuple2<A, B> extends Tuple implements CustomType {
     Reflect.setField(this, 'var2', var2);
   }
 
-  private inline function asArray(): Array<Any> {
+  override public inline function asArray(): Array<Any> {
     return [var1, var2];
   }
 
@@ -175,7 +183,7 @@ class Tuple3<A, B, C> extends Tuple implements CustomType {
     Reflect.setField(this, 'var3', var3);
   }
 
-  private inline function asArray(): Array<Any> {
+  override public inline function asArray(): Array<Any> {
     return [var1, var2, var3];
   }
 
@@ -224,7 +232,7 @@ class Tuple4<A, B, C, D> extends Tuple implements CustomType {
     Reflect.setField(this, 'var4', var4);
   }
 
-  private inline function asArray(): Array<Any> {
+  override public inline function asArray(): Array<Any> {
     return [var1, var2, var3, var4];
   }
 
@@ -275,7 +283,7 @@ class Tuple5<A, B, C, D, E> extends Tuple implements CustomType {
     Reflect.setField(this, 'var5', var5);
   }
 
-  private inline function asArray(): Array<Any> {
+  override public inline function asArray(): Array<Any> {
     return [var1, var2, var3, var4, var5];
   }
 
@@ -328,7 +336,7 @@ class Tuple6<A, B, C, D, E, F> extends Tuple implements CustomType {
     Reflect.setField(this, 'var6', var6);
   }
 
-  private inline function asArray(): Array<Any> {
+  override public inline function asArray(): Array<Any> {
     return [var1, var2, var3, var4, var5, var6];
   }
 
@@ -383,7 +391,7 @@ class Tuple7<A, B, C, D, E, F, G> extends Tuple implements CustomType {
     Reflect.setField(this, 'var7', var7);
   }
 
-  private inline function asArray(): Array<Any> {
+  override public inline function asArray(): Array<Any> {
     return [var1, var2, var3, var4, var5, var6, var7];
   }
 
@@ -440,7 +448,7 @@ class Tuple8<A, B, C, D, E, F, G, H> extends Tuple implements CustomType {
     Reflect.setField(this, 'var8', var8);
   }
 
-  private inline function asArray(): Array<Any> {
+  override public inline function asArray(): Array<Any> {
     return [var1, var2, var3, var4, var5, var6, var7, var8];
   }
 
@@ -499,7 +507,7 @@ class Tuple9<A, B, C, D, E, F, G, H, I> extends Tuple implements CustomType {
     Reflect.setField(this, 'var9', var9);
   }
 
-  private inline function asArray(): Array<Any> {
+  override public inline function asArray(): Array<Any> {
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9];
   }
 
@@ -560,7 +568,7 @@ class Tuple10<A, B, C, D, E, F, G, H, I, J> extends Tuple implements CustomType 
     Reflect.setField(this, 'var10', var10);
   }
 
-  private inline function asArray(): Array<Any> {
+  override public inline function asArray(): Array<Any> {
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10];
   }
 
@@ -623,7 +631,7 @@ class Tuple11<A, B, C, D, E, F, G, H, I, J, K> extends Tuple implements CustomTy
     Reflect.setField(this, 'var11', var11);
   }
 
-  private inline function asArray(): Array<Any> {
+  override public inline function asArray(): Array<Any> {
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11];
   }
 
@@ -688,7 +696,7 @@ class Tuple12<A, B, C, D, E, F, G, H, I, J, K, L> extends Tuple implements Custo
     Reflect.setField(this, 'var12', var12);
   }
 
-  private inline function asArray(): Array<Any> {
+  override public inline function asArray(): Array<Any> {
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12];
   }
 
@@ -755,7 +763,7 @@ class Tuple13<A, B, C, D, E, F, G, H, I, J, K, L, M> extends Tuple implements Cu
     Reflect.setField(this, 'var13', var13);
   }
 
-  private inline function asArray(): Array<Any> {
+  override public inline function asArray(): Array<Any> {
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13];
   }
 
@@ -824,7 +832,7 @@ class Tuple14<A, B, C, D, E, F, G, H, I, J, K, L, M, N> extends Tuple implements
     Reflect.setField(this, 'var14', var14);
   }
 
-  private inline function asArray(): Array<Any> {
+  override public inline function asArray(): Array<Any> {
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14];
   }
 
@@ -895,7 +903,7 @@ class Tuple15<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O> extends Tuple impleme
     Reflect.setField(this, 'var15', var15);
   }
 
-  private inline function asArray(): Array<Any> {
+  override public inline function asArray(): Array<Any> {
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15];
   }
 
@@ -968,7 +976,7 @@ class Tuple16<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P> extends Tuple impl
     Reflect.setField(this, 'var16', var16);
   }
 
-  private inline function asArray(): Array<Any> {
+  override public inline function asArray(): Array<Any> {
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15, var16];
   }
 
@@ -1043,7 +1051,7 @@ class Tuple17<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q> extends Tuple i
     Reflect.setField(this, 'var17', var17);
   }
 
-  private inline function asArray(): Array<Any> {
+  override public inline function asArray(): Array<Any> {
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15, var16, var17];
   }
 
@@ -1120,7 +1128,7 @@ class Tuple18<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R> extends Tupl
     Reflect.setField(this, 'var18', var18);
   }
 
-  private inline function asArray(): Array<Any> {
+  override public inline function asArray(): Array<Any> {
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15, var16, var17, var18];
   }
 
@@ -1199,7 +1207,7 @@ class Tuple19<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S> extends T
     Reflect.setField(this, 'var19', var19);
   }
 
-  private inline function asArray(): Array<Any> {
+  override public inline function asArray(): Array<Any> {
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15, var16, var17, var18, var19];
   }
 
@@ -1280,7 +1288,7 @@ class Tuple20<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T> extend
     Reflect.setField(this, 'var20', var20);
   }
 
-  private inline function asArray(): Array<Any> {
+  override public inline function asArray(): Array<Any> {
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15, var16, var17, var18, var19, var20];
   }
 
@@ -1363,7 +1371,7 @@ class Tuple21<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U> ext
     Reflect.setField(this, 'var21', var21);
   }
 
-  private inline function asArray(): Array<Any> {
+  override public inline function asArray(): Array<Any> {
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15, var16, var17, var18, var19, var20, var21];
   }
 
@@ -1448,7 +1456,7 @@ class Tuple22<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V> 
     Reflect.setField(this, 'var22', var22);
   }
 
-  private inline function asArray(): Array<Any> {
+  override public inline function asArray(): Array<Any> {
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15, var16, var17, var18, var19, var20, var21, var22];
   }
 
@@ -1535,7 +1543,7 @@ class Tuple23<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, 
     Reflect.setField(this, 'var23', var23);
   }
 
-  private inline function asArray(): Array<Any> {
+  override public inline function asArray(): Array<Any> {
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15, var16, var17, var18, var19, var20, var21, var22, var23];
   }
 
@@ -1624,7 +1632,7 @@ class Tuple24<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, 
     Reflect.setField(this, 'var24', var24);
   }
 
-  private inline function asArray(): Array<Any> {
+  override public inline function asArray(): Array<Any> {
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15, var16, var17, var18, var19, var20, var21, var22, var23, var24];
   }
 
@@ -1715,7 +1723,7 @@ class Tuple25<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, 
     Reflect.setField(this, 'var25', var25);
   }
 
-  private inline function asArray(): Array<Any> {
+  override public inline function asArray(): Array<Any> {
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15, var16, var17, var18, var19, var20, var21, var22, var23, var24, var25];
   }
 
@@ -1808,7 +1816,7 @@ class Tuple26<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, 
     Reflect.setField(this, 'var26', var26);
   }
 
-  private inline function asArray(): Array<Any> {
+  override public inline function asArray(): Array<Any> {
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15, var16, var17, var18, var19, var20, var21, var22, var23, var24, var25, var26];
   }
 
