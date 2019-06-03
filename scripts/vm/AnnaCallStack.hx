@@ -1,23 +1,22 @@
 package vm;
 
-import vm.Code;
 class AnnaCallStack {
-  public var code: Array<Code>;
+  public var operations: Array<Operation>;
   public var index: Int;
 
   public var scopeVariables: Map<String, Dynamic>;
 
-  public inline function new(code: Array<Code>) {
-    this.code = code;
-    scopeVariables = new Map<String, Dynamic>();
+  public inline function new(code: Array<Operation>, scopeVariables: Map<String, Dynamic>) {
+    this.operations = code;
+    this.scopeVariables = scopeVariables;
   }
 
-  public inline function execute(): Void {
-    var exec: Code = code[index++];
-    Reflect.callMethod(null, exec.func, exec.args);
+  public inline function execute(processStack: ProcessStack): Void {
+    var operation: Operation = operations[index++];
+    operation.execute(scopeVariables, processStack);
   }
 
-  public inline function empty(): Bool {
-    return index == code.length;
+  public inline function finalCall(): Bool {
+    return index == operations.length;
   }
 }

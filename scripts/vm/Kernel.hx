@@ -14,9 +14,10 @@ class Kernel {
     if(Scheduler.communicationThread == null) {
       current_id = 0;
       Scheduler.start();
-      if(Counter.increment == null) {
-        Counter._increment();
-      }
+
+      Classes.define("Counter".atom(), Counter);
+      Classes.define("CallCounter".atom(), CallCounter);
+
       return 'ok'.atom();
     } else {
       return 'already_started'.atom();
@@ -28,9 +29,9 @@ class Kernel {
     return 'ok'.atom();
   }
 
-  public static function testSpawn(): Void {
+  public static function testSpawn(): Process {
     var process: Process;
-    process = spawn(new AnnaCallStack(Counter.increment));
+    return spawn(new AnnaCallStack(CallCounter.invoke, new Map<String, Dynamic>()));
   }
 
   public static function spawn(annaCallStack: AnnaCallStack): Process {

@@ -2,7 +2,7 @@ package vm;
 
 class ProcessStack {
 
-  private var allStacks: List<AnnaCallStack> = new List<AnnaCallStack>();
+  public var allStacks: List<AnnaCallStack> = new List<AnnaCallStack>();
   private var currentStack: AnnaCallStack;
   private var process: Process;
   private var executionCount: Int;
@@ -12,20 +12,23 @@ class ProcessStack {
   }
 
   public inline function add(callStack: AnnaCallStack): Void {
+    if(currentStack != null && currentStack.finalCall()) {
+      allStacks.pop();
+    }
     allStacks.push(callStack);
     currentStack = callStack;
   }
 
   public inline function execute(): Void {
-    if(currentStack.empty()) {
-      allStacks.pop();
-      currentStack = allStacks.first();
-    }
     if(currentStack == null) {
       Process.complete(Process.self());
-    } else {
-      currentStack.execute();
-      executionCount++;
+      return;
+    }
+    currentStack.execute(this);
+    executionCount++;
+    if(currentStack.finalCall()) {
+      allStacks.pop();
+      currentStack = allStacks.first();
     }
   }
 }

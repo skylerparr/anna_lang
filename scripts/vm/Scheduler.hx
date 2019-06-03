@@ -110,7 +110,9 @@ class Scheduler {
 
   public static function doSleep(process: Process, startTime: Float, endTime: Float): Tuple {
     if(startTime >= endTime) {
-      Process.running(process);
+      if(process.status == ProcessState.SLEEPING) {
+        Process.running(process);
+      }
       Scheduler.communicationThread.sendMessage(KernelMessage.SCHEDULE(process));
       return Tuple.create(["stop", doSleep, Tuple.create([process, startTime, endTime])]);
     }
@@ -127,8 +129,10 @@ class Scheduler {
         trace('stack is null');
         continue;
       }
+      if(process.status == ProcessState.STOPPED) {
+        continue;
+      }
 
-      Process.running(process);
       var stack: ProcessStack = process.processStack;
       var counter: Int = 0;
       var iterations: Int = Std.int(Math.random() * 2000);

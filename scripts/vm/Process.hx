@@ -19,7 +19,7 @@ class Process implements CustomType {
     Reflect.setField(this, 'instance_id', instance_id);
     Reflect.setField(this, 'group_id', group_id);
     Reflect.setField(this, 'processStack', processStack);
-    Reflect.setField(this, 'status', ProcessState.READY);
+    Reflect.setField(this, 'status', ProcessState.RUNNING);
   }
 
   public function toAnnaString(): String {
@@ -34,8 +34,9 @@ class Process implements CustomType {
     return '';
   }
 
-  public static function stop(): Atom {
-    return 'not implemented'.atom();
+  public static function stop(process: Process): Atom {
+    Reflect.setField(process, 'status', ProcessState.STOPPED);
+    return 'ok'.atom();
   }
 
   public static function running(process: Process): Atom {
