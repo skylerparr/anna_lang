@@ -23,6 +23,7 @@ class Main {
   public static function main() {
     Native;
     Random;
+    EitherEnums;
     CallStack.exceptionStack();
     CallStack.callStack();
     var t = new haxe.Template("");

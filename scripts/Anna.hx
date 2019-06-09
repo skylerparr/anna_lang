@@ -1,5 +1,8 @@
 package ;
 
+import lang.EitherSupport;
+import haxe.EnumTools.EnumValueTools;
+import haxe.EnumTools;
 import TypePrinter.StringMapPrinter;
 import TypePrinter.MapPrinter;
 import haxe.ds.ObjectMap;
@@ -16,6 +19,9 @@ using TypePrinter.CustomTypePrinter;
 using TypePrinter.StringMapPrinter;
 using lang.AtomSupport;
 using StringTools;
+using haxe.EnumTools;
+using haxe.EnumTools.EnumValueTools;
+
 @:build(lang.macros.ValueClassImpl.build())
 class Anna {
   @field public static var parser: Parser;
@@ -112,7 +118,9 @@ class Anna {
           '${(val : Bool)}';
         case TNull:
           'nil';
-        case TEnum(_) | TFunction | TUnknown:
+        case TEnum(_):
+          toAnnaString(EitherSupport.getValue(val));
+        case TFunction | TUnknown:
           '${val}';
         case _:
           if(Std.is(val, CustomType)) {

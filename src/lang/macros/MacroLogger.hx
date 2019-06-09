@@ -5,6 +5,7 @@ import sys.FileSystem;
 import sys.io.File;
 import haxe.macro.Printer;
 import haxe.macro.Expr.Field;
+import haxe.macro.Expr;
 #end
 class MacroLogger {
 
@@ -28,6 +29,11 @@ class MacroLogger {
     for(field in fields) {
       MacroLogger.log(p.printField(field));
     }
+  }
+
+  public static function logExpr(expr: Expr): Void {
+    var p: Printer = new Printer();
+    MacroLogger.log(p.printExpr(expr));
   }
 
   #end

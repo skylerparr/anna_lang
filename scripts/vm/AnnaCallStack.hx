@@ -4,9 +4,9 @@ class AnnaCallStack {
   public var operations: Array<Operation>;
   public var index: Int;
 
-  public var scopeVariables: Map<String, Dynamic>;
+  public var scopeVariables: Map<Tuple, Dynamic>;
 
-  public inline function new(code: Array<Operation>, scopeVariables: Map<String, Dynamic>) {
+  public inline function new(code: Array<Operation>, scopeVariables: Map<Tuple, Dynamic>) {
     this.operations = code;
     this.scopeVariables = scopeVariables;
   }

@@ -5,19 +5,19 @@ class PushStack implements Operation {
 
   public var module: Atom;
   public var func: Atom;
-  public var args: Array<String>;
+  public var args: Array<Tuple>;
 
-  public function new(module: Atom, func: Atom, args: Array<String>) {
+  public function new(module: Atom, func: Dynamic, args: Array<Tuple>) {
     this.module = module;
     this.func = func;
     this.args = args;
   }
 
-  public function execute(scopeVariables: Map<String, Dynamic>, processStack: ProcessStack): Void {
-    var clazz: Class<Dynamic> = Classes.getClass(module);
-    var operation: Array<Operation> = Reflect.getProperty(clazz, func.value);
+  public function execute(scopeVariables: Map<Tuple, Dynamic>, processStack: ProcessStack): Void {
+    var fn: Dynamic = Classes.getFunction(module, func);
+    var operation: Array<Operation> = Reflect.callMethod(null, fn, args);
 
-    var nextScopeVariables: Map<String, Dynamic> = new Map<String, Dynamic>();
+    var nextScopeVariables: Map<Tuple, Dynamic> = new Map<Tuple, Dynamic>();
     for(arg in args) {
       nextScopeVariables.set(arg, scopeVariables.get(arg));
     }

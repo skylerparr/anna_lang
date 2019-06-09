@@ -1,5 +1,5 @@
 package vm;
 
 interface Operation {
-  function execute(scopeVariables: Map<String, Dynamic>, processStack: ProcessStack): Void;
+  function execute(scopeVariables: Map<Tuple, Dynamic>, processStack: ProcessStack): Void;
 }

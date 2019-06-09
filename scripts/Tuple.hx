@@ -6,9 +6,9 @@ using lang.AtomSupport;
 class Tuple {
 
   public static function elem(t: Tuple, index: Int): Any {
-    var retVal = Reflect.field(t, 'var${index + 1}');
+    var retVal = t.asArray()[index];
     if(retVal == null) {
-      retVal = 'nil'.atom();
+      return 'nil'.atom();
     }
     return retVal;
   }
