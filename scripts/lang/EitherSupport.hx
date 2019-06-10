@@ -28,7 +28,6 @@ import EitherEnums.Either2;
 import EitherEnums.Either1;
 class EitherSupport {
   public static function getValue(e: Dynamic): Dynamic {
-    trace(e);
     return switch(Type.getEnum(e)) {
       case Either1:
         switch(e) {
@@ -906,40 +905,5 @@ class EitherSupport {
         e;
     }
   }
-  private static var alphabet: Array<String> = {
-    alphabet = [];
-    var string = "DEFGHIJKLMNOPQRSTUVWXYZ";
-    for(i in 0...string.length) {
-      alphabet.push(string.charAt(i));
-    }
-    alphabet;
-  };
-  public static function gen(): Void {
-    var retVal: Array<String> = [];
-    var types: Array<String> = [];
-    for(i in 0...alphabet.length) {
-      types.push(alphabet[i]);
-      var start = '      case Either${i + 4}:
-        switch(e) {
-';
-      var cases: Array<String> = [];
-      for(type in types) {
-        cases.push('         case ${type}(${type.toLowerCase()}):
-            ${type.toLowerCase()};');
-      }
-      cases.push('
-          case v:
-          switch(v) {
-            case A(a):
-              a;
-            case B(b):
-              b;
-            case C(c):
-              c;
-          }');
-      var end: String = '\n}';
-      retVal.push('${start}${cases.join('\n')}${end}');
-    }
-    trace(retVal.join('\n'));
-  }
+
 }

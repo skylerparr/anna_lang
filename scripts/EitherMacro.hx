@@ -22,7 +22,7 @@ class EitherMacro {
         expr;
       case _:
         MacroLogger.log(values);
-        throw "Unmatched expression";
+        throw 'Either was unable to match type: Unsupported match';
     }
 
     var typeAndExprs: Array<Dynamic> = [];

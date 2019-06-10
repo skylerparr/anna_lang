@@ -15,7 +15,7 @@ class PushStack implements Operation {
 
   public function execute(scopeVariables: Map<Tuple, Dynamic>, processStack: ProcessStack): Void {
     var fn: Dynamic = Classes.getFunction(module, func);
-    var operation: Array<Operation> = Reflect.callMethod(null, fn, args);
+    var operation: Array<Operation> = Reflect.callMethod(null, fn, InvokeFunction.getHaxeArgs(this.args));
 
     var nextScopeVariables: Map<Tuple, Dynamic> = new Map<Tuple, Dynamic>();
     for(arg in args) {

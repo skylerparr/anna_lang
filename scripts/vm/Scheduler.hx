@@ -97,7 +97,7 @@ class Scheduler {
         }
         asyncFun = asyncFunctions.pop();
       }
-      Sys.sleep(0.166666666);
+      Sys.sleep(0.25);
       asyncFunctions = nextQueue;
     }
   }
