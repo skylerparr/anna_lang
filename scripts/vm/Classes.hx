@@ -35,6 +35,9 @@ class Classes {
 
   public static inline function getFunction(className: Atom, funName: Atom): Dynamic {
     var funMap: Map<Atom, Dynamic> = functions.get(className);
-    return funMap.get(funName);
+    if(funMap != null) {
+      return funMap.get(funName);
+    }
+    return null;
   }
 }

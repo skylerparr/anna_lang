@@ -103,4 +103,9 @@ class Compiler {
     }
     return className;
   }
+
+  public static function subscribeAfterCompile(fun: Void -> Void): Atom {
+    Native.callStaticField("Main", "compilerCompleteCallbacks").push(fun);
+    return 'ok'.atom();
+  }
 }

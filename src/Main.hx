@@ -1,3 +1,4 @@
+import lang.HashTableAtoms;
 import hx.strings.Strings;
 import haxe.ds.ObjectMap;
 import haxe.Timer;
@@ -20,10 +21,13 @@ class Main {
   private static var mainThread: Thread;
   private static var ready: Bool = false;
 
+  public static var compilerCompleteCallbacks: Array<Void->Void> = [];
+
   public static function main() {
     Native;
     Random;
     EitherEnums;
+    HashTableAtoms;
     CallStack.exceptionStack();
     CallStack.callStack();
     var t = new haxe.Template("");
@@ -118,6 +122,9 @@ class Main {
             Reflect.callMethod(clazz, fun, []);
           }
           ready = true;
+        }
+        for(cb in compilerCompleteCallbacks) {
+          cb();
         }
       }
     }

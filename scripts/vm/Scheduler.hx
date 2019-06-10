@@ -137,7 +137,11 @@ class Scheduler {
       var counter: Int = 0;
       var iterations: Int = Std.int(Math.random() * 2000);
       while(process.status == ProcessState.RUNNING && counter++ < iterations) {
-        stack.execute();
+        try {
+          stack.execute();
+        } catch(e: Dynamic) {
+          Logger.inspect(e);
+        }
       }
       switch(process.status) {
         case ProcessState.RUNNING:

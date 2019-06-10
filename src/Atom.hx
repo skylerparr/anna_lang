@@ -1,3 +1,4 @@
+package ;
 import lang.CustomTypes.CustomType;
 class Atom implements CustomType {
   public var value(default, never): String;

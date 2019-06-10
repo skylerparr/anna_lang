@@ -2,13 +2,12 @@ package vm;
 
 using lang.AtomSupport;
 
-@:build(Macros.build())
 class Counter {
 
   private static var _increment: Array<Operation> = {
     _increment = [];
 
-    _increment.push(new InvokeFunction(Sys.println, [Macros.tuple(['const'.atom(), 'start'])]));
+    _increment.push(new InvokeFunction(Sys.println, [Macros.tuple(['const'.atom(), 'starta adf adsf d'])]));
     _increment.push(new InvokeFunction(Process.sleep, [Macros.tuple(['const'.atom(), 500])]));
     _increment.push(new InvokeFunction(Sys.println, [Macros.tuple(['const'.atom(), 1])]));
     _increment.push(new InvokeFunction(Process.sleep, [Macros.tuple(['const'.atom(), 500])]));

@@ -1,5 +1,6 @@
 package vm;
 
+import compiler.Compiler;
 import cpp.vm.Thread;
 import vm.Process;
 
@@ -15,8 +16,8 @@ class Kernel {
       current_id = 0;
       Scheduler.start();
 
-      Classes.define("Counter".atom(), Counter);
-      Classes.define("CallCounter".atom(), CallCounter);
+      Compiler.subscribeAfterCompile(defineCode);
+      defineCode();
 
       return 'ok'.atom();
     } else {
@@ -29,8 +30,14 @@ class Kernel {
     return 'ok'.atom();
   }
 
+  public static function defineCode(): Atom {
+    Classes.define("Counter".atom(), Counter);
+    Classes.define("CallCounter".atom(), CallCounter);
+    return 'ok'.atom();
+  }
+
   public static function testSpawn(): Process {
-    var process: Process;
+    start();
     return spawn(new AnnaCallStack(CallCounter.invoke(), new Map<Tuple, Dynamic>()));
   }
 
