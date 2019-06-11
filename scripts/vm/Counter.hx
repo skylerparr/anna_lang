@@ -7,7 +7,8 @@ class Counter {
   private static var _increment: Array<Operation> = {
     _increment = [];
 
-    _increment.push(new InvokeFunction(Sys.println, [Macros.tuple(['const'.atom(), 'starta adf adsf d'])]));
+    _increment.push(new InvokeFunction(Sys.println, [Macros.tuple(['const'.atom(), 'start'])]));
+    _increment.push(new InvokeFunction(Sys.println, [Macros.tuple(['var'.atom(), 'counter'])]));
     _increment.push(new InvokeFunction(Process.sleep, [Macros.tuple(['const'.atom(), 500])]));
     _increment.push(new InvokeFunction(Sys.println, [Macros.tuple(['const'.atom(), 1])]));
     _increment.push(new InvokeFunction(Process.sleep, [Macros.tuple(['const'.atom(), 500])]));
@@ -23,9 +24,9 @@ class Counter {
     return _increment;
   }
 
-  public static function test(): Void {
-    var tuple: Tuple = Macros.tuple(['const'.atom(), 'start']);
-//    var t: Tuple = @tuple(['const'.atom(), 'start'])
-    Logger.inspect(tuple);
+  public static function ___increment_args(): Array<String> {
+    var args: Array<String> = [];
+    args.push('count');
+    return args;
   }
 }

@@ -12,10 +12,10 @@ class InvokeFunction implements Operation {
   }
 
   public function execute(scopeVariables: Map<Tuple, Dynamic>, processStack: ProcessStack): Void {
-    Reflect.callMethod(null, this.func, getHaxeArgs(this.args));
+    Reflect.callMethod(null, this.func, getHaxeArgs(this.args, new Map<String, Dynamic>()));
   }
 
-  public static inline function getHaxeArgs(args: Array<Tuple>): Array<Dynamic> {
+  public static inline function getHaxeArgs(args: Array<Tuple>, scope: Map<String, Dynamic>): Array<Dynamic> {
     var functionArgs: Array<Dynamic> = [];
 
     for(arg in args) {
@@ -25,6 +25,8 @@ class InvokeFunction implements Operation {
       switch(cast(EitherSupport.getValue(elem1), Atom)) {
         case {value: 'const'}:
           functionArgs.push(EitherSupport.getValue(elem2));
+        case {value: 'var'}:
+          functionArgs.push(scope.get(EitherSupport.getValue(elem2)));
       }
     }
     return functionArgs;

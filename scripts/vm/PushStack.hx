@@ -1,5 +1,6 @@
 package vm;
 
+import vm.Classes.Function;
 import vm.Operation;
 class PushStack implements Operation {
 
@@ -14,18 +15,19 @@ class PushStack implements Operation {
   }
 
   public function execute(scopeVariables: Map<Tuple, Dynamic>, processStack: ProcessStack): Void {
-    var fn: Dynamic = Classes.getFunction(module, func);
+    var fn: Function = Classes.getFunction(module, func);
     if(fn == null) {
       //TODO: handle missing function error
       Logger.inspect('throw a crazy error and kill the process!');
       return;
     }
-    var operation: Array<Operation> = Reflect.callMethod(null, fn, InvokeFunction.getHaxeArgs(this.args));
-
-    var nextScopeVariables: Map<Tuple, Dynamic> = new Map<Tuple, Dynamic>();
-    for(arg in args) {
-      nextScopeVariables.set(arg, scopeVariables.get(arg));
+    var nextScopeVariables: Map<String, Dynamic> = new Map<String, Dynamic>();
+    for(i in 0...fn.args.length) {
+      var argName: String = fn.args[i];
+      var argValue: Tuple = args[i];
+      nextScopeVariables.set(argName, argValue);
     }
+    var operation: Array<Operation> = Reflect.callMethod(null, fn.fn, InvokeFunction.getHaxeArgs(this.args, nextScopeVariables));
     var annaCallStack: AnnaCallStack = new AnnaCallStack(operation, nextScopeVariables);
     processStack.add(annaCallStack);
   }

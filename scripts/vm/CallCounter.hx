@@ -21,4 +21,9 @@ class CallCounter {
     return _invoke;
   }
 
+  public static function ___invoke_args(): Array<String> {
+    var args: Array<String> = [];
+    return args;
+  }
+
 }
