@@ -1,5 +1,7 @@
 package vm;
 
+import lang.EitherSupport;
+import EitherEnums.Either2;
 import vm.Classes.Function;
 import vm.Operation;
 class PushStack implements Operation {
@@ -14,7 +16,7 @@ class PushStack implements Operation {
     this.args = args;
   }
 
-  public function execute(scopeVariables: Map<Tuple, Dynamic>, processStack: ProcessStack): Void {
+  public function execute(scopeVariables: Map<String, Dynamic>, processStack: ProcessStack): Void {
     var fn: Function = Classes.getFunction(module, func);
     if(fn == null) {
       //TODO: handle missing function error
@@ -25,7 +27,8 @@ class PushStack implements Operation {
     for(i in 0...fn.args.length) {
       var argName: String = fn.args[i];
       var argValue: Tuple = args[i];
-      nextScopeVariables.set(argName, argValue);
+      var elem2: Either2<Atom, Dynamic> = argValue.asArray()[1];
+      nextScopeVariables.set(argName, EitherSupport.getValue(elem2));
     }
     var operation: Array<Operation> = Reflect.callMethod(null, fn.fn, InvokeFunction.getHaxeArgs(this.args, nextScopeVariables));
     var annaCallStack: AnnaCallStack = new AnnaCallStack(operation, nextScopeVariables);

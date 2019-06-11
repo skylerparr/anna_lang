@@ -38,7 +38,7 @@ class Kernel {
 
   public static function testSpawn(): Process {
     start();
-    return spawn(new AnnaCallStack(CallCounter.invoke(), new Map<Tuple, Dynamic>()));
+    return spawn(new AnnaCallStack(CallCounter.invoke(), new Map<String , Dynamic>()));
   }
 
   public static function spawn(annaCallStack: AnnaCallStack): Process {

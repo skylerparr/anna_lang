@@ -11,8 +11,8 @@ class InvokeFunction implements Operation {
     this.args = args;
   }
 
-  public function execute(scopeVariables: Map<Tuple, Dynamic>, processStack: ProcessStack): Void {
-    Reflect.callMethod(null, this.func, getHaxeArgs(this.args, new Map<String, Dynamic>()));
+  public function execute(scopeVariables: Map<String, Dynamic>, processStack: ProcessStack): Void {
+    Reflect.callMethod(null, this.func, getHaxeArgs(this.args, scopeVariables));
   }
 
   public static inline function getHaxeArgs(args: Array<Tuple>, scope: Map<String, Dynamic>): Array<Dynamic> {

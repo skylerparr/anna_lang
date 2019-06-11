@@ -64,7 +64,6 @@ class Classes {
         functions.set(className, classFunctions);
       }
     }
-    Logger.inspect(functions);
   }
 
   public static inline function getClass(name: Atom): Class<Dynamic> {

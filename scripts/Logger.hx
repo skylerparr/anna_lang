@@ -27,7 +27,7 @@ class Logger {
 
     var retVal = macro {
       var strTerm: String = Anna.inspect($term);
-      cpp.Lib.println('${$i{fileString}}:${$i{line}}: ${$i{strLabel}}' + strTerm);
+      cpp.Lib.print('${$i{fileString}}:${$i{line}}: ${$i{strLabel}}' + strTerm + '\n\r');
     }
     return retVal;
   }

@@ -7,16 +7,16 @@ class Counter {
   private static var _increment: Array<Operation> = {
     _increment = [];
 
-    _increment.push(new InvokeFunction(Sys.println, [Macros.tuple(['const'.atom(), 'start'])]));
-    _increment.push(new InvokeFunction(Sys.println, [Macros.tuple(['var'.atom(), 'counter'])]));
+    _increment.push(new InvokeFunction(IO.inspect, [Macros.tuple(['const'.atom(), 'start'])]));
+    _increment.push(new InvokeFunction(IO.inspect, [Macros.tuple(['var'.atom(), 'count'])]));
     _increment.push(new InvokeFunction(Process.sleep, [Macros.tuple(['const'.atom(), 500])]));
-    _increment.push(new InvokeFunction(Sys.println, [Macros.tuple(['const'.atom(), 1])]));
+    _increment.push(new InvokeFunction(IO.inspect, [Macros.tuple(['const'.atom(), 1])]));
     _increment.push(new InvokeFunction(Process.sleep, [Macros.tuple(['const'.atom(), 500])]));
-    _increment.push(new InvokeFunction(Sys.println, [Macros.tuple(['const'.atom(), 2])]));
+    _increment.push(new InvokeFunction(IO.inspect, [Macros.tuple(['const'.atom(), 2])]));
     _increment.push(new InvokeFunction(Process.sleep, [Macros.tuple(['const'.atom(), 500])]));
-    _increment.push(new InvokeFunction(Sys.println, [Macros.tuple(['const'.atom(), 3])]));
+    _increment.push(new InvokeFunction(IO.inspect, [Macros.tuple(['const'.atom(), 3])]));
     _increment.push(new InvokeFunction(Process.sleep, [Macros.tuple(['const'.atom(), 500])]));
-    _increment.push(new InvokeFunction(Sys.println, [Macros.tuple(['const'.atom(), 'end'])]));
+    _increment.push(new InvokeFunction(IO.inspect, [Macros.tuple(['const'.atom(), 'end'])]));
     _increment;
   }
 
