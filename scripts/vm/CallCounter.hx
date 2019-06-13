@@ -7,13 +7,13 @@ class CallCounter {
     _invoke = [];
 
     _invoke.push(new InvokeFunction(IO.inspect, [Macros.tuple(['const'.atom(), "call counter invoking counter"])]));
-    _invoke.push(new InvokeFunction(IO.inspect, [Macros.tuple(['const'.atom(), "ready?"])]));
+//    _invoke.push(new InvokeFunction(IO.inspect, [Macros.tuple(['const'.atom(), "ready?"])]));
 //    _invoke.push(new InvokeFunction(Process.sleep, [Macros.tuple(['const'.atom(), 500])]));
-    _invoke.push(new InvokeFunction(IO.inspect, [Macros.tuple(['const'.atom(), "go..."])]));
-    _invoke.push(new PushStack("Counter".atom(), 'increment_Int__Void'.atom(), [Macros.tuple(['const'.atom(), 8])]));
-    _invoke.push(new InvokeFunction(IO.inspect, [Macros.tuple(['const'.atom(), "Successfully called counter!"])]));
-    _invoke.push(new InvokeFunction(IO.inspect, [Macros.tuple(['const'.atom(), "recursion"])]));
-    _invoke.push(new PushStack("CallCounter".atom(), 'invoke'.atom(), []));
+//    _invoke.push(new InvokeFunction(IO.inspect, [Macros.tuple(['const'.atom(), "go..."])]));
+    _invoke.push(new PushStack("Counter".atom(), 'increment_Int__Void'.atom(), [Macros.tuple(['const'.atom(), 10])]));
+    _invoke.push(new InvokeFunction(IO.inspect, [Macros.tuple(['const'.atom(), "done!"])]));
+//    _invoke.push(new InvokeFunction(IO.inspect, [Macros.tuple(['const'.atom(), "recursion"])]));
+//    _invoke.push(new PushStack("CallCounter".atom(), 'invoke'.atom(), []));
     _invoke;
   }
 

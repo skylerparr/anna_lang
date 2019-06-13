@@ -13,7 +13,6 @@ class InvokeFunction implements Operation {
 
   public function execute(scopeVariables: Map<String, Dynamic>, processStack: ProcessStack): Void {
     var retVal: Dynamic = Reflect.callMethod(null, this.func, getHaxeArgs(this.args, scopeVariables));
-    Logger.inspect(retVal);
     scopeVariables.set("$$$", retVal);
   }
 
