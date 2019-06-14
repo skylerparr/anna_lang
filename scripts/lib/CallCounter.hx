@@ -1,7 +1,12 @@
-package vm;
+package lib;
 
+import vm.Operation;
+import vm.PushStack;
+import vm.InvokeFunction;
+import vm.IO;
 using lang.AtomSupport;
 
+//@:build(Macros.build())
 class CallCounter {
   private static var _invoke: Array<Operation> = {
     _invoke = [];
@@ -10,7 +15,7 @@ class CallCounter {
 //    _invoke.push(new InvokeFunction(IO.inspect, [Macros.tuple(['const'.atom(), "ready?"])]));
 //    _invoke.push(new InvokeFunction(Process.sleep, [Macros.tuple(['const'.atom(), 500])]));
 //    _invoke.push(new InvokeFunction(IO.inspect, [Macros.tuple(['const'.atom(), "go..."])]));
-    _invoke.push(new PushStack("Counter".atom(), 'increment_Int__Void'.atom(), [Macros.tuple(['const'.atom(), 10])]));
+    _invoke.push(new PushStack("Counter".atom(), 'increment_Int__Void'.atom(), [Macros.tuple(['const'.atom(), 60])]));
     _invoke.push(new InvokeFunction(IO.inspect, [Macros.tuple(['const'.atom(), "done!"])]));
 //    _invoke.push(new InvokeFunction(IO.inspect, [Macros.tuple(['const'.atom(), "recursion"])]));
 //    _invoke.push(new PushStack("CallCounter".atom(), 'invoke'.atom(), []));

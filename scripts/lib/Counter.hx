@@ -1,5 +1,10 @@
-package vm;
+package lib;
 
+import vm.Process;
+import vm.PushStack;
+import vm.IO;
+import vm.InvokeFunction;
+import vm.Operation;
 using lang.AtomSupport;
 
 class Counter {

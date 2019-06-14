@@ -11,8 +11,7 @@ using lang.AtomSupport;
 class Scheduler {
   @field public static var communicationThread: Thread;
   @field public static var workerThreads: Array<Thread>;
-  @field public static var asyncThreads: Array<Thread>;
-  @field public static var asyncFunctions: List<Tuple>;
+  @field public static var asyncThread: Thread;
   @field public static var index: Int;
   @field public static var asyncIndex: Int;
   @field public static var threadProcessMap: ObjectMap<Dynamic, Process>;
@@ -21,17 +20,12 @@ class Scheduler {
     if(communicationThread == null) {
       communicationThread = Thread.create(onCommunicationThreadCreated);
       workerThreads = [];
-      asyncThreads = [];
-      asyncFunctions = new List<Tuple>();
       threadProcessMap = new ObjectMap<Dynamic, Process>();
       for(i in 0...32) {
         var thread = Thread.create(onThreadStarted);
         workerThreads.push(thread);
       }
-      for(i in 0...1) {
-        var thread = Thread.create(onAsyncThreadStarted);
-        asyncThreads.push(thread);
-      }
+      asyncThread = Thread.create(onAsyncThreadStarted);
       index = 0;
       asyncIndex = 0;
       return 'ok'.atom();
@@ -60,8 +54,7 @@ class Scheduler {
           }
           communicationThread = null;
           workerThreads = null;
-          asyncThreads = null;
-          asyncFunctions = null;
+          asyncThread = null;
           return;
         case KernelMessage.SCHEDULE(process):
           var thread: Thread = workerThreads[index++ % workerThreads.length];
@@ -72,38 +65,43 @@ class Scheduler {
   }
 
   public static function onAsyncThreadStarted(): Void {
+    var nextQueue: List<Tuple> = null;
+    var asyncFunctions: List<Tuple> = new List<Tuple>();
     while(true) {
-      var nextQueue: List<Tuple> = new List<Tuple>();
       if(communicationThread == null) {
         break;
       }
       var fun: Tuple = Thread.readMessage(false);
-      if(asyncFunctions == null) {
-        return;
-      }
       if(fun != null) {
+        if(asyncFunctions == null) {
+          asyncFunctions = new List<Tuple>();
+        }
         asyncFunctions.push(fun);
       }
-
-      var asyncFun: Tuple = asyncFunctions.pop();
-      while(asyncFun != null) {
-        switch(Tuple.array(asyncFun)) {
-          case [status, fun, tupleArgs] if(status == "run"):
-            var args: Tuple = tupleArgs;
-            var t: Tuple = Reflect.callMethod(null, fun, args.asArray());
-            nextQueue.push(t);
-          case [status, fun, args] if(status == "stop"):
-          case _:
+      if(asyncFunctions != null) {
+        var asyncFun: Tuple = asyncFunctions.pop();
+        while(asyncFun != null) {
+          switch(Tuple.array(asyncFun)) {
+            case [status, fun, tupleArgs] if(status == "run"):
+              var args: Tuple = tupleArgs;
+              var t: Tuple = Reflect.callMethod(null, fun, args.asArray());
+              if(nextQueue == null) {
+                nextQueue = new List<Tuple>();
+              }
+              nextQueue.push(t);
+            case [status, fun, args] if(status == "stop"):
+            case _:
+          }
+          asyncFun = asyncFunctions.pop();
         }
-        asyncFun = asyncFunctions.pop();
       }
-      Sys.sleep(0.25);
+      Sys.sleep(0.016);
       asyncFunctions = nextQueue;
+      nextQueue = null;
     }
   }
 
   public static function sleep(process: Process, milliseconds: Int): Void {
-    var asyncThread: Thread = asyncThreads[asyncIndex++ % asyncThreads.length];
     var now: Float = Timer.stamp();
     asyncThread.sendMessage(Tuple.create(["run", doSleep, Tuple.create([process, now, now + (milliseconds / 1000)])]));
   }

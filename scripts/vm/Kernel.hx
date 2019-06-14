@@ -1,5 +1,7 @@
 package vm;
 
+import lib.CallCounter;
+import lib.Counter;
 import compiler.Compiler;
 import cpp.vm.Thread;
 import vm.Process;
@@ -45,12 +47,6 @@ class Kernel {
     var process: Process = new Process(0, current_id++, 0, annaCallStack);
     Scheduler.communicationThread.sendMessage(KernelMessage.SCHEDULE(process));
     return process;
-  }
-
-  public static function sleep(process: Process, callback: Void -> Void): Void {
-    Reflect.setField(process, 'func', callback);
-    Reflect.setField(process, 'status', ProcessState.SLEEPING);
-    Scheduler.communicationThread.sendMessage(KernelMessage.SCHEDULE(process));
   }
 
   public static function send(process: Process, payload: Dynamic): Tuple {
