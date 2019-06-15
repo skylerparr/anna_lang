@@ -6,17 +6,19 @@ import vm.InvokeFunction;
 import vm.IO;
 using lang.AtomSupport;
 
-@:build(Macros.build())
+//@:build(Macros.build())
 class CallCounter {
   private static var _invoke: Array<Operation> = {
     _invoke = [];
 
-    _invoke.push(new InvokeFunction(IO.inspect, [@tuple['const'.atom(), "call counter invoking counter"]]));
+//    Logger.inspect(@map[@tuple['_invoke'] => "val"]);
+//
+//    _invoke.push(new InvokeFunction(IO.inspect, [@tuple['const'.atom(), "call counter invoking counter"]]));
 //    _invoke.push(new InvokeFunction(IO.inspect, [Macros.tuple(['const'.atom(), "ready?"])]));
 //    _invoke.push(new InvokeFunction(Process.sleep, [Macros.tuple(['const'.atom(), 500])]));
 //    _invoke.push(new InvokeFunction(IO.inspect, [Macros.tuple(['const'.atom(), "go..."])]));
-    _invoke.push(new PushStack("Counter".atom(), 'increment_Int__Void'.atom(), [@tuple['const'.atom(), 5]]));
-    _invoke.push(new InvokeFunction(IO.inspect, [@tuple['const'.atom(), "done!"]]));
+//    _invoke.push(new PushStack("Counter".atom(), 'increment_Int__Void'.atom(), [@tuple['const'.atom(), 5]]));
+//    _invoke.push(new InvokeFunction(IO.inspect, [@tuple['const'.atom(), "done!"]]));
 //    _invoke.push(new InvokeFunction(IO.inspect, [Macros.tuple(['const'.atom(), "recursion"])]));
 //    _invoke.push(new PushStack("CallCounter".atom(), 'invoke'.atom(), []));
     _invoke;

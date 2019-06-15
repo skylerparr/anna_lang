@@ -38,14 +38,13 @@ class EitherMacro {
             case CFloat(value):
               typeAndExprs.push({type: "Float", expr: vExpr});
             case _:
-
           }
         case {expr: ECall(val, _fun)}:
           switch(val) {
             case {expr: EField({expr: EConst(CString(_))}, _)}:
               typeAndExprs.push({type: "Atom", expr: vExpr});
             case {expr: EField({expr: EConst(CIdent(type))}, _)}:
-              typeAndExprs.push({type: {expr: EConst(CIdent(type)), pos: Context.currentPos()}, expr: vExpr});
+              typeAndExprs.push({type: '${type}', expr: vExpr});
             case _:
           }
         case {expr: ENew({name: type}, _args)}:
