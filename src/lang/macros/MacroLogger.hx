@@ -12,13 +12,19 @@ class MacroLogger {
   #if macro
   public static var init: Bool = false;
 
-  public static function log(message: Dynamic): Void {
+  public static function log(message: Dynamic, label: String = null): Void {
     if(!init) {
       File.saveContent('${Sys.getCwd()}log', '');
       init = true;
     }
+    if(label != null) {
+      label = '${label}: ';
+    } else {
+      label = '';
+    }
 
     var output: Output = File.append('${Sys.getCwd()}log', false);
+    output.writeString(label);
     output.writeString(message + '');
     output.writeString('\n');
     output.close();
@@ -31,9 +37,9 @@ class MacroLogger {
     }
   }
 
-  public static function logExpr(expr: Expr): Void {
+  public static function logExpr(expr: Expr, label: String = null): Void {
     var p: Printer = new Printer();
-    MacroLogger.log(p.printExpr(expr));
+    MacroLogger.log(p.printExpr(expr), label);
   }
 
   #end
