@@ -111,7 +111,7 @@ class Macros {
     }
   }
 
-  private static function tuple(expr: Expr):Expr {
+  public static function findMeta(expr: Expr, callback: Expr->Expr):Expr {
     return {
       switch(expr.expr) {
         case EArrayDecl(values):
@@ -124,15 +124,21 @@ class Macros {
             }
           }
           expr = {expr: EArrayDecl(arrayValues), pos: Context.currentPos()};
-          expr = macro {
-            Tuple.create(EitherMacro.gen(cast($e{expr}, Array<Dynamic>)));
-          }
+          expr = callback(expr);
           var blk = extractBlock(expr)[0];
           blk;
         case _:
           throw("is this possible");
       }
     }
+  }
+
+  private static function tuple(expr: Expr):Expr {
+    return findMeta(expr, function(expr: Expr): Expr {
+      return macro {
+        Tuple.create(EitherMacro.gen(cast($e{expr}, Array<Dynamic>)));
+      }
+    });
   }
 
   private static function map(expr: Expr):Expr {
@@ -140,27 +146,11 @@ class Macros {
   }
 
   public static function list(expr: Expr):Expr {
-    return {
-      switch(expr.expr) {
-        case EArrayDecl(values):
-          var arrayValues: Array<Expr> = [];
-          for(value in values) {
-            var meta = findMetaInBlock([value]);
-            var metaBlock = extractBlock(meta);
-            if(metaBlock[0] != null) {
-              arrayValues.push(metaBlock[0]);
-            }
-          }
-          expr = {expr: EArrayDecl(arrayValues), pos: Context.currentPos()};
-          expr = macro {
-            LList.create(EitherMacro.gen(cast($e{expr}, Array<Dynamic>)));
-          }
-          var blk = extractBlock(expr)[0];
-          blk;
-        case _:
-          throw("is this possible");
+    return findMeta(expr, function(expr: Expr): Expr {
+      return macro {
+        LList.create(EitherMacro.gen(cast($e{expr}, Array<Dynamic>)));
       }
-    }
+    });
   }
 
   #end
