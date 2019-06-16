@@ -4,19 +4,79 @@ import lang.CustomTypes.CustomType;
 
 using StringTools;
 
+class LList implements CustomType {
+  public static function create(vals: Array<Any>): LList {
+    var retVal = new AnnaList<String>();
+    for(v in vals) {
+      retVal._add(v);
+    }
+    return retVal;
+  }
+
+  public static function push(list: LList, value: Any): LList {
+    return (cast list)._push(value);
+  }
+
+  public static function add(list: LList, value: Any): LList {
+    return (cast list)._add(value);
+  }
+
+  public static function hd(list: LList): LList {
+    return (cast list).getHead();
+  }
+
+  public static function tl(list: LList): LList {
+    return (cast list).getTail();
+  }
+
+  public static function remove(list: LList, item: Any): Bool {
+    return (cast list)._remove(item);
+  }
+
+  public var head(get, never): Any;
+  public var tail(get, never): Any;
+
+  function get_head(): Any {
+    return (cast this).getHead();
+  }
+
+  function get_tail(): Any {
+    return (cast this).getTail();
+  }
+
+  public function toAnnaString(): String {
+    return '';
+  }
+
+  public function toHaxeString(): String {
+    return '';
+  }
+
+  public function toPattern(patternArgs: Array<KeyValue<String,String>> = null): String {
+    return '';
+  }
+
+  public function toString(): String {
+    return "LList";
+  }
+
+}
+
 @:generic
-class AnnaList<T> implements CustomType {
+class AnnaList<T> extends LList {
 
-  public var head(get, never): T;
-  public var tail(get, never): AnnaList<T>;
-
-  function get_head(): T {
+  function getHead(): T {
     return h.item;
   }
 
-  function get_tail(): AnnaList<T> {
+  function getTail(): AnnaList<T> {
     if(tl == null) {
-      tl = new AnnaList(q.item);
+      tl = new AnnaList<T>();
+      var t = h.next;
+      while(t != null) {
+        tl._add(t.item);
+        t = t.next;
+      }
     }
     return tl;
   }
@@ -45,21 +105,22 @@ class AnnaList<T> implements CustomType {
     }
   }
 
-  public function push(item: T): AnnaList<T> {
+  public function _push(item: T): AnnaList<T> {
     var x = ListNode.create(item, h);
     h = x;
     if(q == null) {
       q = x;
     }
     length++;
+    tl = null;
     return this;
   }
 
-  public function toString(): String {
-    return 'List';
+  override public function toString(): String {
+    return 'AnnaList';
   }
   
-  public function add(item: T) {
+  public function _add(item: T) {
     var x = ListNode.create(item, null);
     if(h == null) {
       h = x;
@@ -68,9 +129,10 @@ class AnnaList<T> implements CustomType {
     }
     q = x;
     length++;
+    tl = null;
   }
 
-  public function remove(item: T): Bool {
+  public function _remove(item: T): Bool {
     var prev: ListNode<T> = null;
     var l = h;
     while(l != null) {
@@ -84,6 +146,7 @@ class AnnaList<T> implements CustomType {
           q = prev;
         }
         length--;
+        tl = null;
         return true;
       }
       prev = l;
@@ -92,7 +155,7 @@ class AnnaList<T> implements CustomType {
     return false;
   }
 
-  public function toAnnaString(): String {
+  override public function toAnnaString(): String {
     var s = new StringBuf();
     var first = true;
     var l = h;
@@ -108,7 +171,7 @@ class AnnaList<T> implements CustomType {
     return '[${s}]';
   }
 
-  public function toHaxeString(): String {
+  override public function toHaxeString(): String {
     var s = new StringBuf();
     var first = true;
     var l = h;
@@ -124,7 +187,7 @@ class AnnaList<T> implements CustomType {
     return 'lang.CustomTypes.createList("${type}", [${s}])';
   }
 
-  public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
+  override public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
     if(patternArgs == null) {
       patternArgs = [];
     }

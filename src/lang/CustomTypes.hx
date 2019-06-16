@@ -14,24 +14,24 @@ class CustomTypes {
     Reflect.setField(obj, field, value);
     return obj;
   }
-
-  macro public static function createList(typeExpr: Expr, itemsExpr: Expr): Expr {
-    var type = switch(typeExpr.expr) {
-      case EConst(CString(t)):
-        var classAndPackage = getClassAndPackage(t);
-        TPath({ pack : classAndPackage.packageName, name : classAndPackage.className, params : [], sub : null });
-      case t:
-        throw new UnexpectedArgumentException('Expected array, got ${t}');
-    }
-
-    return macro {
-      {
-        var retVal: AnnaList<$type> = new AnnaList<$type>();
-        util.CollectionUtil.fillList(retVal, $e{itemsExpr});
-        retVal;
-      }
-    }
-  }
+//
+//  macro public static function createList(typeExpr: Expr, itemsExpr: Expr): Expr {
+//    var type = switch(typeExpr.expr) {
+//      case EConst(CString(t)):
+//        var classAndPackage = getClassAndPackage(t);
+//        TPath({ pack : classAndPackage.packageName, name : classAndPackage.className, params : [], sub : null });
+//      case t:
+//        throw new UnexpectedArgumentException('Expected array, got ${t}');
+//    }
+//
+//    return macro {
+//      {
+//        var retVal: LList<$type> = new LList<$type>();
+//        util.CollectionUtil.fillList(retVal, $e{itemsExpr});
+//        retVal;
+//      }
+//    }
+//  }
 
   macro public static function createMap(keyTypeExpr: Expr, valueTypeExpr: Expr, itemsExpr: Expr): Expr {
     var keyType = switch(keyTypeExpr.expr) {

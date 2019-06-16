@@ -8,15 +8,18 @@ import haxe.macro.Expr;
 // #pos\(.*?\)
 class Macros {
 
-  macro public static function build(): Array<Field> {
+  macro public static function build(args: Expr = null): Array<Field> {
+    MacroLogger.log("=====================");
+    MacroLogger.log(args);
     var fields: Array<Field> = Context.getBuildFields();
     var retFields: Array<Field> = [];
     for(field in fields) {
       var newField: Field = updateField(field);
       retFields.push(newField);
     }
-    MacroLogger.log("======================");
+    MacroLogger.log("---------------------");
     MacroLogger.printFields(retFields);
+    MacroLogger.log("_____________________");
     return retFields;
   }
 
@@ -136,6 +139,10 @@ class Macros {
     return expr;
   }
 
+  public static function list(expr: Expr):Expr {
+    return expr;
+  }
+
   #end
 
   macro public static function ei(expr: Expr): Expr {
@@ -148,5 +155,11 @@ class Macros {
 
   macro public static function getTuple(expr: Expr): Expr {
     return tuple(expr);
+  }
+
+  macro public static function getList(expr: Expr): Expr {
+    return macro {
+
+    };
   }
 }

@@ -104,8 +104,8 @@ class Anna {
           MapPrinter.asAnnaString((val : ObjectMap<Dynamic, Dynamic>));
         case TClass(haxe.ds.StringMap):
           StringMapPrinter.asAnnaString((val : Map<String, Dynamic>));
-        case TClass(AnnaList):
-          (val : AnnaList<Dynamic>).toAnnaString();
+        case TClass(LList):
+          (val : LList).toAnnaString();
         case TClass(Array):
           var retVal: Array<String> = [];
           for(v in (val : Array<Dynamic>)) {
