@@ -38,4 +38,31 @@ class TupleTest {
     var expect: Array<Dynamic> = [1, Macros.getTuple([2, 4, 6]), Macros.getTuple([3, 6, 9])];
     Assert.areEqual(t, expect);
   }
+
+  public static function shouldCreateTupleWithinAConstructor(): Void {
+    var tc: TupleContainer = new TupleContainer(@tuple[1,2,3]);
+    Assert.areEqual(tc.args, Macros.getTuple([1,2,3]));
+  }
+
+  public static function shouldCreateArrayOfTuplesInAConstructor(): Void {
+    var tc: ArrayTupleContainer = new ArrayTupleContainer([@tuple[1,2,3], @tuple[4,5,6]]);
+    Assert.areEqual(tc.args, [[1,2,3], [4,5,6]]);
+  }
+
+}
+
+class TupleContainer {
+  public var args: Tuple;
+
+  public function new(args: Tuple) {
+    this.args = args;
+  }
+}
+
+class ArrayTupleContainer {
+  public var args: Array<Tuple>;
+
+  public function new(args: Array<Tuple>) {
+    this.args = args;
+  }
 }
