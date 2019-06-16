@@ -6,7 +6,7 @@ using StringTools;
 
 class LList implements CustomType {
   public static function create(vals: Array<Any>): LList {
-    var retVal = new AnnaList<String>();
+    var retVal = new AnnaList<Any>();
     for(v in vals) {
       retVal._add(v);
     }

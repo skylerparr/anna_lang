@@ -140,7 +140,27 @@ class Macros {
   }
 
   public static function list(expr: Expr):Expr {
-    return expr;
+    return {
+      switch(expr.expr) {
+        case EArrayDecl(values):
+          var arrayValues: Array<Expr> = [];
+          for(value in values) {
+            var meta = findMetaInBlock([value]);
+            var metaBlock = extractBlock(meta);
+            if(metaBlock[0] != null) {
+              arrayValues.push(metaBlock[0]);
+            }
+          }
+          expr = {expr: EArrayDecl(arrayValues), pos: Context.currentPos()};
+          expr = macro {
+            LList.create(EitherMacro.gen(cast($e{expr}, Array<Dynamic>)));
+          }
+          var blk = extractBlock(expr)[0];
+          blk;
+        case _:
+          throw("is this possible");
+      }
+    }
   }
 
   #end
@@ -158,8 +178,6 @@ class Macros {
   }
 
   macro public static function getList(expr: Expr): Expr {
-    return macro {
-
-    };
+    return list(expr);
   }
 }

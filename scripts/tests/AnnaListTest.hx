@@ -121,9 +121,65 @@ class AnnaListTest {
     }
   }
 
-//  private static var list: LList = @list[1, 2, 3];
-//  public static function shouldCreateAList(): Void {
-//    Assert.areEqual(list, Macros.getList([1, 2, 3]));
-//  }
+  private static var _list: LList = @list[1, '2', 3]; // just verifying this'll compile
+  private static var list: LList = @list[1, 2, 3];
+  public static function shouldCreateAList(): Void {
+    Assert.areEqual(list, Macros.getList([1, 2, 3]));
+  }
+
+  private static var list2: LList = @list[1, @list[2, 4, 6], @list[3, 6, 9]];
+  public static function shouldCreateAListWithinAList(): Void {
+    var expect: LList = LList.create([1, Macros.getList([2, 4, 6]), Macros.getList([3, 6, 9])]);
+    Assert.areEqual(list2, expect);
+  }
+
+  private static var listArray: Array<LList> = {
+    listArray = [];
+
+    listArray.push(@list[1, 2, 3]);
+    listArray.push(@list[4, 5, 6]);
+
+    listArray;
+  }
+  public static function shouldCreateListWithStaticInitializer(): Void {
+    Assert.areEqual(listArray, [Macros.getList([1,2,3]), Macros.getList([4,5,6])]);
+  }
+
+  public static function shouldCreateListInFunction(): Void {
+    var t: LList = @list[1, 2, 3];
+    Assert.areEqual(t, Macros.getList([1, 2, 3]));
+  }
+
+  public static function shouldCreateListWithinListInFunction(): Void {
+    var t: LList = @list[1, @list[2, 4, 6], @list[3, 6, 9]];
+    var expect: LList = LList.create([1, Macros.getList([2, 4, 6]), Macros.getList([3, 6, 9])]);
+    Assert.areEqual(t, expect);
+  }
+
+  public static function shouldCreateListWithinAConstructor(): Void {
+    var tc: ListContainer = new ListContainer(@list[1,2,3]);
+    Assert.areEqual(tc.args, Macros.getList([1,2,3]));
+  }
+
+  public static function shouldCreateArrayOfListsInAConstructor(): Void {
+    var tc: ArrayListContainer = new ArrayListContainer([@list[1,2,3], @list[4,5,6]]);
+    Assert.areEqual(tc.args, [Macros.getList([1,2,3]), Macros.getList([4,5,6])]);
+  }
 }
 
+
+class ListContainer {
+  public var args: LList;
+
+  public function new(args: LList) {
+    this.args = args;
+  }
+}
+
+class ArrayListContainer {
+  public var args: Array<LList>;
+
+  public function new(args: Array<LList>) {
+    this.args = args;
+  }
+}
