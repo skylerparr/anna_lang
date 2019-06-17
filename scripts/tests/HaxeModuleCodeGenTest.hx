@@ -191,39 +191,39 @@ class Foo {
     Assert.stringsAreEqual(haxeCode, genHaxe);
   }
 
-  public static function shouldHandleFunctionSignaturePatternMatchingWithMapsAndBasicDataTypes(): Void {
-    var string: String = 'defmodule Foo do
-  @spec(bar, {lang.FunctionSpec, String, Int}, Atom)
-  def bar(%{:name => name, :internal_name => internal_name}, foo, 39) do
-    name
-  end
-end';
-
-    var haxeCode: String = 'package ;
-import lang.AtomSupport;
-using lang.AtomSupport;
-
-class Foo {
-
-  public static function bar_3_lang_FunctionSpec_String_Int__Atom(v0: lang.FunctionSpec, v1: String, v2: Int): Atom {
-    return {
-      switch([v0, v1, v2]) {
-        case [{ name: name, internal_name: internal_name }, foo, 39]:
-          name;
-        case _:
-          throw new lang.FunctionClauseNotFound("Function clause not found");
-      }
-    }
-  }
-
-}';
-    ASTParser.parse(LangParser.toAST(string));
-    var module: ModuleSpec = Module.getModule('Foo'.atom());
-    Assert.isNotNull(module);
-    var genHaxe: String = HaxeModuleCodeGen.generate(module);
-
-    Assert.stringsAreEqual(haxeCode, genHaxe);
-  }
+//  public static function shouldHandleFunctionSignaturePatternMatchingWithMapsAndBasicDataTypes(): Void {
+//    var string: String = 'defmodule Foo do
+//  @spec(bar, {lang.FunctionSpec, String, Int}, Atom)
+//  def bar(%{:name => name, :internal_name => internal_name}, foo, 39) do
+//    name
+//  end
+//end';
+//
+//    var haxeCode: String = 'package ;
+//import lang.AtomSupport;
+//using lang.AtomSupport;
+//
+//class Foo {
+//
+//  public static function bar_3_lang_FunctionSpec_String_Int__Atom(v0: lang.FunctionSpec, v1: String, v2: Int): Atom {
+//    return {
+//      switch([v0, v1, v2]) {
+//        case [{ name: name, internal_name: internal_name }, foo, 39]:
+//          name;
+//        case _:
+//          throw new lang.FunctionClauseNotFound("Function clause not found");
+//      }
+//    }
+//  }
+//
+//}';
+//    ASTParser.parse(LangParser.toAST(string));
+//    var module: ModuleSpec = Module.getModule('Foo'.atom());
+//    Assert.isNotNull(module);
+//    var genHaxe: String = HaxeModuleCodeGen.generate(module);
+//
+//    Assert.stringsAreEqual(haxeCode, genHaxe);
+//  }
 
   public static function shouldCallInternalNameWhenBodyInvokesFunction(): Void {
     var string: String = 'defmodule Foo do

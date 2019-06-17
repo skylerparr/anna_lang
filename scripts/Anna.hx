@@ -1,5 +1,7 @@
 package ;
 
+import TypePrinter.EnumMapPrinter;
+import haxe.ds.EnumValueMap;
 import lang.EitherSupport;
 import haxe.EnumTools.EnumValueTools;
 import haxe.EnumTools;
@@ -100,6 +102,8 @@ class Anna {
           '${((val : Atom).toAnnaString())}';
         case TClass(String):
           '"${val}"';
+        case TClass(haxe.ds.EnumValueMap):
+          EnumMapPrinter.asAnnaString((val : EnumValueMap<Dynamic, Dynamic>));
         case TClass(haxe.ds.ObjectMap):
           MapPrinter.asAnnaString((val : ObjectMap<Dynamic, Dynamic>));
         case TClass(haxe.ds.StringMap):

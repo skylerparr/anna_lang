@@ -1,5 +1,6 @@
 package;
 
+import haxe.ds.EnumValueMap;
 import util.StringUtil;
 import lang.CustomTypes.CustomType;
 import haxe.ds.ObjectMap;
@@ -72,6 +73,36 @@ class StringMapPrinter {
       kv.push('${keyString} => ${valueString}');
     }
     return '[${kv.join(', ')}]';
+  }
+}
+
+class EnumMapPrinter {
+  public static function asAnnaString(map: EnumValueMap<Dynamic, Dynamic>): String {
+    var kv: Array<String> = [];
+    var keys: Array<Dynamic> = [];
+    for(key in map.keys()) {
+      keys.push(key);
+    }
+    keys.sort( function(a:Dynamic, b:Dynamic):Int {
+      if(Std.is(a, Atom) && Std.is(b, Atom)) {
+        if (a.value < b.value) return -1;
+        if (a.value > b.value) return 1;
+      } else if(Std.is(a, String) && Std.is(b, String)) {
+        if (a.toLowerCase() < b.toLowerCase()) return -1;
+        if (a.toLowerCase() > b.toLowerCase()) return 1;
+      } else {
+        if (a < b) return -1;
+        if (a > b) return 1;
+      }
+      return 0;
+    });
+    for(key in keys) {
+      var keyString: String = Anna.inspect(key);
+      var value: Dynamic = map.get(key);
+      var valueString = Anna.inspect(value);
+      kv.push('${keyString} => ${valueString}');
+    }
+    return '%{${kv.join(', ')}}';
   }
 }
 

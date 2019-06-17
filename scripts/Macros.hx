@@ -10,7 +10,7 @@ class Macros {
 
   macro public static function build(args: Expr = null): Array<Field> {
     MacroLogger.log("=====================");
-    MacroLogger.log(args);
+    MacroLogger.log('Macros: ${Context.getLocalClass()}');
     var fields: Array<Field> = Context.getBuildFields();
     var retFields: Array<Field> = [];
     for(field in fields) {
@@ -102,7 +102,7 @@ class Macros {
     return fun(expr);
   }
 
-  private static function extractBlock(expr: Expr):Array<Expr> {
+  public static function extractBlock(expr: Expr):Array<Expr> {
     return switch(expr.expr) {
       case EBlock(exprs):
         exprs;
@@ -142,7 +142,11 @@ class Macros {
   }
 
   private static function map(expr: Expr):Expr {
-    return expr;
+    return findMeta(expr, function(expr: Expr): Expr {
+      return macro {
+        MMap.create(EitherMacro.genMap(cast($e{expr}, Array<Dynamic>)));
+      }
+    });
   }
 
   public static function list(expr: Expr):Expr {
@@ -165,6 +169,10 @@ class Macros {
 
   macro public static function getTuple(expr: Expr): Expr {
     return tuple(expr);
+  }
+
+  macro public static function getMap(expr: Expr): Expr {
+    return map(expr);
   }
 
   macro public static function getList(expr: Expr): Expr {
