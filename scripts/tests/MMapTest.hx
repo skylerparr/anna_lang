@@ -10,7 +10,7 @@ class MMapTest {
   private static var map: MMap = @map['abc' => "def", 'hij' => "mno"];
   private static var __map: MMap = @map['abc' => 1, 2 => "mno"]; // just verifying this'll compile
   public static function shouldCreateAStaticMMap(): Void {
-    Assert.areEqual(Anna.toAnnaString(map), '%{"abc" => "def", "hij" => "mno"}');
+    Assert.areEqual(map.toAnnaString(), '%{"abc" => "def", "hij" => "mno"}');
   }
 
 //  private static var map2: MMap = @list[1, @list[2, 4, 6], @list[3, 6, 9]];
