@@ -1,4 +1,7 @@
 package ;
+enum Either0 {
+  
+}
 enum Either1<A> {
   A(v:A);
 }

@@ -6,3 +6,4 @@ log
 out/
 projectFilesBackup/
 .ihx_history
+.DS_Store

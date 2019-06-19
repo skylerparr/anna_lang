@@ -1,5 +1,6 @@
 package tests;
 
+import tests.MMapTest.MapContainer;
 import haxe.ds.ObjectMap;
 import lang.EitherSupport;
 import EitherEnums.Either1;
@@ -44,7 +45,7 @@ class MMapTest {
 
   public static function shouldCreateMapWithinAConstructor(): Void {
     var mc: MapContainer = new MapContainer(@map['abc' => 1, '2' => "mno"]);
-    Assert.areEqual(mc.args, Macros.getMap(['abc' => 1, '2' => "mno"]));
+    Assert.areEqual(Anna.toAnnaString(mc.args), '%{"2" => "mno", "abc" => 1}');
   }
 
   public static function shouldCreateArrayOfMapsInAConstructor(): Void {
@@ -52,9 +53,21 @@ class MMapTest {
     Assert.areEqual(Anna.toAnnaString(amc.args), '{%{"2" => "mno", "abc" => 1}, %{"2" => "mno", "abc" => 1}}');
   }
 
+  public static function shouldCreateMapAsFunctionArgs(): Void {
+    var map: MMap = @map['abc' => 1, '2' => "mno"];
+    map = MMap.put(map, 23, @map['abc' => "def", 'hij' => "mno"]);
+    Assert.areEqual(map.toAnnaString(), '%{"2" => "mno", "abc" => 1, 23 => %{"abc" => "def", "hij" => "mno"}}');
+  }
+
   public static function shouldCreateAnEmptyMap(): Void {
-    var map: MMap = @map([String])['abc'.atom() => 123];
+    var map: MMap = @map[];
     Assert.areEqual(map.toAnnaString(), '%{}');
+  }
+
+  public static function shouldPutNewElementIntoAnEmptyMap(): Void {
+    var map: MMap = @map[];
+    map = MMap.put(map, 23, @list[1,2,3]);
+    Assert.areEqual(map.toAnnaString(), '%{23 => [1, 2, 3]}');
   }
 
   public static function shouldCreateMixedTypesOfDataStructures(): Void {
@@ -89,9 +102,14 @@ class MMapTest {
 
 class MapContainer {
   public var args: MMap;
+  public static var map: MMap;
 
   public function new(args: MMap) {
     this.args = args;
+  }
+
+  public static function setMap(map: MMap): Void {
+    MapContainer.map = map;
   }
 }
 

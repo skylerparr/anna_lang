@@ -3,7 +3,7 @@ package;
 import lang.AmbiguousFunctionException;
 import lang.CustomTypes.CustomType;
 using lang.AtomSupport;
-class Tuple {
+class Tuple implements CustomType {
 
   public static function elem(t: Tuple, index: Int): Any {
     var retVal = t.asArray()[index];
@@ -81,6 +81,19 @@ class Tuple {
   public static function array(tuple: Tuple): Array<Any> {
     return tuple.asArray();
   }
+
+  public function toAnnaString(): String {
+    return '';
+  }
+
+  public function toHaxeString(): String {
+    return '';
+  }
+
+  public function toPattern(patternArgs: Array<KeyValue<String,String>> = null): String {
+    return '';
+  }
+
 }
 @:generic
 class Tuple1<A> extends Tuple implements CustomType {
@@ -95,7 +108,7 @@ class Tuple1<A> extends Tuple implements CustomType {
     return [var1];
   }
 
-  public function toAnnaString(): String {
+  override public function toAnnaString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -104,7 +117,7 @@ class Tuple1<A> extends Tuple implements CustomType {
     return '{${stringFrags.join(', ')}}';
   }
 
-  public function toHaxeString(): String {
+  override public function toHaxeString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -113,7 +126,7 @@ class Tuple1<A> extends Tuple implements CustomType {
     return 'Tuple.create([${stringFrags.join(', ')}]);';
   }
 
-  public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
+  override public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
     if(patternArgs == null) {
       patternArgs = [];
     }
@@ -140,7 +153,7 @@ class Tuple2<A, B> extends Tuple implements CustomType {
     return [var1, var2];
   }
 
-  public function toAnnaString(): String {
+  override public function toAnnaString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -149,7 +162,7 @@ class Tuple2<A, B> extends Tuple implements CustomType {
     return '{${stringFrags.join(', ')}}';
   }
 
-  public function toHaxeString(): String {
+  override public function toHaxeString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -158,7 +171,7 @@ class Tuple2<A, B> extends Tuple implements CustomType {
     return 'Tuple.create([${stringFrags.join(', ')}]);';
   }
 
-  public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
+  override public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
     if(patternArgs == null) {
       patternArgs = [];
     }
@@ -187,7 +200,7 @@ class Tuple3<A, B, C> extends Tuple implements CustomType {
     return [var1, var2, var3];
   }
 
-  public function toAnnaString(): String {
+  override public function toAnnaString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -196,7 +209,7 @@ class Tuple3<A, B, C> extends Tuple implements CustomType {
     return '{${stringFrags.join(', ')}}';
   }
 
-  public function toHaxeString(): String {
+  override public function toHaxeString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -205,7 +218,7 @@ class Tuple3<A, B, C> extends Tuple implements CustomType {
     return 'Tuple.create([${stringFrags.join(', ')}]);';
   }
 
-  public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
+  override public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
     if(patternArgs == null) {
       patternArgs = [];
     }
@@ -236,7 +249,7 @@ class Tuple4<A, B, C, D> extends Tuple implements CustomType {
     return [var1, var2, var3, var4];
   }
 
-  public function toAnnaString(): String {
+  override public function toAnnaString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -245,7 +258,7 @@ class Tuple4<A, B, C, D> extends Tuple implements CustomType {
     return '{${stringFrags.join(', ')}}';
   }
 
-  public function toHaxeString(): String {
+  override public function toHaxeString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -254,7 +267,7 @@ class Tuple4<A, B, C, D> extends Tuple implements CustomType {
     return 'Tuple.create([${stringFrags.join(', ')}]);';
   }
 
-  public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
+  override public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
     if(patternArgs == null) {
       patternArgs = [];
     }
@@ -287,7 +300,7 @@ class Tuple5<A, B, C, D, E> extends Tuple implements CustomType {
     return [var1, var2, var3, var4, var5];
   }
 
-  public function toAnnaString(): String {
+  override public function toAnnaString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -296,7 +309,7 @@ class Tuple5<A, B, C, D, E> extends Tuple implements CustomType {
     return '{${stringFrags.join(', ')}}';
   }
 
-  public function toHaxeString(): String {
+  override public function toHaxeString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -305,7 +318,7 @@ class Tuple5<A, B, C, D, E> extends Tuple implements CustomType {
     return 'Tuple.create([${stringFrags.join(', ')}]);';
   }
 
-  public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
+  override public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
     if(patternArgs == null) {
       patternArgs = [];
     }
@@ -340,7 +353,7 @@ class Tuple6<A, B, C, D, E, F> extends Tuple implements CustomType {
     return [var1, var2, var3, var4, var5, var6];
   }
 
-  public function toAnnaString(): String {
+  override public function toAnnaString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -349,7 +362,7 @@ class Tuple6<A, B, C, D, E, F> extends Tuple implements CustomType {
     return '{${stringFrags.join(', ')}}';
   }
 
-  public function toHaxeString(): String {
+  override public function toHaxeString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -358,7 +371,7 @@ class Tuple6<A, B, C, D, E, F> extends Tuple implements CustomType {
     return 'Tuple.create([${stringFrags.join(', ')}]);';
   }
 
-  public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
+  override public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
     if(patternArgs == null) {
       patternArgs = [];
     }
@@ -395,7 +408,7 @@ class Tuple7<A, B, C, D, E, F, G> extends Tuple implements CustomType {
     return [var1, var2, var3, var4, var5, var6, var7];
   }
 
-  public function toAnnaString(): String {
+  override public function toAnnaString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -404,7 +417,7 @@ class Tuple7<A, B, C, D, E, F, G> extends Tuple implements CustomType {
     return '{${stringFrags.join(', ')}}';
   }
 
-  public function toHaxeString(): String {
+  override public function toHaxeString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -413,7 +426,7 @@ class Tuple7<A, B, C, D, E, F, G> extends Tuple implements CustomType {
     return 'Tuple.create([${stringFrags.join(', ')}]);';
   }
 
-  public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
+  override public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
     if(patternArgs == null) {
       patternArgs = [];
     }
@@ -452,7 +465,7 @@ class Tuple8<A, B, C, D, E, F, G, H> extends Tuple implements CustomType {
     return [var1, var2, var3, var4, var5, var6, var7, var8];
   }
 
-  public function toAnnaString(): String {
+  override public function toAnnaString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -461,7 +474,7 @@ class Tuple8<A, B, C, D, E, F, G, H> extends Tuple implements CustomType {
     return '{${stringFrags.join(', ')}}';
   }
 
-  public function toHaxeString(): String {
+  override public function toHaxeString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -470,7 +483,7 @@ class Tuple8<A, B, C, D, E, F, G, H> extends Tuple implements CustomType {
     return 'Tuple.create([${stringFrags.join(', ')}]);';
   }
 
-  public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
+  override public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
     if(patternArgs == null) {
       patternArgs = [];
     }
@@ -511,7 +524,7 @@ class Tuple9<A, B, C, D, E, F, G, H, I> extends Tuple implements CustomType {
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9];
   }
 
-  public function toAnnaString(): String {
+  override public function toAnnaString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -520,7 +533,7 @@ class Tuple9<A, B, C, D, E, F, G, H, I> extends Tuple implements CustomType {
     return '{${stringFrags.join(', ')}}';
   }
 
-  public function toHaxeString(): String {
+  override public function toHaxeString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -529,7 +542,7 @@ class Tuple9<A, B, C, D, E, F, G, H, I> extends Tuple implements CustomType {
     return 'Tuple.create([${stringFrags.join(', ')}]);';
   }
 
-  public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
+  override public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
     if(patternArgs == null) {
       patternArgs = [];
     }
@@ -572,7 +585,7 @@ class Tuple10<A, B, C, D, E, F, G, H, I, J> extends Tuple implements CustomType 
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10];
   }
 
-  public function toAnnaString(): String {
+  override public function toAnnaString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -581,7 +594,7 @@ class Tuple10<A, B, C, D, E, F, G, H, I, J> extends Tuple implements CustomType 
     return '{${stringFrags.join(', ')}}';
   }
 
-  public function toHaxeString(): String {
+  override public function toHaxeString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -590,7 +603,7 @@ class Tuple10<A, B, C, D, E, F, G, H, I, J> extends Tuple implements CustomType 
     return 'Tuple.create([${stringFrags.join(', ')}]);';
   }
 
-  public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
+  override public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
     if(patternArgs == null) {
       patternArgs = [];
     }
@@ -635,7 +648,7 @@ class Tuple11<A, B, C, D, E, F, G, H, I, J, K> extends Tuple implements CustomTy
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11];
   }
 
-  public function toAnnaString(): String {
+  override public function toAnnaString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -644,7 +657,7 @@ class Tuple11<A, B, C, D, E, F, G, H, I, J, K> extends Tuple implements CustomTy
     return '{${stringFrags.join(', ')}}';
   }
 
-  public function toHaxeString(): String {
+  override public function toHaxeString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -653,7 +666,7 @@ class Tuple11<A, B, C, D, E, F, G, H, I, J, K> extends Tuple implements CustomTy
     return 'Tuple.create([${stringFrags.join(', ')}]);';
   }
 
-  public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
+  override public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
     if(patternArgs == null) {
       patternArgs = [];
     }
@@ -700,7 +713,7 @@ class Tuple12<A, B, C, D, E, F, G, H, I, J, K, L> extends Tuple implements Custo
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12];
   }
 
-  public function toAnnaString(): String {
+  override public function toAnnaString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -709,7 +722,7 @@ class Tuple12<A, B, C, D, E, F, G, H, I, J, K, L> extends Tuple implements Custo
     return '{${stringFrags.join(', ')}}';
   }
 
-  public function toHaxeString(): String {
+  override public function toHaxeString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -718,7 +731,7 @@ class Tuple12<A, B, C, D, E, F, G, H, I, J, K, L> extends Tuple implements Custo
     return 'Tuple.create([${stringFrags.join(', ')}]);';
   }
 
-  public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
+  override public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
     if(patternArgs == null) {
       patternArgs = [];
     }
@@ -767,7 +780,7 @@ class Tuple13<A, B, C, D, E, F, G, H, I, J, K, L, M> extends Tuple implements Cu
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13];
   }
 
-  public function toAnnaString(): String {
+  override public function toAnnaString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -776,7 +789,7 @@ class Tuple13<A, B, C, D, E, F, G, H, I, J, K, L, M> extends Tuple implements Cu
     return '{${stringFrags.join(', ')}}';
   }
 
-  public function toHaxeString(): String {
+  override public function toHaxeString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -785,7 +798,7 @@ class Tuple13<A, B, C, D, E, F, G, H, I, J, K, L, M> extends Tuple implements Cu
     return 'Tuple.create([${stringFrags.join(', ')}]);';
   }
 
-  public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
+  override public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
     if(patternArgs == null) {
       patternArgs = [];
     }
@@ -836,7 +849,7 @@ class Tuple14<A, B, C, D, E, F, G, H, I, J, K, L, M, N> extends Tuple implements
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14];
   }
 
-  public function toAnnaString(): String {
+  override public function toAnnaString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -845,7 +858,7 @@ class Tuple14<A, B, C, D, E, F, G, H, I, J, K, L, M, N> extends Tuple implements
     return '{${stringFrags.join(', ')}}';
   }
 
-  public function toHaxeString(): String {
+  override public function toHaxeString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -854,7 +867,7 @@ class Tuple14<A, B, C, D, E, F, G, H, I, J, K, L, M, N> extends Tuple implements
     return 'Tuple.create([${stringFrags.join(', ')}]);';
   }
 
-  public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
+  override public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
     if(patternArgs == null) {
       patternArgs = [];
     }
@@ -907,7 +920,7 @@ class Tuple15<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O> extends Tuple impleme
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15];
   }
 
-  public function toAnnaString(): String {
+  override public function toAnnaString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -916,7 +929,7 @@ class Tuple15<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O> extends Tuple impleme
     return '{${stringFrags.join(', ')}}';
   }
 
-  public function toHaxeString(): String {
+  override public function toHaxeString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -925,7 +938,7 @@ class Tuple15<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O> extends Tuple impleme
     return 'Tuple.create([${stringFrags.join(', ')}]);';
   }
 
-  public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
+  override public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
     if(patternArgs == null) {
       patternArgs = [];
     }
@@ -980,7 +993,7 @@ class Tuple16<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P> extends Tuple impl
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15, var16];
   }
 
-  public function toAnnaString(): String {
+  override public function toAnnaString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -989,7 +1002,7 @@ class Tuple16<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P> extends Tuple impl
     return '{${stringFrags.join(', ')}}';
   }
 
-  public function toHaxeString(): String {
+  override public function toHaxeString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -998,7 +1011,7 @@ class Tuple16<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P> extends Tuple impl
     return 'Tuple.create([${stringFrags.join(', ')}]);';
   }
 
-  public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
+  override public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
     if(patternArgs == null) {
       patternArgs = [];
     }
@@ -1055,7 +1068,7 @@ class Tuple17<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q> extends Tuple i
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15, var16, var17];
   }
 
-  public function toAnnaString(): String {
+  override public function toAnnaString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -1064,7 +1077,7 @@ class Tuple17<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q> extends Tuple i
     return '{${stringFrags.join(', ')}}';
   }
 
-  public function toHaxeString(): String {
+  override public function toHaxeString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -1073,7 +1086,7 @@ class Tuple17<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q> extends Tuple i
     return 'Tuple.create([${stringFrags.join(', ')}]);';
   }
 
-  public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
+  override public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
     if(patternArgs == null) {
       patternArgs = [];
     }
@@ -1132,7 +1145,7 @@ class Tuple18<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R> extends Tupl
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15, var16, var17, var18];
   }
 
-  public function toAnnaString(): String {
+  override public function toAnnaString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -1141,7 +1154,7 @@ class Tuple18<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R> extends Tupl
     return '{${stringFrags.join(', ')}}';
   }
 
-  public function toHaxeString(): String {
+  override public function toHaxeString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -1150,7 +1163,7 @@ class Tuple18<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R> extends Tupl
     return 'Tuple.create([${stringFrags.join(', ')}]);';
   }
 
-  public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
+  override public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
     if(patternArgs == null) {
       patternArgs = [];
     }
@@ -1211,7 +1224,7 @@ class Tuple19<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S> extends T
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15, var16, var17, var18, var19];
   }
 
-  public function toAnnaString(): String {
+  override public function toAnnaString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -1220,7 +1233,7 @@ class Tuple19<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S> extends T
     return '{${stringFrags.join(', ')}}';
   }
 
-  public function toHaxeString(): String {
+  override public function toHaxeString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -1229,7 +1242,7 @@ class Tuple19<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S> extends T
     return 'Tuple.create([${stringFrags.join(', ')}]);';
   }
 
-  public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
+  override public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
     if(patternArgs == null) {
       patternArgs = [];
     }
@@ -1292,7 +1305,7 @@ class Tuple20<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T> extend
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15, var16, var17, var18, var19, var20];
   }
 
-  public function toAnnaString(): String {
+  override public function toAnnaString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -1301,7 +1314,7 @@ class Tuple20<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T> extend
     return '{${stringFrags.join(', ')}}';
   }
 
-  public function toHaxeString(): String {
+  override public function toHaxeString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -1310,7 +1323,7 @@ class Tuple20<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T> extend
     return 'Tuple.create([${stringFrags.join(', ')}]);';
   }
 
-  public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
+  override public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
     if(patternArgs == null) {
       patternArgs = [];
     }
@@ -1375,7 +1388,7 @@ class Tuple21<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U> ext
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15, var16, var17, var18, var19, var20, var21];
   }
 
-  public function toAnnaString(): String {
+  override public function toAnnaString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -1384,7 +1397,7 @@ class Tuple21<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U> ext
     return '{${stringFrags.join(', ')}}';
   }
 
-  public function toHaxeString(): String {
+  override public function toHaxeString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -1393,7 +1406,7 @@ class Tuple21<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U> ext
     return 'Tuple.create([${stringFrags.join(', ')}]);';
   }
 
-  public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
+  override public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
     if(patternArgs == null) {
       patternArgs = [];
     }
@@ -1460,7 +1473,7 @@ class Tuple22<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V> 
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15, var16, var17, var18, var19, var20, var21, var22];
   }
 
-  public function toAnnaString(): String {
+  override public function toAnnaString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -1469,7 +1482,7 @@ class Tuple22<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V> 
     return '{${stringFrags.join(', ')}}';
   }
 
-  public function toHaxeString(): String {
+  override public function toHaxeString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -1478,7 +1491,7 @@ class Tuple22<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V> 
     return 'Tuple.create([${stringFrags.join(', ')}]);';
   }
 
-  public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
+  override public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
     if(patternArgs == null) {
       patternArgs = [];
     }
@@ -1547,7 +1560,7 @@ class Tuple23<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, 
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15, var16, var17, var18, var19, var20, var21, var22, var23];
   }
 
-  public function toAnnaString(): String {
+  override public function toAnnaString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -1556,7 +1569,7 @@ class Tuple23<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, 
     return '{${stringFrags.join(', ')}}';
   }
 
-  public function toHaxeString(): String {
+  override public function toHaxeString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -1565,7 +1578,7 @@ class Tuple23<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, 
     return 'Tuple.create([${stringFrags.join(', ')}]);';
   }
 
-  public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
+  override public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
     if(patternArgs == null) {
       patternArgs = [];
     }
@@ -1636,7 +1649,7 @@ class Tuple24<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, 
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15, var16, var17, var18, var19, var20, var21, var22, var23, var24];
   }
 
-  public function toAnnaString(): String {
+  override public function toAnnaString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -1645,7 +1658,7 @@ class Tuple24<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, 
     return '{${stringFrags.join(', ')}}';
   }
 
-  public function toHaxeString(): String {
+  override public function toHaxeString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -1654,7 +1667,7 @@ class Tuple24<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, 
     return 'Tuple.create([${stringFrags.join(', ')}]);';
   }
 
-  public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
+  override public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
     if(patternArgs == null) {
       patternArgs = [];
     }
@@ -1727,7 +1740,7 @@ class Tuple25<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, 
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15, var16, var17, var18, var19, var20, var21, var22, var23, var24, var25];
   }
 
-  public function toAnnaString(): String {
+  override public function toAnnaString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -1736,7 +1749,7 @@ class Tuple25<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, 
     return '{${stringFrags.join(', ')}}';
   }
 
-  public function toHaxeString(): String {
+  override public function toHaxeString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -1745,7 +1758,7 @@ class Tuple25<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, 
     return 'Tuple.create([${stringFrags.join(', ')}]);';
   }
 
-  public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
+  override public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
     if(patternArgs == null) {
       patternArgs = [];
     }
@@ -1820,7 +1833,7 @@ class Tuple26<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, 
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15, var16, var17, var18, var19, var20, var21, var22, var23, var24, var25, var26];
   }
 
-  public function toAnnaString(): String {
+  override public function toAnnaString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -1829,7 +1842,7 @@ class Tuple26<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, 
     return '{${stringFrags.join(', ')}}';
   }
 
-  public function toHaxeString(): String {
+  override public function toHaxeString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
     for(v in vars) {
@@ -1838,7 +1851,7 @@ class Tuple26<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, 
     return 'Tuple.create([${stringFrags.join(', ')}]);';
   }
 
-  public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
+  override public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
     if(patternArgs == null) {
       patternArgs = [];
     }

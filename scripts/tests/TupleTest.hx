@@ -6,13 +6,12 @@ class TupleTest {
 
   private static var tuple1: Tuple = @tuple[1, 2, 3];
   public static function shouldCreateATupleVariable(): Void {
-    Assert.areEqual(tuple1, Macros.getTuple([1, 2, 3]));
+    Assert.areEqual(tuple1.toAnnaString(), '{1, 2, 3}');
   }
 
   private static var tuple2: Tuple = @tuple[1, @tuple[2, 4, 6], @tuple[3, 6, 9]];
   public static function shouldCreateATupleWithinATupleVariable(): Void {
-    var expect: Array<Dynamic> = [1, Macros.getTuple([2, 4, 6]), Macros.getTuple([3, 6, 9])];
-    Assert.areEqual(tuple2, expect);
+    Assert.areEqual(tuple2.toAnnaString(), '{1, {2, 4, 6}, {3, 6, 9}}');
   }
 
   private static var tupleArray: Array<Tuple> = {

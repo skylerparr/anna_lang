@@ -41,9 +41,14 @@ class Macros {
         }
       case FFun(ffun):
         var exprs = extractBlock(ffun.expr);
+        var retValExprs: Array<Expr> = [];
         for(expr in exprs) {
-          findMetaInBlock([expr]);
+          var e = findMetaInBlock([expr]);
+          var blk = extractBlock(e);
+          retValExprs.push(blk[0]);
         }
+        ffun.expr = {expr: EBlock(retValExprs), pos: Context.currentPos()};
+        field.kind = FFun(ffun);
         field;
       case FProp(get, set, t, e):
         field;
@@ -55,14 +60,13 @@ class Macros {
     for(expr in exprs) {
       switch(expr.expr) {
         case ECall(ecall, params):
-          var meta = findMetaInBlock(params);
-          var metaBlock: Array<Expr> = extractBlock(meta);
-          if(meta != null) {
-            var expr = { expr: ECall(ecall, metaBlock), pos: Context.currentPos() };
-            retValBlock.push(expr);
-          } else {
-            retValBlock.push(expr);
+          var valueBlocks: Array<Expr> = [];
+          for(param in params) {
+            var meta = findMetaInBlock([param]);
+            var metaBlock: Array<Expr> = extractBlock(meta);
+            valueBlocks.push(metaBlock[0]);
           }
+          retValBlock.push({expr: ECall(ecall, valueBlocks), pos: Context.currentPos()});
         case EMeta(entry, expr):
           return extractMeta(entry, expr);
         case ENew(enew, params):
@@ -96,6 +100,10 @@ class Macros {
           meta = findMetaInBlock([b]);
           blk = extractBlock(meta);
           retValBlock.push(blk[0]);
+        case EBinop(OpAssign, a, b):
+          var meta = findMetaInBlock([b]);
+          var blk = extractBlock(meta);
+          retValBlock.push({expr: EBinop(OpAssign, a, blk[0]), pos: Context.currentPos()});
         case _:
           retValBlock.push(expr);
       }
@@ -161,7 +169,6 @@ class Macros {
 
   private static function map(expr: Expr):Expr {
     return findMeta(expr, function(expr: Expr): Expr {
-      MacroLogger.logExpr(expr);
       return macro {
         MMap.create(EitherMacro.genMap(cast($e{expr}, Array<Dynamic>)));
       }

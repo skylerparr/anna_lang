@@ -102,20 +102,26 @@ class Anna {
           '${((val : Atom).toAnnaString())}';
         case TClass(String):
           '"${val}"';
-        case TClass(haxe.ds.EnumValueMap):
-          EnumMapPrinter.asAnnaString((val : EnumValueMap<Dynamic, Dynamic>));
-        case TClass(haxe.ds.ObjectMap):
-          MapPrinter.asAnnaString((val : ObjectMap<Dynamic, Dynamic>));
-        case TClass(haxe.ds.StringMap):
-          StringMapPrinter.asAnnaString((val : Map<String, Dynamic>));
+        case TClass(Tuple):
+          (val : Tuple).toAnnaString();
+        case TClass(MMap):
+          (val : MMap).toAnnaString();
         case TClass(LList):
           (val : LList).toAnnaString();
+        // These cases need to go away
         case TClass(Array):
           var retVal: Array<String> = [];
           for(v in (val : Array<Dynamic>)) {
             retVal.push(Anna.toAnnaString(v));
           }
           "{" + retVal.join(', ') + "}";
+        case TClass(haxe.ds.EnumValueMap):
+          EnumMapPrinter.asAnnaString((val : EnumValueMap<Dynamic, Dynamic>));
+        case TClass(haxe.ds.ObjectMap):
+          MapPrinter.asAnnaString((val : ObjectMap<Dynamic, Dynamic>));
+        case TClass(haxe.ds.StringMap):
+          StringMapPrinter.asAnnaString((val : Map<String, Dynamic>));
+        // They can be confusing
         case TObject:
           inspectDynamic(val);
         case TBool:
