@@ -48,14 +48,14 @@ class MMap implements CustomType {
 class AnnaMap<K, V> extends MMap implements CustomType {
 
   public var _map: Map<String, V>;
-  public var map: ObjectMap<Dynamic, V>;
+  public var map: Map<String, K>;
 
   public var keyType: String;
   public var valueType: String;
 
   public function new() {
     _map = new Map<String, V>();
-    map = new ObjectMap<Dynamic, V>();
+    map = new Map<String, K>();
 
     var keyTypeSet: Bool = false;
 
@@ -64,8 +64,9 @@ class AnnaMap<K, V> extends MMap implements CustomType {
   }
 
   public function _put(key: K, value: V): AnnaMap<K, V> {
-    _map.set(Anna.toAnnaString(key), value);
-    map.set(key, value);
+    var strKey: String = Anna.toAnnaString(key);
+    _map.set(strKey, value);
+    map.set(strKey, key);
     return this;
   }
 
@@ -74,38 +75,27 @@ class AnnaMap<K, V> extends MMap implements CustomType {
   }
 
   public function _remove(key: K): AnnaMap<K, V> {
-    _map.remove(Anna.toAnnaString(key));
-    map.remove(key);
+    var strKey: String = Anna.toAnnaString(key);
+    _map.remove(strKey);
+    map.remove(strKey);
     return this;
   }
 
   override public function toAnnaString(): String {
     var items: Array<String> = [];
-    var keys: Array<Dynamic> = [];
-    for(key in map.keys()) {
-      keys.push(key);
+    var keys: Array<String> = [];
+    for(value in map.keys()) {
+      keys.push(value);
     }
     keys.sort(function(a:Dynamic, b:Dynamic):Int {
       a = EitherSupport.getValue(a);
       b = EitherSupport.getValue(b);
-      if(Std.is(a, Atom) && Std.is(b, Atom)) {
-        if (a.value < b.value) return -1;
-        if (a.value > b.value) return 1;
-      } else if(Std.is(a, String) && Std.is(b, String)) {
-        if (a.toLowerCase() < b.toLowerCase()) return -1;
-        if (a.toLowerCase() > b.toLowerCase()) return 1;
-      } else if(Std.is(a, String) && !Std.is(b, String)) {
-        return 1;
-      } else if(!Std.is(a, String) && Std.is(b, String)) {
-        return -1;
-      } else {
-        if (a < b) return -1;
-        if (a > b) return 1;
-      }
+      if (a.toLowerCase() < b.toLowerCase()) return -1;
+      if (a.toLowerCase() > b.toLowerCase()) return 1;
       return 0;
     });
     for(key in keys) {
-      items.push('${Anna.toAnnaString(key)} => ${Anna.toAnnaString(map.get(key))}');
+      items.push('${key} => ${Anna.toAnnaString(_map.get(key))}');
     }
 
     return '%{${items.join(', ')}}';
