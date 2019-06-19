@@ -4,6 +4,7 @@ import haxe.ds.ObjectMap;
 import lang.EitherSupport;
 import EitherEnums.Either1;
 import anna_unit.Assert;
+using lang.AtomSupport;
 @:build(Macros.build())
 class MMapTest {
 
@@ -56,6 +57,28 @@ class MMapTest {
       "xyz" => @tuple[@map[1 => @list['d', 'e', 'f']], @map[2 => @list['j', 'k', 'l']]]
     ];
     Assert.areEqual(map.toAnnaString(), '%{"abc" => [{"a", "b", "c"}, {"d", "e", "f"}], "xyz" => {%{1 => ["d", "e", "f"]}, %{2 => ["j", "k", "l"]}}}');
+  }
+
+  public static function shouldGetAValueFromTheMap(): Void {
+    var map: MMap = @map['abc'.atom() => 123];
+    Assert.areEqual(MMap.get(map, 'abc'.atom()), 123);
+  }
+
+  public static function shouldPutAValueOnTheMap(): Void {
+    var map: MMap = @map['abc'.atom() => 123];
+    MMap.put(map, 'def'.atom(), 456);
+    Assert.areEqual(MMap.get(map, 'abc'.atom()), 123);
+    Assert.areEqual(MMap.get(map, 'def'.atom()), 456);
+    Assert.areEqual(map.toAnnaString(), '%{:abc => 123, :def => 456}');
+  }
+
+  public static function shouldRemoveAValueInTheMap(): Void {
+    var map: MMap = @map['abc'.atom() => 123];
+    MMap.put(map, 'def'.atom(), 456);
+    Assert.areEqual(MMap.get(map, 'abc'.atom()), 123);
+    Assert.areEqual(MMap.get(map, 'def'.atom()), 456);
+    MMap.remove(map, 'abc'.atom());
+    Assert.areEqual(map.toAnnaString(), '%{:def => 456}');
   }
 }
 

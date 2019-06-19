@@ -14,9 +14,21 @@ class MMap implements CustomType {
   public static function create(vals: EnumValueMap<Dynamic, Dynamic>): MMap {
     var map: AnnaMap<Any, Any> = new AnnaMap<Any, Any>();
     for(k in vals.keys()) {
-      map.put(k, vals.get(k));
+      map._put(k, vals.get(k));
     }
     return map;
+  }
+
+  public static function get(map: MMap, key: Any): Any {
+    return (cast map)._get(key);
+  }
+
+  public static function put(map: MMap, key: Any, value: Any): Any {
+    return (cast map)._put(key, value);
+  }
+
+  public static function remove(map: MMap, key: Any): Any {
+    return (cast map)._remove(key, key);
   }
 
   public function toAnnaString(): String {
@@ -51,17 +63,17 @@ class AnnaMap<K, V> extends MMap implements CustomType {
     valueType = '';
   }
 
-  public function put(key: K, value: V): AnnaMap<K, V> {
+  public function _put(key: K, value: V): AnnaMap<K, V> {
     _map.set(Anna.toAnnaString(key), value);
     map.set(key, value);
     return this;
   }
 
-  public function get(key: K): V {
+  public function _get(key: K): V {
     return _map.get(Anna.toAnnaString(key));
   }
 
-  public function remove(key: K): AnnaMap<K, V> {
+  public function _remove(key: K): AnnaMap<K, V> {
     _map.remove(Anna.toAnnaString(key));
     map.remove(key);
     return this;
