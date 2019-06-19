@@ -1,5 +1,6 @@
 package;
 
+import lang.EitherSupport;
 import lang.AmbiguousFunctionException;
 import lang.CustomTypes.CustomType;
 using lang.AtomSupport;
@@ -10,12 +11,14 @@ class Tuple implements CustomType {
     if(retVal == null) {
       return 'nil'.atom();
     }
-    return retVal;
+    return EitherSupport.getValue(retVal);
   }
   
   public static function create(val: Array<Any>): Tuple {
     return {
       switch(val) {
+        case []:
+          new Tuple0();
         case [var1]:
           new Tuple1(var1);
         case [var1, var2]:
@@ -82,6 +85,12 @@ class Tuple implements CustomType {
     return tuple.asArray();
   }
 
+  public static function push(tuple: Tuple, value: Any): Tuple {
+    var newArray: Array<Any> = tuple.asArray();
+    newArray.push(value);
+    return Tuple.create(newArray);
+  }
+
   public function toAnnaString(): String {
     return '';
   }
@@ -95,6 +104,30 @@ class Tuple implements CustomType {
   }
 
 }
+
+@:generic
+class Tuple0 extends Tuple implements CustomType {
+
+  public inline function new() {
+  }
+
+  override public inline function asArray(): Array<Any> {
+    return [];
+  }
+
+  override public function toAnnaString(): String {
+    return '{}';
+  }
+
+  override public function toHaxeString(): String {
+    return 'Tuple.create([]);';
+  }
+
+  override public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
+    return '{}';
+  }
+}
+
 @:generic
 class Tuple1<A> extends Tuple implements CustomType {
 

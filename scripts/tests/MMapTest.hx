@@ -1,9 +1,5 @@
 package tests;
 
-import tests.MMapTest.MapContainer;
-import haxe.ds.ObjectMap;
-import lang.EitherSupport;
-import EitherEnums.Either1;
 import anna_unit.Assert;
 using lang.AtomSupport;
 @:build(Macros.build())
@@ -64,7 +60,7 @@ class MMapTest {
     Assert.areEqual(map.toAnnaString(), '%{}');
   }
 
-  public static function shouldPutNewElementIntoAnEmptyMap(): Void {
+  public static function shouldPutNewDataStructureIntoAnEmptyMap(): Void {
     var map: MMap = @map[];
     map = MMap.put(map, 23, @list[1,2,3]);
     Assert.areEqual(map.toAnnaString(), '%{23 => [1, 2, 3]}');

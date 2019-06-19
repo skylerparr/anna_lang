@@ -120,7 +120,7 @@ class AnnaList<T> extends LList {
     return 'AnnaList';
   }
   
-  public function _add(item: T) {
+  public function _add(item: T): AnnaList<T> {
     var x = ListNode.create(item, null);
     if(h == null) {
       h = x;
@@ -130,6 +130,7 @@ class AnnaList<T> extends LList {
     q = x;
     length++;
     tl = null;
+    return this;
   }
 
   public function _remove(item: T): Bool {

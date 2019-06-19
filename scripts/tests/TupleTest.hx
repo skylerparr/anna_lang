@@ -47,6 +47,23 @@ class TupleTest {
     Assert.areEqual(tc.args, [[1,2,3], [4,5,6]]);
   }
 
+  public static function shouldCreateTupleAsFunctionArgs(): Void {
+    var tuple: Tuple = @tuple['abc', 1, '2', "mno"];
+    tuple = Tuple.push(tuple, @tuple['abc', "def", 'hij', "mno"]);
+    Assert.areEqual(tuple.toAnnaString(), '{"abc", 1, "2", "mno", {"abc", "def", "hij", "mno"}}');
+  }
+
+  public static function shouldCreateAnEmptyTuple(): Void {
+    var tuple: Tuple = @tuple[];
+    Assert.areEqual(tuple.toAnnaString(), '{}');
+  }
+
+  public static function shouldPutNewDataStructureIntoAnEmptyTuple(): Void {
+    var tuple: Tuple = @tuple[];
+    tuple = Tuple.push(tuple, @list[1,2,3]);
+    Assert.areEqual(tuple.toAnnaString(), '{[1, 2, 3]}');
+  }
+
 }
 
 class TupleContainer {

@@ -165,6 +165,24 @@ class AnnaListTest {
     var tc: ArrayListContainer = new ArrayListContainer([@list[1,2,3], @list[4,5,6]]);
     Assert.areEqual(tc.args, [Macros.getList([1,2,3]), Macros.getList([4,5,6])]);
   }
+
+  public static function shouldCreateListAsFunctionArgs(): Void {
+    var list: LList = @list['abc', 1, '2', "mno"];
+    list = LList.push(list, @list['abc', "def", 'hij', "mno"]);
+    Assert.areEqual(list.toAnnaString(), '[["abc", "def", "hij", "mno"], "abc", 1, "2", "mno"]');
+  }
+
+  public static function shouldCreateAnEmptyList(): Void {
+    var list: LList = @list[];
+    Assert.areEqual(list.toAnnaString(), '[]');
+  }
+
+  public static function shouldPutNewDataStructureIntoAnEmptyList(): Void {
+    var list: LList = @list[];
+    list = LList.add(list, @list[1,2,3]);
+    Assert.areEqual(list.toAnnaString(), '[[1, 2, 3]]');
+  }
+
 }
 
 
