@@ -52,6 +52,11 @@ class MMapTest {
     Assert.areEqual(Anna.toAnnaString(amc.args), '{%{"2" => "mno", "abc" => 1}, %{"2" => "mno", "abc" => 1}}');
   }
 
+  public static function shouldCreateAnEmptyMap(): Void {
+    var map: MMap = @map[];
+    Assert.areEqual(map.toAnnaString(), '%{}');
+  }
+
   public static function shouldCreateMixedTypesOfDataStructures(): Void {
     var map: MMap = @map["abc" => @list[@tuple["a", "b", "c"], @tuple["d", "e", "f"]],
       "xyz" => @tuple[@map[1 => @list['d', 'e', 'f']], @map[2 => @list['j', 'k', 'l']]]
