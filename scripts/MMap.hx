@@ -82,6 +82,10 @@ class AnnaMap<K, V> extends MMap implements CustomType {
       } else if(Std.is(a, String) && Std.is(b, String)) {
         if (a.toLowerCase() < b.toLowerCase()) return -1;
         if (a.toLowerCase() > b.toLowerCase()) return 1;
+      } else if(Std.is(a, String) && !Std.is(b, String)) {
+        return 1;
+      } else if(!Std.is(a, String) && Std.is(b, String)) {
+        return -1;
       } else {
         if (a < b) return -1;
         if (a > b) return 1;

@@ -88,6 +88,14 @@ class Macros {
             retVars.push(v);
           }
           retValBlock.push(expr);
+        case EBinop(OpArrow, a, b):
+          var meta = findMetaInBlock([a]);
+          var blk = extractBlock(meta);
+          retValBlock.push(blk[0]);
+
+          meta = findMetaInBlock([b]);
+          blk = extractBlock(meta);
+          retValBlock.push(blk[0]);
         case _:
           retValBlock.push(expr);
       }
@@ -117,10 +125,12 @@ class Macros {
         case EArrayDecl(values):
           var arrayValues: Array<Expr> = [];
           for(value in values) {
-            var meta = findMetaInBlock([value]);
-            var metaBlock = extractBlock(meta);
-            if(metaBlock[0] != null) {
-              arrayValues.push(metaBlock[0]);
+            switch(value.expr) {
+              case EBinop(OpArrow, a, b):
+                collectMetaExpr(a, arrayValues);
+                collectMetaExpr(b, arrayValues);
+              case _:
+                collectMetaExpr(value, arrayValues);
             }
           }
           expr = {expr: EArrayDecl(arrayValues), pos: Context.currentPos()};
@@ -130,6 +140,14 @@ class Macros {
         case _:
           throw("is this possible");
       }
+    }
+  }
+
+  private static inline function collectMetaExpr(value: Expr, arrayValues: Array<Expr>): Void {
+    var meta = findMetaInBlock([value]);
+    var metaBlock = extractBlock(meta);
+    if(metaBlock[0] != null) {
+      arrayValues.push(metaBlock[0]);
     }
   }
 
@@ -143,6 +161,7 @@ class Macros {
 
   private static function map(expr: Expr):Expr {
     return findMeta(expr, function(expr: Expr): Expr {
+      MacroLogger.logExpr(expr);
       return macro {
         MMap.create(EitherMacro.genMap(cast($e{expr}, Array<Dynamic>)));
       }
