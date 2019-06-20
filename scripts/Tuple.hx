@@ -88,11 +88,39 @@ class Tuple implements CustomType {
   public static function push(tuple: Tuple, value: Any): Tuple {
     var newArray: Array<Any> = tuple.asArray();
     newArray.push(value);
-    return Tuple.create(newArray);
+    return create(newArray);
   }
 
+  public static function addElemAt(tuple: Tuple, value: Any, index: Int): Tuple {
+    var newArray: Array<Any> = tuple.asArray();
+    newArray.insert(index, value);
+    return create(newArray);
+  }
+
+  public static function removeElemAt(tuple: Tuple, index: Int): Tuple {
+    var newArray: Array<Any> = tuple.asArray();
+    var counter = 0;
+    for(a in newArray) {
+      if(counter++ == index) {
+        newArray.remove(a);
+        break;
+      }
+    }
+    return create(newArray);
+  }
+
+  public var __annaString: String;
+
   public function toAnnaString(): String {
-    return '';
+    if(__annaString == null) {
+      var stringFrags: Array<String> = [];
+      var vars: Array<Any> = asArray();
+      for(v in vars) {
+        stringFrags.push(Anna.toAnnaString(v));
+      }
+      __annaString = '{${stringFrags.join(', ')}}';
+    }
+    return __annaString;
   }
 
   public function toHaxeString(): String {
@@ -141,15 +169,6 @@ class Tuple1<A> extends Tuple implements CustomType {
     return [var1];
   }
 
-  override public function toAnnaString(): String {
-    var stringFrags: Array<String> = [];
-    var vars: Array<Any> = asArray();
-    for(v in vars) {
-      stringFrags.push(Anna.toAnnaString(v));
-    }
-    return '{${stringFrags.join(', ')}}';
-  }
-
   override public function toHaxeString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
@@ -184,15 +203,6 @@ class Tuple2<A, B> extends Tuple implements CustomType {
 
   override public inline function asArray(): Array<Any> {
     return [var1, var2];
-  }
-
-  override public function toAnnaString(): String {
-    var stringFrags: Array<String> = [];
-    var vars: Array<Any> = asArray();
-    for(v in vars) {
-      stringFrags.push(Anna.toAnnaString(v));
-    }
-    return '{${stringFrags.join(', ')}}';
   }
 
   override public function toHaxeString(): String {
@@ -233,15 +243,6 @@ class Tuple3<A, B, C> extends Tuple implements CustomType {
     return [var1, var2, var3];
   }
 
-  override public function toAnnaString(): String {
-    var stringFrags: Array<String> = [];
-    var vars: Array<Any> = asArray();
-    for(v in vars) {
-      stringFrags.push(Anna.toAnnaString(v));
-    }
-    return '{${stringFrags.join(', ')}}';
-  }
-
   override public function toHaxeString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
@@ -280,15 +281,6 @@ class Tuple4<A, B, C, D> extends Tuple implements CustomType {
 
   override public inline function asArray(): Array<Any> {
     return [var1, var2, var3, var4];
-  }
-
-  override public function toAnnaString(): String {
-    var stringFrags: Array<String> = [];
-    var vars: Array<Any> = asArray();
-    for(v in vars) {
-      stringFrags.push(Anna.toAnnaString(v));
-    }
-    return '{${stringFrags.join(', ')}}';
   }
 
   override public function toHaxeString(): String {
@@ -333,15 +325,6 @@ class Tuple5<A, B, C, D, E> extends Tuple implements CustomType {
     return [var1, var2, var3, var4, var5];
   }
 
-  override public function toAnnaString(): String {
-    var stringFrags: Array<String> = [];
-    var vars: Array<Any> = asArray();
-    for(v in vars) {
-      stringFrags.push(Anna.toAnnaString(v));
-    }
-    return '{${stringFrags.join(', ')}}';
-  }
-
   override public function toHaxeString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
@@ -384,15 +367,6 @@ class Tuple6<A, B, C, D, E, F> extends Tuple implements CustomType {
 
   override public inline function asArray(): Array<Any> {
     return [var1, var2, var3, var4, var5, var6];
-  }
-
-  override public function toAnnaString(): String {
-    var stringFrags: Array<String> = [];
-    var vars: Array<Any> = asArray();
-    for(v in vars) {
-      stringFrags.push(Anna.toAnnaString(v));
-    }
-    return '{${stringFrags.join(', ')}}';
   }
 
   override public function toHaxeString(): String {
@@ -441,15 +415,6 @@ class Tuple7<A, B, C, D, E, F, G> extends Tuple implements CustomType {
     return [var1, var2, var3, var4, var5, var6, var7];
   }
 
-  override public function toAnnaString(): String {
-    var stringFrags: Array<String> = [];
-    var vars: Array<Any> = asArray();
-    for(v in vars) {
-      stringFrags.push(Anna.toAnnaString(v));
-    }
-    return '{${stringFrags.join(', ')}}';
-  }
-
   override public function toHaxeString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
@@ -496,15 +461,6 @@ class Tuple8<A, B, C, D, E, F, G, H> extends Tuple implements CustomType {
 
   override public inline function asArray(): Array<Any> {
     return [var1, var2, var3, var4, var5, var6, var7, var8];
-  }
-
-  override public function toAnnaString(): String {
-    var stringFrags: Array<String> = [];
-    var vars: Array<Any> = asArray();
-    for(v in vars) {
-      stringFrags.push(Anna.toAnnaString(v));
-    }
-    return '{${stringFrags.join(', ')}}';
   }
 
   override public function toHaxeString(): String {
@@ -557,15 +513,6 @@ class Tuple9<A, B, C, D, E, F, G, H, I> extends Tuple implements CustomType {
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9];
   }
 
-  override public function toAnnaString(): String {
-    var stringFrags: Array<String> = [];
-    var vars: Array<Any> = asArray();
-    for(v in vars) {
-      stringFrags.push(Anna.toAnnaString(v));
-    }
-    return '{${stringFrags.join(', ')}}';
-  }
-
   override public function toHaxeString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
@@ -616,15 +563,6 @@ class Tuple10<A, B, C, D, E, F, G, H, I, J> extends Tuple implements CustomType 
 
   override public inline function asArray(): Array<Any> {
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10];
-  }
-
-  override public function toAnnaString(): String {
-    var stringFrags: Array<String> = [];
-    var vars: Array<Any> = asArray();
-    for(v in vars) {
-      stringFrags.push(Anna.toAnnaString(v));
-    }
-    return '{${stringFrags.join(', ')}}';
   }
 
   override public function toHaxeString(): String {
@@ -681,15 +619,6 @@ class Tuple11<A, B, C, D, E, F, G, H, I, J, K> extends Tuple implements CustomTy
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11];
   }
 
-  override public function toAnnaString(): String {
-    var stringFrags: Array<String> = [];
-    var vars: Array<Any> = asArray();
-    for(v in vars) {
-      stringFrags.push(Anna.toAnnaString(v));
-    }
-    return '{${stringFrags.join(', ')}}';
-  }
-
   override public function toHaxeString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
@@ -744,15 +673,6 @@ class Tuple12<A, B, C, D, E, F, G, H, I, J, K, L> extends Tuple implements Custo
 
   override public inline function asArray(): Array<Any> {
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12];
-  }
-
-  override public function toAnnaString(): String {
-    var stringFrags: Array<String> = [];
-    var vars: Array<Any> = asArray();
-    for(v in vars) {
-      stringFrags.push(Anna.toAnnaString(v));
-    }
-    return '{${stringFrags.join(', ')}}';
   }
 
   override public function toHaxeString(): String {
@@ -813,15 +733,6 @@ class Tuple13<A, B, C, D, E, F, G, H, I, J, K, L, M> extends Tuple implements Cu
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13];
   }
 
-  override public function toAnnaString(): String {
-    var stringFrags: Array<String> = [];
-    var vars: Array<Any> = asArray();
-    for(v in vars) {
-      stringFrags.push(Anna.toAnnaString(v));
-    }
-    return '{${stringFrags.join(', ')}}';
-  }
-
   override public function toHaxeString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
@@ -880,15 +791,6 @@ class Tuple14<A, B, C, D, E, F, G, H, I, J, K, L, M, N> extends Tuple implements
 
   override public inline function asArray(): Array<Any> {
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14];
-  }
-
-  override public function toAnnaString(): String {
-    var stringFrags: Array<String> = [];
-    var vars: Array<Any> = asArray();
-    for(v in vars) {
-      stringFrags.push(Anna.toAnnaString(v));
-    }
-    return '{${stringFrags.join(', ')}}';
   }
 
   override public function toHaxeString(): String {
@@ -953,15 +855,6 @@ class Tuple15<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O> extends Tuple impleme
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15];
   }
 
-  override public function toAnnaString(): String {
-    var stringFrags: Array<String> = [];
-    var vars: Array<Any> = asArray();
-    for(v in vars) {
-      stringFrags.push(Anna.toAnnaString(v));
-    }
-    return '{${stringFrags.join(', ')}}';
-  }
-
   override public function toHaxeString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
@@ -1024,15 +917,6 @@ class Tuple16<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P> extends Tuple impl
 
   override public inline function asArray(): Array<Any> {
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15, var16];
-  }
-
-  override public function toAnnaString(): String {
-    var stringFrags: Array<String> = [];
-    var vars: Array<Any> = asArray();
-    for(v in vars) {
-      stringFrags.push(Anna.toAnnaString(v));
-    }
-    return '{${stringFrags.join(', ')}}';
   }
 
   override public function toHaxeString(): String {
@@ -1101,15 +985,6 @@ class Tuple17<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q> extends Tuple i
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15, var16, var17];
   }
 
-  override public function toAnnaString(): String {
-    var stringFrags: Array<String> = [];
-    var vars: Array<Any> = asArray();
-    for(v in vars) {
-      stringFrags.push(Anna.toAnnaString(v));
-    }
-    return '{${stringFrags.join(', ')}}';
-  }
-
   override public function toHaxeString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
@@ -1176,15 +1051,6 @@ class Tuple18<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R> extends Tupl
 
   override public inline function asArray(): Array<Any> {
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15, var16, var17, var18];
-  }
-
-  override public function toAnnaString(): String {
-    var stringFrags: Array<String> = [];
-    var vars: Array<Any> = asArray();
-    for(v in vars) {
-      stringFrags.push(Anna.toAnnaString(v));
-    }
-    return '{${stringFrags.join(', ')}}';
   }
 
   override public function toHaxeString(): String {
@@ -1257,15 +1123,6 @@ class Tuple19<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S> extends T
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15, var16, var17, var18, var19];
   }
 
-  override public function toAnnaString(): String {
-    var stringFrags: Array<String> = [];
-    var vars: Array<Any> = asArray();
-    for(v in vars) {
-      stringFrags.push(Anna.toAnnaString(v));
-    }
-    return '{${stringFrags.join(', ')}}';
-  }
-
   override public function toHaxeString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
@@ -1336,15 +1193,6 @@ class Tuple20<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T> extend
 
   override public inline function asArray(): Array<Any> {
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15, var16, var17, var18, var19, var20];
-  }
-
-  override public function toAnnaString(): String {
-    var stringFrags: Array<String> = [];
-    var vars: Array<Any> = asArray();
-    for(v in vars) {
-      stringFrags.push(Anna.toAnnaString(v));
-    }
-    return '{${stringFrags.join(', ')}}';
   }
 
   override public function toHaxeString(): String {
@@ -1421,15 +1269,6 @@ class Tuple21<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U> ext
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15, var16, var17, var18, var19, var20, var21];
   }
 
-  override public function toAnnaString(): String {
-    var stringFrags: Array<String> = [];
-    var vars: Array<Any> = asArray();
-    for(v in vars) {
-      stringFrags.push(Anna.toAnnaString(v));
-    }
-    return '{${stringFrags.join(', ')}}';
-  }
-
   override public function toHaxeString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
@@ -1504,15 +1343,6 @@ class Tuple22<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V> 
 
   override public inline function asArray(): Array<Any> {
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15, var16, var17, var18, var19, var20, var21, var22];
-  }
-
-  override public function toAnnaString(): String {
-    var stringFrags: Array<String> = [];
-    var vars: Array<Any> = asArray();
-    for(v in vars) {
-      stringFrags.push(Anna.toAnnaString(v));
-    }
-    return '{${stringFrags.join(', ')}}';
   }
 
   override public function toHaxeString(): String {
@@ -1593,15 +1423,6 @@ class Tuple23<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, 
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15, var16, var17, var18, var19, var20, var21, var22, var23];
   }
 
-  override public function toAnnaString(): String {
-    var stringFrags: Array<String> = [];
-    var vars: Array<Any> = asArray();
-    for(v in vars) {
-      stringFrags.push(Anna.toAnnaString(v));
-    }
-    return '{${stringFrags.join(', ')}}';
-  }
-
   override public function toHaxeString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
@@ -1680,15 +1501,6 @@ class Tuple24<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, 
 
   override public inline function asArray(): Array<Any> {
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15, var16, var17, var18, var19, var20, var21, var22, var23, var24];
-  }
-
-  override public function toAnnaString(): String {
-    var stringFrags: Array<String> = [];
-    var vars: Array<Any> = asArray();
-    for(v in vars) {
-      stringFrags.push(Anna.toAnnaString(v));
-    }
-    return '{${stringFrags.join(', ')}}';
   }
 
   override public function toHaxeString(): String {
@@ -1773,15 +1585,6 @@ class Tuple25<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, 
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15, var16, var17, var18, var19, var20, var21, var22, var23, var24, var25];
   }
 
-  override public function toAnnaString(): String {
-    var stringFrags: Array<String> = [];
-    var vars: Array<Any> = asArray();
-    for(v in vars) {
-      stringFrags.push(Anna.toAnnaString(v));
-    }
-    return '{${stringFrags.join(', ')}}';
-  }
-
   override public function toHaxeString(): String {
     var stringFrags: Array<String> = [];
     var vars: Array<Any> = asArray();
@@ -1864,15 +1667,6 @@ class Tuple26<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, 
 
   override public inline function asArray(): Array<Any> {
     return [var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15, var16, var17, var18, var19, var20, var21, var22, var23, var24, var25, var26];
-  }
-
-  override public function toAnnaString(): String {
-    var stringFrags: Array<String> = [];
-    var vars: Array<Any> = asArray();
-    for(v in vars) {
-      stringFrags.push(Anna.toAnnaString(v));
-    }
-    return '{${stringFrags.join(', ')}}';
   }
 
   override public function toHaxeString(): String {

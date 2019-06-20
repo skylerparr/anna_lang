@@ -64,6 +64,30 @@ class TupleTest {
     Assert.areEqual(tuple.toAnnaString(), '{[1, 2, 3]}');
   }
 
+  public static function shouldAddElementAtIndex(): Void {
+    var tuple: Tuple = @tuple['ok', 1, 3];
+    tuple = Tuple.addElemAt(tuple, '2', 2);
+    Assert.areEqual(tuple.toAnnaString(), '{"ok", 1, "2", 3}');
+  }
+
+  public static function shouldAddElementAtTheEndIfExceedsIndex(): Void {
+    var tuple: Tuple = @tuple['ok', 1, 3];
+    tuple = Tuple.addElemAt(tuple, '2', 20);
+    Assert.areEqual(tuple.toAnnaString(), '{"ok", 1, 3, "2"}');
+  }
+
+  public static function shouldRemoveElementAtIndex(): Void {
+    var tuple: Tuple = @tuple['ok', 1, 3];
+    tuple = Tuple.removeElemAt(tuple, 2);
+    Assert.areEqual(tuple.toAnnaString(), '{"ok", 1}');
+  }
+
+  public static function shouldNotRemoveAnyElementIfBeyondIndex(): Void {
+    var tuple: Tuple = @tuple['ok', 1];
+    tuple = Tuple.removeElemAt(tuple, 2);
+    Assert.areEqual(tuple.toAnnaString(), '{"ok", 1}');
+  }
+
 }
 
 class TupleContainer {
