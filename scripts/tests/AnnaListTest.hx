@@ -1,8 +1,5 @@
 package tests;
 
-import lang.CustomTypes;
-import lang.CustomTypes;
-import lang.ModuleSpec;
 import anna_unit.Assert;
 using lang.AtomSupport;
 @:build(Macros.build())

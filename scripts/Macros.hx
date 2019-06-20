@@ -131,6 +131,7 @@ class Macros {
     return {
       switch(expr.expr) {
         case EArrayDecl(values):
+          MacroLogger.log(expr, 'expr');
           var arrayValues: Array<Expr> = [];
           for(value in values) {
             switch(value.expr) {
@@ -145,10 +146,11 @@ class Macros {
           expr = callback(expr);
           var blk = extractBlock(expr)[0];
           blk;
-        case EConst(CString(e)):
-          macro {
-            lang.AtomSupport.atom($expr);
-          };
+//        case EConst(CString(e)):
+//          MacroLogger.log(e, "const string");
+//          macro {
+//            lang.AtomSupport.atom($expr);
+//          };
         case _:
           throw("AnnaLang: Unsupported expression for now.");
       }

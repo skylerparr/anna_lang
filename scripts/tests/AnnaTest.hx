@@ -1,7 +1,8 @@
 package tests;
 
+import TypePrinter.CustomTypePrinter;
+import lang.CustomTypes.CustomType;
 import haxe.Template;
-import lang.ModuleSpec;
 import haxe.ds.ObjectMap;
 using lang.AtomSupport;
 
@@ -83,8 +84,8 @@ class AnnaTest {
   }
 
   public static function shouldPrintCustomTypes(): Void {
-    var moduleSpec: ModuleSpec = new ModuleSpec('taser'.atom(), [], 'nil'.atom(), 'nil'.atom());
-    Assert.stringsAreEqual(Anna.inspect(moduleSpec), '%Lang.ModuleSpec{:module_name => :taser, :functions => #A{}, :class_name => nil, :package_name => nil}');
+    var sct: SampleCustomType = new SampleCustomType('name'.atom(), 'type'.atom());
+    Assert.stringsAreEqual(Anna.toAnnaString(sct), '%Tests.SampleCustomType{:name => :name, :type => :type}');
   }
 
   public static function shouldPrintDynamicTypeToMap(): Void {
@@ -101,5 +102,29 @@ class AnnaTest {
     var val: Dynamic = new ObjectMap();
     Assert.areEqual(Anna.or(val, []), new ObjectMap());
     Assert.areEqual(Anna.or('nil'.atom(), []), []);
+  }
+}
+
+class SampleCustomType implements CustomType {
+  public var name(default, never): Atom;
+  public var type(default, never): Atom;
+
+  public static var nil: SampleCustomType = new SampleCustomType('nil'.atom(), 'nil'.atom());
+
+  public inline function new(name: Atom, type: Atom) {
+    Reflect.setField(this, 'name', name);
+    Reflect.setField(this, 'type', type);
+  }
+
+  public function toAnnaString(): String {
+    return CustomTypePrinter.asString(this);
+  }
+
+  public function toHaxeString(): String {
+    return '';
+  }
+
+  public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
+    return '';
   }
 }
