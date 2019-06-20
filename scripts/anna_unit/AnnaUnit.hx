@@ -55,7 +55,7 @@ class AnnaUnit {
           failureCounter++;
           cpp.Lib.println('');
           cpp.Lib.println('failure testing ${clazz}#${field}');
-          cpp.Lib.println('${Type.getClassName(Type.getClass(e))} message: ${e.message}');
+          cpp.Lib.println('${Type.getClassName(Type.getClass(e))} message: ${e}');
           continue;
         }
         cpp.Lib.print('.');

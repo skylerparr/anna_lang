@@ -145,8 +145,12 @@ class Macros {
           expr = callback(expr);
           var blk = extractBlock(expr)[0];
           blk;
+        case EConst(CString(e)):
+          macro {
+            lang.AtomSupport.atom($expr);
+          };
         case _:
-          throw("is this possible");
+          throw("AnnaLang: Unsupported expression for now.");
       }
     }
   }
@@ -183,6 +187,14 @@ class Macros {
     });
   }
 
+  public static function atom(expr: Expr):Expr {
+    return findMeta(expr, function(expr: Expr): Expr {
+      return macro {
+        Atom.create($e{expr});
+      }
+    });
+  }
+
   #end
 
   macro public static function ei(expr: Expr): Expr {
@@ -203,5 +215,9 @@ class Macros {
 
   macro public static function getList(expr: Expr): Expr {
     return list(expr);
+  }
+
+  macro public static function getAtom(expr: Expr): Expr {
+    return atom(expr);
   }
 }

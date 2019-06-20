@@ -102,6 +102,10 @@ class Assert {
     }
   }
 
+  public static function success(): Void {
+
+  }
+
   public static function isNull(value: Dynamic): Void {
     if(value != null) {
       var errString = '';
