@@ -41,7 +41,7 @@ class AnnaTest {
   }
 
   public static function shouldPrintEmptyArray(): Void {
-    Assert.stringsAreEqual(Anna.inspect([]), '{}');
+    Assert.stringsAreEqual(Anna.inspect([]), '#A{}');
   }
 
   public static function shouldPrintDynamic(): Void {
@@ -50,11 +50,11 @@ class AnnaTest {
 
   public static function shouldPrintArrayWithValues(): Void {
     var values: Array<Dynamic> = [348, 349.54, 'foo', 'bar'.atom(), 'Cat'.atom()];
-    Assert.stringsAreEqual(Anna.inspect(values), '{348, 349.54, "foo", :bar, Cat}');
+    Assert.stringsAreEqual(Anna.inspect(values), '#A{348, 349.54, "foo", :bar, Cat}');
   }
 
   public static function shouldPrintEmptyMap(): Void {
-    Assert.stringsAreEqual(Anna.inspect(new ObjectMap()), '%{}');
+    Assert.stringsAreEqual(Anna.inspect(new ObjectMap()), '#M%{}');
   }
 
   public static function shouldPrintMapWithMixedTypes(): Void {
@@ -63,7 +63,7 @@ class AnnaTest {
     map.set('foo'.atom(), "bar");
     map.set('bar'.atom(), 234);
     map.set('cat'.atom(), values);
-    Assert.stringsAreEqual(Anna.inspect(map), '%{:bar => 234, :cat => {348, 349.54, "foo", :bar, Cat}, :foo => "bar"}');
+    Assert.stringsAreEqual(Anna.inspect(map), '#M%{:bar => 234, :cat => #A{348, 349.54, "foo", :bar, Cat}, :foo => "bar"}');
   }
 
   public static function shouldPrintMapWithSameTypes(): Void {
@@ -71,7 +71,7 @@ class AnnaTest {
     map.set('foo'.atom(), "foo");
     map.set('bar'.atom(), "bar");
     map.set('cat'.atom(), "cat");
-    Assert.stringsAreEqual(Anna.inspect(map), '%{:bar => "bar", :cat => "cat", :foo => "foo"}');
+    Assert.stringsAreEqual(Anna.inspect(map), '#M%{:bar => "bar", :cat => "cat", :foo => "foo"}');
   }
 
   public static function shouldPrintMapAsHaxeMap(): Void {
@@ -84,7 +84,7 @@ class AnnaTest {
 
   public static function shouldPrintCustomTypes(): Void {
     var moduleSpec: ModuleSpec = new ModuleSpec('taser'.atom(), [], 'nil'.atom(), 'nil'.atom());
-    Assert.stringsAreEqual(Anna.inspect(moduleSpec), '%Lang.ModuleSpec{:module_name => :taser, :functions => {}, :class_name => nil, :package_name => nil}');
+    Assert.stringsAreEqual(Anna.inspect(moduleSpec), '%Lang.ModuleSpec{:module_name => :taser, :functions => #A{}, :class_name => nil, :package_name => nil}');
   }
 
   public static function shouldPrintDynamicTypeToMap(): Void {

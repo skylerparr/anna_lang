@@ -7,7 +7,7 @@ using lang.AtomSupport;
 class Tuple implements CustomType {
 
   public static function elem(t: Tuple, index: Int): Any {
-    var retVal = t.asArray()[index];
+    var retVal = Reflect.field(t, 'var${index + 1}');
     if(retVal == null) {
       return 'nil'.atom();
     }

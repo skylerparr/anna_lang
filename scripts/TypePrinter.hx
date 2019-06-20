@@ -27,7 +27,7 @@ class StringMapPrinter {
       var valueString = Anna.inspect(value);
       kv.push('${keyString} => ${valueString}');
     }
-    return '%{${kv.join(', ')}}';
+    return '#SM%{${kv.join(', ')}}';
   }
 
   public static function asHaxeString(map: Map<String, Dynamic>): String {
@@ -102,7 +102,7 @@ class EnumMapPrinter {
       var valueString = Anna.inspect(value);
       kv.push('${keyString} => ${valueString}');
     }
-    return '%{${kv.join(', ')}}';
+    return '#EMP%{${kv.join(', ')}}';
   }
 }
 
@@ -132,7 +132,7 @@ class MapPrinter {
       var valueString = Anna.inspect(value);
       kv.push('${keyString} => ${valueString}');
     }
-    return '%{${kv.join(', ')}}';
+    return '#M%{${kv.join(', ')}}';
   }
 
   public static function asHaxeString(map: ObjectMap<Dynamic, Dynamic>): String {

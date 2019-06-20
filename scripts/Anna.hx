@@ -96,10 +96,12 @@ class Anna {
   public static inline function toAnnaString(val: Any): String {
     return {
       switch(Type.typeof(val)) {
-        case TInt | TFloat:
-          val;
+        case TEnum(_):
+          toAnnaString(EitherSupport.getValue(val));
         case TClass(Atom):
           '${((val : Atom).toAnnaString())}';
+        case TInt | TFloat:
+          val;
         case TClass(String):
           '"${val}"';
         case TClass(Tuple):
@@ -108,35 +110,36 @@ class Anna {
           (val : MMap).toAnnaString();
         case TClass(LList):
           (val : LList).toAnnaString();
-        // These cases need to go away
-        case TClass(Array):
-          var retVal: Array<String> = [];
-          for(v in (val : Array<Dynamic>)) {
-            retVal.push(Anna.toAnnaString(v));
-          }
-          "{" + retVal.join(', ') + "}";
-        case TClass(haxe.ds.EnumValueMap):
-          EnumMapPrinter.asAnnaString((val : EnumValueMap<Dynamic, Dynamic>));
-        case TClass(haxe.ds.ObjectMap):
-          MapPrinter.asAnnaString((val : ObjectMap<Dynamic, Dynamic>));
-        case TClass(haxe.ds.StringMap):
-          StringMapPrinter.asAnnaString((val : Map<String, Dynamic>));
-        // They can be confusing
-        case TObject:
-          inspectDynamic(val);
         case TBool:
           '${(val : Bool)}';
         case TNull:
           'nil';
-        case TEnum(_):
-          toAnnaString(EitherSupport.getValue(val));
-        case TFunction | TUnknown:
-          '${val}';
-        case _:
+        // These cases need to go away
+        // They can be confusing
+        case type:
           if(Std.is(val, CustomType)) {
             (val : CustomType).toAnnaString();
           } else {
-            inspectObject(val);
+            switch(type) {
+              case TFunction | TUnknown:
+                '${val}';
+              case TObject:
+                inspectDynamic(val);
+              case TClass(Array):
+                var retVal: Array<String> = [];
+                for(v in (val : Array<Dynamic>)) {
+                  retVal.push(Anna.toAnnaString(v));
+                }
+                "#A{" + retVal.join(', ') + "}";
+              case TClass(haxe.ds.EnumValueMap):
+                EnumMapPrinter.asAnnaString((val : EnumValueMap<Dynamic, Dynamic>));
+              case TClass(haxe.ds.ObjectMap):
+                MapPrinter.asAnnaString((val : ObjectMap<Dynamic, Dynamic>));
+              case TClass(haxe.ds.StringMap):
+                StringMapPrinter.asAnnaString((val : Map<String, Dynamic>));
+              case _:
+                inspectObject(val);
+            }
           }
       }
     }

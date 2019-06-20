@@ -25,7 +25,7 @@ class MMapTest {
     mapArray;
   }
   public static function shouldCreateMapWithStaticInitializer(): Void {
-    Assert.areEqual(Anna.toAnnaString(mapArray), '{%{"abc" => 1, 2 => "mno"}, %{"2" => "mno", "abc" => 1}}');
+    Assert.areEqual(Anna.toAnnaString(mapArray), '#A{%{"abc" => 1, 2 => "mno"}, %{"2" => "mno", "abc" => 1}}');
   }
 
   public static function shouldCreateMapInFunction(): Void {
@@ -46,7 +46,7 @@ class MMapTest {
 
   public static function shouldCreateArrayOfMapsInAConstructor(): Void {
     var amc: ArrayMapContainer = new ArrayMapContainer([@map['abc' => 1, '2' => "mno"], @map['abc' => 1, '2' => "mno"]]);
-    Assert.areEqual(Anna.toAnnaString(amc.args), '{%{"2" => "mno", "abc" => 1}, %{"2" => "mno", "abc" => 1}}');
+    Assert.areEqual(Anna.toAnnaString(amc.args), '#A{%{"2" => "mno", "abc" => 1}, %{"2" => "mno", "abc" => 1}}');
   }
 
   public static function shouldCreateMapAsFunctionArgs(): Void {

@@ -29,7 +29,7 @@ class LList implements CustomType {
     return (cast list).getTail();
   }
 
-  public static function remove(list: LList, item: Any): Bool {
+  public static function remove(list: LList, item: Any): LList {
     return (cast list)._remove(item);
   }
 
@@ -90,6 +90,8 @@ class AnnaList<T> extends LList {
   
   public var type: String;
 
+  private var _annaString: String = null;
+
   public function new(h: T = null) {
     length = 0;
     if(h != null) {
@@ -113,6 +115,7 @@ class AnnaList<T> extends LList {
     }
     length++;
     tl = null;
+    _annaString = null;
     return this;
   }
 
@@ -130,10 +133,11 @@ class AnnaList<T> extends LList {
     q = x;
     length++;
     tl = null;
+    _annaString = null;
     return this;
   }
 
-  public function _remove(item: T): Bool {
+  public function _remove(item: T): LList {
     var prev: ListNode<T> = null;
     var l = h;
     while(l != null) {
@@ -148,28 +152,32 @@ class AnnaList<T> extends LList {
         }
         length--;
         tl = null;
-        return true;
+        _annaString = null;
+        return this;
       }
       prev = l;
       l = l.next;
     }
-    return false;
+    return this;
   }
 
   override public function toAnnaString(): String {
-    var s = new StringBuf();
-    var first = true;
-    var l = h;
-    while(l != null) {
-      if(first) {
-        first = false;
-      } else {
-        s.add(', ');
+    if(_annaString == null) {
+      var s = new StringBuf();
+      var first = true;
+      var l = h;
+      while(l != null) {
+        if(first) {
+          first = false;
+        } else {
+          s.add(', ');
+        }
+        s.add(Anna.toAnnaString(l.item));
+        l = l.next;
       }
-      s.add(Anna.toAnnaString(l.item));
-      l = l.next;
+      _annaString = '[${s}]';
     }
-    return '[${s}]';
+    return _annaString;
   }
 
   override public function toHaxeString(): String {

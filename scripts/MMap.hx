@@ -53,6 +53,8 @@ class AnnaMap<K, V> extends MMap implements CustomType {
   public var keyType: String;
   public var valueType: String;
 
+  private var _annaString: String = null;
+
   public function new() {
     _map = new Map<String, V>();
     map = new Map<String, K>();
@@ -67,6 +69,7 @@ class AnnaMap<K, V> extends MMap implements CustomType {
     var strKey: String = Anna.toAnnaString(key);
     _map.set(strKey, value);
     map.set(strKey, key);
+    _annaString = null;
     return this;
   }
 
@@ -78,27 +81,31 @@ class AnnaMap<K, V> extends MMap implements CustomType {
     var strKey: String = Anna.toAnnaString(key);
     _map.remove(strKey);
     map.remove(strKey);
+    _annaString = null;
     return this;
   }
 
   override public function toAnnaString(): String {
-    var items: Array<String> = [];
-    var keys: Array<String> = [];
-    for(value in map.keys()) {
-      keys.push(value);
-    }
-    keys.sort(function(a:Dynamic, b:Dynamic):Int {
-      a = EitherSupport.getValue(a);
-      b = EitherSupport.getValue(b);
-      if (a.toLowerCase() < b.toLowerCase()) return -1;
-      if (a.toLowerCase() > b.toLowerCase()) return 1;
-      return 0;
-    });
-    for(key in keys) {
-      items.push('${key} => ${Anna.toAnnaString(_map.get(key))}');
-    }
+    if(_annaString == null) {
+      var items: Array<String> = [];
+      var keys: Array<String> = [];
+      for(value in map.keys()) {
+        keys.push(value);
+      }
+      keys.sort(function(a:Dynamic, b:Dynamic):Int {
+        a = EitherSupport.getValue(a);
+        b = EitherSupport.getValue(b);
+        if (a.toLowerCase() < b.toLowerCase()) return -1;
+        if (a.toLowerCase() > b.toLowerCase()) return 1;
+        return 0;
+      });
+      for(key in keys) {
+        items.push('${key} => ${Anna.toAnnaString(_map.get(key))}');
+      }
 
-    return '%{${items.join(', ')}}';
+      _annaString = '%{${items.join(', ')}}';
+    }
+    return _annaString;
   }
 
   override public function toHaxeString(): String {

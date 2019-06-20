@@ -76,25 +76,20 @@ class AnnaListTest {
 
   public static function shouldRemoveElement(): Void {
     var list: LList = LList.create([]);
-    var map1: Map<String, String> = new Map<String, String>();
-    map1.set('1', '1');
-    var map2: Map<String, String> = new Map<String, String>();
-    map2.set('2', '2');
-    var map3: Map<String, String> = new Map<String, String>();
-    map3.set('3', '3');
+    var map1: MMap = @map['1' => '1'];
+    var map2: MMap = @map['2' => '2'];
+    var map3: MMap = @map['3' => '3'];
     LList.add(list, map1);
     LList.add(list, map2);
     LList.add(list, map3);
 
-    var toRemove: Map<String, String> = new Map<String, String>();
-    toRemove.set('2', '2');
+    var toRemove: MMap = @map['2' => '2'];
 
-    Assert.areEqual(LList.remove(list, toRemove), true);
+    Assert.areEqual(LList.remove(list, toRemove).toAnnaString(), '[%{"1" => "1"}, %{"3" => "3"}]');
 
-    var toRemove: Map<String, String> = new Map<String, String>();
-    toRemove.set('2', '2');
+    toRemove = @map['2' => '2'];
 
-    Assert.areEqual(LList.remove(list, toRemove), false);
+    Assert.areEqual(LList.remove(list, toRemove).toAnnaString(), '[%{"1" => "1"}, %{"3" => "3"}]');
   }
 
   public static function shouldPatternMatchHeadAndTail(): Void {
