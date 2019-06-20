@@ -18,14 +18,14 @@ class Scheduler {
 
   public static function start(): Atom {
     if(communicationThread == null) {
-      communicationThread = Thread.create(onCommunicationThreadCreated);
+      communicationThread = Thread.create(threadCommunicator);
       workerThreads = [];
       threadProcessMap = new ObjectMap<Dynamic, Process>();
       for(i in 0...32) {
-        var thread = Thread.create(onThreadStarted);
+        var thread = Thread.create(workerThread);
         workerThreads.push(thread);
       }
-      asyncThread = Thread.create(onAsyncThreadStarted);
+      asyncThread = Thread.create(asyncThreadLoop);
       index = 0;
       asyncIndex = 0;
       return 'ok'.atom();
@@ -41,7 +41,7 @@ class Scheduler {
     return 'ok'.atom();
   }
 
-  public static function onCommunicationThreadCreated(): Void {
+  public static function threadCommunicator(): Void {
     while(true) {
       var message: KernelMessage = Thread.readMessage(true);
       if(message == null) {
@@ -64,7 +64,7 @@ class Scheduler {
     }
   }
 
-  public static function onAsyncThreadStarted(): Void {
+  public static function asyncThreadLoop(): Void {
     var nextQueue: List<Tuple> = null;
     var asyncFunctions: List<Tuple> = new List<Tuple>();
     while(true) {
@@ -117,7 +117,7 @@ class Scheduler {
     return Tuple.create(["run", doSleep, Tuple.create([process, Timer.stamp(), endTime])]);
   }
 
-  public static function onThreadStarted(): Void {
+  public static function workerThread(): Void {
     while(true) {
       var process: Process = Thread.readMessage(true);
       if(process == null) {
@@ -127,7 +127,7 @@ class Scheduler {
         trace('stack is null');
         continue;
       }
-      if(process.status == ProcessState.STOPPED) {
+      if(process.status == ProcessState.KILLED) {
         continue;
       }
 

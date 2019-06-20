@@ -34,8 +34,17 @@ class Process implements CustomType {
     return '';
   }
 
-  public static function stop(process: Process): Atom {
-    Reflect.setField(process, 'status', ProcessState.STOPPED);
+  public static function isAlive(process: Process): Atom {
+    return switch(process.status) {
+      case ProcessState.COMPLETE | ProcessState.KILLED:
+        'false'.atom();
+      case _:
+        'true'.atom();
+    }
+  }
+
+  public static function exit(process: Process): Atom {
+    Reflect.setField(process, 'status', ProcessState.KILLED);
     return 'ok'.atom();
   }
 

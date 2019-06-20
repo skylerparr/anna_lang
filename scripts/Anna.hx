@@ -114,8 +114,6 @@ class Anna {
           '${(val : Bool)}';
         case TNull:
           'nil';
-        // These cases need to go away
-        // They can be confusing
         case type:
           if(Std.is(val, CustomType)) {
             (val : CustomType).toAnnaString();
