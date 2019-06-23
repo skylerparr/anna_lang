@@ -10,52 +10,52 @@ import anna_unit.Assert;
 using TypePrinter.MapPrinter;
 class AnnaTest {
   public static function shouldPrintString(): Void {
-    Assert.stringsAreEqual(Anna.inspect('foo'), '"foo"');
+    Assert.areEqual(Anna.inspect('foo'), '"foo"');
   }
 
   public static function shouldPrintInt(): Void {
-    Assert.stringsAreEqual(Anna.inspect(2341), '2341');
+    Assert.areEqual(Anna.inspect(2341), '2341');
   }
 
   public static function shouldPrintFloat(): Void {
-    Assert.stringsAreEqual(Anna.inspect(234.1), '234.1');
+    Assert.areEqual(Anna.inspect(234.1), '234.1');
   }
 
   public static function shouldPrintNullAsNil(): Void {
-    Assert.stringsAreEqual(Anna.inspect(null), 'nil');
+    Assert.areEqual(Anna.inspect(null), 'nil');
   }
 
   public static function shouldPrintTrueAsTrue(): Void {
-    Assert.stringsAreEqual(Anna.inspect(true), 'true');
+    Assert.areEqual(Anna.inspect(true), 'true');
   }
 
   public static function shouldPrintFalseAsFalse(): Void {
-    Assert.stringsAreEqual(Anna.inspect(false), 'false');
+    Assert.areEqual(Anna.inspect(false), 'false');
   }
 
   public static function shouldPrintAtomWithColonAtTheBeginning(): Void {
-    Assert.stringsAreEqual(Anna.inspect('hello'.atom()), ':hello');
+    Assert.areEqual(Anna.inspect('hello'.atom()), ':hello');
   }
 
   public static function shouldNotPrintAtomWithColonAtTheBeginningIfStartsWithUppercaseLetter(): Void {
-    Assert.stringsAreEqual(Anna.inspect('Hello.World'.atom()), 'Hello.World');
+    Assert.areEqual(Anna.inspect('Hello.World'.atom()), 'Hello.World');
   }
 
   public static function shouldPrintEmptyArray(): Void {
-    Assert.stringsAreEqual(Anna.inspect([]), '#A{}');
+    Assert.areEqual(Anna.inspect([]), '#A{}');
   }
 
   public static function shouldPrintDynamic(): Void {
-    Assert.stringsAreEqual(Anna.inspect({}), '{  }');
+    Assert.areEqual(Anna.inspect({}), '{  }');
   }
 
   public static function shouldPrintArrayWithValues(): Void {
     var values: Array<Dynamic> = [348, 349.54, 'foo', 'bar'.atom(), 'Cat'.atom()];
-    Assert.stringsAreEqual(Anna.inspect(values), '#A{348, 349.54, "foo", :bar, Cat}');
+    Assert.areEqual(Anna.inspect(values), '#A{348, 349.54, "foo", :bar, Cat}');
   }
 
   public static function shouldPrintEmptyMap(): Void {
-    Assert.stringsAreEqual(Anna.inspect(new ObjectMap()), '#M%{}');
+    Assert.areEqual(Anna.inspect(new ObjectMap()), '#M%{}');
   }
 
   public static function shouldPrintMapWithMixedTypes(): Void {
@@ -64,7 +64,7 @@ class AnnaTest {
     map.set('foo'.atom(), "bar");
     map.set('bar'.atom(), 234);
     map.set('cat'.atom(), values);
-    Assert.stringsAreEqual(Anna.inspect(map), '#M%{:bar => 234, :cat => #A{348, 349.54, "foo", :bar, Cat}, :foo => "bar"}');
+    Assert.areEqual(Anna.inspect(map), '#M%{:bar => 234, :cat => #A{348, 349.54, "foo", :bar, Cat}, :foo => "bar"}');
   }
 
   public static function shouldPrintMapWithSameTypes(): Void {
@@ -72,7 +72,7 @@ class AnnaTest {
     map.set('foo'.atom(), "foo");
     map.set('bar'.atom(), "bar");
     map.set('cat'.atom(), "cat");
-    Assert.stringsAreEqual(Anna.inspect(map), '#M%{:bar => "bar", :cat => "cat", :foo => "foo"}');
+    Assert.areEqual(Anna.inspect(map), '#M%{:bar => "bar", :cat => "cat", :foo => "foo"}');
   }
 
   public static function shouldPrintMapAsHaxeMap(): Void {
@@ -80,17 +80,17 @@ class AnnaTest {
     map.set('foo'.atom(), "foo");
     map.set('bar'.atom(), "bar".atom());
     map.set('cat'.atom(), "cat");
-    Assert.stringsAreEqual(map.asHaxeString(), '[AtomSupport.atom("bar") => AtomSupport.atom("bar"), AtomSupport.atom("cat") => "cat", AtomSupport.atom("foo") => "foo"]');
+    Assert.areEqual(map.asHaxeString(), '[AtomSupport.atom("bar") => AtomSupport.atom("bar"), AtomSupport.atom("cat") => "cat", AtomSupport.atom("foo") => "foo"]');
   }
 
   public static function shouldPrintCustomTypes(): Void {
     var sct: SampleCustomType = new SampleCustomType('name'.atom(), 'type'.atom());
-    Assert.stringsAreEqual(Anna.toAnnaString(sct), '%Tests.SampleCustomType{:name => :name, :type => :type}');
+    Assert.areEqual(Anna.toAnnaString(sct), '%Tests.SampleCustomType{:name => :name, :type => :type}');
   }
 
   public static function shouldPrintDynamicTypeToMap(): Void {
     var dyn: Dynamic = {foo: 'bar'.atom(), baz: 'cat'.atom()};
-    Assert.stringsAreEqual(Anna.inspect(dyn), '{ baz: AtomSupport.atom("cat"), foo: AtomSupport.atom("bar") }');
+    Assert.areEqual(Anna.inspect(dyn), '{ baz: AtomSupport.atom("cat"), foo: AtomSupport.atom("bar") }');
   }
 
   public static function shouldPrintBasicObject(): Void {

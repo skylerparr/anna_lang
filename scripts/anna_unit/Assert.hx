@@ -27,26 +27,23 @@ class Assert {
     throw new TestFailureException(errString);
   }
 
-  public static function stringsAreEqual(a: String, b: String): Void {
-    if(a != b) {
-      var errString = '';
-      errString += '\n';
-      errString += 'are not equal, expected to be equal\n';
-      errString += '\n';
-      errString += 'lhs: ${a}\n';
-      errString += 'rhs: ${b}\n';
-      fail(errString);
-    }
-  }
-
-  public static function areEqual(a: Dynamic, b: Dynamic): Void {
+  public static function areEqual(a: Dynamic, b: Dynamic, context: String = null): Void {
     var values = [a, b];
+
+
     if(!areSameDataTypesEqual(values) &&
       !structuresAreEqual(values)) {
+
+      var lineStringA: String = '';
+      if(context != null) {
+        lineStringA = context;
+      }
+
       var errString = '';
       errString += '\n';
       errString += 'are not equal, expected to be equal\n';
       errString += '\n';
+      errString += '${context}\n';
       errString += 'lhs: ${Anna.inspect(a)}\n';
       errString += 'rhs: ${Anna.inspect(b)}\n';
       fail(errString);

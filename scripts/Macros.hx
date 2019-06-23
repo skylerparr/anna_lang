@@ -104,6 +104,17 @@ class Macros {
           var meta = findMetaInBlock([b]);
           var blk = extractBlock(meta);
           retValBlock.push({expr: EBinop(OpAssign, a, blk[0]), pos: Context.currentPos()});
+        case EBinop(OpEq, a, b):
+          var meta = findMetaInBlock([a]);
+          var blk = extractBlock(meta)[0];
+          switch(blk.expr) {
+            case ECall(_, field):
+              field[1] = b;
+              blk;
+            case _:
+              throw "AnnaLang: Unhandle case";
+          }
+          retValBlock.push(blk);
         case _:
           retValBlock.push(expr);
       }
@@ -131,7 +142,6 @@ class Macros {
     return {
       switch(expr.expr) {
         case EArrayDecl(values):
-          MacroLogger.log(expr, 'expr');
           var arrayValues: Array<Expr> = [];
           for(value in values) {
             switch(value.expr) {
@@ -146,11 +156,8 @@ class Macros {
           expr = callback(expr);
           var blk = extractBlock(expr)[0];
           blk;
-//        case EConst(CString(e)):
-//          MacroLogger.log(e, "const string");
-//          macro {
-//            lang.AtomSupport.atom($expr);
-//          };
+        case EConst(CIdent(_)):
+          expr;
         case _:
           throw("AnnaLang: Unsupported expression for now.");
       }
@@ -163,6 +170,11 @@ class Macros {
     if(metaBlock[0] != null) {
       arrayValues.push(metaBlock[0]);
     }
+  }
+
+  public static function getLineNumber(pos: Position):Int {
+    var str = '${pos}'.split(':')[1];
+    return Std.parseInt(str);
   }
 
   private static function tuple(expr: Expr):Expr {
@@ -197,6 +209,13 @@ class Macros {
     });
   }
 
+  public static function assert(expr: Expr):Expr {
+    var context: String = '${expr.pos}';
+    context = StringTools.replace(context, Sys.getCwd(), '');
+    return macro {
+      anna_unit.Assert.areEqual($e{expr}, null, $v{context});
+    }
+  }
   #end
 
   macro public static function ei(expr: Expr): Expr {

@@ -11,7 +11,7 @@ class AnnaListTest {
     LList.push(list, 'Bar');
     LList.push(list, 'Cat');
     LList.push(list, 'Baz');
-    Assert.areEqual(list.toAnnaString(), '["Baz", "Cat", "Bar", "Foo"]');
+    @assert list.toAnnaString() == '["Baz", "Cat", "Bar", "Foo"]';
   }
 
   public static function shouldAddElement(): Void {
@@ -20,7 +20,7 @@ class AnnaListTest {
     LList.add(list, 'Bar');
     LList.add(list, 'Cat');
     LList.add(list, 'Baz');
-    Assert.areEqual(list.toAnnaString(), '["Foo", "Bar", "Cat", "Baz"]');
+    @assert list.toAnnaString() == '["Foo", "Bar", "Cat", "Baz"]';
   }
 
   public static function shouldGetTail(): Void {
@@ -35,7 +35,7 @@ class AnnaListTest {
     LList.add(expect, 'Cat');
     LList.add(expect, 'Baz');
 
-    Assert.areEqual(LList.tl(list), expect);
+    @assert LList.tl(list) == expect;
   }
 
   public static function shouldGetCorrectTailAfterChange(): Void {
@@ -82,7 +82,7 @@ class AnnaListTest {
 
     var toRemove: MMap = @map['2' => '2'];
 
-    Assert.areEqual(LList.remove(list, toRemove).toAnnaString(), '[%{"1" => "1"}, %{"3" => "3"}]');
+    @assert LList.remove(list, toRemove).toAnnaString() == '[%{"1" => "1"}, %{"3" => "3"}]';
 
     toRemove = @map['2' => '2'];
 
