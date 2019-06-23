@@ -34,16 +34,13 @@ class Assert {
     if(!areSameDataTypesEqual(values) &&
       !structuresAreEqual(values)) {
 
-      var lineStringA: String = '';
-      if(context != null) {
-        lineStringA = context;
-      }
+
 
       var errString = '';
       errString += '\n';
       errString += 'are not equal, expected to be equal\n';
       errString += '\n';
-      errString += '${context}\n';
+      errString += '${getContext(context)}\n';
       errString += 'lhs: ${Anna.inspect(a)}\n';
       errString += 'rhs: ${Anna.inspect(b)}\n';
       fail(errString);
@@ -70,7 +67,7 @@ class Assert {
     }
   }
 
-  public static function areNotEqual(a: Dynamic, b: Dynamic): Void {
+  public static function areNotEqual(a: Dynamic, b: Dynamic, context: String = null): Void {
     var values = [a, b];
     if(areSameDataTypesEqual(values) &&
       structuresAreEqual(values)) {
@@ -78,10 +75,19 @@ class Assert {
       errString += '\n';
       errString += 'are equal, expected to not be equal\n';
       errString += '\n';
+      errString += '${getContext(context)}\n';
       errString += 'lhs: ${Anna.inspect(a)}\n';
       errString += 'rhs: ${Anna.inspect(b)}\n';
       fail(errString);
     }
+  }
+
+  private static inline function getContext(context: String): String {
+    var retVal: String = '';
+    if(context != null) {
+      retVal = context;
+    }
+    return retVal;
   }
 
   public static function throwsException(func: Void -> Void, ex: Class<StandardException>): Void {

@@ -7,4 +7,10 @@ class AssertMacroTest {
     var b: String = '';
     @assert a == b;
   }
+
+  public static function shouldRefuteEquality(): Void {
+    var a: String = 'a';
+    var b: String = 'b';
+    @refute a == b;
+  }
 }

@@ -216,6 +216,14 @@ class Macros {
       anna_unit.Assert.areEqual($e{expr}, null, $v{context});
     }
   }
+
+  public static function refute(expr: Expr):Expr {
+    var context: String = '${expr.pos}';
+    context = StringTools.replace(context, Sys.getCwd(), '');
+    return macro {
+      anna_unit.Assert.areNotEqual($e{expr}, null, $v{context});
+    }
+  }
   #end
 
   macro public static function ei(expr: Expr): Expr {
