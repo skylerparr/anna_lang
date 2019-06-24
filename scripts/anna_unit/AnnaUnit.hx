@@ -3,10 +3,18 @@ package anna_unit;
 import sys.FileSystem;
 import haxe.Timer;
 using StringTools;
+@:build(lang.macros.ValueClassImpl.build())
 class AnnaUnit {
+
+  @field public static var failedTests: Array<String>;
+
   public static function start(testName: String = null): Void {
     if(Native.callStatic('Runtime', 'recompile', []).length == 0){
       return;
+    }
+
+    if(failedTests == null) {
+      failedTests = [];
     }
 
     var classes: Array<String> = getTests();
@@ -14,20 +22,24 @@ class AnnaUnit {
     var successCounter: Int = 0;
     var failureCounter: Int = 0;
     var startTime: Float = Timer.stamp();
+    var testsToRunNextTime: Array<String> = [];
 
     for(className in classes) {
-      var clazz: Class<Dynamic> = Type.resolveClass(className);
-
       var fields: Array<String> = [];
-      if(testName == null) {
-        fields = Type.getClassFields(clazz);
-      } else {
-        fields.push(testName);
-      }
+      var clazz: Class<Dynamic> = Type.resolveClass(className);
+      if(failedTests.length == 0) {
+        if(testName == null) {
+          fields = Type.getClassFields(clazz);
+        } else {
+          fields.push(testName);
+        }
 
-      if(Reflect.hasField(clazz, 'start')) {
-        var fun = Reflect.field(clazz, 'start');
-        fun();
+        if(Reflect.hasField(clazz, 'start')) {
+          var fun = Reflect.field(clazz, 'start');
+          fun();
+        }
+      } else {
+        fields = failedTests.copy();
       }
 
       fields = Native.callStatic('Random', 'shuffle', [fields]);
@@ -56,11 +68,13 @@ class AnnaUnit {
           cpp.Lib.println('');
           cpp.Lib.println('failure testing ${clazz}#${field}');
           cpp.Lib.println('${Type.getClassName(Type.getClass(e))} message: ${e.message}');
+          testsToRunNextTime.push(field);
           continue;
         }
         cpp.Lib.print('.');
       }
     }
+    failedTests = testsToRunNextTime;
     cpp.Lib.println('');
     cpp.Lib.println('Success: ${successCounter} test(s).');
     if(failureCounter > 0) {
@@ -72,6 +86,10 @@ class AnnaUnit {
     } else {
       cpp.Lib.println('Total Time: ${Std.int(diff)}ms');
     }
+  }
+
+  public static function clearFailed(): Void {
+    failedTests = null;
   }
 
   private static function getTests(): Array<String> {

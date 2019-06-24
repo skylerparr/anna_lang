@@ -8,6 +8,9 @@ import haxe.macro.Type.Ref;
 class ValueClassImpl {
 
   macro public static function build(): Array<Field> {
+    MacroLogger.log("=====================");
+    MacroLogger.log('Macros: ${Context.getLocalClass()}');
+
     var fields: Array<Field> = Context.getBuildFields();
 
     var p: Printer = new Printer();
@@ -106,6 +109,9 @@ class ValueClassImpl {
       }
     }
 
+    MacroLogger.log("---------------------");
+    MacroLogger.printFields(fields);
+    MacroLogger.log("_____________________");
     return fields;
   }
 

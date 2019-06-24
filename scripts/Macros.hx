@@ -1,5 +1,7 @@
 package;
 
+import hscript.Parser;
+import haxe.macro.Printer;
 import haxe.macro.Context;
 import lang.macros.MacroLogger;
 import haxe.macro.Expr;
@@ -7,6 +9,15 @@ import haxe.macro.Expr;
 //  =>
 // #pos\(.*?\)
 class Macros {
+
+  private static var parser: Parser = {
+    parser = new Parser();
+    parser.allowTypes = true;
+    parser.allowMetadata = true;
+    parser;
+  }
+
+  private static var printer: Printer = new Printer();
 
   macro public static function build(args: Expr = null): Array<Field> {
     MacroLogger.log("=====================");
@@ -121,7 +132,12 @@ class Macros {
         var meta = findMetaInBlock(a, b);
         var blk = extractBlock(meta)[0];
         retValBlock.push(blk);
-      case _:
+      case EFunction(name, func):
+        var bodyExpr = extractBlock(func.expr)[0];
+        var meta = findMetaInBlock(bodyExpr, null);
+        func.expr = meta;
+        retValBlock.push(expr);
+      case e:
         retValBlock.push(expr);
     }
     var block: Expr = {expr: EBlock(retValBlock), pos: Context.currentPos()};
@@ -249,9 +265,39 @@ class Macros {
   }
 
   public static function match(lhs: Expr, rhs: Expr):Expr {
-    return macro {
-      var retVal: MMap = @map[];
+    var p: Printer = new Printer();
+    var lhsStr: String = p.printExpr(lhs);
+    var rhsStr: String = p.printExpr(rhs);
+    var context: String = '${lhs.pos}';
+    context = StringTools.replace(context, Sys.getCwd(), '');
+
+    MacroLogger.log(lhs);
+    MacroLogger.log(rhs);
+    var exprStrings: Array<String> = [];
+    switch(lhs.expr) {
+      case EConst(CString(value)):
+        var haxeStr: String = 'if("${value}" == ${printer.printExpr(rhs)}) {
+          
+        }';
+        exprStrings.push(haxeStr);
+      case _:
+        throw "AnnaLang: Unhandled match expression.";
     }
+
+    exprStrings.push('{
+      throw new lang.UnableToMatchException(\'Unable to match expression ${context}: ${lhsStr} = ${rhsStr}\');
+    }');
+    var retVal: String = exprStrings.join("else");
+    MacroLogger.log(retVal);
+
+    var expr = haxeToExpr(retVal);
+    MacroLogger.logExpr(expr);
+    return expr;
+  }
+
+  public static function haxeToExpr(str: String): Expr {
+    var ast = parser.parseString(str);
+    return new hscript.Macro(Context.currentPos()).convert(ast);
   }
   #end
 
