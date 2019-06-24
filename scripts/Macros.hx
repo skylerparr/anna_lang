@@ -140,7 +140,9 @@ class Macros {
   private static function extractMeta(entry, exprL: Expr, exprR: Expr): Expr {
     var funString: String = entry.name;
     var fun = Reflect.field(Macros, funString);
-    return fun(exprL, exprR);
+    var result = fun(exprL, exprR);
+    var blk = extractBlock(result)[0];
+    return findMetaInBlock(blk, exprR);
   }
 
   public static function extractBlock(expr: Expr):Array<Expr> {
@@ -176,7 +178,10 @@ class Macros {
           expr = callback(expr);
           var blk = extractBlock(expr)[0];
           blk;
+        case ECheckType(e, t):
+          expr;
         case e:
+          MacroLogger.log(e, "Unsupported");
           throw("AnnaLang: Unsupported expression for now.");
       }
     }
@@ -245,7 +250,7 @@ class Macros {
 
   public static function match(lhs: Expr, rhs: Expr):Expr {
     return macro {
-      [];
+      var retVal: MMap = @map[];
     }
   }
   #end
