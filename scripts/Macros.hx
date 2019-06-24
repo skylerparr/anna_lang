@@ -43,8 +43,7 @@ class Macros {
             var metaInBlock: Array<Expr> = [];
             for(expr in blk) {
               var e = findMetaInBlock(expr, null);
-              var newBlk = extractBlock(e)[0];
-              metaInBlock.push(newBlk);
+              metaInBlock.push(e);
             }
             var eblock = EBlock(metaInBlock);
             field.kind = FVar(fvar, {expr: eblock, pos: Context.currentPos()});
@@ -61,8 +60,14 @@ class Macros {
         var retValExprs: Array<Expr> = [];
         for(expr in exprs) {
           var e = findMetaInBlock(expr, null);
-          var blk = extractBlock(e);
-          retValExprs.push(blk[0]);
+          switch(e.expr) {
+            case EBlock(blk):
+              for(expr in blk) {
+                retValExprs.push(expr);
+              }
+            case _:
+              retValExprs.push(e);
+          }
         }
         ffun.expr = {expr: EBlock(retValExprs), pos: Context.currentPos()};
         field.kind = FFun(ffun);
@@ -79,8 +84,7 @@ class Macros {
         var valueBlocks: Array<Expr> = [];
         for(param in params) {
           var meta = findMetaInBlock(param, rhs);
-          var metaBlock: Array<Expr> = extractBlock(meta);
-          valueBlocks.push(metaBlock[0]);
+          valueBlocks.push(meta);
         }
         retValBlock.push({expr: ECall(ecall, valueBlocks), pos: Context.currentPos()});
       case EMeta(entry, expr):
@@ -89,16 +93,14 @@ class Macros {
         var valueBlocks: Array<Expr> = [];
         for(param in params) {
           var meta = findMetaInBlock(param, rhs);
-          var metaBlock: Array<Expr> = extractBlock(meta);
-          valueBlocks.push(metaBlock[0]);
+          valueBlocks.push(meta);
         }
         retValBlock.push({expr: ENew(enew, valueBlocks), pos: Context.currentPos()});
       case EArrayDecl(values):
         var valueBlocks: Array<Expr> = [];
         for(value in values) {
           var meta = findMetaInBlock(value, rhs);
-          var metaBlock: Array<Expr> = extractBlock(meta);
-          valueBlocks.push(metaBlock[0]);
+          valueBlocks.push(meta);
         }
         retValBlock.push({expr: EArrayDecl(valueBlocks), pos: Context.currentPos()});
       case EField(fieldExpr, field):
@@ -107,58 +109,67 @@ class Macros {
         var retVars: Array<Var> = [];
         for(v in vars) {
           var meta = findMetaInBlock(v.expr, rhs);
-          var blk = extractBlock(meta);
-          v.expr = blk[0];
+          v.expr = meta;
           retVars.push(v);
         }
         retValBlock.push(expr);
       case EBinop(OpArrow, a, b):
         var meta = findMetaInBlock(a, rhs);
-        var blk = extractBlock(meta);
-        retValBlock.push(blk[0]);
+        retValBlock.push(meta);
 
         meta = findMetaInBlock(b, rhs);
-        blk = extractBlock(meta);
-        retValBlock.push(blk[0]);
+        retValBlock.push(meta);
       case EBinop(OpAssign, a, b):
-        var meta = findMetaInBlock(b, rhs);
-        var blk = extractBlock(meta);
+        var metaB = findMetaInBlock(b, rhs);
+        var metaA = findMetaInBlock(a, rhs);
 
-        var meta = findMetaInBlock(a, rhs);
-        var blkA = extractBlock(meta)[0];
-
-        retValBlock.push({expr: EBinop(OpAssign, blkA, blk[0]), pos: Context.currentPos()});
+        retValBlock.push({expr: EBinop(OpAssign, metaA, metaB), pos: Context.currentPos()});
       case EBinop(OpEq, a, b):
         var meta = findMetaInBlock(a, b);
-        var blk = extractBlock(meta)[0];
-        retValBlock.push(blk);
+        retValBlock.push(meta);
       case EFunction(name, func):
-        var bodyExpr = extractBlock(func.expr)[0];
+        var bodyExpr = func.expr;
         var meta = findMetaInBlock(bodyExpr, null);
         func.expr = meta;
         retValBlock.push(expr);
+      case EBlock(exprs):
+        var updatedMeta: Array<Expr> = [];
+        for(expr in exprs) {
+          var meta = findMetaInBlock(expr, null);
+          updatedMeta.push(meta);
+        }
+        retValBlock.push({expr: EBlock(updatedMeta), pos: Context.currentPos()});
       case e:
         retValBlock.push(expr);
     }
-    var block: Expr = {expr: EBlock(retValBlock), pos: Context.currentPos()};
-    return block;
+    if(retValBlock.length == 1) {
+      return retValBlock[0];
+    } else {
+      var block: Expr = {expr: EBlock(retValBlock), pos: Context.currentPos()};
+      return block;
+    }
   }
 
   private static function handleMeta(entry, lhs, rhs):Expr {
-    return switch(lhs.expr) {
+    var result = switch(lhs.expr) {
       case EBinop(OpAssign, lhs, rhs):
         extractMeta(entry, lhs, rhs);
       case _:
         extractMeta(entry, lhs, rhs);
     }
+    return result;
   }
 
   private static function extractMeta(entry, exprL: Expr, exprR: Expr): Expr {
     var funString: String = entry.name;
     var fun = Reflect.field(Macros, funString);
     var result = fun(exprL, exprR);
-    var blk = extractBlock(result)[0];
-    return findMetaInBlock(blk, exprR);
+    var blk = extractBlock(result);
+    if(blk.length == 1) {
+      return findMetaInBlock(blk[0], exprR);
+    } else {
+      return result;
+    }
   }
 
   public static function extractBlock(expr: Expr):Array<Expr> {
@@ -186,14 +197,12 @@ class Macros {
           }
           expr = {expr: EArrayDecl(arrayValues), pos: Context.currentPos()};
           expr = callback(expr);
-          var blk = extractBlock(expr)[0];
-          blk;
+          expr;
         case EConst(CIdent(_)):
           expr;
         case EConst(CString(_)):
           expr = callback(expr);
-          var blk = extractBlock(expr)[0];
-          blk;
+          expr;
         case ECheckType(e, t):
           expr;
         case e:
@@ -205,10 +214,7 @@ class Macros {
 
   private static inline function collectMetaExpr(value: Expr, arrayValues: Array<Expr>): Void {
     var meta = findMetaInBlock(value, null);
-    var metaBlock = extractBlock(meta);
-    if(metaBlock[0] != null) {
-      arrayValues.push(metaBlock[0]);
-    }
+    arrayValues.push(meta);
   }
 
   public static function getLineNumber(pos: Position):Int {
@@ -271,8 +277,7 @@ class Macros {
     var context: String = '${lhs.pos}';
     context = StringTools.replace(context, Sys.getCwd(), '');
 
-    MacroLogger.log(lhs);
-    MacroLogger.log(rhs);
+    var matchedVars: Array<String> = [];
     var exprStrings: Array<String> = [];
     switch(lhs.expr) {
       case EConst(CString(value)):
@@ -280,19 +285,25 @@ class Macros {
           
         }';
         exprStrings.push(haxeStr);
-      case _:
+      case EConst(CIdent(variable)):
+        var haxeStr: String = '
+        if(true) {
+          ${variable} = ${printer.printExpr(rhs)};
+        }';
+        exprStrings.push(haxeStr);
+        var varString: String = 'var ${variable} = null;';
+        matchedVars.push(varString);
+      case e:
+        MacroLogger.log(e, 'Unhandled match');
         throw "AnnaLang: Unhandled match expression.";
     }
 
     exprStrings.push('{
       throw new lang.UnableToMatchException(\'Unable to match expression ${context}: ${lhsStr} = ${rhsStr}\');
     }');
-    var retVal: String = exprStrings.join("else");
-    MacroLogger.log(retVal);
+    var retVal: String = matchedVars.join('\n') + '\n' + exprStrings.join("else");
 
-    var expr = haxeToExpr(retVal);
-    MacroLogger.logExpr(expr);
-    return expr;
+    return haxeToExpr(retVal);
   }
 
   public static function haxeToExpr(str: String): Expr {
