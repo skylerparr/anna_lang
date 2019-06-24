@@ -73,7 +73,7 @@ class Macros {
         }
         retValBlock.push({expr: ECall(ecall, valueBlocks), pos: Context.currentPos()});
       case EMeta(entry, expr):
-        return extractMeta(entry, expr, rhs);
+        return handleMeta(entry, expr, rhs);
       case ENew(enew, params):
         var valueBlocks: Array<Expr> = [];
         for(param in params) {
@@ -120,19 +120,21 @@ class Macros {
       case EBinop(OpEq, a, b):
         var meta = findMetaInBlock(a, b);
         var blk = extractBlock(meta)[0];
-//        switch(blk.expr) {
-//          case ECall(_, field):
-//            field[1] = blkB;
-//            blk;
-//          case _:
-//            throw "AnnaLang: Unhandled case";
-//        }
         retValBlock.push(blk);
       case _:
         retValBlock.push(expr);
     }
     var block: Expr = {expr: EBlock(retValBlock), pos: Context.currentPos()};
     return block;
+  }
+
+  private static function handleMeta(entry, lhs, rhs):Expr {
+    return switch(lhs.expr) {
+      case EBinop(OpAssign, lhs, rhs):
+        extractMeta(entry, lhs, rhs);
+      case _:
+        extractMeta(entry, lhs, rhs);
+    }
   }
 
   private static function extractMeta(entry, exprL: Expr, exprR: Expr): Expr {
@@ -175,7 +177,6 @@ class Macros {
           var blk = extractBlock(expr)[0];
           blk;
         case e:
-          MacroLogger.log(e);
           throw("AnnaLang: Unsupported expression for now.");
       }
     }
@@ -243,7 +244,6 @@ class Macros {
   }
 
   public static function match(lhs: Expr, rhs: Expr):Expr {
-    MacroLogger.logExpr(lhs);
     return macro {
       [];
     }

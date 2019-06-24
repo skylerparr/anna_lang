@@ -9,6 +9,6 @@ class PatternMatchTest {
   public static function shouldMatchStringConstant(): Void {
     var scope: Map<String, Dynamic> = new Map<String, Dynamic>();
     var str: String = "yes";
-//    @match"yes" == str;
+    @match "yes" = str;
   }
 }
