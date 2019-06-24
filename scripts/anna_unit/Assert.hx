@@ -34,8 +34,6 @@ class Assert {
     if(!areSameDataTypesEqual(values) &&
       !structuresAreEqual(values)) {
 
-
-
       var errString = '';
       errString += '\n';
       errString += 'are not equal, expected to be equal\n';

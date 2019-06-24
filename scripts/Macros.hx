@@ -70,9 +70,13 @@ class Macros {
         case EMeta(entry, expr):
           return extractMeta(entry, expr);
         case ENew(enew, params):
-          var meta = findMetaInBlock(params);
-          var metaBlock: Array<Expr> = extractBlock(meta);
-          retValBlock.push({expr: ENew(enew, metaBlock), pos: Context.currentPos()});
+          var valueBlocks: Array<Expr> = [];
+          for(param in params) {
+            var meta = findMetaInBlock([param]);
+            var metaBlock: Array<Expr> = extractBlock(meta);
+            valueBlocks.push(metaBlock[0]);
+          }
+          retValBlock.push({expr: ENew(enew, valueBlocks), pos: Context.currentPos()});
         case EArrayDecl(values):
           var valueBlocks: Array<Expr> = [];
           for(value in values) {
@@ -103,16 +107,23 @@ class Macros {
         case EBinop(OpAssign, a, b):
           var meta = findMetaInBlock([b]);
           var blk = extractBlock(meta);
-          retValBlock.push({expr: EBinop(OpAssign, a, blk[0]), pos: Context.currentPos()});
+
+          var meta = findMetaInBlock([a]);
+          var blkA = extractBlock(meta)[0];
+
+          retValBlock.push({expr: EBinop(OpAssign, blkA, blk[0]), pos: Context.currentPos()});
         case EBinop(OpEq, a, b):
+          var meta = findMetaInBlock([b]);
+          var blkB = extractBlock(meta)[0];
+
           var meta = findMetaInBlock([a]);
           var blk = extractBlock(meta)[0];
           switch(blk.expr) {
             case ECall(_, field):
-              field[1] = b;
+              field[1] = blkB;
               blk;
             case _:
-              throw "AnnaLang: Unhandle case";
+              throw "AnnaLang: Unhandled case";
           }
           retValBlock.push(blk);
         case _:
@@ -158,7 +169,12 @@ class Macros {
           blk;
         case EConst(CIdent(_)):
           expr;
-        case _:
+        case EConst(CString(_)):
+          expr = callback(expr);
+          var blk = extractBlock(expr)[0];
+          blk;
+        case e:
+          MacroLogger.log(e);
           throw("AnnaLang: Unsupported expression for now.");
       }
     }
@@ -222,6 +238,13 @@ class Macros {
     context = StringTools.replace(context, Sys.getCwd(), '');
     return macro {
       anna_unit.Assert.areNotEqual($e{expr}, null, $v{context});
+    }
+  }
+
+  public static function match(expr: Expr):Expr {
+    MacroLogger.logExpr(expr);
+    return macro {
+      [];
     }
   }
   #end

@@ -87,7 +87,7 @@ class AnnaMap<K, V> extends MMap implements CustomType {
 
   override public function toAnnaString(): String {
     if(_annaString == null) {
-      var items: Array<String> = [];
+      var items: List<String> = new List<String>();
       var keys: Array<String> = [];
       for(value in map.keys()) {
         keys.push(value);
@@ -95,12 +95,12 @@ class AnnaMap<K, V> extends MMap implements CustomType {
       keys.sort(function(a:Dynamic, b:Dynamic):Int {
         a = EitherSupport.getValue(a);
         b = EitherSupport.getValue(b);
-        if (a.toLowerCase() < b.toLowerCase()) return -1;
-        if (a.toLowerCase() > b.toLowerCase()) return 1;
+        if (a < b) return -1;
+        if (a > b) return 1;
         return 0;
       });
       for(key in keys) {
-        items.push('${key} => ${Anna.toAnnaString(_map.get(key))}');
+        items.add('${key} => ${Anna.toAnnaString(_map.get(key))}');
       }
 
       _annaString = '%{${items.join(', ')}}';
