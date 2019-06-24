@@ -243,7 +243,7 @@ class Macros {
   }
 
   public static function match(lhs: Expr, rhs: Expr):Expr {
-    MacroLogger.logExpr(expr);
+    MacroLogger.logExpr(lhs);
     return macro {
       [];
     }
