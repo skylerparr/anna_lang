@@ -31,7 +31,7 @@ class Macros {
           case EBlock(blk):
             var metaInBlock: Array<Expr> = [];
             for(expr in blk) {
-              var e = findMetaInBlock(expr);
+              var e = findMetaInBlock(expr, null);
               var newBlk = extractBlock(e)[0];
               metaInBlock.push(newBlk);
             }
@@ -49,7 +49,7 @@ class Macros {
         var exprs = extractBlock(ffun.expr);
         var retValExprs: Array<Expr> = [];
         for(expr in exprs) {
-          var e = findMetaInBlock(expr);
+          var e = findMetaInBlock(expr, null);
           var blk = extractBlock(e);
           retValExprs.push(blk[0]);
         }
@@ -61,23 +61,23 @@ class Macros {
     }
   }
 
-  private static function findMetaInBlock(expr: Expr):Expr {
+  private static function findMetaInBlock(expr: Expr, rhs: Expr):Expr {
     var retValBlock: Array<Expr> = [];
     switch(expr.expr) {
       case ECall(ecall, params):
         var valueBlocks: Array<Expr> = [];
         for(param in params) {
-          var meta = findMetaInBlock(param);
+          var meta = findMetaInBlock(param, rhs);
           var metaBlock: Array<Expr> = extractBlock(meta);
           valueBlocks.push(metaBlock[0]);
         }
         retValBlock.push({expr: ECall(ecall, valueBlocks), pos: Context.currentPos()});
       case EMeta(entry, expr):
-        return extractMeta(entry, expr, null);
+        return extractMeta(entry, expr, rhs);
       case ENew(enew, params):
         var valueBlocks: Array<Expr> = [];
         for(param in params) {
-          var meta = findMetaInBlock(param);
+          var meta = findMetaInBlock(param, rhs);
           var metaBlock: Array<Expr> = extractBlock(meta);
           valueBlocks.push(metaBlock[0]);
         }
@@ -85,7 +85,7 @@ class Macros {
       case EArrayDecl(values):
         var valueBlocks: Array<Expr> = [];
         for(value in values) {
-          var meta = findMetaInBlock(value);
+          var meta = findMetaInBlock(value, rhs);
           var metaBlock: Array<Expr> = extractBlock(meta);
           valueBlocks.push(metaBlock[0]);
         }
@@ -95,41 +95,38 @@ class Macros {
       case EVars(vars):
         var retVars: Array<Var> = [];
         for(v in vars) {
-          var meta = findMetaInBlock(v.expr);
+          var meta = findMetaInBlock(v.expr, rhs);
           var blk = extractBlock(meta);
           v.expr = blk[0];
           retVars.push(v);
         }
         retValBlock.push(expr);
       case EBinop(OpArrow, a, b):
-        var meta = findMetaInBlock(a);
+        var meta = findMetaInBlock(a, rhs);
         var blk = extractBlock(meta);
         retValBlock.push(blk[0]);
 
-        meta = findMetaInBlock(b);
+        meta = findMetaInBlock(b, rhs);
         blk = extractBlock(meta);
         retValBlock.push(blk[0]);
       case EBinop(OpAssign, a, b):
-        var meta = findMetaInBlock(b);
+        var meta = findMetaInBlock(b, rhs);
         var blk = extractBlock(meta);
 
-        var meta = findMetaInBlock(a);
+        var meta = findMetaInBlock(a, rhs);
         var blkA = extractBlock(meta)[0];
 
         retValBlock.push({expr: EBinop(OpAssign, blkA, blk[0]), pos: Context.currentPos()});
       case EBinop(OpEq, a, b):
-        var meta = findMetaInBlock(b);
-        var blkB = extractBlock(meta)[0];
-
-        var meta = findMetaInBlock(a);
+        var meta = findMetaInBlock(a, b);
         var blk = extractBlock(meta)[0];
-        switch(blk.expr) {
-          case ECall(_, field):
-            field[1] = blkB;
-            blk;
-          case _:
-            throw "AnnaLang: Unhandled case";
-        }
+//        switch(blk.expr) {
+//          case ECall(_, field):
+//            field[1] = blkB;
+//            blk;
+//          case _:
+//            throw "AnnaLang: Unhandled case";
+//        }
         retValBlock.push(blk);
       case _:
         retValBlock.push(expr);
@@ -185,7 +182,7 @@ class Macros {
   }
 
   private static inline function collectMetaExpr(value: Expr, arrayValues: Array<Expr>): Void {
-    var meta = findMetaInBlock(value);
+    var meta = findMetaInBlock(value, null);
     var metaBlock = extractBlock(meta);
     if(metaBlock[0] != null) {
       arrayValues.push(metaBlock[0]);
@@ -229,23 +226,23 @@ class Macros {
     });
   }
 
-  public static function assert(expr: Expr, _: Expr):Expr {
-    var context: String = '${expr.pos}';
+  public static function assert(lhs: Expr, rhs: Expr):Expr {
+    var context: String = '${lhs.pos}';
     context = StringTools.replace(context, Sys.getCwd(), '');
     return macro {
-      anna_unit.Assert.areEqual($e{expr}, null, $v{context});
+      anna_unit.Assert.areEqual($e{lhs}, $e{rhs}, $v{context});
     }
   }
 
-  public static function refute(expr: Expr, _: Expr):Expr {
-    var context: String = '${expr.pos}';
+  public static function refute(lhs: Expr, rhs: Expr):Expr {
+    var context: String = '${lhs.pos}';
     context = StringTools.replace(context, Sys.getCwd(), '');
     return macro {
-      anna_unit.Assert.areNotEqual($e{expr}, null, $v{context});
+      anna_unit.Assert.areNotEqual($e{lhs}, $e{rhs}, $v{context});
     }
   }
 
-  public static function match(expr: Expr, _: Expr):Expr {
+  public static function match(lhs: Expr, rhs: Expr):Expr {
     MacroLogger.logExpr(expr);
     return macro {
       [];
