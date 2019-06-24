@@ -29,11 +29,17 @@ class Macros {
       case FVar(fvar, e):
         switch(e.expr) {
           case EBlock(blk):
-            var metaInBlock = findMetaInBlock(blk);
-            field.kind = FVar(fvar, metaInBlock);
+            var metaInBlock: Array<Expr> = [];
+            for(expr in blk) {
+              var e = findMetaInBlock(expr);
+              var newBlk = extractBlock(e)[0];
+              metaInBlock.push(newBlk);
+            }
+            var eblock = EBlock(metaInBlock);
+            field.kind = FVar(fvar, {expr: eblock, pos: Context.currentPos()});
             field;
           case EMeta(entry, expr):
-            var metaBlock = extractMeta(entry, expr);
+            var metaBlock = extractMeta(entry, expr, null);
             field.kind = FVar(fvar, metaBlock);
             field;
           case _:
@@ -43,7 +49,7 @@ class Macros {
         var exprs = extractBlock(ffun.expr);
         var retValExprs: Array<Expr> = [];
         for(expr in exprs) {
-          var e = findMetaInBlock([expr]);
+          var e = findMetaInBlock(expr);
           var blk = extractBlock(e);
           retValExprs.push(blk[0]);
         }
@@ -55,89 +61,87 @@ class Macros {
     }
   }
 
-  private static function findMetaInBlock(exprs: Array<Expr>):Expr {
+  private static function findMetaInBlock(expr: Expr):Expr {
     var retValBlock: Array<Expr> = [];
-    for(expr in exprs) {
-      switch(expr.expr) {
-        case ECall(ecall, params):
-          var valueBlocks: Array<Expr> = [];
-          for(param in params) {
-            var meta = findMetaInBlock([param]);
-            var metaBlock: Array<Expr> = extractBlock(meta);
-            valueBlocks.push(metaBlock[0]);
-          }
-          retValBlock.push({expr: ECall(ecall, valueBlocks), pos: Context.currentPos()});
-        case EMeta(entry, expr):
-          return extractMeta(entry, expr);
-        case ENew(enew, params):
-          var valueBlocks: Array<Expr> = [];
-          for(param in params) {
-            var meta = findMetaInBlock([param]);
-            var metaBlock: Array<Expr> = extractBlock(meta);
-            valueBlocks.push(metaBlock[0]);
-          }
-          retValBlock.push({expr: ENew(enew, valueBlocks), pos: Context.currentPos()});
-        case EArrayDecl(values):
-          var valueBlocks: Array<Expr> = [];
-          for(value in values) {
-            var meta = findMetaInBlock([value]);
-            var metaBlock: Array<Expr> = extractBlock(meta);
-            valueBlocks.push(metaBlock[0]);
-          }
-          retValBlock.push({expr: EArrayDecl(valueBlocks), pos: Context.currentPos()});
-        case EField(fieldExpr, field):
-          retValBlock.push(expr);
-        case EVars(vars):
-          var retVars: Array<Var> = [];
-          for(v in vars) {
-            var meta = findMetaInBlock([v.expr]);
-            var blk = extractBlock(meta);
-            v.expr = blk[0];
-            retVars.push(v);
-          }
-          retValBlock.push(expr);
-        case EBinop(OpArrow, a, b):
-          var meta = findMetaInBlock([a]);
+    switch(expr.expr) {
+      case ECall(ecall, params):
+        var valueBlocks: Array<Expr> = [];
+        for(param in params) {
+          var meta = findMetaInBlock(param);
+          var metaBlock: Array<Expr> = extractBlock(meta);
+          valueBlocks.push(metaBlock[0]);
+        }
+        retValBlock.push({expr: ECall(ecall, valueBlocks), pos: Context.currentPos()});
+      case EMeta(entry, expr):
+        return extractMeta(entry, expr, null);
+      case ENew(enew, params):
+        var valueBlocks: Array<Expr> = [];
+        for(param in params) {
+          var meta = findMetaInBlock(param);
+          var metaBlock: Array<Expr> = extractBlock(meta);
+          valueBlocks.push(metaBlock[0]);
+        }
+        retValBlock.push({expr: ENew(enew, valueBlocks), pos: Context.currentPos()});
+      case EArrayDecl(values):
+        var valueBlocks: Array<Expr> = [];
+        for(value in values) {
+          var meta = findMetaInBlock(value);
+          var metaBlock: Array<Expr> = extractBlock(meta);
+          valueBlocks.push(metaBlock[0]);
+        }
+        retValBlock.push({expr: EArrayDecl(valueBlocks), pos: Context.currentPos()});
+      case EField(fieldExpr, field):
+        retValBlock.push(expr);
+      case EVars(vars):
+        var retVars: Array<Var> = [];
+        for(v in vars) {
+          var meta = findMetaInBlock(v.expr);
           var blk = extractBlock(meta);
-          retValBlock.push(blk[0]);
+          v.expr = blk[0];
+          retVars.push(v);
+        }
+        retValBlock.push(expr);
+      case EBinop(OpArrow, a, b):
+        var meta = findMetaInBlock(a);
+        var blk = extractBlock(meta);
+        retValBlock.push(blk[0]);
 
-          meta = findMetaInBlock([b]);
-          blk = extractBlock(meta);
-          retValBlock.push(blk[0]);
-        case EBinop(OpAssign, a, b):
-          var meta = findMetaInBlock([b]);
-          var blk = extractBlock(meta);
+        meta = findMetaInBlock(b);
+        blk = extractBlock(meta);
+        retValBlock.push(blk[0]);
+      case EBinop(OpAssign, a, b):
+        var meta = findMetaInBlock(b);
+        var blk = extractBlock(meta);
 
-          var meta = findMetaInBlock([a]);
-          var blkA = extractBlock(meta)[0];
+        var meta = findMetaInBlock(a);
+        var blkA = extractBlock(meta)[0];
 
-          retValBlock.push({expr: EBinop(OpAssign, blkA, blk[0]), pos: Context.currentPos()});
-        case EBinop(OpEq, a, b):
-          var meta = findMetaInBlock([b]);
-          var blkB = extractBlock(meta)[0];
+        retValBlock.push({expr: EBinop(OpAssign, blkA, blk[0]), pos: Context.currentPos()});
+      case EBinop(OpEq, a, b):
+        var meta = findMetaInBlock(b);
+        var blkB = extractBlock(meta)[0];
 
-          var meta = findMetaInBlock([a]);
-          var blk = extractBlock(meta)[0];
-          switch(blk.expr) {
-            case ECall(_, field):
-              field[1] = blkB;
-              blk;
-            case _:
-              throw "AnnaLang: Unhandled case";
-          }
-          retValBlock.push(blk);
-        case _:
-          retValBlock.push(expr);
-      }
+        var meta = findMetaInBlock(a);
+        var blk = extractBlock(meta)[0];
+        switch(blk.expr) {
+          case ECall(_, field):
+            field[1] = blkB;
+            blk;
+          case _:
+            throw "AnnaLang: Unhandled case";
+        }
+        retValBlock.push(blk);
+      case _:
+        retValBlock.push(expr);
     }
     var block: Expr = {expr: EBlock(retValBlock), pos: Context.currentPos()};
     return block;
   }
 
-  private static function extractMeta(entry, expr): Expr {
+  private static function extractMeta(entry, exprL: Expr, exprR: Expr): Expr {
     var funString: String = entry.name;
     var fun = Reflect.field(Macros, funString);
-    return fun(expr);
+    return fun(exprL, exprR);
   }
 
   public static function extractBlock(expr: Expr):Array<Expr> {
@@ -181,7 +185,7 @@ class Macros {
   }
 
   private static inline function collectMetaExpr(value: Expr, arrayValues: Array<Expr>): Void {
-    var meta = findMetaInBlock([value]);
+    var meta = findMetaInBlock(value);
     var metaBlock = extractBlock(meta);
     if(metaBlock[0] != null) {
       arrayValues.push(metaBlock[0]);
@@ -193,7 +197,7 @@ class Macros {
     return Std.parseInt(str);
   }
 
-  private static function tuple(expr: Expr):Expr {
+  private static function tuple(expr: Expr, _: Expr):Expr {
     return findMeta(expr, function(expr: Expr): Expr {
       return macro {
         Tuple.create(EitherMacro.gen(cast($e{expr}, Array<Dynamic>)));
@@ -201,7 +205,7 @@ class Macros {
     });
   }
 
-  private static function map(expr: Expr):Expr {
+  private static function map(expr: Expr, _: Expr):Expr {
     return findMeta(expr, function(expr: Expr): Expr {
       return macro {
         MMap.create(EitherMacro.genMap(cast($e{expr}, Array<Dynamic>)));
@@ -209,7 +213,7 @@ class Macros {
     });
   }
 
-  public static function list(expr: Expr):Expr {
+  public static function list(expr: Expr, _: Expr):Expr {
     return findMeta(expr, function(expr: Expr): Expr {
       return macro {
         LList.create(EitherMacro.gen(cast($e{expr}, Array<Dynamic>)));
@@ -217,7 +221,7 @@ class Macros {
     });
   }
 
-  public static function atom(expr: Expr):Expr {
+  public static function atom(expr: Expr, _: Expr):Expr {
     return findMeta(expr, function(expr: Expr): Expr {
       return macro {
         Atom.create($e{expr});
@@ -225,7 +229,7 @@ class Macros {
     });
   }
 
-  public static function assert(expr: Expr):Expr {
+  public static function assert(expr: Expr, _: Expr):Expr {
     var context: String = '${expr.pos}';
     context = StringTools.replace(context, Sys.getCwd(), '');
     return macro {
@@ -233,7 +237,7 @@ class Macros {
     }
   }
 
-  public static function refute(expr: Expr):Expr {
+  public static function refute(expr: Expr, _: Expr):Expr {
     var context: String = '${expr.pos}';
     context = StringTools.replace(context, Sys.getCwd(), '');
     return macro {
@@ -241,7 +245,7 @@ class Macros {
     }
   }
 
-  public static function match(expr: Expr):Expr {
+  public static function match(expr: Expr, _: Expr):Expr {
     MacroLogger.logExpr(expr);
     return macro {
       [];
@@ -258,18 +262,18 @@ class Macros {
   }
 
   macro public static function getTuple(expr: Expr): Expr {
-    return tuple(expr);
+    return tuple(expr, null);
   }
 
   macro public static function getMap(expr: Expr): Expr {
-    return map(expr);
+    return map(expr, null);
   }
 
   macro public static function getList(expr: Expr): Expr {
-    return list(expr);
+    return list(expr, null);
   }
 
   macro public static function getAtom(expr: Expr): Expr {
-    return atom(expr);
+    return atom(expr, null);
   }
 }
