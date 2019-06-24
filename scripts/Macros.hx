@@ -78,6 +78,10 @@ class Macros {
   }
 
   private static function findMetaInBlock(expr: Expr, rhs: Expr):Expr {
+    if(expr == null) {
+      return expr;
+    }
+
     var retValBlock: Array<Expr> = [];
     switch(expr.expr) {
       case ECall(ecall, params):
@@ -152,7 +156,13 @@ class Macros {
 
   private static function handleMeta(entry, lhs, rhs):Expr {
     var result = switch(lhs.expr) {
-      case EBinop(OpAssign, lhs, rhs):
+      case EBinop(_, lhs, rhs):
+        extractMeta(entry, lhs, rhs);
+      case EMeta(em, expr):
+        var lhsStr = printer.printExpr(lhs);
+        var sides = lhsStr.split('=');
+        lhs = findMetaInBlock(haxeToExpr(sides[0]), null);
+        rhs = findMetaInBlock(haxeToExpr(sides[1]), null);
         extractMeta(entry, lhs, rhs);
       case _:
         extractMeta(entry, lhs, rhs);
@@ -281,19 +291,28 @@ class Macros {
     var exprStrings: Array<String> = [];
     switch(lhs.expr) {
       case EConst(CString(value)):
-        var haxeStr: String = 'if("${value}" == ${printer.printExpr(rhs)}) {
-          
+        var haxeStr: String = 'if("${value}" == ${rhsStr}) {
         }';
         exprStrings.push(haxeStr);
       case EConst(CIdent(variable)):
         var haxeStr: String = '
         if(true) {
-          ${variable} = ${printer.printExpr(rhs)};
+          ${variable} = ${rhsStr};
         }';
         exprStrings.push(haxeStr);
-        var varString: String = 'var ${variable} = null;';
+        var varString: String = 'var ${variable};';
         matchedVars.push(varString);
+      case EConst(CInt(value)) | EConst(CFloat(value)):
+        var haxeStr: String = 'if(${value} == ${rhsStr}) {
+        }';
+        exprStrings.push(haxeStr);
+      case ECall(_, _):
+        var haxeStr: String = 'if(Anna.toAnnaString(${lhsStr}) == Anna.toAnnaString(${printer.printExpr(rhs)})) {
+        }';
+        MacroLogger.log(haxeStr);
+        exprStrings.push(haxeStr);
       case e:
+        MacroLogger.logExpr(lhs, 'Unhandled match');
         MacroLogger.log(e, 'Unhandled match');
         throw "AnnaLang: Unhandled match expression.";
     }
