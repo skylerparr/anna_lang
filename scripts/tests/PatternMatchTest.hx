@@ -83,17 +83,16 @@ class PatternMatchTest {
     @assert variable == a;
   }
 
-//  public static function shouldThrowMatchExceptionIfUnableToMatchTuple(): Void {
-//    var t: Tuple = @tuple[];
-//    Assert.throwsException(function(): Void {
-//      @match @tuple[1, 2] = t;
-//    },UnableToMatchException);
-//  }
-//
-//  public static function shouldMatchTuple(): Void {
-//    var t: Tuple = @tuple[1, "2", @atom 'three'];
-//    Logger.inspect(t);
-//    @match @tuple[1, "2", @atom 'three'] = t;
-//  }
+  public static function shouldThrowMatchExceptionIfUnableToMatchTuple(): Void {
+    var t: Tuple = @tuple[];
+    Assert.throwsException(function(): Void {
+      @match @tuple[1, 2] = t;
+    },UnableToMatchException);
+  }
+
+  public static function shouldMatchTuple(): Void {
+    var t: Tuple = @tuple[1, "2", @atom 'three'];
+    @match @tuple[1, "2", @atom 'three'] = t;
+  }
 
 }

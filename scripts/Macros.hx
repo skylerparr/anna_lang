@@ -117,6 +117,76 @@ class Macros {
           retVars.push(v);
         }
         retValBlock.push(expr);
+      case EBinop(_, _, _):
+         handleBinop(expr, rhs, retValBlock);
+      case EFunction(name, func):
+        var bodyExpr = func.expr;
+        var meta = findMetaInBlock(bodyExpr, null);
+        func.expr = meta;
+        retValBlock.push(expr);
+      case EBlock(exprs):
+        var updatedMeta: Array<Expr> = [];
+        for(expr in exprs) {
+          var meta = findMetaInBlock(expr, null);
+          updatedMeta.push(meta);
+        }
+        retValBlock.push({expr: EBlock(updatedMeta), pos: Context.currentPos()});
+      case EIf(econd, eif, eelse):
+        var econdMeta = findMetaInBlock(econd, null);
+        var eifMeta = findMetaInBlock(eif, null);
+        var eelseMeta = findMetaInBlock(eelse, null);
+        retValBlock.push({expr: EIf(econdMeta, eifMeta, eelseMeta), pos: Context.currentPos()});
+      case EArray(e1, e2):
+        throw "AnnaLang: Unimplemented case";
+      case EBreak:
+        throw "AnnaLang: Unimplemented case";
+      case ECast(e, t):
+        retValBlock.push(expr);
+      case ECheckType(e, t):
+        throw "AnnaLang: Unimplemented case";
+      case EConst(c):
+        retValBlock.push(expr);
+      case EContinue:
+        throw "AnnaLang: Unimplemented case";
+      case EDisplay(e, isCall):
+        throw "AnnaLang: Unimplemented case";
+      case EDisplayNew(t):
+        throw "AnnaLang: Unimplemented case";
+      case EFor(it, expr):
+        throw "AnnaLang: Unimplemented case";
+      case EIn(e1, e2):
+        throw "AnnaLang: Unimplemented case";
+      case EObjectDecl(fields):
+        retValBlock.push(expr);
+      case EParenthesis(e):
+        throw "AnnaLang: Unimplemented case";
+      case EReturn(e):
+        retValBlock.push(expr);
+      case ESwitch(e, cases, edef):
+        retValBlock.push(expr);
+      case ETernary(econd, eif, eelse):
+        throw "AnnaLang: Unimplemented case";
+      case EThrow(e):
+        retValBlock.push(expr);
+      case ETry(e, catches):
+        throw "AnnaLang: Unimplemented case";
+      case EUnop(op, postFix, e):
+        throw "AnnaLang: Unimplemented case";
+      case EUntyped(e):
+         throw "AnnaLang: Unimplemented case";
+      case EWhile(econd, e, normalWhile):
+        throw "AnnaLang: Unimplemented case";
+    }
+    if(retValBlock.length == 1) {
+      return retValBlock[0];
+    } else {
+      var block: Expr = {expr: EBlock(retValBlock), pos: Context.currentPos()};
+      return block;
+    }
+  }
+
+  private static function handleBinop(expr: Expr, rhs: Expr, retValBlock: Array<Expr>):Void {
+    switch(expr.expr) {
       case EBinop(OpArrow, a, b):
         var meta = findMetaInBlock(a, rhs);
         retValBlock.push(meta);
@@ -131,26 +201,46 @@ class Macros {
       case EBinop(OpEq, a, b):
         var meta = findMetaInBlock(a, b);
         retValBlock.push(meta);
-      case EFunction(name, func):
-        var bodyExpr = func.expr;
-        var meta = findMetaInBlock(bodyExpr, null);
-        func.expr = meta;
-        retValBlock.push(expr);
-      case EBlock(exprs):
-        var updatedMeta: Array<Expr> = [];
-        for(expr in exprs) {
-          var meta = findMetaInBlock(expr, null);
-          updatedMeta.push(meta);
-        }
-        retValBlock.push({expr: EBlock(updatedMeta), pos: Context.currentPos()});
-      case e:
-        retValBlock.push(expr);
-    }
-    if(retValBlock.length == 1) {
-      return retValBlock[0];
-    } else {
-      var block: Expr = {expr: EBlock(retValBlock), pos: Context.currentPos()};
-      return block;
+      case EBinop(OpAdd, a, b):
+        throw "AnnaLang: Unimplemented case";
+      case EBinop(OpAnd, a, b):
+        throw "AnnaLang: Unimplemented case";
+      case EBinop(OpBoolAnd, a, b):
+        throw "AnnaLang: Unimplemented case";
+      case EBinop(OpBoolOr, a, b):
+        throw "AnnaLang: Unimplemented case";
+      case EBinop(OpDiv, a, b):
+        throw "AnnaLang: Unimplemented case";
+      case EBinop(OpGt, a, b):
+        throw "AnnaLang: Unimplemented case";
+      case EBinop(OpGte, a, b):
+        throw "AnnaLang: Unimplemented case";
+      case EBinop(OpInterval, a, b):
+        throw "AnnaLang: Unimplemented case";
+      case EBinop(OpLt, a, b):
+        throw "AnnaLang: Unimplemented case";
+      case EBinop(OpLte, a, b):
+        throw "AnnaLang: Unimplemented case";
+      case EBinop(OpMod, a, b):
+        throw "AnnaLang: Unimplemented case";
+      case EBinop(OpMult, a, b):
+        throw "AnnaLang: Unimplemented case";
+      case EBinop(OpNotEq, a, b):
+        throw "AnnaLang: Unimplemented case";
+      case EBinop(OpOr, a, b):
+        throw "AnnaLang: Unimplemented case";
+      case EBinop(OpShl, a, b):
+        throw "AnnaLang: Unimplemented case";
+      case EBinop(OpShr, a, b):
+        throw "AnnaLang: Unimplemented case";
+      case EBinop(OpSub, a, b):
+        throw "AnnaLang: Unimplemented case";
+      case EBinop(OpUShr, a, b):
+        throw "AnnaLang: Unimplemented case";
+      case EBinop(OpXor, a, b):
+        throw "AnnaLang: Unimplemented case";
+      case _:
+        throw "AnnaLang: This shouldn't be possible";
     }
   }
 
@@ -161,8 +251,10 @@ class Macros {
       case EMeta(em, expr):
         var lhsStr = printer.printExpr(lhs);
         var sides = lhsStr.split('=');
-        lhs = findMetaInBlock(haxeToExpr(sides[0]), null);
-        rhs = findMetaInBlock(haxeToExpr(sides[1]), null);
+        lhs = haxeToExpr(sides[0]);
+        if(sides.length == 2) {
+          rhs = haxeToExpr(sides[1]);
+        }
         extractMeta(entry, lhs, rhs);
       case _:
         extractMeta(entry, lhs, rhs);
@@ -280,6 +372,12 @@ class Macros {
     }
   }
 
+  public static function _if(lhs: Expr, rhs: Expr):Expr {
+    return macro {
+
+    };
+  }
+
   public static function match(lhs: Expr, rhs: Expr):Expr {
     var p: Printer = new Printer();
     var lhsStr: String = p.printExpr(lhs);
@@ -291,8 +389,7 @@ class Macros {
     var exprStrings: Array<String> = [];
     switch(lhs.expr) {
       case EConst(CString(value)):
-        var haxeStr: String = 'if("${value}" == ${rhsStr}) {
-        }';
+        var haxeStr: String = 'Macros.valuesMatch(${lhsStr}, ${rhsStr})';
         exprStrings.push(haxeStr);
       case EConst(CIdent(variable)):
         var haxeStr: String = '
@@ -300,27 +397,25 @@ class Macros {
           ${variable} = ${rhsStr};
         }';
         exprStrings.push(haxeStr);
-        var varString: String = 'var ${variable};';
+        var varString: String = 'var ${variable}: Null<Dynamic> = null;';
         matchedVars.push(varString);
       case EConst(CInt(value)) | EConst(CFloat(value)):
-        var haxeStr: String = 'if(${value} == ${rhsStr}) {
-        }';
+        var haxeStr: String = 'Macros.valuesMatch(${lhsStr}, ${rhsStr})';
         exprStrings.push(haxeStr);
       case ECall(_, _):
-        var haxeStr: String = 'if(Anna.toAnnaString(${lhsStr}) == Anna.toAnnaString(${printer.printExpr(rhs)})) {
-        }';
-        MacroLogger.log(haxeStr);
+        var haxeStr: String = 'Macros.valuesMatch(${lhsStr}, ${rhsStr})';
+        exprStrings.push(haxeStr);
+      case EMeta(meta, expr):
+        var haxeStr: String = 'Macros.valuesMatch(${lhsStr}, ${rhsStr})';
         exprStrings.push(haxeStr);
       case e:
-        MacroLogger.logExpr(lhs, 'Unhandled match');
-        MacroLogger.log(e, 'Unhandled match');
+        MacroLogger.logExpr(lhs, 'Unhandled match: lhs');
+        MacroLogger.logExpr(rhs, 'Unhandled match: rhs');
+        MacroLogger.log(e, 'Unhandled match lhs');
         throw "AnnaLang: Unhandled match expression.";
     }
 
-    exprStrings.push('{
-      throw new lang.UnableToMatchException(\'Unable to match expression ${context}: ${lhsStr} = ${rhsStr}\');
-    }');
-    var retVal: String = matchedVars.join('\n') + '\n' + exprStrings.join("else");
+    var retVal: String = matchedVars.join('\n') + '\n' + exprStrings.join("\n");
 
     return haxeToExpr(retVal);
   }
@@ -353,5 +448,15 @@ class Macros {
 
   macro public static function getAtom(expr: Expr): Expr {
     return atom(expr, null);
+  }
+
+  macro public static function valuesMatch(lhs: Expr, rhs: Expr): Expr {
+    return macro {
+      if(Anna.toAnnaString($e{lhs}) == Anna.toAnnaString($e{rhs})) {
+
+      } else {
+        throw new lang.UnableToMatchException('Unable to match expression ${Context.currentPos()}: ${printer.printExpr(lhs)} = ${printer.printExpr(rhs)}');
+      }
+    }
   }
 }
