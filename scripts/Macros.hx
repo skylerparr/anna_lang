@@ -385,39 +385,9 @@ class Macros {
     var context: String = '${lhs.pos}';
     context = StringTools.replace(context, Sys.getCwd(), '');
 
-    var matchedVars: Array<String> = [];
-    var exprStrings: Array<String> = [];
-    switch(lhs.expr) {
-      case EConst(CString(value)):
-        var haxeStr: String = 'Macros.valuesMatch(${lhsStr}, ${rhsStr})';
-        exprStrings.push(haxeStr);
-      case EConst(CIdent(variable)):
-        var haxeStr: String = '
-        if(true) {
-          ${variable} = ${rhsStr};
-        }';
-        exprStrings.push(haxeStr);
-        var varString: String = 'var ${variable}: Null<Dynamic> = null;';
-        matchedVars.push(varString);
-      case EConst(CInt(value)) | EConst(CFloat(value)):
-        var haxeStr: String = 'Macros.valuesMatch(${lhsStr}, ${rhsStr})';
-        exprStrings.push(haxeStr);
-      case ECall(_, _):
-        var haxeStr: String = 'Macros.valuesMatch(${lhsStr}, ${rhsStr})';
-        exprStrings.push(haxeStr);
-      case EMeta(meta, expr):
-        var haxeStr: String = 'Macros.valuesMatch(${lhsStr}, ${rhsStr})';
-        exprStrings.push(haxeStr);
-      case e:
-        MacroLogger.logExpr(lhs, 'Unhandled match: lhs');
-        MacroLogger.logExpr(rhs, 'Unhandled match: rhs');
-        MacroLogger.log(e, 'Unhandled match lhs');
-        throw "AnnaLang: Unhandled match expression.";
-    }
+    var haxeStr: String = 'Macros.valuesMatch(${lhsStr}, ${rhsStr})';
 
-    var retVal: String = matchedVars.join('\n') + '\n' + exprStrings.join("\n");
-
-    return haxeToExpr(retVal);
+    return haxeToExpr(haxeStr);
   }
 
   public static function haxeToExpr(str: String): Expr {
@@ -451,12 +421,32 @@ class Macros {
   }
 
   macro public static function valuesMatch(lhs: Expr, rhs: Expr): Expr {
-    return macro {
-      if(Anna.toAnnaString($e{lhs}) == Anna.toAnnaString($e{rhs})) {
+    MacroLogger.log(lhs, 'lhs');
+    MacroLogger.log(rhs, 'rhs');
+    return switch(lhs.expr) {
+      case EConst(CString(val)) | EConst(CInt(val)) | EConst(CFloat(val)):
+        macro {
+          if(Anna.toAnnaString($e{lhs}) == Anna.toAnnaString($e{rhs})) {
 
-      } else {
-        throw new lang.UnableToMatchException('Unable to match expression ${Context.currentPos()}: ${printer.printExpr(lhs)} = ${printer.printExpr(rhs)}');
-      }
+          } else {
+            throw new lang.UnableToMatchException('Unable to match expression ${Context.currentPos()}: ${printer.printExpr(lhs)} = ${printer.printExpr(rhs)}');
+          }
+        }
+      case ECall({expr: EField({expr: EConst(CIdent('Atom'))}, 'create')}, _):
+        macro {
+          if(Anna.toAnnaString($e{lhs}) == Anna.toAnnaString($e{rhs})) {
+
+          } else {
+            throw new lang.UnableToMatchException('Unable to match expression ${Context.currentPos()}: ${printer.printExpr(lhs)} = ${printer.printExpr(rhs)}');
+          }
+        }
+      case EConst(CIdent(variable)):
+        macro {
+          if(true) {}
+        }
+      case e:
+        MacroLogger.log(e, "values match e");
+        throw "unsupported";
     }
   }
 }
