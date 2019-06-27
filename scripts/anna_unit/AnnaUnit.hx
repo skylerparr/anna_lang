@@ -1,5 +1,6 @@
 package anna_unit;
 
+import util.TimeUtil;
 import sys.FileSystem;
 import haxe.Timer;
 using StringTools;
@@ -81,11 +82,7 @@ class AnnaUnit {
       cpp.Lib.println('Fail: ${failureCounter} test(s).');
     }
     var diff: Float = (Timer.stamp() - startTime) * 1000;
-    if(diff < 1) {
-      cpp.Lib.println('Total Time: ${Std.int((Timer.stamp() - startTime) * 1000000)}µs');
-    } else {
-      cpp.Lib.println('Total Time: ${Std.int(diff)}ms');
-    }
+    cpp.Lib.println('Total Time: ${TimeUtil.getHumanTime(diff)}');
   }
 
   public static function clearFailed(): Void {

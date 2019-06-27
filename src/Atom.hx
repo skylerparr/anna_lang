@@ -1,4 +1,5 @@
 package ;
+import lang.EmptyAtomException;
 import lang.CustomTypes.CustomType;
 class Atom implements CustomType {
   public static function create(name: String): Atom {
@@ -9,7 +10,7 @@ class Atom implements CustomType {
 
   public inline function new(value: String) {
     if(value == "" || value == null) {
-      throw "AnnaLang: Atom must have a value";
+      throw new EmptyAtomException("Atom must have a value");
     }
     Reflect.setField(this, 'value', value);
   }

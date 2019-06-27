@@ -441,9 +441,9 @@ class Macros {
           }
         }
       case EConst(CIdent(variable)):
-        macro {
-          if(true) {}
-        }
+        var strExpr = 'var ${printer.printExpr(lhs)} = ${printer.printExpr(rhs)};';
+        var e = haxeToExpr(strExpr);
+        e;
       case e:
         MacroLogger.log(e, "values match e");
         throw "unsupported";
