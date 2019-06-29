@@ -11,3 +11,4 @@
 -lib hx-color-trace
 -lib ihx
 -lib haxe-strings
+-lib hscript-plus

@@ -1,6 +1,7 @@
 package;
 
-import hscript.Parser;
+import hscript.plus.ParserPlus;
+import lang.macros.MacroLogger;
 import haxe.macro.Printer;
 import haxe.macro.Context;
 import lang.macros.MacroLogger;
@@ -10,8 +11,8 @@ import haxe.macro.Expr;
 // #pos\(.*?\)
 class Macros {
 
-  private static var parser: Parser = {
-    parser = new Parser();
+  private static var parser: ParserPlus = {
+    parser = new ParserPlus();
     parser.allowTypes = true;
     parser.allowMetadata = true;
     parser;
@@ -285,8 +286,11 @@ class Macros {
 
   public static function findMeta(expr: Expr, callback: Expr->Expr):Expr {
     return {
+
+          MacroLogger.logExpr(expr, "supported expr");
+          MacroLogger.log(expr, "supported expr");
       switch(expr.expr) {
-        case EArrayDecl(values):
+        case EArrayDecl(values) | ECall({ expr: EField({ expr: EArrayDecl(values)}, _)}, _):
           var arrayValues: Array<Expr> = [];
           for(value in values) {
             switch(value.expr) {
@@ -308,7 +312,8 @@ class Macros {
         case ECheckType(e, t):
           expr;
         case e:
-          MacroLogger.log(e, "Unsupported");
+          MacroLogger.logExpr(expr, "Unsupported expr");
+          MacroLogger.log(expr, "Unsupported expr");
           throw("AnnaLang: Unsupported expression for now.");
       }
     }
@@ -385,12 +390,40 @@ class Macros {
     var context: String = '${lhs.pos}';
     context = StringTools.replace(context, Sys.getCwd(), '');
 
-    var haxeStr: String = 'Macros.valuesMatch(${lhsStr}, ${rhsStr})';
+    var declaredVariables: Array<String> = [];
+    switch(lhs.expr) {
+      case EMeta({name: 'tuple'}, expr):
+        switch(expr.expr) {
+          case EArrayDecl(items):
+            for(item in items) {
+              switch(item.expr) {
+                case EConst(CIdent(variable)):
+                  declaredVariables.push('var ${variable}: Null<Dynamic> = null;');
+                case _:
+                  //intentionally blank
+              }
+            }
+          case _:
+            throw "syntax error: Unexpected tuple values ${printer.printExpr(expr) at ${getPosContext(lhs.pos)}}";
+        }
+      case _:
+        //intentionally blank
+    }
+
+    var vars: String = declaredVariables.join('\n');
+    var haxeStr: String = '${vars}\n Macros.valuesMatch(${lhsStr}, ${rhsStr})';
 
     return haxeToExpr(haxeStr);
   }
 
+  public static function getPosContext(pos: Position): String {
+    var context: String = '${pos}';
+    context = StringTools.replace(context, Sys.getCwd(), '');
+    return context;
+  }
+
   public static function haxeToExpr(str: String): Expr {
+    MacroLogger.log(str, 'haxeToExpr');
     var ast = parser.parseString(str);
     return new hscript.Macro(Context.currentPos()).convert(ast);
   }
@@ -423,7 +456,8 @@ class Macros {
   macro public static function valuesMatch(lhs: Expr, rhs: Expr): Expr {
     MacroLogger.log(lhs, 'lhs');
     MacroLogger.log(rhs, 'rhs');
-    return switch(lhs.expr) {
+    MacroLogger.log(macro var array: Array<String> = []);
+    var e = switch(lhs.expr) {
       case EConst(CString(val)) | EConst(CInt(val)) | EConst(CFloat(val)):
         macro {
           if(Anna.toAnnaString($e{lhs}) == Anna.toAnnaString($e{rhs})) {
@@ -444,9 +478,33 @@ class Macros {
         var strExpr = 'var ${printer.printExpr(lhs)} = ${printer.printExpr(rhs)};';
         var e = haxeToExpr(strExpr);
         e;
+      case ECall({expr: EField({expr: EConst(CIdent('Tuple'))}, 'create')}, _):
+        macro {
+          if(Anna.toAnnaString($e{lhs}) == Anna.toAnnaString($e{rhs})) {
+
+          } else {
+            throw new lang.UnableToMatchException('Unable to match expression ${Context.currentPos()}: ${printer.printExpr(lhs)} = ${printer.printExpr(rhs)}');
+          }
+        }
+      case EMeta({name: 'tuple'}, {expr: EArrayDecl(values)}):
+        var metaL = findMetaInBlock(lhs, null);
+        var metaR = findMetaInBlock(rhs, null);
+        var haxeStr: String = '
+        var three: Null<Dynamic> = null;
+        var array = ${printer.printExpr(metaL)}.asArray();
+                               ';
+        var valueStrArr: Array<String> = [];
+        for(index in 0...values.length) {
+//          valueStrArr.push('Macros.valuesMatch(array[${index}], matchArray[${index}]);');
+        }
+        haxeStr = '${haxeStr}\n${valueStrArr.join('\n')}';
+        MacroLogger.log(haxeStr, "haxeStr");
+        haxeToExpr(haxeStr);
       case e:
         MacroLogger.log(e, "values match e");
         throw "unsupported";
     }
+    MacroLogger.logExpr(e);
+    return e;
   }
 }

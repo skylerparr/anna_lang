@@ -96,7 +96,7 @@ class Main {
       }
 
       Runtime.start('AnnaLang', '${basePath}scripts', '${basePath}out/',
-      ['${basePath}src/'], ['hscript'], onComplete);
+      ['${basePath}src/'], ['hscript-plus'], onComplete);
     });
 
     pollChanges();
