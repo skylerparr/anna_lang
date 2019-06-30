@@ -6,6 +6,7 @@ import haxe.macro.Printer;
 import haxe.macro.Context;
 import lang.macros.MacroLogger;
 import haxe.macro.Expr;
+using haxe.macro.Tools;
 
 //  =>
 // #pos\(.*?\)
@@ -21,8 +22,6 @@ class Macros {
   private static var printer: Printer = new Printer();
 
   macro public static function build(args: Expr = null): Array<Field> {
-    MacroLogger.log("=====================");
-    MacroLogger.log('Macros: ${Context.getLocalClass()}');
     var fields: Array<Field> = Context.getBuildFields();
     var retFields: Array<Field> = [];
     for(field in fields) {
@@ -138,7 +137,9 @@ class Macros {
         var eelseMeta = findMetaInBlock(eelse, null);
         retValBlock.push({expr: EIf(econdMeta, eifMeta, eelseMeta), pos: Context.currentPos()});
       case EArray(e1, e2):
-        throw "AnnaLang: Unimplemented case";
+//        throw "AnnaLang: Unimplemented case";
+        retValBlock.push(expr);
+
       case EBreak:
         throw "AnnaLang: Unimplemented case";
       case ECast(e, t):
@@ -265,7 +266,7 @@ class Macros {
 
   private static function extractMeta(entry, exprL: Expr, exprR: Expr): Expr {
     var funString: String = entry.name;
-    var fun = Reflect.field(Macros, funString);
+    var fun = Reflect.field(Macros, '_' + funString);
     var result = fun(exprL, exprR);
     var blk = extractBlock(result);
     if(blk.length == 1) {
@@ -286,9 +287,6 @@ class Macros {
 
   public static function findMeta(expr: Expr, callback: Expr->Expr):Expr {
     return {
-
-          MacroLogger.logExpr(expr, "supported expr");
-          MacroLogger.log(expr, "supported expr");
       switch(expr.expr) {
         case EArrayDecl(values) | ECall({ expr: EField({ expr: EArrayDecl(values)}, _)}, _):
           var arrayValues: Array<Expr> = [];
@@ -329,7 +327,7 @@ class Macros {
     return Std.parseInt(str);
   }
 
-  private static function tuple(expr: Expr, _: Expr):Expr {
+  private static function _tuple(expr: Expr, _: Expr):Expr {
     return findMeta(expr, function(expr: Expr): Expr {
       return macro {
         Tuple.create(EitherMacro.gen(cast($e{expr}, Array<Dynamic>)));
@@ -337,7 +335,7 @@ class Macros {
     });
   }
 
-  private static function map(expr: Expr, _: Expr):Expr {
+  private static function _map(expr: Expr, _: Expr):Expr {
     return findMeta(expr, function(expr: Expr): Expr {
       return macro {
         MMap.create(EitherMacro.genMap(cast($e{expr}, Array<Dynamic>)));
@@ -345,7 +343,7 @@ class Macros {
     });
   }
 
-  public static function list(expr: Expr, _: Expr):Expr {
+  public static function _list(expr: Expr, _: Expr):Expr {
     return findMeta(expr, function(expr: Expr): Expr {
       return macro {
         LList.create(EitherMacro.gen(cast($e{expr}, Array<Dynamic>)));
@@ -353,7 +351,7 @@ class Macros {
     });
   }
 
-  public static function atom(expr: Expr, _: Expr):Expr {
+  public static function _atom(expr: Expr, _: Expr):Expr {
     return findMeta(expr, function(expr: Expr): Expr {
       return macro {
         Atom.create($e{expr});
@@ -361,7 +359,7 @@ class Macros {
     });
   }
 
-  public static function assert(lhs: Expr, rhs: Expr):Expr {
+  public static function _assert(lhs: Expr, rhs: Expr):Expr {
     var context: String = '${lhs.pos}';
     context = StringTools.replace(context, Sys.getCwd(), '');
     return macro {
@@ -369,7 +367,7 @@ class Macros {
     }
   }
 
-  public static function refute(lhs: Expr, rhs: Expr):Expr {
+  public static function _refute(lhs: Expr, rhs: Expr):Expr {
     var context: String = '${lhs.pos}';
     context = StringTools.replace(context, Sys.getCwd(), '');
     return macro {
@@ -383,7 +381,7 @@ class Macros {
     };
   }
 
-  public static function match(lhs: Expr, rhs: Expr):Expr {
+  public static function _match(lhs: Expr, rhs: Expr):Expr {
     var p: Printer = new Printer();
     var lhsStr: String = p.printExpr(lhs);
     var rhsStr: String = p.printExpr(rhs);
@@ -398,7 +396,7 @@ class Macros {
             for(item in items) {
               switch(item.expr) {
                 case EConst(CIdent(variable)):
-                  declaredVariables.push('var ${variable}: Null<Dynamic> = null;');
+                  declaredVariables.push('var ${variable} = null;');
                 case _:
                   //intentionally blank
               }
@@ -423,7 +421,6 @@ class Macros {
   }
 
   public static function haxeToExpr(str: String): Expr {
-    MacroLogger.log(str, 'haxeToExpr');
     var ast = parser.parseString(str);
     return new hscript.Macro(Context.currentPos()).convert(ast);
   }
@@ -438,25 +435,22 @@ class Macros {
   }
 
   macro public static function getTuple(expr: Expr): Expr {
-    return tuple(expr, null);
+    return _tuple(expr, null);
   }
 
   macro public static function getMap(expr: Expr): Expr {
-    return map(expr, null);
+    return _map(expr, null);
   }
 
   macro public static function getList(expr: Expr): Expr {
-    return list(expr, null);
+    return _list(expr, null);
   }
 
   macro public static function getAtom(expr: Expr): Expr {
-    return atom(expr, null);
+    return _atom(expr, null);
   }
 
   macro public static function valuesMatch(lhs: Expr, rhs: Expr): Expr {
-    MacroLogger.log(lhs, 'lhs');
-    MacroLogger.log(rhs, 'rhs');
-    MacroLogger.log(macro var array: Array<String> = []);
     var e = switch(lhs.expr) {
       case EConst(CString(val)) | EConst(CInt(val)) | EConst(CFloat(val)):
         macro {
@@ -475,7 +469,7 @@ class Macros {
           }
         }
       case EConst(CIdent(variable)):
-        var strExpr = 'var ${printer.printExpr(lhs)} = ${printer.printExpr(rhs)};';
+        var strExpr = '${printer.printExpr(lhs)} = ${printer.printExpr(rhs)};';
         var e = haxeToExpr(strExpr);
         e;
       case ECall({expr: EField({expr: EConst(CIdent('Tuple'))}, 'create')}, _):
@@ -490,21 +484,18 @@ class Macros {
         var metaL = findMetaInBlock(lhs, null);
         var metaR = findMetaInBlock(rhs, null);
         var haxeStr: String = '
-        var three: Null<Dynamic> = null;
         var array = ${printer.printExpr(metaL)}.asArray();
-                               ';
+        var matchArray = ${printer.printExpr(metaR)}.asArray();
+        ';
         var valueStrArr: Array<String> = [];
         for(index in 0...values.length) {
-//          valueStrArr.push('Macros.valuesMatch(array[${index}], matchArray[${index}]);');
+          valueStrArr.push('Macros.valuesMatch(array[${index}], matchArray[${index}]);');
         }
         haxeStr = '${haxeStr}\n${valueStrArr.join('\n')}';
-        MacroLogger.log(haxeStr, "haxeStr");
         haxeToExpr(haxeStr);
       case e:
-        MacroLogger.log(e, "values match e");
-        throw "unsupported";
+        lhs;
     }
-    MacroLogger.logExpr(e);
     return e;
   }
 }

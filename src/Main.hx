@@ -1,3 +1,4 @@
+import hscript.plus.ParserPlus;
 import lang.HashTableAtoms;
 import hx.strings.Strings;
 import haxe.ds.ObjectMap;
@@ -15,8 +16,8 @@ import cpp.vm.Thread;
 import ihx.HScriptEval;
 
 class Main {
-  public static var parser: Parser = new Parser();
-  public static var interp: Interp;
+  public static var parser: Parser = new ParserPlus();
+  public static var interp: Interp;         
 
   private static var mainThread: Thread;
   private static var ready: Bool = false;
@@ -50,6 +51,8 @@ class Main {
 
   public function new() {
     var basePath: String = PathSettings.applicationBasePath;
+    parser.allowMetadata = true;
+    parser.allowTypes = true;
     interp = HScriptEval.interp;
     var variables = interp.variables;
     variables.set("rc", function() {
