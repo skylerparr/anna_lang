@@ -21,10 +21,7 @@ class Macros {
 
   private static var printer: Printer = new Printer();
 
-  macro public static function build(args: Expr = null, module: Expr = null): Array<Field> {
-    MacroLogger.logExpr(args, 'args');
-    MacroLogger.logExpr(module, 'module');
-
+  macro public static function build(): Array<Field> {
     var fields: Array<Field> = Context.getBuildFields();
     var retFields: Array<Field> = [];
     for(field in fields) {
@@ -40,6 +37,8 @@ class Macros {
   #if macro
   private static function updateField(field: Field): Field {
     return switch(field.kind) {
+      case FVar(_, null):
+        field;
       case FVar(fvar, e):
         switch(e.expr) {
           case EBlock(blk):

@@ -1,5 +1,6 @@
 package anna_unit;
 
+import sys.io.File;
 import util.TimeUtil;
 import sys.FileSystem;
 import haxe.Timer;
@@ -90,9 +91,14 @@ class AnnaUnit {
   }
 
   private static function getTests(): Array<String> {
-    var files: Array<String> = FileSystem.readDirectory('scripts/tests');
+    var testDir: String = 'scripts/tests/';
+    var files: Array<String> = FileSystem.readDirectory(testDir);
     var retVal: Array<String> = [];
     for(file in files) {
+      var path = '${Sys.getCwd()}${testDir}${file}';
+      if(FileSystem.isDirectory(path)) {
+        continue;
+      }
       retVal.push('tests.${file.replace('.hx', '')}');
     }
     return retVal;

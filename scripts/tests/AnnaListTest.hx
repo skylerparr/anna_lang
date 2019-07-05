@@ -1,5 +1,6 @@
 package tests;
 
+import lang.EitherSupport;
 import anna_unit.Assert;
 using lang.AtomSupport;
 @:build(Macros.build())
@@ -173,6 +174,16 @@ class AnnaListTest {
     var list: LList = @list[];
     list = LList.add(list, @list[1,2,3]);
     Assert.areEqual(list.toAnnaString(), '[[1, 2, 3]]');
+  }
+
+  public static function shouldCreateListWithManyNestedTypes(): Void {
+    var list: LList = @list[1, '2'];
+    Assert.areEqual(list.head, 1);
+    Assert.areEqual(list.tail, @list['2']);
+
+    list = @list[@tuple[1, 2, 3]];
+    Assert.areEqual(list.head, @tuple[1, 2, 3]);
+    Assert.areEqual(EitherSupport.getValue(list.head).asArray()[0], 1);
   }
 
 }

@@ -131,7 +131,6 @@ class MacroTools {
       pos: Context.currentPos()
     }];
 
-    MacroLogger.log(initBody, 'initBody');
     for(expr in initBody) {
       varBody.push(expr);
     }
@@ -157,28 +156,50 @@ class MacroTools {
   }
 
   public static function getCallFunName(expr: Expr):String {
-    switch(expr.expr) {
+    return switch(expr.expr) {
       case ECall({expr: EConst(CIdent(name))}, _):
-        return name;
-      case ECall({expr: EField({expr: EConst(CIdent(mod))}, fun)}, _):
-        return '${mod}.${fun}';
-      case _:
+        name;
+      case ECall(expr, _):
+        var fun = convertClassWithPackageToString(expr);
+        fun;
+      case e:
+        MacroLogger.log(e, 'e');
         throw new ParsingException("AnnaLang: Expected function call definition");
     }
-
   }
 
   public static function getFunBody(expr: Expr):Array<Expr> {
     switch(expr.expr) {
       case ECall({expr: EConst(CIdent(name))}, body):
         return body;
-      case ECall({expr: EField({expr: EConst(CIdent(mod))}, fun)}, body):
+      case ECall({expr: EField(_, _)}, body):
         return body;
       case e:
         MacroLogger.log(e, 'e');
-        throw new ParsingException("AnnaLang: Expected function call definition");
+        throw new ParsingException("AnnaLang: Expected function body definition");
     }
 
+  }
+
+  public static function convertClassWithPackageToString(expr: Expr, acc: Array<String> = null):String {
+    if(acc == null) {
+      acc = [];
+    }
+    return switch(expr.expr) {
+      case ECall({expr: EField(fieldExpr, fieldName)}, _):
+        var n = convertClassWithPackageToString(fieldExpr, acc);
+        acc.push(fieldName);
+        acc.join('.');
+      case EField(fieldExpr, fieldName):
+        var n = convertClassWithPackageToString(fieldExpr, acc);
+        acc.push(fieldName);
+        acc.join('.');
+      case EConst(CIdent(name)):
+        acc.push(name);
+        acc.join('.');
+      case _:
+        throw new ParsingException("AnnaLang: Expected package definition");
+    }
   }
 
   #end

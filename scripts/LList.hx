@@ -60,6 +60,28 @@ class LList implements CustomType {
     return "LList";
   }
 
+  public static function iterator(list: LList) : ListIterator<Any> {
+    return (cast list)._iterator();
+  }
+
+}
+
+private class ListIterator<T> {
+  var head:ListNode<T>;
+
+  public inline function new(head:ListNode<T>) {
+    this.head = head;
+  }
+
+  public inline function hasNext():Bool {
+    return head != null;
+  }
+
+  public inline function next():T {
+    var val = head.item;
+    head = head.next;
+    return val;
+  }
 }
 
 @:generic
@@ -205,6 +227,10 @@ class AnnaList<T> extends LList {
       retVal.push('${pattern.key}: ${pattern.value}');
     }
     return '{${retVal.join(', ')}}';
+  }
+
+  public function _iterator(): ListIterator<T> {
+    return new ListIterator<T>(h);
   }
 
 }

@@ -22,7 +22,7 @@ class AnnaLang {
     MacroLogger.log('==============================');
     var className: String = printer.printExpr(name);
     MacroLogger.log(className, 'name');
-    MacroLogger.logExpr(body, 'body');
+    MacroLogger.logExpr(body, 'bodyString');
     MacroLogger.log(body, 'body');
 
     var cls = MacroTools.createClass(className);
@@ -43,7 +43,6 @@ class AnnaLang {
 
   #if macro
   private static function walkBlock(expr: Expr): Array<Expr> {
-    MacroLogger.log('walk block');
     var retExprs: Array<Expr> = [];
     switch(expr.expr) {
       case EBlock(exprs):
@@ -52,7 +51,6 @@ class AnnaLang {
             case EMeta({name: name}, params):
               var fun = Reflect.field(AnnaLang, '_${name}');
               var expr = fun(params);
-              MacroLogger.log(expr, 'return from ${name}');
               retExprs.push(expr);
             case _:
               blockExpr;
@@ -74,16 +72,13 @@ class AnnaLang {
   }
 
   public static function _def(params: Expr): Expr {
-    MacroLogger.log(params, 'params');
     var funName: String = MacroTools.getCallFunName(params);
     MacroContext.currentFunction = funName;
     var body: Array<Expr> = [];
     var funBody: Array<Expr> = MacroTools.getFunBody(params);
     for(bodyExpr in funBody) {
-      MacroLogger.log(bodyExpr, 'bodyExpr');
       body = walkBlock(bodyExpr);
     }
-    MacroLogger.log(body, 'after body');
 
     var funDef = MacroTools.buildPublicVar(funName, body);
     MacroTools.addFieldToClass(funDef);
@@ -107,16 +102,19 @@ class AnnaLang {
   }
 
   public static function _native(params: Expr):Expr {
-    MacroLogger.log(params, 'native params');
-    MacroLogger.log(MacroContext.currentFunction, 'currentFunction');
     var funName: String = '_${MacroContext.currentFunction}';
     var nativeFun: String = MacroTools.getCallFunName(params);
-    MacroLogger.log(nativeFun, 'nativeFun');
     var args = MacroTools.getFunBody(params)[0];
     var argString = printer.printExpr(args);
-    return Macros.haxeToExpr('${funName}.push(new vm.InvokeFunction(${nativeFun}, ${argString}))');
+    var haxeString = '${funName}.push(new vm.InvokeFunction(${nativeFun}, ${argString}))';
+    return Macros.haxeToExpr(haxeString);
   }
 
+  public static function _alias(params: Expr):Expr {
+
+    return macro {};
+  }
+  
   #end
 
 }
