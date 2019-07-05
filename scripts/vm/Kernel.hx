@@ -1,6 +1,6 @@
 package vm;
 
-import lib.CallCounter;
+import lib.Modules;
 import lib.Counter;
 import compiler.Compiler;
 import cpp.vm.Thread;
@@ -34,13 +34,14 @@ class Kernel {
 
   public static function defineCode(): Atom {
     Classes.define("Counter".atom(), Counter);
-    Classes.define("CallCounter".atom(), CallCounter);
+    Classes.define("CallCounter".atom(), Modules);
     return 'ok'.atom();
   }
 
   public static function testSpawn(): Process {
     start();
     return spawn(new AnnaCallStack(CallCounter.invoke(), new Map<String , Dynamic>()));
+//    return null;
   }
 
   public static function spawn(annaCallStack: AnnaCallStack): Process {

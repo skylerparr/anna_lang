@@ -21,7 +21,10 @@ class Macros {
 
   private static var printer: Printer = new Printer();
 
-  macro public static function build(args: Expr = null): Array<Field> {
+  macro public static function build(args: Expr = null, module: Expr = null): Array<Field> {
+    MacroLogger.logExpr(args, 'args');
+    MacroLogger.logExpr(module, 'module');
+
     var fields: Array<Field> = Context.getBuildFields();
     var retFields: Array<Field> = [];
     for(field in fields) {

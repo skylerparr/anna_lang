@@ -21,7 +21,7 @@ class LList implements CustomType {
     return (cast list)._add(value);
   }
 
-  public static function hd(list: LList): LList {
+  public static function hd(list: LList): Any {
     return (cast list).getHead();
   }
 
