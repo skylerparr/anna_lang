@@ -12,5 +12,3 @@
 -lib ihx
 -lib haxe-strings
 -lib hscript-plus
--lib tink_core
--lib tink_macro
