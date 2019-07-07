@@ -160,11 +160,31 @@ class MacroTools {
       case ECall({expr: EConst(CIdent(name))}, _):
         name;
       case ECall(expr, _):
-        var fun = convertClassWithPackageToString(expr);
-        fun;
+        var fun = extractFullFunCall(expr);
+        fun.join('.');
+      case EField(expr, field):
+        var fun = extractFullFunCall(expr);
+        '${fun.join('.')}.${field}';
       case e:
         MacroLogger.log(e, 'e');
         throw new ParsingException("AnnaLang: Expected function call definition");
+    }
+  }
+
+  public static function getAliasName(expr: Expr):String {
+    var fullFunCall: Array<String> = extractFullFunCall(expr);
+    return fullFunCall[fullFunCall.length - 1];
+  }
+
+  public static function getFunctionName(expr: Expr, acc: Array<String> = null):String {
+    if(acc == null) {
+      acc = [];
+    }
+    return switch(expr.expr) {
+      case ECall({expr: EField(fieldExpr, field)}, _):
+        field;
+      case _:
+        throw new ParsingException("AnnaLang: Expected call and field definition");
     }
   }
 
@@ -181,22 +201,26 @@ class MacroTools {
 
   }
 
-  public static function convertClassWithPackageToString(expr: Expr, acc: Array<String> = null):String {
+  public static function getModuleName(expr: Expr):String {
+    var fullFunCall: Array<String> = extractFullFunCall(expr);
+    return fullFunCall.join('.');
+  }
+
+  public static function extractFullFunCall(expr: Expr, acc: Array<String> = null):Array<String> {
     if(acc == null) {
       acc = [];
     }
     return switch(expr.expr) {
-      case ECall({expr: EField(fieldExpr, fieldName)}, _):
-        var n = convertClassWithPackageToString(fieldExpr, acc);
-        acc.push(fieldName);
-        acc.join('.');
+      case ECall({expr: EField(fieldExpr, _)}, _):
+        var n = extractFullFunCall(fieldExpr, acc);
+        acc;
       case EField(fieldExpr, fieldName):
-        var n = convertClassWithPackageToString(fieldExpr, acc);
+        var n = extractFullFunCall(fieldExpr, acc);
         acc.push(fieldName);
-        acc.join('.');
+        acc;
       case EConst(CIdent(name)):
         acc.push(name);
-        acc.join('.');
+        acc;
       case _:
         throw new ParsingException("AnnaLang: Expected package definition");
     }

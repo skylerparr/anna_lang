@@ -15,34 +15,34 @@ class InvokeFunctionTest {
   public static function shouldCallFunctionWithNoArgs(): Void {
     var invoke: InvokeFunction = new InvokeFunction(Sample.noArgs, @list[]);
     invoke.execute(scope, null);
-    Assert.areEqual(Sample.noArgsCalled, 1);
+    @assert Sample.noArgsCalled == 1;
   }
 
   public static function shouldCallFunctionWithOneArg(): Void {
     var invoke: InvokeFunction = new InvokeFunction(Sample.oneArg, @list[@tuple[@atom'const', "foo"]]);
     invoke.execute(scope, null);
-    Assert.areEqual(Sample.oneArgValue, "foo");
+    @assert Sample.oneArgValue == "foo";
   }
 
   public static function shouldCallFunctionWithVariableArgs(): Void {
     scope.set("foo", "bar");
     var invoke: InvokeFunction = new InvokeFunction(Sample.oneArg, @list[@tuple[@atom'var', "foo"]]);
     invoke.execute(scope, null);
-    Assert.areEqual(Sample.oneArgValue, "bar");
+    @assert Sample.oneArgValue == "bar";
   }
 
   public static function shouldCallFunctionWithVariableArgsOfMultipleTypes(): Void {
     var invoke: InvokeFunction = new InvokeFunction(Sample.twoArgs, @list[@tuple[@atom'const', @tuple['a', 'b', 'c']], @tuple[@atom'const', @map['a' => 2, 'b' => 3]]]);
     invoke.execute(scope, null);
-    Assert.areEqual(Sample.arg1, @tuple['a', 'b', 'c']);
-    Assert.areEqual(Sample.arg2, @map['a' => 2, 'b' => 3]);
+    @assert Sample.arg1 == @tuple['a', 'b', 'c'];
+    @assert Sample.arg2 == @map['a' => 2, 'b' => 3];
   }
 
   public static function shouldAssignReturnToSpecialVar(): Void {
     var invoke: InvokeFunction = new InvokeFunction(Sample.withReturn,
       @list[@tuple[@atom'const', @tuple['a', 'b', 'c']]]);
     invoke.execute(scope, null);
-    Assert.areEqual(scope.get("$$$"), @tuple['a', 'b', 'c']);
+    @assert scope.get("$$$") == @tuple['a', 'b', 'c'];
   }
 
 }

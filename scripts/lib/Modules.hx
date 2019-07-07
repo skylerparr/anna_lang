@@ -9,10 +9,13 @@ import IO;
 using lang.AtomSupport;
 
 @:build(lang.macros.AnnaLang.defcls(CallCounter, {
+  @alias tests.mock.fixture.Sample;
+  @alias vm.Process;
+
   @def invoke({
     @native IO.inspect(@list[@tuple[@atom 'const', "call counter invoking counter"]]);
-    @native tests.mock.fixture.Sample.foo(@list[]);
-    @native vm.Process.sleep(@list[@tuple[@atom 'const', 500]]);
+    @native Sample.foo(@list[]);
+    @native Process.sleep(@list[@tuple[@atom 'const', 500]]);
     @native IO.inspect(@list[@tuple[@atom 'const', "just for kicks"]]);
 //    Counter.increment(@tuple['const'.atom(), 5]);
   });

@@ -5,9 +5,6 @@ import haxe.macro.Printer;
 import haxe.macro.Context;
 import haxe.macro.Expr;
 using haxe.macro.Tools;
-#if macro
-using tink.MacroApi;
-#end
 class AnnaLang {
   private static var parser: ParserPlus = {
     parser = new ParserPlus();
@@ -27,6 +24,7 @@ class AnnaLang {
 
     var cls = MacroTools.createClass(className);
     MacroContext.currentModule = cls;
+    MacroContext.aliases = new Map<String, String>();
     applyBuildMacro();
 
     walkBlock(body);
@@ -103,16 +101,31 @@ class AnnaLang {
 
   public static function _native(params: Expr):Expr {
     var funName: String = '_${MacroContext.currentFunction}';
-    var nativeFun: String = MacroTools.getCallFunName(params);
+    var moduleName: String = MacroTools.getModuleName(params);
+    moduleName = getAlias(moduleName);
+    var invokeFunName = MacroTools.getFunctionName(params);
     var args = MacroTools.getFunBody(params)[0];
     var argString = printer.printExpr(args);
-    var haxeString = '${funName}.push(new vm.InvokeFunction(${nativeFun}, ${argString}))';
+    var haxeString = '${funName}.push(new vm.InvokeFunction(${moduleName}.${invokeFunName}, ${argString}))';
     return Macros.haxeToExpr(haxeString);
   }
 
   public static function _alias(params: Expr):Expr {
+    var fun = MacroTools.getCallFunName(params);
+    var fieldName = MacroTools.getAliasName(params);
 
+    MacroContext.aliases.set(fieldName, fun);
+    MacroLogger.log(MacroContext.aliases);
     return macro {};
+  }
+
+  public static function getAlias(str: String):String {
+    return switch(MacroContext.aliases.get(str)) {
+      case null:
+        str;
+      case val:
+        val;
+    }
   }
   
   #end
