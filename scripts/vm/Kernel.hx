@@ -35,16 +35,21 @@ class Kernel {
   public static function defineCode(): Atom {
     Classes.define("Counter".atom(), Counter);
     Classes.define("CallCounter".atom(), Modules);
+    Classes.define("Boot".atom(), Boot);
     return 'ok'.atom();
   }
 
   public static function testSpawn(): Process {
     start();
-    return spawn(new AnnaCallStack(CallCounter.invoke(), new Map<String , Dynamic>()));
+    return spawn(Boot.start);
 //    return null;
   }
 
-  public static function spawn(annaCallStack: AnnaCallStack): Process {
+  public static function spawn(func: Void -> Array<vm.Operation>): Process {
+    return do_spawn(new AnnaCallStack(func(), new Map<String , Dynamic>()));
+  }
+
+  private static function do_spawn(annaCallStack: AnnaCallStack): Process {
     var process: Process = new Process(0, current_id++, 0, annaCallStack);
     Scheduler.communicationThread.sendMessage(KernelMessage.SCHEDULE(process));
     return process;

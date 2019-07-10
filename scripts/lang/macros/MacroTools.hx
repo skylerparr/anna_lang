@@ -117,38 +117,16 @@ class MacroTools {
     }
   }
 
-  public static function buildPublicVar(name: String, initBody: Array<Expr>): Field {
+  public static function buildPublicVar(name: String, varType: ComplexType, initBody: Array<Expr>): Field {
     var funName: String = '_${name}';
 
-    var varBody: Array<Expr> = [{
-      expr: EBinop(OpAssign,{
-        expr: EConst(CIdent(funName)),
-        pos: Context.currentPos()
-      },{
-        expr: EArrayDecl([]),
-        pos: Context.currentPos()
-      }),
-      pos: Context.currentPos()
-    }];
-
+    var varBody: Array<Expr> = [];
     for(expr in initBody) {
       varBody.push(expr);
     }
-    varBody.push(buildConst(CIdent(funName)));
 
     return {
-      kind: FVar(TPath({
-        name: 'Array',
-        pack: [],
-        params: [
-          TPType(TPath({
-            name: 'Operation',
-            pack: ['vm'],
-            params: []
-          }))
-        ]
-      }),
-      buildBlock(varBody)),
+      kind: FVar(varType, buildBlock(varBody)),
       name: funName,
       pos: Context.currentPos(),
       access: [AStatic,APublic]
@@ -189,11 +167,11 @@ class MacroTools {
   }
 
   public static function getFunBody(expr: Expr):Array<Expr> {
-    switch(expr.expr) {
+    return switch(expr.expr) {
       case ECall({expr: EConst(CIdent(name))}, body):
-        return body;
-      case ECall({expr: EField(_, _)}, body):
-        return body;
+        body;
+      case ECall({expr: EField(e, field)}, body):
+        body;
       case e:
         MacroLogger.log(e, 'e');
         throw new ParsingException("AnnaLang: Expected function body definition");

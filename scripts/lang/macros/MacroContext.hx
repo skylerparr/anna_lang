@@ -8,4 +8,9 @@ class MacroContext {
   public static var currentFunction: String;
   public static var aliases: Map<String, String>;
   #end
+
+  public static function define_callback(currentClass: Atom, callbackName: Atom):Void {
+//    Logger.inspect(currentClass, 'currentClass');
+//    Logger.inspect(callbackName, 'callbackName');
+  }
 }

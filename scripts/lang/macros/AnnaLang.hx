@@ -50,6 +50,11 @@ class AnnaLang {
               var fun = Reflect.field(AnnaLang, '_${name}');
               var expr = fun(params);
               retExprs.push(expr);
+            case ECall(expr, args):
+              var funName: String = MacroTools.getCallFunName(blockExpr);
+              var args: Array<Expr> = MacroTools.getFunBody(blockExpr);
+              var expr: Expr = createPushStack(funName, args);
+              retExprs.push(expr);
             case _:
               blockExpr;
           }
@@ -69,16 +74,41 @@ class AnnaLang {
     MacroTools.addMetaToClass(cls, metaData);
   }
 
+  private static function createPushStack(funName: String, args: Array<Expr>):Expr {
+    var currentModule: TypeDefinition = MacroContext.currentModule;
+    var currentModuleStr: String = currentModule.name;
+    var currentFunStr: String = '_${MacroContext.currentFunction}';
+    var haxeStr: String = '${currentFunStr}.push(new vm.PushStack(@atom "${currentModuleStr}", @atom "${funName}", @list []))';
+    return Macros.haxeToExpr(haxeStr);
+  }
+
   public static function _def(params: Expr): Expr {
     var funName: String = MacroTools.getCallFunName(params);
     MacroContext.currentFunction = funName;
+    var varName: String = '_${funName}';
     var body: Array<Expr> = [];
     var funBody: Array<Expr> = MacroTools.getFunBody(params);
-    for(bodyExpr in funBody) {
-      body = walkBlock(bodyExpr);
-    }
+    body.push({
+      expr: EBinop(OpAssign,{
+        expr: EConst(CIdent(varName)),
+        pos: Context.currentPos()
+      },{
+        expr: EArrayDecl([]),
+        pos: Context.currentPos()
+      }),
+      pos: Context.currentPos()
+    });
 
-    var funDef = MacroTools.buildPublicVar(funName, body);
+    for(bodyExpr in funBody) {
+      var walkBody = walkBlock(bodyExpr);
+      for(expr in walkBody) {
+        body.push(expr);
+      }
+    }
+    body.push(MacroTools.buildConst(CIdent(varName)));
+
+    var varType: ComplexType = MacroTools.buildType('Array<vm.Operation>');
+    var funDef = MacroTools.buildPublicVar(funName, varType, body);
     MacroTools.addFieldToClass(funDef);
 
     var returnType: ComplexType = MacroTools.buildType('Array<vm.Operation>');
@@ -87,13 +117,12 @@ class AnnaLang {
     MacroTools.assignFunBody(field, MacroTools.buildBlock([expr]));
     MacroTools.addFieldToClass(field);
 
-    var returnType: ComplexType = MacroTools.buildType('Array<String>');
-    var argFun = MacroTools.buildPublicFunction('___${funName}_args', [], returnType);
+    var varType: ComplexType = MacroTools.buildType('Array<String>');
     var exprs: Array<Expr> = [];
     exprs.push(Macros.haxeToExpr('var args: Array<String> = [];'));
-    var ret = MacroTools.buildReturn(MacroTools.buildConst(CIdent('args')));
+    var ret = MacroTools.buildConst(CIdent('args'));
     exprs.push(ret);
-    MacroTools.assignFunBody(argFun, MacroTools.buildBlock(exprs));
+    var argFun = MacroTools.buildPublicVar('___${funName}_args', varType, exprs);
     MacroTools.addFieldToClass(argFun);
 
     return macro {};
@@ -104,9 +133,12 @@ class AnnaLang {
     var moduleName: String = MacroTools.getModuleName(params);
     moduleName = getAlias(moduleName);
     var invokeFunName = MacroTools.getFunctionName(params);
-    var args = MacroTools.getFunBody(params)[0];
-    var argString = printer.printExpr(args);
-    var haxeString = '${funName}.push(new vm.InvokeFunction(${moduleName}.${invokeFunName}, ${argString}))';
+    var args = MacroTools.getFunBody(params);
+    var strArgs: Array<String> = [];
+    for(arg in args) {
+      strArgs.push(printer.printExpr(arg));
+    }
+    var haxeString = '${funName}.push(new vm.InvokeFunction(${moduleName}.${invokeFunName}, @list[${strArgs.join(', ')}]))';
     return Macros.haxeToExpr(haxeString);
   }
 
@@ -115,7 +147,6 @@ class AnnaLang {
     var fieldName = MacroTools.getAliasName(params);
 
     MacroContext.aliases.set(fieldName, fun);
-    MacroLogger.log(MacroContext.aliases);
     return macro {};
   }
 

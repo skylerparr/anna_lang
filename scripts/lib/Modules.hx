@@ -8,16 +8,27 @@ import vm.InvokeFunction;
 import IO;
 using lang.AtomSupport;
 
-@:build(lang.macros.AnnaLang.defcls(CallCounter, {
-  @alias tests.mock.fixture.Sample;
-  @alias vm.Process;
+@:build(lang.macros.AnnaLang.defcls(Boot, {
+  @alias lang.macros.MacroContext;
 
-  @def invoke({
-    @native IO.inspect(@list[@tuple[@atom 'const', "call counter invoking counter"]]);
-    @native Sample.foo(@list[]);
-    @native Process.sleep(@list[@tuple[@atom 'const', 500]]);
-    @native IO.inspect(@list[@tuple[@atom 'const', "just for kicks"]]);
-//    Counter.increment(@tuple['const'.atom(), 5]);
+  @def start({
+    @native IO.inspect(@tuple[@atom 'const', "defining anna :)"]);
+    @native MacroContext.define_callback(@tuple[@atom 'const', @atom 'Lang'], @tuple[@atom 'const', @atom 'macro']);
+//    @native tests.mock.fixture.Sample.foo();
+//    @native Process.sleep(@list[@tuple[@atom 'const', 500]]);
+//    @native IO.inspect(@list[@tuple[@atom 'const', "just for kicks"]]);
+    print();
+    @native IO.inspect(@tuple[@atom 'const', 'finished printing']);
+  });
+
+  @def print({
+    hello();
+    @native IO.inspect(@tuple[@atom 'const', 'you are printing']);
+    hello();
+  });
+
+  @def hello({
+    @native IO.inspect(@tuple[@atom 'const', 'hello world']);
   });
 }))
 class Modules {
