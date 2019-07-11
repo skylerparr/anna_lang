@@ -9,25 +9,31 @@ class AnnaCallStack {
 
   public var scopeVariables: Map<String, Dynamic>;
 
+  private var currentOperation: Operation;
+
   public inline function new(code: Array<Operation>, scopeVariables: Map<String, Dynamic>) {
     this.operations = code;
     this.scopeVariables = scopeVariables;
+    currentOperation = operations[0];
     id = _id++;
   }
 
   public inline function execute(processStack: ProcessStack): Void {
-    var operation: Operation = operations[index++];
-    if(operation == null) {
+    currentOperation = operations[index++];
+//    Logger.inspect(operations.length, 'anna stack length ${this.toString()}');
+//    Logger.inspect(index);
+    if(currentOperation == null) {
       return;
     }
-    operation.execute(scopeVariables, processStack);
+    currentOperation.execute(scopeVariables, processStack);
   }
 
   public inline function finalCall(): Bool {
-    return index >= operations.length;
+    Logger.inspect(index >= operations.length - 1, '${index} >= ${operations.length} - 1');
+    return index >= operations.length - 1;
   }
 
   public function toString(): String {
-    return '${id}';
+    return '${currentOperation}';
   }
 }

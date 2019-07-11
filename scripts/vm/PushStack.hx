@@ -55,4 +55,8 @@ class PushStack implements Operation {
     var annaCallStack: AnnaCallStack = new AnnaCallStack(operations, nextScopeVariables);
     processStack.add(annaCallStack);
   }
+
+  public function toString(): String {
+    return '${Atom.to_s(module)}.${Atom.to_s(func)}()';
+  }
 }

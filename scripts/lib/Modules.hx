@@ -12,8 +12,8 @@ using lang.AtomSupport;
   @alias lang.macros.MacroContext;
 
   @def start({
-    @native IO.inspect(@tuple[@atom 'const', "defining anna :)"]);
-    @native MacroContext.define_callback(@tuple[@atom 'const', @atom 'Lang'], @tuple[@atom 'const', @atom 'macro']);
+//    @native IO.inspect(@tuple[@atom 'const', "defining anna :)"]);
+//    @native MacroContext.define_callback(@tuple[@atom 'const', @atom 'Lang'], @tuple[@atom 'const', @atom 'macro']);
 //    @native tests.mock.fixture.Sample.foo();
 //    @native Process.sleep(@list[@tuple[@atom 'const', 500]]);
 //    @native IO.inspect(@list[@tuple[@atom 'const', "just for kicks"]]);
@@ -22,13 +22,27 @@ using lang.AtomSupport;
   });
 
   @def print({
-    hello();
-    @native IO.inspect(@tuple[@atom 'const', 'you are printing']);
-    hello();
+    hello1();
+//    @native IO.inspect(@tuple[@atom 'const', 'you are printing']);
+    hello2();
+    hello3();
+    hello4();
   });
 
-  @def hello({
-    @native IO.inspect(@tuple[@atom 'const', 'hello world']);
+  @def hello1({
+    @native IO.inspect(@tuple[@atom 'const', 'hello world1']);
+  });
+
+  @def hello2({
+    @native IO.inspect(@tuple[@atom 'const', 'hello world2']);
+  });
+
+  @def hello3({
+    @native IO.inspect(@tuple[@atom 'const', 'hello world3']);
+  });
+
+  @def hello4({
+    @native IO.inspect(@tuple[@atom 'const', 'hello world4']);
   });
 }))
 class Modules {

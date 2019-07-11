@@ -34,4 +34,8 @@ class InvokeFunction implements Operation {
     }
     return functionArgs;
   }
+
+  public function toString() {
+    return 'invoke with args: ${Anna.toAnnaString(args)}';
+  }
 }

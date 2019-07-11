@@ -40,6 +40,8 @@ class Kernel {
   }
 
   public static function testSpawn(): Process {
+    stop();
+    Native.callStatic('Runtime', 'recompile', []);
     start();
     return spawn(Boot.start);
 //    return null;
