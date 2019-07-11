@@ -21,19 +21,16 @@ class ProcessStack {
 //      allStacks.pop();
     }
 //    Logger.inspect(callStack.toString(), "push stack");
-    Logger.inspect(callStack.toString(), 'pushing stack');
     allStacks.push(callStack);
     currentStack = callStack;
   }
 
   public inline function execute(): Void {
-    Logger.inspect("execute");
     var stackToExecute: AnnaCallStack = currentStack;
     if(stackToExecute == null) {
       Process.complete(Process.self());
       return;
     }
-    Logger.inspect(stackToExecute.toString(), "currentStack");
     stackToExecute.execute(this);
     executionCount++;
     if(dontPop) {
@@ -42,16 +39,7 @@ class ProcessStack {
       return;
     }
     if(stackToExecute.finalCall()) {
-      Logger.inspect(currentStack.toString(), "----> popping stack");
       currentStack = allStacks.pop();
-      if(currentStack != null) {
-        Logger.inspect(currentStack.toString(), "currentStack");
-      }
-      Logger.inspect(currentStack.toString(), "----> popping stack");
-      currentStack = allStacks.pop();
-      if(currentStack != null) {
-        Logger.inspect(currentStack.toString(), "currentStack");
-      }
 //    } else {
 //      doPop = false;
       

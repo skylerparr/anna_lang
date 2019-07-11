@@ -3,7 +3,6 @@ package vm;
 import lang.AtomSupport;
 import haxe.ds.ObjectMap;
 import haxe.Timer;
-import cpp.Lib;
 import cpp.vm.Thread;
 using lang.AtomSupport;
 
