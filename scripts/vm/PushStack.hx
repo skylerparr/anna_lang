@@ -10,10 +10,17 @@ class PushStack implements Operation {
   public var func: Atom;
   public var args: LList;
 
-  public function new(module: Atom, func: Dynamic, args: LList) {
+  public var hostModule: String;
+  public var hostFunction: String;
+  public var lineNumber: Int;
+
+  public function new(module: Atom, func: Dynamic, args: LList, hostModule: String, hostFunction: String, line: Int) {
     this.module = module;
     this.func = func;
     this.args = args;
+    this.hostModule = hostModule;
+    this.hostFunction = hostFunction;
+    this.lineNumber = line;
   }
 
   public function execute(scopeVariables: Map<String, Dynamic>, processStack: ProcessStack): Void {

@@ -6,6 +6,16 @@ class Match implements Operation {
   public var lhs: Tuple;
   public var rhs: Tuple;
 
+  public var hostModule: String;
+
+  public var hostFunction: String;
+
+  public var lineNumber: Int;
+
+  public function toString(): String {
+    return "";
+  }
+
   public inline function new(lhs: Tuple, rhs: Tuple) {
     this.lhs = lhs;
     this.rhs = rhs;

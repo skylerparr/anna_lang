@@ -27,10 +27,10 @@ class AnnaCallStack {
   }
 
   public inline function finalCall(): Bool {
-    return index >= operations.length - 1;
+    return index >= operations.length;
   }
 
   public function toString(): String {
-    return '${currentOperation}';
+    return '${currentOperation.toString()}';
   }
 }

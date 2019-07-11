@@ -69,4 +69,14 @@ class MockOperation implements Operation {
 
   public function execute(scopeVariables: Map<String, Dynamic>, processStack: ProcessStack): Void {
   }
+
+  public var hostModule: String;
+
+  public var hostFunction: String;
+
+  public var lineNumber: Int;
+
+  public function toString(): String {
+    return '';
+  }
 }

@@ -40,11 +40,11 @@ class Kernel {
   }
 
   public static function testSpawn(): Process {
+    Inspector.ttyThread = Thread.current();
     stop();
     Native.callStatic('Runtime', 'recompile', []);
     start();
     return spawn(Boot.start);
-//    return null;
   }
 
   public static function spawn(func: Void -> Array<vm.Operation>): Process {

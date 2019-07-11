@@ -13,26 +13,26 @@ class InvokeFunctionTest {
   }
 
   public static function shouldCallFunctionWithNoArgs(): Void {
-    var invoke: InvokeFunction = new InvokeFunction(Sample.noArgs, @list[]);
+    var invoke: InvokeFunction = new InvokeFunction(Sample.noArgs, @list[], "", "", 1);
     invoke.execute(scope, null);
     @assert Sample.noArgsCalled == 1;
   }
 
   public static function shouldCallFunctionWithOneArg(): Void {
-    var invoke: InvokeFunction = new InvokeFunction(Sample.oneArg, @list[@tuple[@atom'const', "foo"]]);
+    var invoke: InvokeFunction = new InvokeFunction(Sample.oneArg, @list[@tuple[@atom'const', "foo"]], "", "", 1);
     invoke.execute(scope, null);
     @assert Sample.oneArgValue == "foo";
   }
 
   public static function shouldCallFunctionWithVariableArgs(): Void {
     scope.set("foo", "bar");
-    var invoke: InvokeFunction = new InvokeFunction(Sample.oneArg, @list[@tuple[@atom'var', "foo"]]);
+    var invoke: InvokeFunction = new InvokeFunction(Sample.oneArg, @list[@tuple[@atom'var', "foo"]], "", "", 1);
     invoke.execute(scope, null);
     @assert Sample.oneArgValue == "bar";
   }
 
   public static function shouldCallFunctionWithVariableArgsOfMultipleTypes(): Void {
-    var invoke: InvokeFunction = new InvokeFunction(Sample.twoArgs, @list[@tuple[@atom'const', @tuple['a', 'b', 'c']], @tuple[@atom'const', @map['a' => 2, 'b' => 3]]]);
+    var invoke: InvokeFunction = new InvokeFunction(Sample.twoArgs, @list[@tuple[@atom'const', @tuple['a', 'b', 'c']], @tuple[@atom'const', @map['a' => 2, 'b' => 3]]], "", "", 1);
     invoke.execute(scope, null);
     @assert Sample.arg1 == @tuple['a', 'b', 'c'];
     @assert Sample.arg2 == @map['a' => 2, 'b' => 3];
@@ -40,7 +40,7 @@ class InvokeFunctionTest {
 
   public static function shouldAssignReturnToSpecialVar(): Void {
     var invoke: InvokeFunction = new InvokeFunction(Sample.withReturn,
-      @list[@tuple[@atom'const', @tuple['a', 'b', 'c']]]);
+      @list[@tuple[@atom'const', @tuple['a', 'b', 'c']]], "", "", 1);
     invoke.execute(scope, null);
     @assert scope.get("$$$") == @tuple['a', 'b', 'c'];
   }

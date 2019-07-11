@@ -6,9 +6,16 @@ class InvokeFunction implements Operation {
   public var func: Dynamic;
   public var args: LList;
 
-  public inline function new(func: Dynamic, args: LList) {
+  public var hostModule: String;
+  public var hostFunction: String;
+  public var lineNumber: Int;
+
+  public inline function new(func: Dynamic, args: LList, hostModule: String, hostFunction: String, line: Int) {
     this.func = func;
     this.args = args;
+    this.hostModule = hostModule;
+    this.hostFunction = hostFunction;
+    this.lineNumber = line;
   }
 
   public function execute(scopeVariables: Map<String, Dynamic>, processStack: ProcessStack): Void {
@@ -36,6 +43,6 @@ class InvokeFunction implements Operation {
   }
 
   public function toString() {
-    return 'invoke with args: ${Anna.toAnnaString(args)}';
+    return '${hostModule}.${hostFunction}:${lineNumber}';
   }
 }

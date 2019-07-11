@@ -78,7 +78,7 @@ class AnnaLang {
     var currentModule: TypeDefinition = MacroContext.currentModule;
     var currentModuleStr: String = currentModule.name;
     var currentFunStr: String = '_${MacroContext.currentFunction}';
-    var haxeStr: String = '${currentFunStr}.push(new vm.PushStack(@atom "${currentModuleStr}", @atom "${funName}", @list []))';
+    var haxeStr: String = '${currentFunStr}.push(new vm.PushStack(@atom "${currentModuleStr}", @atom "${funName}", @list [], "${currentModuleStr}", "${currentFunStr}}", 1))';
     return Macros.haxeToExpr(haxeStr);
   }
 
@@ -138,7 +138,7 @@ class AnnaLang {
     for(arg in args) {
       strArgs.push(printer.printExpr(arg));
     }
-    var haxeString = '${funName}.push(new vm.InvokeFunction(${moduleName}.${invokeFunName}, @list[${strArgs.join(', ')}]))';
+    var haxeString = '${funName}.push(new vm.InvokeFunction(${moduleName}.${invokeFunName}, @list[${strArgs.join(', ')}], "${moduleName}", "${funName}", ${MacroTools.getLineNumber()}))';
     return Macros.haxeToExpr(haxeString);
   }
 
@@ -158,7 +158,7 @@ class AnnaLang {
         val;
     }
   }
-  
+
   #end
 
 }

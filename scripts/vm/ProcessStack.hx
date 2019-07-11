@@ -17,10 +17,11 @@ class ProcessStack {
 
   public inline function add(callStack: AnnaCallStack): Void {
     if(currentStack != null && currentStack.finalCall()) {
+      Debug.pry("adding call stack");
       dontPop = true;
-//      allStacks.pop();
+      allStacks.pop();
     }
-//    Logger.inspect(callStack.toString(), "push stack");
+    Debug.pry("pushing call stack");
     allStacks.push(callStack);
     currentStack = callStack;
   }
@@ -31,15 +32,18 @@ class ProcessStack {
       Process.complete(Process.self());
       return;
     }
+    Debug.pry("about to execute");
     stackToExecute.execute(this);
+    Debug.pry("just finished executing");
     executionCount++;
     if(dontPop) {
-      Logger.inspect("don't pop");
       dontPop = false;
       return;
     }
+    Debug.pry("should we pop?");
     if(stackToExecute.finalCall()) {
       currentStack = allStacks.pop();
+      Debug.pry("we just popped");
 //    } else {
 //      doPop = false;
       
@@ -47,7 +51,13 @@ class ProcessStack {
   }
 
   public function toString(): String {
-    return '${id}';
+    return 'ProcessStack: ${id}';
+  }
+
+  public function printStackTrace(): Void {
+    for(cs in allStacks) {
+      Logger.inspect(cs.toString());
+    }
   }
 }
 

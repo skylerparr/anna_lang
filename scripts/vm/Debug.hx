@@ -1,5 +1,6 @@
 package vm;
 
+import lang.macros.MacroLogger;
 import haxe.macro.Type.Ref;
 import haxe.macro.Type.ClassType;
 import haxe.macro.Type.TVar;
@@ -8,7 +9,7 @@ import haxe.macro.Expr;
 
 class Debug {
 
-  macro public static function pry(): Expr {
+  macro public static function pry(message: Expr = null): Expr {
     var localVars: Map<String, TVar> = Context.getLocalTVars();
     var cls: Null<Ref<ClassType>> =  Context.getLocalClass();
 
@@ -28,13 +29,22 @@ class Debug {
     }
     var varCode: Expr = Macros.haxeToExpr(codeArray.join('\n'));
 
+    var pryMsgExpr = switch(message.expr) {
+      case EConst(CIdent('null')):
+        Macros.haxeToExpr('"pry stopped at ${Context.currentPos()}"');
+      case _:
+        message;
+    }
+
+    var currentPos: Expr = Macros.haxeToExpr('"${Context.currentPos()}"');
+
     return macro {
-      if(!vm.Inspector.paused) {
+      if(!vm.Inspector.stopped && cpp.vm.Thread.current().handle != vm.Inspector.ttyThread.handle) {
         var currentThread: cpp.vm.Thread = cpp.vm.Thread.current();
         vm.Inspector.debugThread = currentThread;
         var varMap: Map<String, Dynamic> = new Map<String, Dynamic>();
         $e{varCode}
-        Logger.inspect('pry stopped at ${Context.currentPos()}');
+        Logger.inspect($e{pryMsgExpr});
         while(true) {
           var message: DebugMessage = cpp.vm.Thread.readMessage(true);
           if(message == null) {
@@ -47,6 +57,8 @@ class Debug {
               Logger.inspect(varMap);
             case vm.DebugMessage.GET_VAR(name, thread):
               thread.sendMessage(varMap.get(name));
+            case vm.DebugMessage.CURRENT_POS:
+              Logger.inspect($e{currentPos});
             case vm.DebugMessage.RESUME:
               vm.Inspector.debugThread = null;
               break;
