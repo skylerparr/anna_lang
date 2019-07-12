@@ -6,9 +6,9 @@ class Match implements Operation {
   public var lhs: Tuple;
   public var rhs: Tuple;
 
-  public var hostModule: String;
+  public var hostModule: Atom;
 
-  public var hostFunction: String;
+  public var hostFunction: Atom;
 
   public var lineNumber: Int;
 
@@ -37,5 +37,9 @@ class Match implements Operation {
             scopeVariables.set(cast lElem1, scopeVariables.get(cast rElem1));
         }
     }
+  }
+
+  public function isRecursive(): Bool {
+    return false;
   }
 }

@@ -12,21 +12,19 @@ using lang.AtomSupport;
   @alias lang.macros.MacroContext;
 
   @def start({
-//    @native IO.inspect(@tuple[@atom 'const', "defining anna :)"]);
-//    @native MacroContext.define_callback(@tuple[@atom 'const', @atom 'Lang'], @tuple[@atom 'const', @atom 'macro']);
-//    @native tests.mock.fixture.Sample.foo();
-//    @native Process.sleep(@list[@tuple[@atom 'const', 500]]);
-//    @native IO.inspect(@list[@tuple[@atom 'const', "just for kicks"]]);
+    @native IO.inspect(@tuple[@atom 'const', "defining anna :)"]);
+    @native MacroContext.define_callback(@tuple[@atom 'const', @atom 'Lang'], @tuple[@atom 'const', @atom 'macro']);
+    @native tests.mock.fixture.Sample.foo();
+    @native vm.Process.sleep(@tuple[@atom 'const', 500]);
+    @native IO.inspect(@tuple[@atom 'const', "just for kicks"]);
     print();
     @native IO.inspect(@tuple[@atom 'const', 'finished printing']);
   });
 
   @def print({
     hello1();
-//    @native IO.inspect(@tuple[@atom 'const', 'you are printing']);
-    hello2();
-    hello3();
-    hello4();
+    @native vm.Process.sleep(@tuple[@atom 'const', 500]);
+    print();
   });
 
   @def hello1({

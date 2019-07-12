@@ -6,7 +6,7 @@ class Inspector {
   @field public static var stopped: Bool;
   @field public static var ttyThread: Thread;
 
-  public static function resume(): Void {
+  public static function cont(): Void {
     if(debugThread == null) {
       Logger.inspect("Nothing to inspect.");
       return;
@@ -64,6 +64,20 @@ class Inspector {
     } else {
       Logger.inspect("Inspector running...");
     }
+  }
+
+  public static function restart(): Void {
+    pauseFor(0.5);
+  }
+
+  public static function pauseFor(seconds: Float): Void {
+    if(debugThread == null) {
+      Logger.inspect("Nothing to inspect.");
+      return;
+    }
+    stop();
+    Sys.sleep(seconds);
+    start();
   }
 
 }

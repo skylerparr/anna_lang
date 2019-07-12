@@ -44,15 +44,11 @@ class Kernel {
     stop();
     Native.callStatic('Runtime', 'recompile', []);
     start();
-    return spawn(Boot.start);
+    return spawn('Boot'.atom(), 'start'.atom(), LList.create([]));
   }
 
-  public static function spawn(func: Void -> Array<vm.Operation>): Process {
-    return do_spawn(new AnnaCallStack(func(), new Map<String , Dynamic>()));
-  }
-
-  private static function do_spawn(annaCallStack: AnnaCallStack): Process {
-    var process: Process = new Process(0, current_id++, 0, annaCallStack);
+  public static function spawn(module: Atom, fun: Atom, args: LList): Process {
+    var process: Process = new Process(0, current_id++, 0, new PushStack(module, fun, args, "Kernel".atom(), "spawn".atom(), 51));
     Scheduler.communicationThread.sendMessage(KernelMessage.SCHEDULE(process));
     return process;
   }

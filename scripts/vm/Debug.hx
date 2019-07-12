@@ -43,6 +43,7 @@ class Debug {
         var currentThread: cpp.vm.Thread = cpp.vm.Thread.current();
         vm.Inspector.debugThread = currentThread;
         var varMap: Map<String, Dynamic> = new Map<String, Dynamic>();
+        varMap.set("this", this);
         $e{varCode}
         Logger.inspect($e{pryMsgExpr});
         while(true) {

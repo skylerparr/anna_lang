@@ -7,7 +7,6 @@ class ProcessStack {
   public var currentStack: AnnaCallStack;
   private var process: Process;
   private var executionCount: Int;
-  private var dontPop: Bool;
   public var id: Int;
 
   public function new(process: Process) {
@@ -16,37 +15,23 @@ class ProcessStack {
   }
 
   public inline function add(callStack: AnnaCallStack): Void {
-    if(currentStack != null && currentStack.finalCall()) {
-      Debug.pry("adding call stack");
-      dontPop = true;
+    if(currentStack != null && currentStack.tailCall) {
       allStacks.pop();
     }
-    Debug.pry("pushing call stack");
     allStacks.push(callStack);
     currentStack = callStack;
   }
 
   public inline function execute(): Void {
-    var stackToExecute: AnnaCallStack = currentStack;
-    if(stackToExecute == null) {
+    if(allStacks.length == 0) {
       Process.complete(Process.self());
       return;
     }
-    Debug.pry("about to execute");
-    stackToExecute.execute(this);
-    Debug.pry("just finished executing");
+    currentStack = allStacks.first();
+    currentStack.execute(this);
     executionCount++;
-    if(dontPop) {
-      dontPop = false;
-      return;
-    }
-    Debug.pry("should we pop?");
-    if(stackToExecute.finalCall()) {
-      currentStack = allStacks.pop();
-      Debug.pry("we just popped");
-//    } else {
-//      doPop = false;
-      
+    if(currentStack.finalCall()) {
+      allStacks.pop();
     }
   }
 

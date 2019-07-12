@@ -11,6 +11,8 @@ class AnnaCallStack {
 
   public var currentOperation: Operation;
 
+  public var tailCall: Bool;
+
   public inline function new(code: Array<Operation>, scopeVariables: Map<String, Dynamic>) {
     this.operations = code;
     this.scopeVariables = scopeVariables;
@@ -23,6 +25,7 @@ class AnnaCallStack {
     if(currentOperation == null) {
       return;
     }
+    tailCall = currentOperation.isRecursive();
     currentOperation.execute(scopeVariables, processStack);
   }
 
@@ -31,6 +34,9 @@ class AnnaCallStack {
   }
 
   public function toString(): String {
+    if(currentOperation == null) {
+      return '';
+    }
     return '${currentOperation.toString()}';
   }
 }

@@ -53,7 +53,8 @@ class AnnaLang {
             case ECall(expr, args):
               var funName: String = MacroTools.getCallFunName(blockExpr);
               var args: Array<Expr> = MacroTools.getFunBody(blockExpr);
-              var expr: Expr = createPushStack(funName, args);
+              var lineNumber: Int = MacroTools.getLineNumber(expr);
+              var expr: Expr = createPushStack(funName, args, lineNumber);
               retExprs.push(expr);
             case _:
               blockExpr;
@@ -74,11 +75,11 @@ class AnnaLang {
     MacroTools.addMetaToClass(cls, metaData);
   }
 
-  private static function createPushStack(funName: String, args: Array<Expr>):Expr {
+  private static function createPushStack(funName: String, args: Array<Expr>, lineNumber: Int):Expr {
     var currentModule: TypeDefinition = MacroContext.currentModule;
     var currentModuleStr: String = currentModule.name;
     var currentFunStr: String = '_${MacroContext.currentFunction}';
-    var haxeStr: String = '${currentFunStr}.push(new vm.PushStack(@atom "${currentModuleStr}", @atom "${funName}", @list [], "${currentModuleStr}", "${currentFunStr}}", 1))';
+    var haxeStr: String = '${currentFunStr}.push(new vm.PushStack(@atom "${currentModuleStr}", @atom "${funName}", @list [], @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${lineNumber}))';
     return Macros.haxeToExpr(haxeStr);
   }
 
@@ -138,7 +139,7 @@ class AnnaLang {
     for(arg in args) {
       strArgs.push(printer.printExpr(arg));
     }
-    var haxeString = '${funName}.push(new vm.InvokeFunction(${moduleName}.${invokeFunName}, @list[${strArgs.join(', ')}], "${moduleName}", "${funName}", ${MacroTools.getLineNumber()}))';
+    var haxeString = '${funName}.push(new vm.InvokeFunction(${moduleName}.${invokeFunName}, @list[${strArgs.join(', ')}], @atom "${moduleName}", @atom "${MacroContext.currentFunction}", ${MacroTools.getLineNumber(params)}))';
     return Macros.haxeToExpr(haxeString);
   }
 

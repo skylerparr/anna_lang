@@ -11,10 +11,10 @@ class Process implements CustomType {
   public var status(default, never): ProcessState;
   public var thread(default, never): Thread;
 
-  public inline function new(server_id: Int, instance_id: Int, group_id: Int, stack: AnnaCallStack) {
+  public inline function new(server_id: Int, instance_id: Int, group_id: Int, op: Operation) {
     var processStack: ProcessStack = new ProcessStack(this);
-    processStack.add(stack);
-    
+    processStack.add(new AnnaCallStack([op], new Map<String, Dynamic>()));
+
     Reflect.setField(this, 'server_id', server_id);
     Reflect.setField(this, 'instance_id', instance_id);
     Reflect.setField(this, 'group_id', group_id);
@@ -32,6 +32,10 @@ class Process implements CustomType {
 
   public function toPattern(patternArgs: Array<KeyValue<String,String>> = null): String {
     return '';
+  }
+
+  public static function printStackTrace(process: Process): Void {
+    process.processStack.printStackTrace();
   }
 
   public static function isAlive(process: Process): Atom {

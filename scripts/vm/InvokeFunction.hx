@@ -6,11 +6,11 @@ class InvokeFunction implements Operation {
   public var func: Dynamic;
   public var args: LList;
 
-  public var hostModule: String;
-  public var hostFunction: String;
+  public var hostModule: Atom;
+  public var hostFunction: Atom;
   public var lineNumber: Int;
 
-  public inline function new(func: Dynamic, args: LList, hostModule: String, hostFunction: String, line: Int) {
+  public inline function new(func: Dynamic, args: LList, hostModule: Atom, hostFunction: Atom, line: Int) {
     this.func = func;
     this.args = args;
     this.hostModule = hostModule;
@@ -42,7 +42,11 @@ class InvokeFunction implements Operation {
     return functionArgs;
   }
 
+  public function isRecursive(): Bool {
+    return false;
+  }
+
   public function toString() {
-    return '${hostModule}.${hostFunction}:${lineNumber}';
+    return '${Atom.to_s(hostModule)}.${Atom.to_s(hostFunction)}():${lineNumber}';
   }
 }

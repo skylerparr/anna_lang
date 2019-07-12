@@ -11,7 +11,7 @@ class ProcessStackTest {
   private static var stack: ProcessStack;
 
   public static function setup(): Void {
-    stack = new ProcessStack(new Process(1, 2, 3, createAnnaCallStack()));
+    stack = new ProcessStack(new Process(1, 2, 3, op()));
   }
 
   public static function shouldAddAnnaCallStackToTheProcessStack(): Void {
@@ -70,9 +70,13 @@ class MockOperation implements Operation {
   public function execute(scopeVariables: Map<String, Dynamic>, processStack: ProcessStack): Void {
   }
 
-  public var hostModule: String;
+  public function isRecursive(): Bool {
+    return false;
+  }
 
-  public var hostFunction: String;
+  public var hostModule: Atom;
+
+  public var hostFunction: Atom;
 
   public var lineNumber: Int;
 

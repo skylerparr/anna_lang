@@ -10,11 +10,11 @@ class PushStack implements Operation {
   public var func: Atom;
   public var args: LList;
 
-  public var hostModule: String;
-  public var hostFunction: String;
+  public var hostModule: Atom;
+  public var hostFunction: Atom;
   public var lineNumber: Int;
 
-  public function new(module: Atom, func: Dynamic, args: LList, hostModule: String, hostFunction: String, line: Int) {
+  public function new(module: Atom, func: Dynamic, args: LList, hostModule: Atom, hostFunction: Atom, line: Int) {
     this.module = module;
     this.func = func;
     this.args = args;
@@ -63,7 +63,11 @@ class PushStack implements Operation {
     processStack.add(annaCallStack);
   }
 
+  public function isRecursive(): Bool {
+    return this.module == this.hostModule && this.func == this.hostFunction;
+  }
+
   public function toString(): String {
-    return '${Atom.to_s(module)}.${Atom.to_s(func)}()';
+    return '${Atom.to_s(hostModule)}.${Atom.to_s(hostFunction)}():${lineNumber}';
   }
 }

@@ -184,12 +184,11 @@ class MacroTools {
     return fullFunCall.join('.');
   }
 
-  public static function getLineNumber():Int {
-    var pos = Context.currentPos();
-    var file: String = '${pos}';
-    var lineStr: String = file.split(':')[1];
-    MacroLogger.log(file, 'lineStr');
-    return 1;
+  public static function getLineNumber(expr: Expr):Int {
+    var lineStr: String = '${expr.pos}';
+    MacroLogger.log(lineStr, 'lineStr');
+    var lineNo: Int = Std.parseInt(lineStr.split(':')[1]);
+    return lineNo;
   }
 
   public static function extractFullFunCall(expr: Expr, acc: Array<String> = null):Array<String> {
