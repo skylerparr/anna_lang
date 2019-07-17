@@ -44,7 +44,7 @@ class Kernel {
     stop();
     Native.callStatic('Runtime', 'recompile', []);
     start();
-    return spawn('Boot'.atom(), 'start'.atom(), LList.create([]));
+    return spawn('Boot'.atom(), 'start_'.atom(), LList.create([]));
   }
 
   public static function spawn(module: Atom, fun: Atom, args: LList): Process {

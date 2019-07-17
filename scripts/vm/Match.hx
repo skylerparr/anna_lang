@@ -3,8 +3,7 @@ package vm;
 import EitherEnums.Either2;
 import lang.EitherSupport;
 class Match implements Operation {
-  public var lhs: Tuple;
-  public var rhs: Tuple;
+  public var args: LList;
 
   public var hostModule: Atom;
 
@@ -13,29 +12,26 @@ class Match implements Operation {
   public var lineNumber: Int;
 
   public function toString(): String {
-    return "";
+    return '${Atom.to_s(hostModule)}.${Atom.to_s(hostFunction)}():${lineNumber}';
   }
 
-  public inline function new(lhs: Tuple, rhs: Tuple) {
-    this.lhs = lhs;
-    this.rhs = rhs;
+  public inline function new(args: LList, hostModule: Atom, hostFunction: Atom, lineNumber: Int) {
+    this.args = args;
+    this.hostModule = hostModule;
+    this.hostFunction = hostFunction;
+    this.lineNumber = lineNumber;
   }
 
   public function execute(scopeVariables: Map<String, Dynamic>, processStack: ProcessStack): Void {
-    var lElem0: Either2<Atom, Dynamic> = Tuple.elem(lhs, 0);
-    var lElem1: Either2<Atom, Dynamic> = Tuple.elem(lhs, 1);
-    var rElem0: Either2<Atom, Dynamic> = Tuple.elem(rhs, 0);
-    var rElem1: Either2<Atom, Dynamic> = Tuple.elem(rhs, 1);
-    switch(cast(EitherSupport.getValue(lElem0), Atom)) {
-      case {value: 'const'}:
-        throw "AnnaLang: Unsupported for now skyler";
-      case {value: 'var'}:
-        switch(cast(EitherSupport.getValue(rElem0), Atom)) {
-          case {value: 'const'}:
-            throw "AnnaLang: Unsupported for now skyler";
-          case {value: 'var'}:
-            scopeVariables.set(cast lElem1, scopeVariables.get(cast rElem1));
-        }
+    for(arg in LList.iterator(args)) {
+      var tuple: Tuple = EitherSupport.getValue(arg);
+      var argArray = tuple.asArray();
+      var elem1: Either2<Atom, Dynamic> = argArray[0];
+      var elem2: Either2<Atom, Dynamic> = argArray[1];
+      switch(cast(EitherSupport.getValue(elem1), Atom)) {
+        case {value: 'const'}:
+          scopeVariables.set(EitherSupport.getValue(elem2), scopeVariables.get("$$$"));
+      }
     }
   }
 

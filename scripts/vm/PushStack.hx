@@ -30,11 +30,28 @@ class PushStack implements Operation {
       Logger.inspect('throw a crazy error and kill the process!');
       return;
     }
+    var counter: Int = 0;
     var callArgs: Array<Dynamic> = [];
     var nextScopeVariables: Map<String, Dynamic> = new Map<String, Dynamic>();
     for(arg in LList.iterator(args)) {
       var tuple: Tuple = EitherSupport.getValue(arg);
-      Logger.inspect(tuple);
+      var argArray = tuple.asArray();
+      var elem1: Either2<Atom, Dynamic> = argArray[0];
+      var elem2: Either2<Atom, Dynamic> = argArray[1];
+//      var varName: String = EitherSupport.getValue(elem2);
+//      Logger.inspect(varName);
+      var value: Dynamic = switch(cast(EitherSupport.getValue(elem1), Atom)) {
+        case {value: 'const'}:
+          EitherSupport.getValue(elem2);
+//        case {value: 'var'}:
+//          scopeVariables.get(varName);
+        case _:
+          Logger.inspect("!!!!!!!!!!! bad !!!!!!!!!!!");
+          null;
+      }
+      callArgs.push(value);
+      var argName: String = fn.args[counter++];
+      nextScopeVariables.set(argName, value);
     }
 
 //    for(i in 0...fn.args.length) {
@@ -58,9 +75,13 @@ class PushStack implements Operation {
 //      nextScopeVariables.set(argName, value);
 //    }
 ////    var callArgs: Array<Dynamic> = InvokeFunction.getHaxeArgs(this.args, nextScopeVariables);
-    var operations: Array<Operation> = Reflect.callMethod(null, fn.fn, callArgs);
-    var annaCallStack: AnnaCallStack = new AnnaCallStack(operations, nextScopeVariables);
-    processStack.add(annaCallStack);
+    try {
+      var operations: Array<Operation> = Reflect.callMethod(null, fn.fn, callArgs);
+      var annaCallStack: AnnaCallStack = new AnnaCallStack(operations, nextScopeVariables);
+      processStack.add(annaCallStack);
+    } catch(e: Dynamic) {
+      Logger.inspect("Failed calling function");
+    }
   }
 
   public function isRecursive(): Bool {

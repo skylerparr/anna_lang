@@ -1,4 +1,6 @@
 package lang.macros;
+import hscript.plus.ParserPlus;
+import haxe.macro.Printer;
 #if macro
 import haxe.macro.Context;
 import haxe.macro.Type;
@@ -10,10 +12,14 @@ import haxe.macro.Expr.MetadataEntry;
 import haxe.macro.Expr;
 import haxe.macro.Context;
 class MacroTools {
-
-  public static function name(): Void {
-
+  private static var parser: ParserPlus = {
+    parser = new ParserPlus();
+    parser.allowTypes = true;
+    parser.allowMetadata = true;
+    parser;
   }
+
+  private static var printer: Printer = new Printer();
 
   #if macro
   public static function createClass(className: String): TypeDefinition {
@@ -102,13 +108,13 @@ class MacroTools {
     }
   }
 
-  public static function buildPublicFunction(name: String, params: Array<Expr>, returnType: ComplexType): Field {
+  public static function buildPublicFunction(name: String, params: Array<FunctionArg>, returnType: ComplexType): Field {
     var varName: String = '_${name}';
 
     return {
       access: [APublic, AStatic],
       kind: FFun({
-        args: [],
+        args: params,
         expr: null,
         ret: returnType
       }),
@@ -118,8 +124,7 @@ class MacroTools {
   }
 
   public static function buildPublicVar(name: String, varType: ComplexType, initBody: Array<Expr>): Field {
-    var funName: String = '_${name}';
-
+    var funName: String = name;
     var varBody: Array<Expr> = [];
     for(expr in initBody) {
       varBody.push(expr);
@@ -146,6 +151,50 @@ class MacroTools {
       case e:
         MacroLogger.log(e, 'e');
         throw new ParsingException("AnnaLang: Expected function call definition");
+    }
+  }
+
+  public static function getIdent(expr: Expr):String {
+    return switch(expr.expr) {
+      case EConst(CIdent(name)):
+        return name;
+      case e:
+        MacroLogger.log(e, 'e');
+        throw new ParsingException('AnnaLang: Expected variable identifier, got ${printer.printExpr(expr)}');
+    }
+  }
+
+  public static function getTypeAndValue(expr: Expr):Dynamic {
+    return switch(expr.expr) {
+      case EConst(CString(value)):
+        {type: "String", value: '@tuple [@atom "const", "${value}"]'};
+      case EConst(CInt(value)):
+        {type: "Int", value: '@tuple [@atom "const", ${value}]'};
+      case EConst(CFloat(value)):
+        {type: "Float", value: '@tuple [@atom "const", ${value}]'};
+      case _:
+        throw new ParsingException("AnnaLang: Expected type and value or variable name");
+    }
+  }
+
+  public static function getArgTypes(expr: Expr):Array<Dynamic> {
+    return switch(expr.expr) {
+      case ECall(_, params):
+        var retVal: Array<Dynamic> = [];
+        for(param in params) {
+          switch(param.expr) {
+            case EBlock(_):
+              break;
+            case EMeta({name: type}, expr):
+              retVal.push({type: type, name: getIdent(expr)});
+            case _:
+              throw new ParsingException("AnnaLang: Unexpected argument type");
+          }
+        }
+        retVal;
+      case e:
+        MacroLogger.log(e, 'e');
+        throw new ParsingException("AnnaLang: Expected value types");
     }
   }
 
@@ -186,7 +235,6 @@ class MacroTools {
 
   public static function getLineNumber(expr: Expr):Int {
     var lineStr: String = '${expr.pos}';
-    MacroLogger.log(lineStr, 'lineStr');
     var lineNo: Int = Std.parseInt(lineStr.split(':')[1]);
     return lineNo;
   }

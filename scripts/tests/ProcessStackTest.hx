@@ -37,14 +37,6 @@ class ProcessStackTest {
     @assert stack.allStacks.length == 0;
   }
 
-  public static function shouldNotAddToStackIfCurrentStackIsFinalCall(): Void {
-    stack.add(createAnnaCallStack(0));
-    stack.add(createAnnaCallStack(0));
-    stack.add(createAnnaCallStack(0));
-
-    @assert stack.allStacks.length == 1;
-  }
-
   private static function createAnnaCallStack(opCount: Int = 3): AnnaCallStack {
     var ops: Array<Operation> = [];
     for(i in 0...opCount) {

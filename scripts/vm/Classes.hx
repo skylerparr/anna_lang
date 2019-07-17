@@ -45,8 +45,7 @@ class Classes {
         if(fn == null) {
           fn = {fn: null, args: null};
         }
-        var argFun: Dynamic = Reflect.field(classDef, fun);
-        var args: Array<String> = Reflect.callMethod(classDef, argFun, []);
+        var args: Array<String> = Reflect.getProperty(classDef, fun);
         fn.args = args;
         classFunctions.set(origFnAtom, fn);
         functions.set(className, classFunctions);
