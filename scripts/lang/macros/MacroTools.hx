@@ -166,6 +166,8 @@ class MacroTools {
 
   public static function getTypeAndValue(expr: Expr):Dynamic {
     return switch(expr.expr) {
+      case EConst(CIdent(varName)):
+        {type: "Dynamic", value: '@tuple [@atom "var", "${varName}"]'};
       case EConst(CString(value)):
         {type: "String", value: '@tuple [@atom "const", "${value}"]'};
       case EConst(CInt(value)):

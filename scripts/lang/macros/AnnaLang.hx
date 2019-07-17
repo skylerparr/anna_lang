@@ -187,7 +187,9 @@ class AnnaLang {
     var args = MacroTools.getFunBody(params);
     var strArgs: Array<String> = [];
     for(arg in args) {
-      strArgs.push(printer.printExpr(arg));
+      var typeAndValue = MacroTools.getTypeAndValue(arg);
+      MacroLogger.log(typeAndValue.value, "typeAndValue.value");
+      strArgs.push(typeAndValue.value);
     }
     var haxeString = '${funName}.push(new vm.InvokeFunction(${moduleName}.${invokeFunName}, @list[${strArgs.join(', ')}],
       @atom "${moduleName}", @atom "${MacroContext.currentFunction}", ${MacroTools.getLineNumber(params)}))';
