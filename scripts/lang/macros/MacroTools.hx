@@ -174,8 +174,32 @@ class MacroTools {
         {type: "Int", value: '@tuple [@atom "const", ${value}]'};
       case EConst(CFloat(value)):
         {type: "Float", value: '@tuple [@atom "const", ${value}]'};
-      case EMeta({name: "atom"}, {expr: EConst(CString(value))}):
+      case EMeta({name: "atom" | "_"}, {expr: EConst(CString(value))}):
         {type: "Atom", value: '@tuple [@atom "const", ${value}]'};
+      case EBlock(args):
+        var tupleValues: Array<String> = [];
+        for(arg in args) {
+          tupleValues.push(printer.printExpr(arg));
+        }
+        {type: "Tuple", value: '@tuple [@atom "const", @tuple[${tupleValues.join(",")}]]'};
+      case EArrayDecl(args):
+        var listValues: Array<String> = [];
+        var isList: Bool = false;
+        for(arg in args) {
+          switch(arg.expr) {
+            case EBinop(OpArrow, key, value):
+              isList = false;
+              listValues.push('${printer.printExpr(key)} => ${printer.printExpr(value)}');
+            case _:
+              isList = true;
+              listValues.push(printer.printExpr(arg));
+          }
+        }
+        if(isList) {
+          {type: "List", value: '@tuple [@atom "const", @list[${listValues.join(",")}]]'};
+        } else {
+          {type: "Map", value: '@tuple [@atom "const", @map[${listValues.join(",")}]]'};
+        }
       case e:
         MacroLogger.log(e, 'e');
         throw new ParsingException("AnnaLang: Expected type and value or variable name");
@@ -190,12 +214,7 @@ class MacroTools {
           switch(param.expr) {
             case EBlock(_):
               break;
-            case EMeta({name: "Process"}, expr):
-              retVal.push({type: "vm.Process", name: getIdent(expr)});
-            case EMeta({name: type}, expr):
-              retVal.push({type: type, name: getIdent(expr)});
             case EObjectDecl(values):
-              MacroLogger.log(values, 'values');
               for(value in values) {
                 retVal.push({type: value.field, name: getIdent(value.expr)});
               }

@@ -16,7 +16,11 @@ using lang.AtomSupport;
     @native IO.inspect(pid);
     print();
     print("hello world", 90210, 999);
-    print(pid);
+    @native IO.inspect({@_"ok"; "all correct";}); // should be linked list
+    @native IO.inspect([@_"ok", "all correct"]); // should be tuple
+    string = @native IO.inspect([ @_"ok" => "all", @_'error' => "correct"]);
+//    @native IO.inspect({ok: "foob"}); //keyword list
+//    print(pid);
   });
 
   @def print({

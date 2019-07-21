@@ -158,7 +158,6 @@ class Macros {
         throw "AnnaLang: Unimplemented case";
       case EFor(it, expr):
         retValBlock.push(expr);
-//        throw "AnnaLang: Unimplemented case";
       case EIn(e1, e2):
         throw "AnnaLang: Unimplemented case";
       case EObjectDecl(fields):
@@ -166,7 +165,8 @@ class Macros {
       case EParenthesis(e):
         throw "AnnaLang: Unimplemented case";
       case EReturn(e):
-        retValBlock.push(expr);
+        var eReturnMeta = findMetaInBlock(e, null);
+        retValBlock.push({expr: EReturn(eReturnMeta), pos: Context.currentPos()});
       case ESwitch(e, cases, edef):
         retValBlock.push(expr);
       case ETernary(econd, eif, eelse):
@@ -298,6 +298,10 @@ class Macros {
               case EBinop(OpArrow, a, b):
                 collectMetaExpr(a, arrayValues);
                 collectMetaExpr(b, arrayValues);
+              case EMeta(metaName, {expr: EBinop(OpArrow, a, b), pos: _}):
+                a = {expr: EMeta(metaName, a), pos: Context.currentPos()};
+                collectMetaExpr(a, arrayValues);
+                collectMetaExpr(b, arrayValues);
               case _:
                 collectMetaExpr(value, arrayValues);
             }
@@ -360,6 +364,10 @@ class Macros {
         Atom.create($e{expr});
       }
     });
+  }
+
+  public static function __(e1: Expr, e2: Expr):Expr {
+    return _atom(e1, e2);
   }
 
   public static function _assert(lhs: Expr, rhs: Expr):Expr {

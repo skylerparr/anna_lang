@@ -1,5 +1,6 @@
 package;
 
+import lang.EitherSupport;
 import lang.CustomTypes.CustomType;
 
 using StringTools;
@@ -22,7 +23,7 @@ class LList implements CustomType {
   }
 
   public static function hd(list: LList): Any {
-    return (cast list).getHead();
+    return EitherSupport.getValue((cast list).getHead());
   }
 
   public static function tl(list: LList): LList {

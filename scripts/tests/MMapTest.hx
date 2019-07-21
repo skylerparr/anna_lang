@@ -33,6 +33,11 @@ class MMapTest {
     Assert.areEqual(Anna.toAnnaString(m), '%{"2" => "mno", "abc" => 1}');
   }
 
+  public static function shouldCreateMapWithOnlyAtomKeys(): Void {
+    var m: MMap = @map [@atom "ok" => "all", @atom "error" => "correct"];
+    @assert Anna.toAnnaString(m) == '%{:error => "correct", :ok => "all"}';
+  }
+
   public static function shouldCreateMapWithinMapInFunction(): Void {
     var m: MMap = @map[@map['abc' => 1, '2' => "mno"] => @map['abc' => 1, '2' => "mno"]];
     var expect: String = '%{%{"2" => "mno", "abc" => 1} => %{"2" => "mno", "abc" => 1}}';
@@ -94,6 +99,15 @@ class MMapTest {
     MMap.remove(map, 'abc'.atom());
     Assert.areEqual(map.toAnnaString(), '%{:def => 456}');
   }
+
+  public static function shouldReturnMap(): Void {
+    @assert getMap().toAnnaString() == '%{:error => "correct", :ok => "all"}';
+  }
+
+  private static function getMap(): MMap {
+    return @map [@atom "ok" => "all", @atom "error" => "correct"];
+  }
+  
 }
 
 class MapContainer {

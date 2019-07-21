@@ -189,12 +189,14 @@ class AnnaLang {
     var strArgs: Array<String> = [];
     for(arg in args) {
       var typeAndValue = MacroTools.getTypeAndValue(arg);
-      MacroLogger.log(typeAndValue.value, "typeAndValue.value");
       strArgs.push(typeAndValue.value);
     }
+    var currentModule: TypeDefinition = MacroContext.currentModule;
+    var currentModuleStr: String = currentModule.name;
     var haxeString = '${funName}.push(new vm.InvokeFunction(${moduleName}.${invokeFunName}, @list[${strArgs.join(', ')}],
-      @atom "${moduleName}", @atom "${MacroContext.currentFunction}", ${MacroTools.getLineNumber(params)}))';
-    return Macros.haxeToExpr(haxeString);
+      @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${MacroTools.getLineNumber(params)}))';
+    var retVal = Macros.haxeToExpr(haxeString);
+    return retVal;
   }
 
   public static function _alias(params: Expr):Expr {
