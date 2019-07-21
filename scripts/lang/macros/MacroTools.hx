@@ -174,7 +174,10 @@ class MacroTools {
         {type: "Int", value: '@tuple [@atom "const", ${value}]'};
       case EConst(CFloat(value)):
         {type: "Float", value: '@tuple [@atom "const", ${value}]'};
-      case _:
+      case EMeta({name: "atom"}, {expr: EConst(CString(value))}):
+        {type: "Atom", value: '@tuple [@atom "const", ${value}]'};
+      case e:
+        MacroLogger.log(e, 'e');
         throw new ParsingException("AnnaLang: Expected type and value or variable name");
     }
   }
@@ -187,9 +190,22 @@ class MacroTools {
           switch(param.expr) {
             case EBlock(_):
               break;
+            case EMeta({name: "Process"}, expr):
+              retVal.push({type: "vm.Process", name: getIdent(expr)});
             case EMeta({name: type}, expr):
               retVal.push({type: type, name: getIdent(expr)});
-            case _:
+            case EObjectDecl(values):
+              MacroLogger.log(values, 'values');
+              for(value in values) {
+                retVal.push({type: value.field, name: getIdent(value.expr)});
+              }
+            case EArrayDecl(returnTypes):
+              MacroContext.returnTypes = [];
+              for(returnType in returnTypes) {
+                MacroContext.returnTypes.push(getIdent(returnType));
+              }
+            case e:
+              MacroLogger.log(e, 'e');
               throw new ParsingException("AnnaLang: Unexpected argument type");
           }
         }

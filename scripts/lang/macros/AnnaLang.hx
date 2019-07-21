@@ -73,6 +73,7 @@ class AnnaLang {
         MacroLogger.log(ident, 'ident');
       case EMeta({name: name}, _):
         MacroContext.currentFunctionArgTypes.push(name);
+      case EObjectDecl(_) | EArrayDecl(_):
       case e:
         MacroLogger.log(e, 'e');
         throw "AnnaLang: Not sure what to do here yet";
@@ -126,7 +127,7 @@ class AnnaLang {
     for(argType in funArgsTypes) {
       types.push(argType.type);
     }
-    var argTypes: String = types.join('_');
+    var argTypes: String = StringTools.replace(types.join('_'), ".", "_");
     var varName: String = '_${funName}_${argTypes}';
     MacroContext.currentVar = varName;
     var body: Array<Expr> = [];

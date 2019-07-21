@@ -10,6 +10,7 @@ class MacroContext {
   public static var aliases: Map<String, String>;
   public static var currentFunctionArgTypes: Array<String>;
   public static var declaredVars: Array<Dynamic>;
+  public static var returnTypes: Array<String>;
   #end
 
   public static function define_callback(currentClass: Atom, callbackName: Atom):Void {
