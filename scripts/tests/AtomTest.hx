@@ -18,7 +18,7 @@ class AtomTest {
     atomArray;
   }
   public static function shouldCreateAtomWithStaticInitializer(): Void {
-    Assert.areEqual(Anna.toAnnaString(atomArray), "#A{:foo, :bar}");
+    Assert.areEqual(Anna.toAnnaString(atomArray), "#A[:foo, :bar]");
   }
 
   public static function shouldCreateAnAtomInAFunction(): Void {
@@ -33,12 +33,12 @@ class AtomTest {
 
   public static function shouldCreateArrayOfAtomsInAConstructor(): Void {
     var ac: ArrayAtomContainer = new ArrayAtomContainer([@atom"cat", @atom"baz"]);
-    Assert.areEqual(Anna.toAnnaString(ac.args), "#A{:cat, :baz}");
+    Assert.areEqual(Anna.toAnnaString(ac.args), "#A[:cat, :baz]");
   }
 
   public static function shouldCreateAtomAsFunctionArgs(): Void {
     var tuple: Tuple = Tuple.push(@tuple[], @atom"benus");
-    Assert.areEqual(tuple.toAnnaString(), '{:benus}');
+    Assert.areEqual(tuple.toAnnaString(), '[:benus]');
   }
 
   public static function shouldNotBeAbleToCreateAnEmptyAtom(): Void {

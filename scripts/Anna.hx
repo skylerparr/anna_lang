@@ -128,7 +128,7 @@ class Anna {
                 for(v in (val : Array<Dynamic>)) {
                   retVal.push(Anna.toAnnaString(v));
                 }
-                "#A{" + retVal.join(', ') + "}";
+                "#A[" + retVal.join(', ') + "]";
               case TClass(haxe.ds.EnumValueMap):
                 EnumMapPrinter.asAnnaString((val : EnumValueMap<Dynamic, Dynamic>));
               case TClass(haxe.ds.ObjectMap):

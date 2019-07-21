@@ -12,7 +12,7 @@ class AnnaListTest {
     LList.push(list, 'Bar');
     LList.push(list, 'Cat');
     LList.push(list, 'Baz');
-    @assert list.toAnnaString() == '["Baz", "Cat", "Bar", "Foo"]';
+    @assert list.toAnnaString() == '{"Baz", "Cat", "Bar", "Foo"}';
   }
 
   public static function shouldAddElement(): Void {
@@ -21,7 +21,7 @@ class AnnaListTest {
     LList.add(list, 'Bar');
     LList.add(list, 'Cat');
     LList.add(list, 'Baz');
-    @assert list.toAnnaString() == '["Foo", "Bar", "Cat", "Baz"]';
+    @assert list.toAnnaString() == '{"Foo", "Bar", "Cat", "Baz"}';
   }
 
   public static function shouldGetTail(): Void {
@@ -83,11 +83,11 @@ class AnnaListTest {
 
     var toRemove: MMap = @map['2' => '2'];
 
-    @assert LList.remove(list, toRemove).toAnnaString() == '[%{"1" => "1"}, %{"3" => "3"}]';
+    @assert LList.remove(list, toRemove).toAnnaString() == '{%{"1" => "1"}, %{"3" => "3"}}';
 
     toRemove = @map['2' => '2'];
 
-    Assert.areEqual(LList.remove(list, toRemove).toAnnaString(), '[%{"1" => "1"}, %{"3" => "3"}]');
+    @assert LList.remove(list, toRemove).toAnnaString() == '{%{"1" => "1"}, %{"3" => "3"}}';
   }
 
   public static function shouldPatternMatchHeadAndTail(): Void {
@@ -162,18 +162,18 @@ class AnnaListTest {
   public static function shouldCreateListAsFunctionArgs(): Void {
     var list: LList = @list['abc', 1, '2', "mno"];
     list = LList.push(list, @list['abc', "def", 'hij', "mno"]);
-    Assert.areEqual(list.toAnnaString(), '[["abc", "def", "hij", "mno"], "abc", 1, "2", "mno"]');
+    @assert list.toAnnaString() == '{{"abc", "def", "hij", "mno"}, "abc", 1, "2", "mno"}';
   }
 
   public static function shouldCreateAnEmptyList(): Void {
     var list: LList = @list[];
-    Assert.areEqual(list.toAnnaString(), '[]');
+    @assert list.toAnnaString() == '{}';
   }
 
   public static function shouldPutNewDataStructureIntoAnEmptyList(): Void {
     var list: LList = @list[];
     list = LList.add(list, @list[1,2,3]);
-    Assert.areEqual(list.toAnnaString(), '[[1, 2, 3]]');
+    Assert.areEqual(list.toAnnaString(), '{{1, 2, 3}}');
   }
 
   public static function shouldCreateListWithManyNestedTypes(): Void {

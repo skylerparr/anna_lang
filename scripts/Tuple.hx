@@ -118,7 +118,7 @@ class Tuple implements CustomType {
       for(v in vars) {
         stringFrags.push(Anna.toAnnaString(v));
       }
-      __annaString = '{${stringFrags.join(', ')}}';
+      __annaString = '[${stringFrags.join(', ')}]';
     }
     return __annaString;
   }
@@ -144,7 +144,7 @@ class Tuple0 extends Tuple implements CustomType {
   }
 
   override public function toAnnaString(): String {
-    return '{}';
+    return '[]';
   }
 
   override public function toHaxeString(): String {

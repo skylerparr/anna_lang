@@ -198,7 +198,7 @@ class AnnaList<T> extends LList {
         s.add(Anna.toAnnaString(l.item));
         l = l.next;
       }
-      _annaString = '[${s}]';
+      _annaString = '{${s}}';
     }
     return _annaString;
   }

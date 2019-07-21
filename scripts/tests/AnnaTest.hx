@@ -42,7 +42,7 @@ class AnnaTest {
   }
 
   public static function shouldPrintEmptyArray(): Void {
-    Assert.areEqual(Anna.inspect([]), '#A{}');
+    Assert.areEqual(Anna.inspect([]), '#A[]');
   }
 
   public static function shouldPrintDynamic(): Void {
@@ -51,7 +51,7 @@ class AnnaTest {
 
   public static function shouldPrintArrayWithValues(): Void {
     var values: Array<Dynamic> = [348, 349.54, 'foo', 'bar'.atom(), 'Cat'.atom()];
-    Assert.areEqual(Anna.inspect(values), '#A{348, 349.54, "foo", :bar, Cat}');
+    Assert.areEqual(Anna.inspect(values), '#A[348, 349.54, "foo", :bar, Cat]');
   }
 
   public static function shouldPrintEmptyMap(): Void {
@@ -64,7 +64,7 @@ class AnnaTest {
     map.set('foo'.atom(), "bar");
     map.set('bar'.atom(), 234);
     map.set('cat'.atom(), values);
-    Assert.areEqual(Anna.inspect(map), '#M%{:bar => 234, :cat => #A{348, 349.54, "foo", :bar, Cat}, :foo => "bar"}');
+    Assert.areEqual(Anna.inspect(map), '#M%{:bar => 234, :cat => #A[348, 349.54, "foo", :bar, Cat], :foo => "bar"}');
   }
 
   public static function shouldPrintMapWithSameTypes(): Void {
