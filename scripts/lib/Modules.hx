@@ -19,8 +19,9 @@ using lang.AtomSupport;
     @native IO.inspect(p2);
     @native IO.inspect([@_"ok", "all correct"]);
     @native IO.inspect({@_"ok"; "all correct";});
-    string = @native IO.inspect([ @_"ok" => "all", @_'error' => "correct"]);
+    map = @native IO.inspect([ @_"ok" => "all", @_'error' => "correct"]);
     @native IO.inspect(p3);
+    @native IO.inspect(map);
 //    @native IO.inspect({ok: "foob"}); //keyword list
 //    print(pid);
   });
@@ -33,7 +34,9 @@ using lang.AtomSupport;
     100;
     @_"money";
     [@_"tuple"];
-    {@_"list"; @_"Smelly"; @_"Ellie";};
+    list = {@_"list"; @_"Smelly"; @_"Ellie";};
+    @native IO.inspect(list);
+    "bird";
   });
 
   @def print({String: value, Int: count, Int: test}, [Int], {
