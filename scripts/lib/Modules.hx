@@ -14,36 +14,33 @@ using lang.AtomSupport;
   @def start({
     pid = @native Process.self();
     @native IO.inspect(pid);
-    print();
-    print("hello world", 90210, 999);
+    p3 = print();
+    p2 = print("hello world", 90210, 999);
+    @native IO.inspect(p2);
     @native IO.inspect([@_"ok", "all correct"]);
     @native IO.inspect({@_"ok"; "all correct";});
     string = @native IO.inspect([ @_"ok" => "all", @_'error' => "correct"]);
+    @native IO.inspect(p3);
 //    @native IO.inspect({ok: "foob"}); //keyword list
 //    print(pid);
   });
 
   @def print({
     @native IO.inspect('print with no args');
+    pid = @native Process.self();
+    "100";
+    199.909;
+    100;
+    @_"money";
+    {@_"money";};
+    [@_"money"];
   });
-
-//  @def print({Tuple: {abc; def;}}, [{error: String} | {ok: Proc}], {
-//    @native IO.inspect(pid);
-//    {abc; def;} // tuple?
-//    [a, b, c]; // tuple?
-//    [a | b | c]; // list
-//    Process%[a => b, c => d]; //custom type (struct)
-//    [a => b, c => d]; // map
-//    {abc: def}; // typespec
-//    {abc | def;}; // usable syntax
-//  });
 
   @def print({String: value, Int: count, Int: test}, [Int], {
     @native IO.inspect('print with 2 args');
     @native IO.inspect(value);
     @native IO.inspect(count);
     @native IO.inspect(test);
-
   });
 }))
 class Modules {

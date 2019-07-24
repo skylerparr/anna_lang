@@ -31,7 +31,12 @@ class ProcessStack {
     currentStack.execute(this);
     executionCount++;
     if(currentStack.finalCall()) {
-      allStacks.pop();
+      var annaStack = allStacks.pop();
+      var retVal = annaStack.scopeVariables.get("$$$");
+      var nextStack = allStacks.first();
+      if(nextStack != null) {
+        nextStack.scopeVariables.set("$$$", retVal);
+      }
     }
   }
 

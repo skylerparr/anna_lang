@@ -175,7 +175,7 @@ class MacroTools {
       case EConst(CFloat(value)):
         {type: "Float", value: '@tuple [@atom "const", ${value}]'};
       case EMeta({name: "atom" | "_"}, {expr: EConst(CString(value))}):
-        {type: "Atom", value: '@tuple [@atom "const", ${value}]'};
+        {type: "Atom", value: '@tuple [@atom "const", @atom "${value}"]'};
       case EBlock(args):
         var tupleValues: Array<String> = [];
         for(arg in args) {
@@ -258,6 +258,10 @@ class MacroTools {
         body;
       case ECall({expr: EField(e, field)}, body):
         body;
+      case EConst(_):
+        [expr];
+      case EMeta(_, _) | EArrayDecl(_) | EBlock(_):
+        [expr];
       case e:
         MacroLogger.log(e, 'e');
         throw new ParsingException("AnnaLang: Expected function body definition");
@@ -291,7 +295,14 @@ class MacroTools {
       case EConst(CIdent(name)):
         acc.push(name);
         acc;
-      case _:
+      case EConst(CString(value)) | EConst(CInt(value)) | EConst(CFloat(value)):
+        acc.push(value);
+        acc;
+      case EMeta(_, _) | EArrayDecl(_) | EBlock(_):
+        acc.push(printer.printExpr(expr));
+        acc;
+      case e:
+        MacroLogger.log(e, 'e');
         throw new ParsingException("AnnaLang: Expected package definition");
     }
   }

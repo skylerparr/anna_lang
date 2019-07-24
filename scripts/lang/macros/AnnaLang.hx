@@ -64,6 +64,18 @@ class AnnaLang {
               }
               var assignOp: Expr = createAssign(left, lineNumber);
               retExprs.push(assignOp);
+            case EConst(CString(value)) | EConst(CInt(value)) | EConst(CFloat(value)):
+              var lineNumber = MacroTools.getLineNumber(blockExpr);
+              var assignOp: Expr = createPutIntoScope(blockExpr, lineNumber);
+              retExprs.push(assignOp);
+            case EArrayDecl(values):
+              var lineNumber = MacroTools.getLineNumber(blockExpr);
+              var assignOp: Expr = createPutIntoScope(blockExpr, lineNumber);
+              retExprs.push(assignOp);
+            case EBlock(values):
+              var lineNumber = MacroTools.getLineNumber(blockExpr);
+              var assignOp: Expr = createPutIntoScope(blockExpr, lineNumber);
+              retExprs.push(assignOp);
             case _:
               MacroLogger.log(blockExpr, 'blockExpr');
               blockExpr;
@@ -116,6 +128,30 @@ class AnnaLang {
     var varName: String = MacroTools.getIdent(expr);
     var haxeStr: String = '${currentFunStr}.push(new vm.Match(@list [@tuple[@atom "const", "${varName}"]], @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${lineNumber}));';
     return Macros.haxeToExpr(haxeStr);
+  }
+
+  private static function createPutIntoScope(expr: Expr, lineNumber: Int):Expr {
+    var moduleName: String = MacroTools.getModuleName(expr);
+    moduleName = getAlias(moduleName);
+
+    var currentModule: TypeDefinition = MacroContext.currentModule;
+    var currentModuleStr: String = currentModule.name;
+    var currentFunStr: String = MacroContext.currentVar;
+
+    var args = MacroTools.getFunBody(expr);
+    var strArgs: Array<String> = [];
+    for(arg in args) {
+      var typeAndValue = MacroTools.getTypeAndValue(arg);
+      strArgs.push(typeAndValue.value);
+    }
+
+    var haxeStr: String = '${currentFunStr}.push(new vm.PutInScope(${strArgs.join(", ")}, @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${lineNumber}));';
+    return Macros.haxeToExpr(haxeStr);
+  }
+
+  public static function __(params: Expr):Expr {
+    var haxeStr: String = '@atom"${MacroTools.extractFullFunCall(params)[0]}";';
+    return createPutIntoScope(Macros.haxeToExpr(haxeStr), MacroTools.getLineNumber(params));
   }
 
   public static function _def(params: Expr): Expr {
