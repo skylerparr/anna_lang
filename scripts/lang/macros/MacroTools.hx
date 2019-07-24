@@ -177,11 +177,11 @@ class MacroTools {
       case EMeta({name: "atom" | "_"}, {expr: EConst(CString(value))}):
         {type: "Atom", value: '@tuple [@atom "const", @atom "${value}"]'};
       case EBlock(args):
-        var tupleValues: Array<String> = [];
+        var listValues: Array<String> = [];
         for(arg in args) {
-          tupleValues.push(printer.printExpr(arg));
+          listValues.push(printer.printExpr(arg));
         }
-        {type: "Tuple", value: '@tuple [@atom "const", @tuple[${tupleValues.join(",")}]]'};
+        {type: "List", value: '@tuple [@atom "const", @list[${listValues.join(",")}]]'};
       case EArrayDecl(args):
         var listValues: Array<String> = [];
         var isList: Bool = false;
@@ -196,7 +196,7 @@ class MacroTools {
           }
         }
         if(isList) {
-          {type: "List", value: '@tuple [@atom "const", @list[${listValues.join(",")}]]'};
+          {type: "Tuple", value: '@tuple [@atom "const", @tuple[${listValues.join(",")}]]'};
         } else {
           {type: "Map", value: '@tuple [@atom "const", @map[${listValues.join(",")}]]'};
         }

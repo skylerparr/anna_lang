@@ -32,8 +32,8 @@ using lang.AtomSupport;
     199.909;
     100;
     @_"money";
-    {@_"money";};
-    [@_"money"];
+    [@_"tuple"];
+    {@_"list"; @_"Smelly"; @_"Ellie";};
   });
 
   @def print({String: value, Int: count, Int: test}, [Int], {
