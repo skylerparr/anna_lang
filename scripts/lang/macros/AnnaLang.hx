@@ -1,5 +1,6 @@
 package lang.macros;
 
+//import vm.FunctionDef;
 import hscript.plus.ParserPlus;
 import haxe.macro.Printer;
 import haxe.macro.Context;
@@ -25,12 +26,49 @@ class AnnaLang {
     var cls = MacroTools.createClass(className);
     MacroContext.currentModule = cls;
     MacroContext.aliases = new Map<String, String>();
-    MacroContext.declaredFunctions = new Map<String, Array<Expr>>();
+//    MacroContext.declaredFunctions = new Map<String, Array<FunctionDef>>();
     applyBuildMacro();
 
-    prewalk(body);
+//    prewalk(body);
 
-    
+//    MacroLogger.log(MacroContext.declaredFunctions, 'MacroContext.declaredFunctions');
+//    for(key in MacroContext.declaredFunctions.keys()) {
+//      MacroLogger.log(key, 'key');
+//      for(funDefs in MacroContext.declaredFunctions.get(key)) {
+//        MacroLogger.log(funDefs, 'funDefs');
+//        for(funDef in funDefs) {
+//          MacroLogger.log(funBody, 'funBody');
+//
+//          MacroLogger.log(body, 'body');
+//          var varName: String = '_${funName}_${argTypes}';
+//          MacroContext.currentVar = varName;
+//          var body: Array<Expr> = [];
+//          body.push({
+//            expr: EBinop(OpAssign,{
+//              expr: EConst(CIdent(varName)),
+//              pos: Context.currentPos()
+//            },{
+//              expr: EArrayDecl([]),
+//              pos: Context.currentPos()
+//            }),
+//            pos: Context.currentPos()
+//          });
+//
+//          for(bodyExpr in funDef.funBody) {
+//            var walkBody = walkBlock(bodyExpr);
+//            for(expr in walkBody) {
+//              body.push(expr);
+//            }
+//          }
+//
+//          body.push(MacroTools.buildConst(CIdent(varName)));
+//
+//          var varType: ComplexType = MacroTools.buildType('Array<vm.Operation>');
+//          var funDef = MacroTools.buildPublicVar(varName, varType, body);
+//          MacroTools.addFieldToClass(funDef);
+//        }
+//      }
+//    }
 //    walkBlock(body);
 
     Context.defineType(cls);
@@ -178,64 +216,53 @@ class AnnaLang {
   }
 
   public static function _def(params: Expr): Expr {
-    MacroContext.currentFunctionArgTypes = [];
-    var funName: String = MacroTools.getCallFunName(params);
-    var funArgsTypes: Array<Dynamic> = MacroTools.getArgTypes(params);
-    var types: Array<String> = [];
-    for(argType in funArgsTypes) {
-      types.push(argType.type);
-    }
-    var argTypes: String = StringTools.replace(types.join('_'), ".", "_");
-    var varName: String = '_${funName}_${argTypes}';
-    MacroContext.currentVar = varName;
-    var body: Array<Expr> = [];
-    var funBody: Array<Expr> = MacroTools.getFunBody(params);
-    body.push({
-      expr: EBinop(OpAssign,{
-        expr: EConst(CIdent(varName)),
-        pos: Context.currentPos()
-      },{
-        expr: EArrayDecl([]),
-        pos: Context.currentPos()
-      }),
-      pos: Context.currentPos()
-    });
-
-    MacroContext.declaredFunctions.set(funName, funBody);
-
-//    for(bodyExpr in funBody) {
-//      var walkBody = walkBlock(bodyExpr);
-//      for(expr in walkBody) {
-//        body.push(expr);
-//      }
+//    MacroContext.currentFunctionArgTypes = [];
+//    var funName: String = MacroTools.getCallFunName(params);
+//    var funArgsTypes: Array<Dynamic> = MacroTools.getArgTypes(params);
+//    var types: Array<String> = [];
+//    for(argType in funArgsTypes) {
+//      types.push(argType.type);
 //    }
-    body.push(MacroTools.buildConst(CIdent(varName)));
+//    var argTypes: String = StringTools.replace(types.join('_'), ".", "_");
+//    var funBody: Array<Expr> = MacroTools.getFunBody(params);
 
-    var varType: ComplexType = MacroTools.buildType('Array<vm.Operation>');
-    var funDef = MacroTools.buildPublicVar(varName, varType, body);
-    MacroTools.addFieldToClass(funDef);
+//
+//    var returnType: ComplexType = MacroTools.buildType('Array<vm.Operation>');
+//    var funArgs: Array<FunctionArg> = [];
+//    for(funArgsType in funArgsTypes) {
+//      funArgs.push({name: funArgsType.name, type: MacroTools.buildType(funArgsType.type)});
+//    }
+//    var internalFunctionName: String = '${funName}_${argTypes}';
+//    var field: Field = MacroTools.buildPublicFunction(internalFunctionName, funArgs, returnType);
+//    var expr: Expr = MacroTools.buildReturn(MacroTools.buildConst(CIdent('${varName}')));
+//    MacroTools.assignFunBody(field, MacroTools.buildBlock([expr]));
+//    MacroTools.addFieldToClass(field);
+//
+//    var exprs: Array<Expr> = [];
+//    var varType: ComplexType = MacroTools.buildType('Array<String>');
+//    exprs.push(Macros.haxeToExpr('var args: Array<String> = [];'));
+//    for(funArgs in funArgsTypes) {
+//      var haxeExpr = Macros.haxeToExpr('args.push("${funArgs.name}");');
+//      exprs.push(haxeExpr);
+//    }
+//    var ret = MacroTools.buildConst(CIdent('args'));
+//    exprs.push(ret);
+//    var argFun = MacroTools.buildPublicVar('___${funName}_${argTypes}_args', varType, exprs);
+//    MacroTools.addFieldToClass(argFun);
 
-    var returnType: ComplexType = MacroTools.buildType('Array<vm.Operation>');
-    var funArgs: Array<FunctionArg> = [];
-    for(funArgsType in funArgsTypes) {
-      funArgs.push({name: funArgsType.name, type: MacroTools.buildType(funArgsType.type)});
-    }
-    var field: Field = MacroTools.buildPublicFunction('${funName}_${argTypes}', funArgs, returnType);
-    var expr: Expr = MacroTools.buildReturn(MacroTools.buildConst(CIdent('${varName}')));
-    MacroTools.assignFunBody(field, MacroTools.buildBlock([expr]));
-    MacroTools.addFieldToClass(field);
-
-    var exprs: Array<Expr> = [];
-    var varType: ComplexType = MacroTools.buildType('Array<String>');
-    exprs.push(Macros.haxeToExpr('var args: Array<String> = [];'));
-    for(funArgs in funArgsTypes) {
-      var haxeExpr = Macros.haxeToExpr('args.push("${funArgs.name}");');
-      exprs.push(haxeExpr);
-    }
-    var ret = MacroTools.buildConst(CIdent('args'));
-    exprs.push(ret);
-    var argFun = MacroTools.buildPublicVar('___${funName}_${argTypes}_args', varType, exprs);
-    MacroTools.addFieldToClass(argFun);
+    // add the functions to the context for reference later
+//    var funBodies: Array<FunctionDef> = MacroContext.declaredFunctions.get(internalFunctionName);
+//    if(funBodies == null) {
+//      funBodies = [];
+//    }
+//    var def = {
+//      name: funName,
+//      funArgsTypes: funArgsTypes,
+//      funReturnTypes: [],
+//      funBody: funBody
+//    };
+//    funBodies.push(def);
+//    MacroContext.declaredFunctions.set(internalFunctionName, funBodies);
 
     return macro {};
   }
