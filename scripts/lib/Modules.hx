@@ -15,7 +15,7 @@ using lang.AtomSupport;
     pid = @native Process.self();
     @native IO.inspect(pid);
     p3 = print();
-    p2 = print("hello world", 90210, 999);
+    p2 = print("hello world", 90210, 999.9);
     @native IO.inspect(p2);
     @native IO.inspect([@_"ok", "all correct"]);
     @native IO.inspect({@_"ok"; "all correct";});

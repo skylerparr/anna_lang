@@ -25,9 +25,13 @@ class AnnaLang {
     var cls = MacroTools.createClass(className);
     MacroContext.currentModule = cls;
     MacroContext.aliases = new Map<String, String>();
+    MacroContext.declaredFunctions = new Map<String, Array<Expr>>();
     applyBuildMacro();
 
-    walkBlock(body);
+    prewalk(body);
+
+    
+//    walkBlock(body);
 
     Context.defineType(cls);
 
@@ -40,6 +44,25 @@ class AnnaLang {
   }
 
   #if macro
+  private static function prewalk(expr: Expr): Void {
+    switch(expr.expr) {
+      case EBlock(exprs):
+        for(blockExpr in exprs) {
+          switch(blockExpr.expr) {
+            case EMeta({name: name}, params):
+              var fun = Reflect.field(AnnaLang, '_${name}');
+              fun(params);
+            case e:
+              MacroLogger.log(e, 'e');
+              throw "AnnaLang Prewalk: Not sure what to do here yet";
+          }
+        }
+      case e:
+        MacroLogger.log(e, 'e');
+        throw "AnnaLang Prewalk: Not sure what to do here yet";
+    }
+  }
+
   private static function walkBlock(expr: Expr): Array<Expr> {
     var retExprs: Array<Expr> = [];
     switch(expr.expr) {
@@ -158,7 +181,6 @@ class AnnaLang {
     MacroContext.currentFunctionArgTypes = [];
     var funName: String = MacroTools.getCallFunName(params);
     var funArgsTypes: Array<Dynamic> = MacroTools.getArgTypes(params);
-    MacroContext.currentFunction = funName;
     var types: Array<String> = [];
     for(argType in funArgsTypes) {
       types.push(argType.type);
@@ -179,12 +201,14 @@ class AnnaLang {
       pos: Context.currentPos()
     });
 
-    for(bodyExpr in funBody) {
-      var walkBody = walkBlock(bodyExpr);
-      for(expr in walkBody) {
-        body.push(expr);
-      }
-    }
+    MacroContext.declaredFunctions.set(funName, funBody);
+
+//    for(bodyExpr in funBody) {
+//      var walkBody = walkBlock(bodyExpr);
+//      for(expr in walkBody) {
+//        body.push(expr);
+//      }
+//    }
     body.push(MacroTools.buildConst(CIdent(varName)));
 
     var varType: ComplexType = MacroTools.buildType('Array<vm.Operation>');

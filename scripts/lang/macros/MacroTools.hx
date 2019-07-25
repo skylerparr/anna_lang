@@ -102,9 +102,13 @@ class MacroTools {
   }
 
   public static function buildBlock(blk: Array<Expr>): Expr {
-    return {
-      expr: EBlock(blk),
-      pos: Context.currentPos(),
+    if(blk == null || blk.length == 0) {
+      return null;
+    } else {
+      return {
+        expr: EBlock(blk),
+        pos: Context.currentPos(),
+      }
     }
   }
 
