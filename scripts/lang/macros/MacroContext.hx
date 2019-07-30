@@ -2,7 +2,6 @@ package lang.macros;
 
 import haxe.macro.Expr;
 import haxe.macro.Expr.TypeDefinition;
-//import vm.FunctionDef;
 class MacroContext {
   #if macro
   public static var currentModule: TypeDefinition;
@@ -12,7 +11,7 @@ class MacroContext {
   public static var currentFunctionArgTypes: Array<String>;
   public static var declaredVars: Array<Dynamic>;
   public static var returnTypes: Array<String>;
-//  public static var declaredFunctions: Map<String, Array<FunctionDef>>;
+  public static var declaredFunctions: Map<String, Array<Dynamic>>;
   #end
 
   public static function define_callback(currentClass: Atom, callbackName: Atom):Void {
