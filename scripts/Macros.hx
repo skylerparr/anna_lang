@@ -152,14 +152,14 @@ class Macros {
         retValBlock.push(expr);
       case EContinue:
         throw "AnnaLang: Unimplemented case";
-      case EDisplay(e, isCall):
+      case EDisplay(e, call):
         throw "AnnaLang: Unimplemented case";
       case EDisplayNew(t):
         throw "AnnaLang: Unimplemented case";
       case EFor(it, expr):
         retValBlock.push(expr);
-      case EIn(e1, e2):
-        throw "AnnaLang: Unimplemented case";
+//      case EIn(e1, e2):
+//        throw "AnnaLang: Unimplemented case";
       case EObjectDecl(fields):
         retValBlock.push(expr);
       case EParenthesis(e):

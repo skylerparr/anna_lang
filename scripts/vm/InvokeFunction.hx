@@ -37,6 +37,8 @@ class InvokeFunction implements Operation {
           functionArgs.push(EitherSupport.getValue(elem2));
         case {value: 'var'}:
           functionArgs.push(scope.get(EitherSupport.getValue(elem2)));
+        case _:
+          throw "AnnaLang: Unhandled case";
       }
     }
     return functionArgs;

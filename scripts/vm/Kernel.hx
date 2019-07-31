@@ -35,7 +35,7 @@ class Kernel {
   public static function defineCode(): Atom {
     Classes.define("Counter".atom(), Counter);
     Classes.define("CallCounter".atom(), Modules);
-    Classes.define("Boot".atom(), Boot);
+//    Classes.define("Boot".atom(), Boot);
     return 'ok'.atom();
   }
 
@@ -44,7 +44,8 @@ class Kernel {
     stop();
     Native.callStatic('Runtime', 'recompile', []);
     start();
-    return spawn('Boot'.atom(), 'start_'.atom(), LList.create([]));
+//    return spawn('Boot'.atom(), 'start_'.atom(), LList.create([]));
+    return null;
   }
 
   public static function spawn(module: Atom, fun: Atom, args: LList): Process {

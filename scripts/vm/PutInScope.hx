@@ -26,6 +26,8 @@ class PutInScope implements Operation {
         scopeVariables.set("$$$", EitherSupport.getValue(elem2));
       case {value: 'var'}:
         scopeVariables.set("$$$", scopeVariables.get(EitherSupport.getValue(elem2)));
+      case _:
+        throw "AnnaLang: Unhandled";
     }
   }
 

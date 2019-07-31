@@ -1,5 +1,5 @@
 package vm;
-import cpp.vm.Thread;
+import sys.thread.Thread;
 using lang.AtomSupport;
 
 import lang.CustomTypes.CustomType;
@@ -64,7 +64,7 @@ class Process implements CustomType {
   }
 
   public static function self(): Process {
-    var process: Process = Scheduler.threadProcessMap.get(Thread.current().handle);
+    var process: Process = Scheduler.threadProcessMap.get(Thread.current());
     return process;
   }
 

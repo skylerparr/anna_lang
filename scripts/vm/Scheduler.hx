@@ -3,7 +3,7 @@ package vm;
 import lang.AtomSupport;
 import haxe.ds.ObjectMap;
 import haxe.Timer;
-import cpp.vm.Thread;
+import sys.thread.Thread;
 using lang.AtomSupport;
 
 @:build(lang.macros.ValueClassImpl.build())
@@ -57,7 +57,7 @@ class Scheduler {
           return;
         case KernelMessage.SCHEDULE(process):
           var thread: Thread = workerThreads[index++ % workerThreads.length];
-          threadProcessMap.set(thread.handle, process);
+          threadProcessMap.set(thread, process);
           thread.sendMessage(process);
       }
     }

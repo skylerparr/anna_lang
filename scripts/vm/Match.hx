@@ -31,6 +31,8 @@ class Match implements Operation {
       switch(cast(EitherSupport.getValue(elem1), Atom)) {
         case {value: 'const'}:
           scopeVariables.set(EitherSupport.getValue(elem2), scopeVariables.get("$$$"));
+        case _:
+          throw "AnnaLang: Unhandled case";
       }
     }
   }

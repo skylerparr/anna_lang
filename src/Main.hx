@@ -1,3 +1,4 @@
+import sys.thread.Thread;
 import hscript.plus.ParserPlus;
 import lang.HashTableAtoms;
 import hx.strings.Strings;
@@ -5,14 +6,12 @@ import haxe.ds.ObjectMap;
 import haxe.Timer;
 import haxe.CallStack;
 import haxe.Constraints.IMap;
-import haxe.macro.Context;
 import haxe.macro.Printer;
 import state.GlobalStore;
 import core.PathSettings;
 import hscript.Macro;
 import hscript.Interp;
 import hscript.Parser;
-import cpp.vm.Thread;
 import ihx.HScriptEval;
 
 class Main {
@@ -98,7 +97,7 @@ class Main {
         }
       }
 
-      Runtime.start('AnnaLang', '${basePath}scripts', '${basePath}out/',
+      Runtime.start('AnnaLang', '${basePath}haxe4', '${basePath}out/',
       ['${basePath}src/'], ['hscript-plus'], onComplete);
     });
 

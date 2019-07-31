@@ -1,5 +1,5 @@
 package vm;
-import cpp.vm.Thread;
+import sys.thread.Thread;
 @:build(lang.macros.ValueClassImpl.build())
 class Inspector {
   @field public static var debugThread: Thread;

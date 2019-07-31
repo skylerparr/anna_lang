@@ -40,6 +40,8 @@ class EitherSupport {
             a;
           case B(b):
             b;
+          case _:
+            throw "Unmatched";
         }
       case Either3:
         switch(e) {
@@ -49,6 +51,8 @@ class EitherSupport {
             b;
           case C(c):
             c;
+          case _:
+            throw "Unmatched";
         }
       case Either4:
         switch(e) {
@@ -63,6 +67,8 @@ class EitherSupport {
                 b;
               case C(c):
                 c;
+              case _:
+                throw "Unmatched";
             }
         }
       case Either5:
@@ -80,6 +86,8 @@ class EitherSupport {
                 b;
               case C(c):
                 c;
+              case _:
+                throw "Unmatched";
             }
         }
       case Either6:
@@ -99,6 +107,8 @@ class EitherSupport {
                 b;
               case C(c):
                 c;
+              case _:
+                throw "Unmatched";
             }
         }
       case Either7:
@@ -120,6 +130,8 @@ class EitherSupport {
                 b;
               case C(c):
                 c;
+              case _:
+                throw "Unmatched";
             }
         }
       case Either8:
@@ -143,6 +155,8 @@ class EitherSupport {
                 b;
               case C(c):
                 c;
+              case _:
+                throw "Unmatched";
             }
         }
       case Either9:
@@ -168,6 +182,8 @@ class EitherSupport {
                 b;
               case C(c):
                 c;
+              case _:
+                throw "Unmatched";
             }
         }
       case Either10:
@@ -195,6 +211,8 @@ class EitherSupport {
                 b;
               case C(c):
                 c;
+              case _:
+                throw "Unmatched";
             }
         }
       case Either11:
@@ -224,6 +242,8 @@ class EitherSupport {
                 b;
               case C(c):
                 c;
+              case _:
+                throw "Unmatched";
             }
         }
       case Either12:
@@ -255,6 +275,8 @@ class EitherSupport {
                 b;
               case C(c):
                 c;
+              case _:
+                throw "Unmatched";
             }
         }
       case Either13:
@@ -288,6 +310,8 @@ class EitherSupport {
                 b;
               case C(c):
                 c;
+              case _:
+                throw "Unmatched";
             }
         }
       case Either14:
@@ -323,6 +347,8 @@ class EitherSupport {
                 b;
               case C(c):
                 c;
+              case _:
+                throw "Unmatched";
             }
         }
       case Either15:
@@ -360,6 +386,8 @@ class EitherSupport {
                 b;
               case C(c):
                 c;
+              case _:
+                throw "Unmatched";
             }
         }
       case Either16:
@@ -399,6 +427,8 @@ class EitherSupport {
                 b;
               case C(c):
                 c;
+              case _:
+                throw "Unmatched";
             }
         }
       case Either17:
@@ -440,6 +470,8 @@ class EitherSupport {
                 b;
               case C(c):
                 c;
+              case _:
+                throw "Unmatched";
             }
         }
       case Either18:
@@ -483,6 +515,8 @@ class EitherSupport {
                 b;
               case C(c):
                 c;
+              case _:
+                throw "Unmatched";
             }
         }
       case Either19:
@@ -528,6 +562,8 @@ class EitherSupport {
                 b;
               case C(c):
                 c;
+              case _:
+                throw "Unmatched";
             }
         }
       case Either20:
@@ -575,6 +611,8 @@ class EitherSupport {
                 b;
               case C(c):
                 c;
+              case _:
+                throw "Unmatched";
             }
         }
       case Either21:
@@ -624,6 +662,8 @@ class EitherSupport {
                 b;
               case C(c):
                 c;
+              case _:
+                throw "Unmatched";
             }
         }
       case Either22:
@@ -675,6 +715,8 @@ class EitherSupport {
                 b;
               case C(c):
                 c;
+              case _:
+                throw "Unmatched";
             }
         }
       case Either23:
@@ -728,6 +770,8 @@ class EitherSupport {
                 b;
               case C(c):
                 c;
+              case _:
+                throw "Unmatched";
             }
         }
       case Either24:
@@ -783,6 +827,8 @@ class EitherSupport {
                 b;
               case C(c):
                 c;
+              case _:
+                throw "Unmatched";
             }
         }
       case Either25:
@@ -840,6 +886,8 @@ class EitherSupport {
                 b;
               case C(c):
                 c;
+              case _:
+                throw "Unmatched";
             }
         }
       case Either26:
@@ -899,6 +947,8 @@ class EitherSupport {
                 b;
               case C(c):
                 c;
+              case _:
+                throw "Unmatched";
             }
         }
       case _:

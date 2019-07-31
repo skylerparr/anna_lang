@@ -1,6 +1,6 @@
 package vm;
 
-import cpp.vm.Thread;
+import sys.thread.Thread;
 enum DebugMessage {
   RESUME;
   PRINT_VAR(varName: String);
