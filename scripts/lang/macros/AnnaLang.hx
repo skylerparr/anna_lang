@@ -345,7 +345,11 @@ class AnnaLang {
 
           override public function execute(scope: Map<String, Dynamic>, processStack: vm.ProcessStack): Void {
             var retVal = $e{execBody}
-            scope.set("$$$", retVal);
+            if(retVal == null) {
+              scope.set("$$$", lang.HashTableAtoms.get("nil"));
+            } else {
+              scope.set("$$$", retVal);
+            }
           }
       }
 
