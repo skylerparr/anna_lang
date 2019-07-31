@@ -20,7 +20,6 @@ class AnnaLang {
     var className: String = printer.printExpr(name);
     MacroLogger.log(className, 'name');
     MacroLogger.logExpr(body, 'bodyString');
-    MacroLogger.log(body, 'body');
 
     var cls = MacroTools.createClass(className);
     MacroContext.currentModule = cls;
@@ -82,7 +81,6 @@ class AnnaLang {
       }
     }
 
-    MacroLogger.log(cls, 'cls');
     Context.defineType(cls);
 
     MacroLogger.log("==================");
@@ -259,25 +257,6 @@ class AnnaLang {
     return macro {};
   }
 
-  public static function _native(params: Expr):Expr {
-    var funName: String = MacroContext.currentVar;
-    var moduleName: String = MacroTools.getModuleName(params);
-    moduleName = getAlias(moduleName);
-    var invokeFunName = MacroTools.getFunctionName(params);
-    var args = MacroTools.getFunBody(params);
-    var strArgs: Array<String> = [];
-    for(arg in args) {
-      var typeAndValue = MacroTools.getTypeAndValue(arg);
-      strArgs.push(typeAndValue.value);
-    }
-    var currentModule: TypeDefinition = MacroContext.currentModule;
-    var currentModuleStr: String = currentModule.name;
-    var haxeString = '${funName}.push(new vm.InvokeFunction(${moduleName}.${invokeFunName}, @list[${strArgs.join(', ')}],
-      @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${MacroTools.getLineNumber(params)}))';
-    var retVal = Macros.haxeToExpr(haxeString);
-    return retVal;
-  }
-
   public static function _alias(params: Expr):Expr {
     var fun = MacroTools.getCallFunName(params);
     var fieldName = MacroTools.getAliasName(params);
@@ -292,6 +271,94 @@ class AnnaLang {
         str;
       case val:
         val;
+    }
+  }
+
+  public static function _native(params: Expr):Expr {
+    var funName: String = MacroContext.currentVar;
+    var moduleName: String = MacroTools.getModuleName(params);
+    moduleName = getAlias(moduleName);
+    var invokeFunName = MacroTools.getFunctionName(params);
+    var args = MacroTools.getFunBody(params);
+    var strArgs: Array<String> = [];
+    for(arg in args) {
+      var typeAndValue = MacroTools.getTypeAndValue(arg);
+      strArgs.push(typeAndValue.value);
+    }
+    var currentModule: TypeDefinition = MacroContext.currentModule;
+    var currentModuleStr: String = currentModule.name;
+
+    var invokeClass: TypeDefinition = createOperationClass(moduleName, invokeFunName, strArgs);
+
+    var haxeString = '${funName}.push(new vm.${invokeClass.name}(${moduleName}.${invokeFunName}, @list[${strArgs.join(', ')}],
+      @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${MacroTools.getLineNumber(params)}))';
+    var retVal = Macros.haxeToExpr(haxeString);
+    return retVal;
+  }
+
+  private static var declaredFunctions: Map<String, TypeDefinition> = new Map<String, TypeDefinition>();
+
+  private static function createOperationClass(moduleName: String, invokeFunName: String, strArgs: Array<String>): TypeDefinition {
+    var className = 'InvokeFunction_${StringTools.replace(invokeFunName, '.', '_')}';
+    MacroLogger.log(strArgs, 'strArgs');
+    if(declaredFunctions.get(className) == null) {
+      var assignments: Array<String> = [];
+      var counter: Int = 0;
+      var privateArgs: Array<String> = [];
+      for(arg in strArgs) {
+        var assign: String = '
+            var _arg${counter} = {
+              var elem1: Dynamic = arg${counter}[0];
+              var elem2: Dynamic = arg${counter}[1];
+              switch(cast(lang.EitherSupport.getValue(elem1), Atom)) {
+                case {value: "const"}:
+                  lang.EitherSupport.getValue(elem2);
+                case {value: "var"}:
+                  scope.get(lang.EitherSupport.getValue(elem2));
+                case _:
+                  throw "AnnaLang: Unexpected function argument";
+              }
+            };';
+
+        assignments.push(assign);
+        privateArgs.push('_arg${counter}');
+        ++counter;
+      }
+      var executeBodyStr: String = '${assignments.join('\n')} ${moduleName}.${invokeFunName}(${privateArgs.join(', ')});';
+
+      var execBody: Expr = Macros.haxeToExpr(executeBodyStr);
+      MacroLogger.logExpr(execBody, 'execBody');
+
+      var cls: TypeDefinition = macro class NoClass extends vm.AbstractInvokeFunction {
+
+          private var arg0: Array<EitherEnums.Either2<Atom, Dynamic>>;
+
+          public function new(func: Dynamic, args: LList, hostModule: Atom, hostFunction: Atom, line: Int) {
+            super(hostModule, hostFunction, line);
+            var counter: Int = 0;
+            for(arg in LList.iterator(args)) {
+                var tuple: Tuple = lang.EitherSupport.getValue(arg);
+                var argArray = tuple.asArray();
+                Reflect.setField(this, "arg" + (counter++), argArray);
+              }
+          }
+
+          override public function execute(scope: Map<String, Dynamic>, processStack: vm.ProcessStack): Void {
+            var retVal = $e{execBody}
+            scope.set("$$$", retVal);
+          }
+      }
+
+      cls.name = className;
+      cls.pack = ["vm"];
+
+      MacroLogger.printFields(cls.fields);
+      Context.defineType(cls);
+
+      declaredFunctions.set(className, cls);
+      return cls;
+     } else {
+      return declaredFunctions.get(className);
     }
   }
 

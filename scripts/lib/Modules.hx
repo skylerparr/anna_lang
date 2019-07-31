@@ -4,7 +4,6 @@ import vm.Process;
 import vm.Match;
 import vm.Operation;
 import vm.PushStack;
-import vm.InvokeFunction;
 import IO;
 using lang.AtomSupport;
 
@@ -29,13 +28,16 @@ using lang.AtomSupport;
   @def print({
     @native IO.inspect('print with no args');
     pid = @native Process.self();
-    "100";
+    arg1 = "100";
     199.909;
-    100;
+    arg2 = 100;
     @_"money";
     [@_"tuple"];
     list = {@_"list"; @_"Smelly"; @_"Ellie";};
+    arg3 = 300;
     @native IO.inspect(list);
+    //For later when return types are supported
+//    print(arg1, arg2, arg3);
     "bird";
   });
 

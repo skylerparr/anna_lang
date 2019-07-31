@@ -1,7 +1,6 @@
 package vm;
 
 import lib.Modules;
-import lib.Counter;
 import compiler.Compiler;
 import cpp.vm.Thread;
 import vm.Process;
@@ -33,7 +32,6 @@ class Kernel {
   }
 
   public static function defineCode(): Atom {
-    Classes.define("Counter".atom(), Counter);
     Classes.define("CallCounter".atom(), Modules);
     Classes.define("Boot".atom(), Boot);
     return 'ok'.atom();
