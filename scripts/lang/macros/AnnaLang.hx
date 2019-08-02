@@ -32,6 +32,13 @@ class AnnaLang {
 
     for(key in MacroContext.declaredFunctions.keys()) {
       for(funDef in MacroContext.declaredFunctions.get(key)) {
+        MacroLogger.log(MacroContext.currentFunction, 'MacroContext.currentFunction');
+
+        MacroContext.currentFunction = funDef.name;
+        MacroContext.currentFunctionArgTypes = [];
+        MacroContext.varTypesInScope = new Map<String, String>();
+        MacroContext.lastFunctionReturnType = "";
+
         // Actual operations this function will be doing
         var funBody = funDef.funBody;
         var body: Array<Expr> = [];
@@ -149,12 +156,10 @@ class AnnaLang {
               var assignOp: Expr = createPutIntoScope(blockExpr, lineNumber);
               retExprs.push(assignOp);
             case _:
-              MacroLogger.log(blockExpr, 'blockExpr');
               blockExpr;
           }
         }
       case EConst(ident):
-        MacroLogger.log(ident, 'ident');
       case EMeta({name: name}, _):
         MacroContext.currentFunctionArgTypes.push(name);
       case EObjectDecl(_) | EArrayDecl(_):
@@ -198,6 +203,8 @@ class AnnaLang {
     var currentModuleStr: String = currentModule.name;
     var currentFunStr: String = MacroContext.currentVar;
     var varName: String = MacroTools.getIdent(expr);
+    MacroContext.varTypesInScope.set(varName, MacroContext.lastFunctionReturnType);
+    MacroLogger.log(MacroContext.varTypesInScope, 'MacroContext.varTypesInScope');
     var haxeStr: String = '${currentFunStr}.push(new vm.Match(@list [@tuple[@atom "const", "${varName}"]], @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${lineNumber}));';
     return Macros.haxeToExpr(haxeStr);
   }
@@ -227,7 +234,6 @@ class AnnaLang {
   }
 
   public static function _def(params: Expr): Expr {
-    MacroContext.currentFunctionArgTypes = [];
     var funName: String = MacroTools.getCallFunName(params);
     var funArgsTypes: Array<Dynamic> = MacroTools.getArgTypes(params);
     var types: Array<String> = [];
@@ -301,7 +307,6 @@ class AnnaLang {
 
   private static function createOperationClass(moduleName: String, invokeFunName: String, strArgs: Array<String>): TypeDefinition {
     var className = 'InvokeFunction_${StringTools.replace(invokeFunName, '.', '_')}';
-    MacroLogger.log(strArgs, 'strArgs');
 
     if(declaredFunctions.get(className) == null) {
       var assignments: Array<String> = [];
@@ -311,23 +316,19 @@ class AnnaLang {
       for(arg in strArgs) {
         var assign: String = '
             var _arg${counter} = {
-              var elem1: Dynamic = arg${counter}[0];
-              var elem2: Dynamic = arg${counter}[1];
-              switch(cast(lang.EitherSupport.getValue(elem1), Atom)) {
+              switch(cast(lang.EitherSupport.getValue(arg${counter}[0]), Atom)) {
                 case {value: "const"}:
-                  lang.EitherSupport.getValue(elem2);
+                  lang.EitherSupport.getValue(arg${counter}[1]);
                 case {value: "var"}:
-                  scope.get(lang.EitherSupport.getValue(elem2));
+                  scope.get(lang.EitherSupport.getValue(arg${counter}[1]));
                 case _:
                   throw "AnnaLang: Unexpected function argument";
               }
             };';
-        // private var arg${counter}: Array<EitherEnums.Either2<Atom, Dynamic>>;
         var classVar: String = 'arg${counter}';
         var paramVar = macro class Fake {
           private var $classVar: Array<EitherEnums.Either2<Atom, Dynamic>>;
         }
-        MacroLogger.log(paramVar, 'paramVar');
         paramVars.push(paramVar.fields[0]);
         assignments.push(assign);
         privateArgs.push('_arg${counter}');
@@ -350,10 +351,10 @@ class AnnaLang {
           MacroLogger.log(t, 't');
           throw "AnnaLang: Unhandled return type";
       }
-      MacroLogger.log(MacroContext.lastFunctionReturnType, 'MacroContext.lastFunctionReturnType');
       var assignReturnVar: Expr = null;
       if(MacroContext.lastFunctionReturnType == "Int" || MacroContext.lastFunctionReturnType == "Float") {
         assignReturnVar = macro scope.set("$$$", retVal);
+        MacroContext.lastFunctionReturnType = "Float";
       } else {
         assignReturnVar = macro if(retVal == null) {
               scope.set("$$$", lang.HashTableAtoms.get("nil"));
@@ -388,7 +389,6 @@ class AnnaLang {
       cls.name = className;
       cls.pack = ["vm"];
 
-      MacroLogger.printFields(cls.fields);
       Context.defineType(cls);
 
       declaredFunctions.set(className, cls);

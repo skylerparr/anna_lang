@@ -12,9 +12,11 @@ using lang.AtomSupport;
   @alias vm.Kernel;
 
   @def start({
+    one_hundred = "100";
     pid = @native Process.self();
     counter = @native Kernel.add(23, 491);
     @native IO.inspect(counter);
+    @native IO.inspect(null);
     @native IO.inspect(pid);
     p3 = print();
     p2 = print("hello world", 90210, 999);
@@ -30,8 +32,8 @@ using lang.AtomSupport;
 
   @def print({
     @native IO.inspect('print with no args');
-    pid = @native Process.self();
     arg1 = "100";
+    pid = @native Process.self();
     199.909;
     arg2 = 100;
     @_"money";
