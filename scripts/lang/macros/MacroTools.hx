@@ -40,8 +40,8 @@ class MacroTools {
     return cls;
   }
 
-  public static function addFieldToClass(field: Field):Void {
-    MacroContext.currentModule.fields.push(field);
+  public static function addFieldToClass(cls: TypeDefinition, field: Field):Void {
+    cls.fields.push(field);
   }
 
   public static function assignFunBody(field: Field, body: Expr):Field {

@@ -9,9 +9,12 @@ using lang.AtomSupport;
 
 @:build(lang.macros.AnnaLang.defcls(Boot, {
   @alias vm.Process;
+  @alias vm.Kernel;
 
   @def start({
     pid = @native Process.self();
+    counter = @native Kernel.add(23, 491);
+    @native IO.inspect(counter);
     @native IO.inspect(pid);
     p3 = print();
     p2 = print("hello world", 90210, 999);

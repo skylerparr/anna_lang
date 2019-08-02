@@ -12,6 +12,8 @@ class MacroContext {
   public static var declaredVars: Array<Dynamic>;
   public static var returnTypes: Array<String>;
   public static var declaredFunctions: Map<String, Array<Dynamic>>;
+  public static var varTypesInScope: Map<String, String>;
+  public static var lastFunctionReturnType: String;
   #end
 
   public static function define_callback(currentClass: Atom, callbackName: Atom):Void {

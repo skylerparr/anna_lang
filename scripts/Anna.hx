@@ -75,7 +75,6 @@ class Anna {
         case TClass(Array):
           '${val}';
         case TObject:
-          Logger.inspect("object");
           inspectDynamic(val);
         case TBool:
           '${(val : Bool)}';

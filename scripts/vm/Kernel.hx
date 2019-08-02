@@ -55,7 +55,7 @@ class Kernel {
     return Tuple.create(['error'.atom(), 'Not implemented yet']);
   }
 
-  public static function add(left: Int, right: Int): Int {
+  public static function add(left: Float, right: Float): Float {
     return left + right;
   }
 
