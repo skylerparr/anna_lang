@@ -195,6 +195,9 @@ class AnnaLang {
   }
 
   private static function getTypeForVar(typeAndValue: Dynamic, arg: Expr):String {
+    MacroLogger.log(typeAndValue, 'typeAndValue');
+    MacroLogger.log(arg, 'arg');
+    MacroLogger.log(MacroContext.lastFunctionReturnType, 'MacroContext.lastFunctionReturnType');
     return switch(arg.expr) {
       case EConst(CIdent(varName)):
         var type = MacroContext.varTypesInScope.get(varName);
@@ -253,7 +256,8 @@ class AnnaLang {
 
   public static function _def(params: Expr): Expr {
     var funName: String = MacroTools.getCallFunName(params);
-    var funArgsTypes: Array<Dynamic> = MacroTools.getArgTypes(params);
+    var allTypes: Dynamic = MacroTools.getArgTypesAndReturnTypes(params);
+    var funArgsTypes: Array<Dynamic> = allTypes.argTypes;
     var types: Array<String> = [];
     for(argType in funArgsTypes) {
       types.push(getType(argType.type));
@@ -273,7 +277,7 @@ class AnnaLang {
       internalFunctionName: internalFunctionName,
       argTypes: argTypes,
       funArgsTypes: funArgsTypes,
-      funReturnTypes: [],
+      funReturnTypes: allTypes.returnTypes,
       funBody: funBody
     };
     funBodies.push(def);

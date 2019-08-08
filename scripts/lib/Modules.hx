@@ -11,26 +11,27 @@ using lang.AtomSupport;
   @alias vm.Process;
   @alias vm.Kernel;
 
-  @def start({
-    one_hundred = "100";
+  @def start({}, [], {
+//    one_hundred = "100";
     pid = @native Process.self();
-    counter = @native Kernel.add(23, 491);
-    @native IO.inspect(counter);
-    @native IO.inspect(null);
-    @native IO.inspect(pid);
+//    counter = @native Kernel.add(23, 491);
+//    @native IO.inspect(counter);
+//    @native IO.inspect(null);
+//    @native IO.inspect(pid);
     p3 = print();
-    p2 = print("hello world", 90210, counter);
-    @native IO.inspect(p2);
-    @native IO.inspect([@_"ok", "all correct"]);
-    @native IO.inspect({@_"ok"; "all correct";});
-    map = @native IO.inspect([ @_"ok" => "all", @_'error' => "correct"]);
-    @native IO.inspect(p3);
-    @native IO.inspect(map);
+//    p2 = print("hello world", 90210, counter);
+//    @native IO.inspect(p2);
+//    @native IO.inspect([@_"ok", "all correct"]);
+//    @native IO.inspect({@_"ok"; "all correct";});
+//    map = @native IO.inspect([ @_"ok" => "all", @_'error' => "correct"]);
+//    @native IO.inspect(p3);
+//    @native IO.inspect(map);
+    foo(p3);
 //    @native IO.inspect({ok: "foob"}); //keyword list
 //    print(pid);
   });
 
-  @def print({
+  @def print({}, [Int], {
     @native IO.inspect('print with no args');
     arg1 = "100";
     pid = @native Process.self();
@@ -45,7 +46,7 @@ using lang.AtomSupport;
     @native IO.inspect(arg4);
     @native IO.inspect(list);
     @native IO.inspect("returning");
-    print(arg1, arg2, arg3);
+    arg4;
   });
 
   @def print({String: value, Int: count, Int: test}, [Int], {
@@ -53,6 +54,10 @@ using lang.AtomSupport;
     @native IO.inspect(value);
     @native IO.inspect(count);
     @native IO.inspect(test);
+  });
+
+  @def foo({Int: value}, [String], {
+    @native IO.inspect(value);
   });
 }))
 class Modules {

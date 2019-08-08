@@ -214,22 +214,22 @@ class MacroTools {
     }
   }
 
-  public static function getArgTypes(expr: Expr):Array<Dynamic> {
+  public static function getArgTypesAndReturnTypes(expr: Expr):Dynamic {
     return switch(expr.expr) {
       case ECall(_, params):
-        var retVal: Array<Dynamic> = [];
+        var retVal: Dynamic = {argTypes: [], returnTypes: []};
         for(param in params) {
           switch(param.expr) {
             case EBlock(_):
               break;
             case EObjectDecl(values):
               for(value in values) {
-                retVal.push({type: value.field, name: getIdent(value.expr)});
+                retVal.argTypes.push({type: value.field, name: getIdent(value.expr)});
               }
             case EArrayDecl(returnTypes):
               MacroContext.returnTypes = [];
               for(returnType in returnTypes) {
-                MacroContext.returnTypes.push(getIdent(returnType));
+                retVal.returnTypes.push(getIdent(returnType));
               }
             case e:
               MacroLogger.log(e, 'e');
