@@ -16,6 +16,8 @@ class AnnaLang {
 
   private static var printer: Printer = new Printer();
 
+  private static var declaredFunctions: Map<String, TypeDefinition> = new Map<String, TypeDefinition>();
+
   macro public static function defcls(name: Expr, body: Expr): Array<Field> {
     MacroLogger.log('==============================');
     var className: String = printer.printExpr(name);
@@ -141,7 +143,7 @@ class AnnaLang {
               }
               var assignOp: Expr = createAssign(left, lineNumber);
               retExprs.push(assignOp);
-            case EConst(CString(value)) | EConst(CInt(value)) | EConst(CFloat(value)):
+            case EConst(CString(value)) | EConst(CInt(value)) | EConst(CFloat(value)) | EConst(CIdent(value)):
               var lineNumber = MacroTools.getLineNumber(blockExpr);
               var assignOp: Expr = createPutIntoScope(blockExpr, lineNumber);
               retExprs.push(assignOp);
@@ -153,7 +155,8 @@ class AnnaLang {
               var lineNumber = MacroTools.getLineNumber(blockExpr);
               var assignOp: Expr = createPutIntoScope(blockExpr, lineNumber);
               retExprs.push(assignOp);
-            case _:
+            case things:
+              MacroLogger.log(things, 'things');
               blockExpr;
           }
         }
@@ -190,14 +193,15 @@ class AnnaLang {
       funArgs.push(typeAndValue.value);
     }
     funName = '${funName}_${types.join("_")}';
+
+    var funDef: Dynamic = MacroContext.declaredFunctions.get(funName);
+
+    MacroContext.lastFunctionReturnType = funDef[0].funReturnTypes[0];
     var haxeStr: String = '${currentFunStr}.push(new vm.PushStack(@atom "${currentModuleStr}", @atom "${funName}", @list [${funArgs.join(", ")}], @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${lineNumber}))';
     return Macros.haxeToExpr(haxeStr);
   }
 
   private static function getTypeForVar(typeAndValue: Dynamic, arg: Expr):String {
-    MacroLogger.log(typeAndValue, 'typeAndValue');
-    MacroLogger.log(arg, 'arg');
-    MacroLogger.log(MacroContext.lastFunctionReturnType, 'MacroContext.lastFunctionReturnType');
     return switch(arg.expr) {
       case EConst(CIdent(varName)):
         var type = MacroContext.varTypesInScope.get(varName);
@@ -324,8 +328,6 @@ class AnnaLang {
     var retVal = Macros.haxeToExpr(haxeString);
     return retVal;
   }
-
-  private static var declaredFunctions: Map<String, TypeDefinition> = new Map<String, TypeDefinition>();
 
   private static function createOperationClass(moduleName: String, invokeFunName: String, strArgs: Array<String>): TypeDefinition {
     var className = 'InvokeFunction_${StringTools.replace(invokeFunName, '.', '_')}';

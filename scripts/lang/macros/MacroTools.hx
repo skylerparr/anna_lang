@@ -216,7 +216,7 @@ class MacroTools {
 
   public static function getArgTypesAndReturnTypes(expr: Expr):Dynamic {
     return switch(expr.expr) {
-      case ECall(_, params):
+      case ECall(f, params):
         var retVal: Dynamic = {argTypes: [], returnTypes: []};
         for(param in params) {
           switch(param.expr) {
