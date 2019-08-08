@@ -38,13 +38,13 @@ class PushStack implements Operation {
       var argArray = tuple.asArray();
       var elem1: Either2<Atom, Dynamic> = argArray[0];
       var elem2: Either2<Atom, Dynamic> = argArray[1];
-//      var varName: String = EitherSupport.getValue(elem2);
-//      Logger.inspect(varName);
+
       var value: Dynamic = switch(cast(EitherSupport.getValue(elem1), Atom)) {
         case {value: 'const'}:
           EitherSupport.getValue(elem2);
-//        case {value: 'var'}:
-//          scopeVariables.get(varName);
+        case {value: 'var'}:
+          var varName: String = EitherSupport.getValue(elem2);
+          scopeVariables.get(varName);
         case _:
           Logger.inspect("!!!!!!!!!!! bad !!!!!!!!!!!");
           null;

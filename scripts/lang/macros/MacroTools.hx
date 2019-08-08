@@ -180,6 +180,10 @@ class MacroTools {
         {type: "Float", value: '@tuple [@atom "const", ${value}]'};
       case EMeta({name: "atom" | "_"}, {expr: EConst(CString(value))}):
         {type: "Atom", value: '@tuple [@atom "const", @atom "${value}"]'};
+      case EMeta({name: "tuple"}, {expr: EArrayDecl(values)}):
+        {type: "Tuple", value: '@tuple [@atom "const", @tuple ${values}]'};
+      case EMeta({name: "list"}, {expr: EArrayDecl(values)}):
+        {type: "LList", value: '@tuple [@atom "const", @tuple ${values}]'};
       case EBlock(args):
         var listValues: Array<String> = [];
         for(arg in args) {

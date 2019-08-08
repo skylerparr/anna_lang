@@ -19,7 +19,7 @@ using lang.AtomSupport;
     @native IO.inspect(null);
     @native IO.inspect(pid);
     p3 = print();
-    p2 = print("hello world", 90210, 999);
+    p2 = print("hello world", 90210, counter);
     @native IO.inspect(p2);
     @native IO.inspect([@_"ok", "all correct"]);
     @native IO.inspect({@_"ok"; "all correct";});
@@ -40,10 +40,12 @@ using lang.AtomSupport;
     [@_"tuple"];
     list = {@_"list"; @_"Smelly"; @_"Ellie";};
     arg3 = 300;
+    arg4 = arg3;
+    @native IO.inspect(arg3);
+    @native IO.inspect(arg4);
     @native IO.inspect(list);
-    //For later when return types are supported
-//    print(arg1, arg2, arg3);
-    "bird";
+    @native IO.inspect("returning");
+    print(arg1, arg2, arg3);
   });
 
   @def print({String: value, Int: count, Int: test}, [Int], {
