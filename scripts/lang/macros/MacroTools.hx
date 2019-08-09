@@ -288,6 +288,16 @@ class MacroTools {
     return lineNo;
   }
 
+  public static function getType(tpath: ComplexType):String {
+    return switch(tpath) {
+      case TPath({name: name}):
+        name;
+      case e:
+        MacroLogger.log(e, 'e');
+        throw new ParsingException("AnnaLang: Expected type");
+    }
+  }
+
   public static function extractFullFunCall(expr: Expr, acc: Array<String> = null):Array<String> {
     if(acc == null) {
       acc = [];

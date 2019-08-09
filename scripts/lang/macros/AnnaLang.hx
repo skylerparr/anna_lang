@@ -155,8 +155,13 @@ class AnnaLang {
               var lineNumber = MacroTools.getLineNumber(blockExpr);
               var assignOp: Expr = createPutIntoScope(blockExpr, lineNumber);
               retExprs.push(assignOp);
-            case things:
-              MacroLogger.log(things, 'things');
+            case ECast(expr, type):
+              var exprs = walkBlock(MacroTools.buildBlock([expr]));
+              for(expr in exprs) {
+                retExprs.push(expr);
+              }
+              MacroContext.lastFunctionReturnType = MacroTools.getType(type);
+            case _:
               blockExpr;
           }
         }
@@ -195,7 +200,8 @@ class AnnaLang {
     funName = '${funName}_${types.join("_")}';
 
     var funDef: Dynamic = MacroContext.declaredFunctions.get(funName);
-
+    MacroLogger.log(funDef, 'funDef');
+    MacroLogger.log(funName, 'funName');
     MacroContext.lastFunctionReturnType = funDef[0].funReturnTypes[0];
     var haxeStr: String = '${currentFunStr}.push(new vm.PushStack(@atom "${currentModuleStr}", @atom "${funName}", @list [${funArgs.join(", ")}], @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${lineNumber}))';
     return Macros.haxeToExpr(haxeStr);

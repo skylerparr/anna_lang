@@ -23,10 +23,12 @@ using lang.AtomSupport;
     @native IO.inspect(p2);
     @native IO.inspect([@_"ok", "all correct"]);
     @native IO.inspect({@_"ok"; "all correct";});
-    map = @native IO.inspect([ @_"ok" => "all", @_'error' => "correct"]);
+    map = cast(@native IO.inspect([ @_"ok" => "all", @_'error' => "correct"]), MMap);
     @native IO.inspect(p3);
     @native IO.inspect(map);
     foo(p3);
+    foo(p2);
+    bar(map);
 //    @native IO.inspect({ok: "foob"}); //keyword list
 //    print(pid);
   });
@@ -59,6 +61,11 @@ using lang.AtomSupport;
   @def foo({Int: value}, [String], {
     @native IO.inspect("In foo");
     @native IO.inspect(value);
+  });
+
+  @def bar({MMap: map}, [String], {
+    @native IO.inspect("in bar");
+    @native IO.inspect(map);
   });
 }))
 class Modules {
