@@ -12,6 +12,11 @@ using lang.AtomSupport;
   @alias vm.Kernel;
 
   @def start([Int], {
+    print(get_string(), get_one(), get_two());
+    result = @native Kernel.add(get_one(), get_two());
+    @native IO.inspect(result);
+    result = @native Kernel.add(result, get_one());
+    @native IO.inspect(result);
     one_hundred = "100";
     pid = @native Process.self();
     counter = @native Kernel.add(23, 491);
@@ -26,6 +31,17 @@ using lang.AtomSupport;
     map = cast(@native IO.inspect([ @_"ok" => "all", @_'error' => "correct"]), MMap);
     @native IO.inspect(p3);
     @native IO.inspect(map);
+    @native IO.inspect("waiting...");
+//    received = @native Kernel.receive(fn({
+//      ([@_"ok", value] => {
+//        value;
+//      });
+//      ([@_'error', message] => {
+//        message;
+//      });
+//    }));
+//    @native IO.inspect("received:");
+//    @native IO.inspect(received);
     foo(p3);
     foo(p2);
     bar(map);
@@ -58,6 +74,11 @@ using lang.AtomSupport;
     @native IO.inspect(test);
   });
 
+  @def print({String: string}, [String], {
+    @native IO.inspect(string);
+    string;
+  });
+
   @def foo({Int: value}, [String], {
     @native IO.inspect("In foo");
     @native IO.inspect(value);
@@ -66,6 +87,18 @@ using lang.AtomSupport;
   @def bar({MMap: map}, [String], {
     @native IO.inspect("in bar");
     @native IO.inspect(map);
+  });
+
+  @def get_string([String], {
+    "hello world";
+  });
+
+  @def get_one([Int], {
+    1;
+  });
+
+  @def get_two([Int], {
+    2;
   });
 }))
 class Modules {

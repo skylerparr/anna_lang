@@ -59,6 +59,10 @@ class Scheduler {
           var thread: Thread = workerThreads[index++ % workerThreads.length];
           threadProcessMap.set(thread.handle, process);
           thread.sendMessage(process);
+        case KernelMessage.RECEIVE(process, matcher):
+          Process.receive(process, matcher);
+        case KernelMessage.SEND(process, payload):
+          Process.putInMailbox(process, payload);
       }
     }
   }
@@ -114,6 +118,24 @@ class Scheduler {
       return Tuple.create(["stop", doSleep, Tuple.create([process, startTime, endTime])]);
     }
     return Tuple.create(["run", doSleep, Tuple.create([process, Timer.stamp(), endTime])]);
+  }
+
+  public static function receive(process: Process, matcher: Dynamic): Void {
+    asyncThread.sendMessage(Tuple.create(["run", doReceive, Tuple.create([process, matcher])]));
+  }
+
+  public static function doReceive(process: Process, matcher: Dynamic->Bool): Tuple {
+    for(data in process.mailbox) {
+      if(process.status == ProcessState.WAITING) {
+        Process.running(process);
+      }
+      if(matcher(data)) {
+        process.mailbox.remove(data);
+        Scheduler.communicationThread.sendMessage(KernelMessage.SCHEDULE(process));
+        return Tuple.create(["stop", doReceive, Tuple.create([process, matcher])]);
+      }
+    }
+    return Tuple.create(["run", doReceive, Tuple.create([process, matcher])]);
   }
 
   public static function workerThread(): Void {

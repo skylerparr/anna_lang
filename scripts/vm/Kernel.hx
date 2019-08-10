@@ -51,8 +51,16 @@ class Kernel {
     return process;
   }
 
-  public static function send(process: Process, payload: Dynamic): Tuple {
-    return Tuple.create(['error'.atom(), 'Not implemented yet']);
+  public static function receive(matcher: Dynamic): Process {
+    Logger.inspect(matcher);
+    var process: Process = Process.self();
+    Scheduler.communicationThread.sendMessage(KernelMessage.RECEIVE(process, matcher));
+    return process;
+  }
+
+  public static function send(process: Process, payload: Dynamic): Atom {
+    Scheduler.communicationThread.sendMessage(KernelMessage.SEND(process, payload));
+    return 'ok'.atom();
   }
 
   public static function add(left: Float, right: Float): Float {

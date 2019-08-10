@@ -10,6 +10,7 @@ class Process implements CustomType {
   public var processStack(default, never): ProcessStack;
   public var status(default, never): ProcessState;
   public var thread(default, never): Thread;
+  public var mailbox(default, never): Array<Dynamic>;
 
   public inline function new(server_id: Int, instance_id: Int, group_id: Int, op: Operation) {
     var processStack: ProcessStack = new ProcessStack(this);
@@ -20,6 +21,7 @@ class Process implements CustomType {
     Reflect.setField(this, 'group_id', group_id);
     Reflect.setField(this, 'processStack', processStack);
     Reflect.setField(this, 'status', ProcessState.RUNNING);
+    Reflect.setField(this, 'mailbox', []);
   }
 
   public function toAnnaString(): String {
@@ -32,6 +34,10 @@ class Process implements CustomType {
 
   public function toPattern(patternArgs: Array<KeyValue<String,String>> = null): String {
     return '';
+  }
+
+  public static function putInMailbox(process: Process, value: Dynamic): Void {
+    process.mailbox.push(value);
   }
 
   public static function printStackTrace(process: Process): Void {
@@ -58,8 +64,13 @@ class Process implements CustomType {
   }
 
   public static function complete(process: Process): Atom {
-    var process: Process = self();
     Reflect.setField(process, 'status', ProcessState.COMPLETE);
+    return 'ok'.atom();
+  }
+
+  public static function receive(process: Process, matcher: Dynamic->Bool): Atom {
+    Reflect.setField(process, 'status', ProcessState.WAITING);
+    Scheduler.receive(process, matcher);
     return 'ok'.atom();
   }
 

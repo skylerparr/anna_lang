@@ -1,5 +1,6 @@
 package;
 
+import lang.ParsingException;
 import hscript.plus.ParserPlus;
 import lang.macros.MacroLogger;
 import haxe.macro.Printer;
@@ -163,7 +164,9 @@ class Macros {
       case EObjectDecl(fields):
         retValBlock.push(expr);
       case EParenthesis(e):
-        throw "AnnaLang: Unimplemented case";
+        MacroLogger.log(e, 'e');
+        MacroLogger.logExpr(e, 'e');
+        handlePatternMatch(retValBlock, e);
       case EReturn(e):
         var eReturnMeta = findMetaInBlock(e, null);
         retValBlock.push({expr: EReturn(eReturnMeta), pos: Context.currentPos()});
@@ -434,6 +437,17 @@ class Macros {
   public static function haxeToExpr(str: String): Expr {
     var ast = parser.parseString(str);
     return new hscript.Macro(Context.currentPos()).convert(ast);
+  }
+
+  public static function handlePatternMatch(retValBlock: Array<Expr>, expr: Expr):Void {
+    switch(expr.expr) {
+      case(EBinop(OpArrow, left, right)):
+        MacroLogger.logExpr(left, 'left');
+        MacroLogger.logExpr(right, 'right');
+      case e:
+        MacroLogger.log(e, 'e');
+        throw new ParsingException("AnnaLang: Expected pattern match");
+    }
   }
   #end
 

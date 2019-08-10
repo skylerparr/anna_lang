@@ -175,9 +175,9 @@ class MacroTools {
       case EConst(CString(value)):
         {type: "String", value: '@tuple [@atom "const", "${value}"]'};
       case EConst(CInt(value)):
-        {type: "Int", value: '@tuple [@atom "const", ${value}]'};
+        {type: "Number", value: '@tuple [@atom "const", ${value}]'};
       case EConst(CFloat(value)):
-        {type: "Float", value: '@tuple [@atom "const", ${value}]'};
+        {type: "Number", value: '@tuple [@atom "const", ${value}]'};
       case EMeta({name: "atom" | "_"}, {expr: EConst(CString(value))}):
         {type: "Atom", value: '@tuple [@atom "const", @atom "${value}"]'};
       case EMeta({name: "tuple"}, {expr: EArrayDecl(values)}):

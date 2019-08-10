@@ -127,14 +127,18 @@ class AnnaLang {
           switch(blockExpr.expr) {
             case EMeta({name: name}, params):
               var fun = Reflect.field(AnnaLang, '_${name}');
-              var expr = fun(params);
-              retExprs.push(expr);
+              var exprs: Array<Expr> = fun(params);
+              for(expr in exprs) {
+                retExprs.push(expr);
+              }
             case ECall(expr, args):
               var funName: String = MacroTools.getCallFunName(blockExpr);
               var args: Array<Expr> = MacroTools.getFunBody(blockExpr);
               var lineNumber: Int = MacroTools.getLineNumber(expr);
-              var expr: Expr = createPushStack(funName, args, lineNumber);
-              retExprs.push(expr);
+              var exprs: Array<Expr> = createPushStack(funName, args, lineNumber);
+              for(expr in exprs) {
+                retExprs.push(expr);
+              }
             case EBinop(OpAssign, left, right):
               var lineNumber = MacroTools.getLineNumber(right);
               var exprs = walkBlock(MacroTools.buildBlock([right]));
@@ -185,26 +189,44 @@ class AnnaLang {
     MacroTools.addMetaToClass(cls, metaData);
   }
 
-  private static function createPushStack(funName: String, args: Array<Expr>, lineNumber: Int):Expr {
+  private static function createPushStack(funName: String, args: Array<Expr>, lineNumber: Int):Array<Expr> {
     var currentModule: TypeDefinition = MacroContext.currentModule;
     var currentModuleStr: String = currentModule.name;
     var currentFunStr: String = MacroContext.currentVar;
+    var retVal: Array<Expr> = [];
     var types: Array<String> = [];
     var funArgs: Array<String> = [];
+    var argCounter: Int = 0;
     for(arg in args) {
-      var typeAndValue = MacroTools.getTypeAndValue(arg);
-      var type: String = getTypeForVar(typeAndValue, arg);
-      types.push(type);
-      funArgs.push(typeAndValue.value);
+      switch(arg.expr) {
+        case ECall(_, _):
+          var argString = '__arg_${argCounter} = ${printer.printExpr(arg)};';
+          arg = Macros.haxeToExpr(argString);
+          var exprs: Array<Expr> = walkBlock(MacroTools.buildBlock([arg]));
+          for(expr in exprs) {
+            retVal.push(expr);
+          }
+
+          types.push(getType(MacroContext.lastFunctionReturnType));
+          funArgs.push('@tuple[@atom"var", "__arg_${argCounter}"]');
+        case _:
+          var typeAndValue = MacroTools.getTypeAndValue(arg);
+          var type: String = getTypeForVar(typeAndValue, arg);
+          types.push(type);
+          funArgs.push(typeAndValue.value);
+      }
+      argCounter++;
     }
     funName = '${funName}_${types.join("_")}';
 
     var funDef: Dynamic = MacroContext.declaredFunctions.get(funName);
-    MacroLogger.log(funDef, 'funDef');
-    MacroLogger.log(funName, 'funName');
+    if(funDef == null) {
+      throw new ParsingException("AnnaLang: Function not found.");
+    }
     MacroContext.lastFunctionReturnType = funDef[0].funReturnTypes[0];
     var haxeStr: String = '${currentFunStr}.push(new vm.PushStack(@atom "${currentModuleStr}", @atom "${funName}", @list [${funArgs.join(", ")}], @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${lineNumber}))';
-    return Macros.haxeToExpr(haxeStr);
+    retVal.push(Macros.haxeToExpr(haxeStr));
+    return retVal;
   }
 
   private static function getTypeForVar(typeAndValue: Dynamic, arg: Expr):String {
@@ -313,16 +335,31 @@ class AnnaLang {
     }
   }
 
-  public static function _native(params: Expr):Expr {
+  public static function _native(params: Expr):Array<Expr> {
     var funName: String = MacroContext.currentVar;
     var moduleName: String = MacroTools.getModuleName(params);
     moduleName = getAlias(moduleName);
     var invokeFunName = MacroTools.getFunctionName(params);
     var args = MacroTools.getFunBody(params);
+    var retVal: Array<Expr> = [];
     var strArgs: Array<String> = [];
+    var argCounter: Int = 0;
     for(arg in args) {
-      var typeAndValue = MacroTools.getTypeAndValue(arg);
-      strArgs.push(typeAndValue.value);
+      switch(arg.expr) {
+        case ECall(_, _):
+          var argString = '__${invokeFunName}_${argCounter} = ${printer.printExpr(arg)};';
+          arg = Macros.haxeToExpr(argString);
+          var exprs: Array<Expr> = walkBlock(MacroTools.buildBlock([arg]));
+          for(expr in exprs) {
+            retVal.push(expr);
+          }
+
+          strArgs.push('@tuple[@atom"var", "__${invokeFunName}_${argCounter}"]');
+        case _:
+          var typeAndValue = MacroTools.getTypeAndValue(arg);
+          strArgs.push(typeAndValue.value);
+      }
+      argCounter++;
     }
     var currentModule: TypeDefinition = MacroContext.currentModule;
     var currentModuleStr: String = currentModule.name;
@@ -331,12 +368,12 @@ class AnnaLang {
 
     var haxeString = '${funName}.push(new vm.${invokeClass.name}(${moduleName}.${invokeFunName}, @list[${strArgs.join(', ')}],
       @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${MacroTools.getLineNumber(params)}))';
-    var retVal = Macros.haxeToExpr(haxeString);
+    retVal.push(Macros.haxeToExpr(haxeString));
     return retVal;
   }
 
   private static function createOperationClass(moduleName: String, invokeFunName: String, strArgs: Array<String>): TypeDefinition {
-    var className = 'InvokeFunction_${StringTools.replace(invokeFunName, '.', '_')}';
+    var className = 'InvokeFunction_${StringTools.replace(moduleName, '.', '_')}_${StringTools.replace(invokeFunName, '.', '_')}';
 
     var assignments: Array<String> = [];
     var paramVars: Array<Field> = [];
@@ -385,7 +422,7 @@ class AnnaLang {
       var assignReturnVar: Expr = null;
       if(MacroContext.lastFunctionReturnType == "Int" || MacroContext.lastFunctionReturnType == "Float") {
         assignReturnVar = macro scope.set("$$$", retVal);
-        MacroContext.lastFunctionReturnType = "Float";
+        MacroContext.lastFunctionReturnType = "Number";
       } else {
         assignReturnVar = macro if(retVal == null) {
               scope.set("$$$", lang.HashTableAtoms.get("nil"));

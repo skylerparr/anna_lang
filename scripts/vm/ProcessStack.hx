@@ -24,7 +24,7 @@ class ProcessStack {
 
   public inline function execute(): Void {
     if(allStacks.length == 0) {
-      Process.complete(Process.self());
+      Process.complete(process);
       return;
     }
     currentStack = allStacks.first();
