@@ -200,7 +200,7 @@ class AnnaLang {
     for(arg in args) {
       switch(arg.expr) {
         case ECall(_, _):
-          var argString = '__arg_${argCounter} = ${printer.printExpr(arg)};';
+          var argString = '__${funName}_${argCounter} = ${printer.printExpr(arg)};';
           arg = Macros.haxeToExpr(argString);
           var exprs: Array<Expr> = walkBlock(MacroTools.buildBlock([arg]));
           for(expr in exprs) {
@@ -208,7 +208,7 @@ class AnnaLang {
           }
 
           types.push(getType(MacroContext.lastFunctionReturnType));
-          funArgs.push('@tuple[@atom"var", "__arg_${argCounter}"]');
+          funArgs.push('@tuple[@atom"var", "__${funName}_${argCounter}"]');
         case _:
           var typeAndValue = MacroTools.getTypeAndValue(arg);
           var type: String = getTypeForVar(typeAndValue, arg);

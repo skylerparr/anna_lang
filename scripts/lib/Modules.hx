@@ -12,7 +12,7 @@ using lang.AtomSupport;
   @alias vm.Kernel;
 
   @def start([Int], {
-    print(get_string(), get_one(), get_two());
+    print(get_string(), return_num(get_one()), get_two());
     result = @native Kernel.add(get_one(), get_two());
     @native IO.inspect(result);
     result = @native Kernel.add(result, get_one());
@@ -31,7 +31,7 @@ using lang.AtomSupport;
     map = cast(@native IO.inspect([ @_"ok" => "all", @_'error' => "correct"]), MMap);
     @native IO.inspect(p3);
     @native IO.inspect(map);
-    @native IO.inspect("waiting...");
+//    @native IO.inspect("waiting...");
 //    received = @native Kernel.receive(fn({
 //      ([@_"ok", value] => {
 //        value;
@@ -40,8 +40,8 @@ using lang.AtomSupport;
 //        message;
 //      });
 //    }));
-//    @native IO.inspect("received:");
-//    @native IO.inspect(received);
+    @native IO.inspect("received:");
+    @native IO.inspect(received);
     foo(p3);
     foo(p2);
     bar(map);
@@ -99,6 +99,10 @@ using lang.AtomSupport;
 
   @def get_two([Int], {
     2;
+  });
+
+  @def return_num({Int: number}, [Int], {
+    number;
   });
 }))
 class Modules {
