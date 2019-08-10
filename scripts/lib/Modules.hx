@@ -31,15 +31,15 @@ using lang.AtomSupport;
     map = cast(@native IO.inspect([ @_"ok" => "all", @_'error' => "correct"]), MMap);
     @native IO.inspect(p3);
     @native IO.inspect(map);
-//    @native IO.inspect("waiting...");
-//    received = @native Kernel.receive(fn({
-//      ([@_"ok", value] => {
-//        value;
-//      });
-//      ([@_'error', message] => {
-//        message;
-//      });
-//    }));
+    @native IO.inspect("waiting...");
+    received = @native Kernel.receive(fn({
+      ([@_"ok", value] => {
+        value;
+      });
+      ([@_'error', message] => {
+        message;
+      });
+    }));
     @native IO.inspect("received:");
     @native IO.inspect(received);
     foo(p3);
