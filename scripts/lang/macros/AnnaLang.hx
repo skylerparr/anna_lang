@@ -17,6 +17,7 @@ class AnnaLang {
   private static var printer: Printer = new Printer();
 
   private static var declaredFunctions: Map<String, TypeDefinition> = new Map<String, TypeDefinition>();
+  private static var uniqueId: Int = 0;
 
   macro public static function defcls(name: Expr, body: Expr): Array<Field> {
     MacroLogger.log('==============================');
@@ -32,60 +33,66 @@ class AnnaLang {
 
     prewalk(body);
 
-    for(key in MacroContext.declaredFunctions.keys()) {
-      for(funDef in MacroContext.declaredFunctions.get(key)) {
-        MacroContext.currentFunction = funDef.name;
-        MacroContext.currentFunctionArgTypes = [];
-        MacroContext.varTypesInScope = new Map<String, String>();
-        MacroContext.lastFunctionReturnType = "";
+    var definedFunctions: Map<String, String> = new Map<String, String>();
 
-        // Actual operations this function will be doing
-        var funBody = funDef.funBody;
-        var body: Array<Expr> = [];
-        var varName: String = 'var args: Array<vm.Operation> = [];';
+    while(!allFunctionsDefined(definedFunctions)) {
+      var declaredFunctions: Map<String, Array<Dynamic>> = getUndefinedFunctions(definedFunctions);
+      for(key in declaredFunctions.keys()) {
+        definedFunctions.set(key, key);
+        for(funDef in declaredFunctions.get(key)) {
+          MacroContext.currentFunction = funDef.name;
+          MacroContext.currentFunctionArgTypes = [];
+          MacroContext.varTypesInScope = new Map<String, String>();
+          MacroContext.lastFunctionReturnType = "";
 
-        MacroContext.currentVar = 'args';
-        body.push(Macros.haxeToExpr(varName));
+          // Actual operations this function will be doing
+          var funBody = funDef.funBody;
+          var body: Array<Expr> = [];
+          var varName: String = 'var ops: Array<vm.Operation> = [];';
 
-        var funBodies: Array<Dynamic> = cast(funDef.funBody, Array<Dynamic>);
-        for(bodyExpr in funBodies) {
-          var walkBody = walkBlock(bodyExpr);
-          for(expr in walkBody) {
-            body.push(expr);
+          MacroContext.currentVar = 'ops';
+          body.push(Macros.haxeToExpr(varName));
+
+          var funBodies: Array<Dynamic> = cast(funDef.funBody, Array<Dynamic>);
+          for(bodyExpr in funBodies) {
+            var walkBody = walkBlock(bodyExpr);
+            for(expr in walkBody) {
+              body.push(expr);
+            }
           }
-        }
-        var ret = MacroTools.buildConst(CIdent('args'));
-        body.push(ret);
+          var ret = MacroTools.buildConst(CIdent('ops'));
+          body.push(ret);
 
-        var internalFunctionName: String = funDef.internalFunctionName;
-        var varType: ComplexType = MacroTools.buildType('Array<vm.Operation>');
-        var pubVar = MacroTools.buildPublicVar('_${internalFunctionName}', varType, body);
-        MacroTools.addFieldToClass(MacroContext.currentModule, pubVar);
+          var internalFunctionName: String = funDef.internalFunctionName;
+          var varType: ComplexType = MacroTools.buildType('Array<vm.Operation>');
+          var pubVar = MacroTools.buildPublicVar('_${internalFunctionName}', varType, body);
+          MacroTools.addFieldToClass(MacroContext.currentModule, pubVar);
 
-        // Function
-        var returnType: ComplexType = MacroTools.buildType('Array<vm.Operation>');
-        var funArgs: Array<FunctionArg> = [];
-        var funArgsTypes: Array<Dynamic> = funDef.funArgsTypes;
-        for(funArgsType in funArgsTypes) {
-          funArgs.push({name: funArgsType.name, type: MacroTools.buildType(funArgsType.type)});
-        }
-        var field: Field = MacroTools.buildPublicFunction(internalFunctionName, funArgs, returnType);
-        var expr: Expr = MacroTools.buildReturn(MacroTools.buildConst(CIdent('_${internalFunctionName}')));
-        MacroTools.assignFunBody(field, MacroTools.buildBlock([expr]));
-        MacroTools.addFieldToClass(MacroContext.currentModule, field);
+          // Function
+          var returnType: ComplexType = MacroTools.buildType('Array<vm.Operation>');
+          var funArgs: Array<FunctionArg> = [];
+          var funArgsTypes: Array<Dynamic> = funDef.funArgsTypes;
+          for(funArgsType in funArgsTypes) {
+            funArgs.push({name: funArgsType.name, type: MacroTools.buildType(funArgsType.type)});
+          }
+          var field: Field = MacroTools.buildPublicFunction(internalFunctionName, funArgs, returnType);
+          var expr: Expr = MacroTools.buildReturn(MacroTools.buildConst(CIdent('_${internalFunctionName}')));
+          MacroTools.assignFunBody(field, MacroTools.buildBlock([expr]));
+          MacroTools.addFieldToClass(MacroContext.currentModule, field);
 
-        // Arg types
-        var exprs: Array<Expr> = [];
-        var varType: ComplexType = MacroTools.buildType('Array<String>');
-        exprs.push(Macros.haxeToExpr('var args: Array<String> = [];'));
-        for(funArgs in funArgsTypes) {
-          var haxeExpr = Macros.haxeToExpr('args.push("${funArgs.name}");');
-          exprs.push(haxeExpr);
+          // Arg types
+          var exprs: Array<Expr> = [];
+          var varType: ComplexType = MacroTools.buildType('Array<String>');
+          exprs.push(Macros.haxeToExpr('var args: Array<String> = [];'));
+          for(funArgs in funArgsTypes) {
+            var haxeExpr = Macros.haxeToExpr('args.push("${funArgs.name}");');
+            exprs.push(haxeExpr);
+          }
+          var ret = MacroTools.buildConst(CIdent('args'));
+          exprs.push(ret);
+          var argFun = MacroTools.buildPublicVar('___${funDef.name}_${funDef.argTypes}_args', varType, exprs);
+          MacroTools.addFieldToClass(MacroContext.currentModule, argFun);
         }
-        var ret = MacroTools.buildConst(CIdent('args'));
-        exprs.push(ret);
-        var argFun = MacroTools.buildPublicVar('___${funDef.name}_${funDef.argTypes}_args', varType, exprs);
-        MacroTools.addFieldToClass(MacroContext.currentModule, argFun);
       }
     }
 
@@ -100,6 +107,26 @@ class AnnaLang {
   }
 
   #if macro
+
+  private static function allFunctionsDefined(definedFunctions: Map<String, String>):Bool {
+    for(key in MacroContext.declaredFunctions.keys()) {
+      if(definedFunctions.get(key) == null) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private static function getUndefinedFunctions(definedFunctions: Map<String, String>):Map<String, Array<Dynamic>> {
+    var retVal = new Map<String, Array<Dynamic>>();
+    for(key in MacroContext.declaredFunctions.keys()) {
+      if(definedFunctions.get(key) == null) {
+        retVal.set(key, MacroContext.declaredFunctions.get(key));
+      }
+    }
+    return retVal;
+  }
+
   private static function prewalk(expr: Expr): Void {
     switch(expr.expr) {
       case EBlock(exprs):
@@ -217,16 +244,23 @@ class AnnaLang {
       }
       argCounter++;
     }
-    funName = '${funName}_${types.join("_")}';
+    var fqFunName = '${funName}_${types.join("_")}';
 
-    var funDef: Dynamic = MacroContext.declaredFunctions.get(funName);
+    var funDef: Dynamic = MacroContext.declaredFunctions.get(fqFunName);
     if(funDef == null) {
-      throw new ParsingException("AnnaLang: Function not found.");
+      if(MacroContext.lastFunctionReturnType == "AnonFunction") {
+        var haxeStr: String = '${currentFunStr}.push(new vm.AnonymousFunction(@atom"${funName}", @list [${funArgs.join(", ")}], @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${lineNumber}))';
+        retVal.push(Macros.haxeToExpr(haxeStr));
+        return retVal;
+      } else {
+        throw new ParsingException("AnnaLang: Function not found.");
+      }
+    } else {
+      MacroContext.lastFunctionReturnType = funDef[0].funReturnTypes[0];
+      var haxeStr: String = '${currentFunStr}.push(new vm.PushStack(@atom "${currentModuleStr}", @atom "${fqFunName}", @list [${funArgs.join(", ")}], @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${lineNumber}))';
+      retVal.push(Macros.haxeToExpr(haxeStr));
+      return retVal;
     }
-    MacroContext.lastFunctionReturnType = funDef[0].funReturnTypes[0];
-    var haxeStr: String = '${currentFunStr}.push(new vm.PushStack(@atom "${currentModuleStr}", @atom "${funName}", @list [${funArgs.join(", ")}], @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${lineNumber}))';
-    retVal.push(Macros.haxeToExpr(haxeStr));
-    return retVal;
   }
 
   private static function getTypeForVar(typeAndValue: Dynamic, arg: Expr):String {
@@ -474,6 +508,30 @@ class AnnaLang {
       case e:
         MacroLogger.log(e, 'e');
         throw "AnnaLang: Unexpected constant";
+    }
+  }
+
+  public static function _fn(params: Expr): Array<Expr> {
+    MacroContext.lastFunctionReturnType = "AnonFunction";
+    var currentModule: TypeDefinition = MacroContext.currentModule;
+    var currentModuleStr: String = currentModule.name;
+    switch(params.expr) {
+      case EBlock(exprs):
+        var retVal: Array<Expr> = [];
+        var counter: Int = 0;
+        var anonFunctionName: String = "_" + haxe.crypto.Sha256.encode('${Math.random()}');
+        for(expr in exprs) {
+          var haxeStr: String = '${anonFunctionName}([String], {
+              @native IO.inspect("this is an anonymous function");
+            });';
+          var expr = Macros.haxeToExpr(haxeStr);
+          var defined = _def(expr);
+          retVal.push(defined);
+        }
+        var haxeStr: String = 'ops.push(new vm.DeclareAnonFunction(@atom "${anonFunctionName}_", @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${MacroTools.getLineNumber(params)}))';
+        return [Macros.haxeToExpr(haxeStr)];
+      case _:
+       throw new ParsingException("AnnaLang: Expected block");
     }
   }
 

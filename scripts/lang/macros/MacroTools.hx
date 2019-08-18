@@ -189,7 +189,7 @@ class MacroTools {
         for(arg in args) {
           listValues.push(printer.printExpr(arg));
         }
-        {type: "List", value: '@tuple [@atom "const", @list[${listValues.join(",")}]]'};
+        {type: "LList", value: '@tuple [@atom "const", @list[${listValues.join(",")}]]'};
       case EArrayDecl(args):
         var listValues: Array<String> = [];
         var isList: Bool = false;

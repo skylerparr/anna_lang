@@ -1,13 +1,8 @@
 package vm;
-
-import haxe.crypto.Sha256;
-import util.StringUtil;
 import lang.EitherSupport;
 import EitherEnums.Either2;
 import vm.Classes.Function;
-import vm.Operation;
-class PushStack implements Operation {
-
+class AnonymousFunction implements Operation {
   public var module: Atom;
   public var func: Atom;
   public var args: LList;
@@ -16,17 +11,19 @@ class PushStack implements Operation {
   public var hostFunction: Atom;
   public var lineNumber: Int;
 
-  public function new(module: Atom, func: Atom, args: LList, hostModule: Atom, hostFunction: Atom, line: Int) {
-    this.module = module;
+  public function new(func: Atom, args: LList, hostModule: Atom, hostFunction: Atom, lineNumber: Int) {
+    this.module = hostModule;
     this.func = func;
     this.args = args;
+
     this.hostModule = hostModule;
     this.hostFunction = hostFunction;
-    this.lineNumber = line;
+    this.lineNumber = lineNumber;
   }
 
   public function execute(scopeVariables: Map<String, Dynamic>, processStack: ProcessStack): Void {
-    var fn: Function = Classes.getFunction(module, func);
+    var modFunc = scopeVariables.get(Atom.to_s(func));
+    var fn: Function = Classes.getFunction(module, modFunc);
     if(fn == null) {
       //TODO: handle missing function error
       Logger.inspect('throw a crazy error and kill the process!');
@@ -35,6 +32,9 @@ class PushStack implements Operation {
     var counter: Int = 0;
     var callArgs: Array<Dynamic> = [];
     var nextScopeVariables: Map<String, Dynamic> = new Map<String, Dynamic>();
+    for(key in scopeVariables.keys()) {
+      nextScopeVariables.set(key, scopeVariables.get(key));
+    }
     for(arg in LList.iterator(args)) {
       var tuple: Tuple = EitherSupport.getValue(arg);
       var argArray = tuple.asArray();
@@ -62,7 +62,7 @@ class PushStack implements Operation {
   }
 
   public function isRecursive(): Bool {
-    return this.module == this.hostModule && this.func == this.hostFunction;
+    return false;
   }
 
   public function toString(): String {
