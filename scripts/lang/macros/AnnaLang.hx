@@ -152,6 +152,10 @@ class AnnaLang {
       case EBlock(exprs):
         for(blockExpr in exprs) {
           switch(blockExpr.expr) {
+            case EMeta({name: '_'}, {expr: EConst(CString(name))}):
+              var lineNumber = MacroTools.getLineNumber(blockExpr);
+              var assignOp: Expr = createPutIntoScope(blockExpr, lineNumber);
+              retExprs.push(assignOp);
             case EMeta({name: name}, params):
               var fun = Reflect.field(AnnaLang, '_${name}');
               var exprs: Array<Expr> = fun(params);
@@ -321,6 +325,11 @@ class AnnaLang {
   }
 
   public static function _def(params: Expr): Expr {
+    defineFunction(params);
+    return macro {};
+  }
+
+  private static function defineFunction(params: Expr):Dynamic {
     var funName: String = MacroTools.getCallFunName(params);
     var allTypes: Dynamic = MacroTools.getArgTypesAndReturnTypes(params);
     var funArgsTypes: Array<Dynamic> = allTypes.argTypes;
@@ -348,8 +357,7 @@ class AnnaLang {
     };
     funBodies.push(def);
     MacroContext.declaredFunctions.set(internalFunctionName, funBodies);
-
-    return macro {};
+    return def;
   }
 
   public static function _alias(params: Expr):Expr {
@@ -517,18 +525,23 @@ class AnnaLang {
     var currentModuleStr: String = currentModule.name;
     switch(params.expr) {
       case EBlock(exprs):
-        var retVal: Array<Expr> = [];
         var counter: Int = 0;
         var anonFunctionName: String = "_" + haxe.crypto.Sha256.encode('${Math.random()}');
+        var defined = null;
         for(expr in exprs) {
-          var haxeStr: String = '${anonFunctionName}([String], {
-              @native IO.inspect("this is an anonymous function");
-            });';
+          var typesAndBody: Array<Dynamic> = switch(expr.expr) {
+            case EParenthesis({expr: EBinop(OpArrow, types, body)}):
+              var typesStr: String = printer.printExpr(types);
+              [typesStr.substr(1, typesStr.length - 2), body];
+            case _:
+              throw new ParsingException("AnnaLang: Expected parenthesis");
+          }
+          MacroLogger.log(typesAndBody[0], 'typesAndBody[0]');
+          var haxeStr: String = '${anonFunctionName}(${typesAndBody[0]}, ${printer.printExpr(typesAndBody[1])});';
           var expr = Macros.haxeToExpr(haxeStr);
-          var defined = _def(expr);
-          retVal.push(defined);
+          defined = defineFunction(expr);
         }
-        var haxeStr: String = 'ops.push(new vm.DeclareAnonFunction(@atom "${anonFunctionName}_", @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${MacroTools.getLineNumber(params)}))';
+        var haxeStr: String = 'ops.push(new vm.DeclareAnonFunction(@atom "${defined.internalFunctionName}", @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${MacroTools.getLineNumber(params)}))';
         return [Macros.haxeToExpr(haxeStr)];
       case _:
        throw new ParsingException("AnnaLang: Expected block");

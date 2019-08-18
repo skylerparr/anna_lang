@@ -33,17 +33,17 @@ using lang.AtomSupport;
 //    @native IO.inspect(map);
 //    @native IO.inspect("waiting...");
     fun = @fn {
-      ([{}, [String]] => {
-        @native IO.inspect("hello world");
-        "done";
+      ([{String: foo}, [Atom]] => {
+        @native IO.inspect(foo);
+        @_"done";
       });
 //      ([{Int: 0}, [Atom]] => {
 //        @native IO.inspect("got zero");
 //        @_"ok";
 //      });
     }
-    fun();
-//    @native IO.inspect(result);
+    result = cast(fun("foo"), Atom);
+    print(result);
 //    received = @native Kernel.receive(@fn{
 //      ([@_"ok", value] => {
 //        value;
@@ -91,6 +91,11 @@ using lang.AtomSupport;
     string;
   });
 
+  @def print({Atom: val}, [Atom], {
+    @native IO.inspect(val);
+    val;
+  });
+
   @def foo({Int: value}, [String], {
     @native IO.inspect("In foo");
     @native IO.inspect(value);
@@ -115,6 +120,10 @@ using lang.AtomSupport;
 
   @def return_num({Int: number}, [Int], {
     number;
+  });
+
+  @def get_atom([Atom], {
+    @_'ok';
   });
 }))
 class Modules {
