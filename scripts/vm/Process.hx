@@ -1,4 +1,6 @@
 package vm;
+import haxe.DynamicAccess;
+import vm.Classes.Function;
 import cpp.vm.Thread;
 using lang.AtomSupport;
 
@@ -8,7 +10,7 @@ class Process implements CustomType {
   public var instance_id(default, never): Int;
   public var group_id(default, never): Int;
   public var processStack(default, never): ProcessStack;
-  public var status(default, never): ProcessState;
+  public var state(default, never): ProcessState;
   public var thread(default, never): Thread;
   public var mailbox(default, never): Array<Dynamic>;
 
@@ -20,7 +22,7 @@ class Process implements CustomType {
     Reflect.setField(this, 'instance_id', instance_id);
     Reflect.setField(this, 'group_id', group_id);
     Reflect.setField(this, 'processStack', processStack);
-    Reflect.setField(this, 'status', ProcessState.RUNNING);
+    Reflect.setField(this, 'state', ProcessState.RUNNING);
     Reflect.setField(this, 'mailbox', []);
   }
 
@@ -45,7 +47,7 @@ class Process implements CustomType {
   }
 
   public static function isAlive(process: Process): Atom {
-    return switch(process.status) {
+    return switch(process.state) {
       case ProcessState.COMPLETE | ProcessState.KILLED:
         'false'.atom();
       case _:
@@ -54,23 +56,27 @@ class Process implements CustomType {
   }
 
   public static function exit(process: Process): Atom {
-    Reflect.setField(process, 'status', ProcessState.KILLED);
+    Reflect.setField(process, 'state', ProcessState.KILLED);
     return 'ok'.atom();
   }
 
   public static function running(process: Process): Atom {
-    Reflect.setField(process, 'status', ProcessState.RUNNING);
+    Reflect.setField(process, 'state', ProcessState.RUNNING);
     return 'ok'.atom();
   }
 
   public static function complete(process: Process): Atom {
-    Reflect.setField(process, 'status', ProcessState.COMPLETE);
+    Reflect.setField(process, 'state', ProcessState.COMPLETE);
     return 'ok'.atom();
   }
 
-  public static function receive(process: Process, matcher: Dynamic->Bool): Atom {
-    Reflect.setField(process, 'status', ProcessState.WAITING);
-    Scheduler.receive(process, matcher);
+  public static function waiting(process: Process): Atom {
+    Reflect.setField(process, 'state', ProcessState.WAITING);
+    return 'ok'.atom();
+  }
+
+  public static function receive(process: Process, callback: Function): Atom {
+    Scheduler.receive(process, callback);
     return 'ok'.atom();
   }
 
@@ -81,8 +87,13 @@ class Process implements CustomType {
 
   public static function sleep(milliseconds: Int): Atom {
     var process: Process = self();
-    Reflect.setField(process, 'status', ProcessState.SLEEPING);
+    Reflect.setField(process, 'state', ProcessState.SLEEPING);
     Scheduler.sleep(process, milliseconds);
     return 'ok'.atom();
+  }
+
+  public static function apply(process: Process, ops: Array<Operation>): Void {
+    var processStack = process.processStack;
+    processStack.add(new AnnaCallStack(ops, processStack.getVariablesInScope()));
   }
 }

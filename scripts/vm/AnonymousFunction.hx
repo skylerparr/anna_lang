@@ -2,8 +2,8 @@ package vm;
 import lang.EitherSupport;
 import EitherEnums.Either2;
 import vm.Classes.Function;
+using lang.AtomSupport;
 class AnonymousFunction implements Operation {
-  public var module: Atom;
   public var func: Atom;
   public var args: LList;
 
@@ -12,7 +12,6 @@ class AnonymousFunction implements Operation {
   public var lineNumber: Int;
 
   public function new(func: Atom, args: LList, hostModule: Atom, hostFunction: Atom, lineNumber: Int) {
-    this.module = hostModule;
     this.func = func;
     this.args = args;
 
@@ -22,43 +21,11 @@ class AnonymousFunction implements Operation {
   }
 
   public function execute(scopeVariables: Map<String, Dynamic>, processStack: ProcessStack): Void {
-    var modFunc = scopeVariables.get(Atom.to_s(func));
-    var fn: Function = Classes.getFunction(module, modFunc);
-    if(fn == null) {
-      //TODO: handle missing function error
-      Logger.inspect('throw a crazy error and kill the process!');
-      return;
-    }
-    var counter: Int = 0;
-    var callArgs: Array<Dynamic> = [];
-    var nextScopeVariables: Map<String, Dynamic> = new Map<String, Dynamic>();
-    for(key in scopeVariables.keys()) {
-      nextScopeVariables.set(key, scopeVariables.get(key));
-    }
-    for(arg in LList.iterator(args)) {
-      var tuple: Tuple = EitherSupport.getValue(arg);
-      var argArray = tuple.asArray();
-      var elem1: Either2<Atom, Dynamic> = argArray[0];
-      var elem2: Either2<Atom, Dynamic> = argArray[1];
-
-      var value: Dynamic = switch(cast(EitherSupport.getValue(elem1), Atom)) {
-        case {value: 'const'}:
-          EitherSupport.getValue(elem2);
-        case {value: 'var'}:
-          var varName: String = EitherSupport.getValue(elem2);
-          scopeVariables.get(varName);
-        case _:
-          Logger.inspect("!!!!!!!!!!! bad !!!!!!!!!!!");
-          null;
-      }
-      callArgs.push(value);
-      var argName: String = fn.args[counter++];
-      nextScopeVariables.set(argName, value);
-    }
-
-    var operations: Array<Operation> = Reflect.callMethod(null, fn.fn, callArgs);
-    var annaCallStack: AnnaCallStack = new AnnaCallStack(operations, nextScopeVariables);
-    processStack.add(annaCallStack);
+    var frags = Atom.to_s(scopeVariables.get(Atom.to_s(func))).split('.');
+    var fun = frags.pop();
+    var module = frags.join('.');
+    var fn: Function = Classes.getFunction(module.atom(), fun.atom());
+    Kernel.apply(Process.self(), fn, args);
   }
 
   public function isRecursive(): Bool {

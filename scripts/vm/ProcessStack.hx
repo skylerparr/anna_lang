@@ -40,6 +40,10 @@ class ProcessStack {
     }
   }
 
+  public function getVariablesInScope(): Map<String, Dynamic> {
+    return currentStack.scopeVariables;
+  }
+
   public function toString(): String {
     return 'ProcessStack: ${id}';
   }

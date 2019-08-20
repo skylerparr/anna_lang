@@ -33,23 +33,25 @@ using lang.AtomSupport;
 //    @native IO.inspect(map);
 //    @native IO.inspect("waiting...");
     fun = @fn {
-      ([{String: foo}, [Atom]] => {
-        @native IO.inspect(foo);
-        @_"done";
+      ([{String: foo}, [String]] => {
+        foo;
       });
-//      ([{Int: 0}, [Atom]] => {
+//      ([{Int: int}, [Atom]] => {
 //        @native IO.inspect("got zero");
 //        @_"ok";
 //      });
     }
-    result = cast(fun("foo"), Atom);
-    print(result);
+    result = fun("foo");
+    @native IO.inspect(result);
+    @native IO.inspect("waiting for data");
+    received = @native Kernel.receive(fun);
+    @native IO.inspect("received:");
+    @native IO.inspect(received);
+
+//    print(result);
 //    received = @native Kernel.receive(@fn{
-//      ([@_"ok", value] => {
+//      ([{String: foo}, [Dynamic]] => {
 //        value;
-//      });
-//      ([@_'error', message] => {
-//        message;
 //      });
 //    });
 //    @native IO.inspect("received:");

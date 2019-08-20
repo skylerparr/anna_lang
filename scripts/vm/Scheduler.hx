@@ -1,5 +1,6 @@
 package vm;
 
+import vm.Classes.Function;
 import lang.AtomSupport;
 import haxe.ds.ObjectMap;
 import haxe.Timer;
@@ -111,7 +112,7 @@ class Scheduler {
 
   public static function doSleep(process: Process, startTime: Float, endTime: Float): Tuple {
     if(startTime >= endTime) {
-      if(process.status == ProcessState.SLEEPING) {
+      if(process.state == ProcessState.SLEEPING) {
         Process.running(process);
       }
       Scheduler.communicationThread.sendMessage(KernelMessage.SCHEDULE(process));
@@ -120,22 +121,28 @@ class Scheduler {
     return Tuple.create(["run", doSleep, Tuple.create([process, Timer.stamp(), endTime])]);
   }
 
-  public static function receive(process: Process, matcher: Dynamic): Void {
-    asyncThread.sendMessage(Tuple.create(["run", doReceive, Tuple.create([process, matcher])]));
+  public static function receive(process: Process, callback: Function): Void {
+    asyncThread.sendMessage(Tuple.create(["run", doReceive, Tuple.create([process, callback, 0])]));
   }
 
-  public static function doReceive(process: Process, matcher: Dynamic->Bool): Tuple {
-    for(data in process.mailbox) {
-      if(process.status == ProcessState.WAITING) {
+  public static function doReceive(process: Process, callback: Function, mailboxIndex: Int): Tuple {
+    var data = process.mailbox[mailboxIndex % process.mailbox.length];
+    if(data != null) {
+      if(process.state == ProcessState.WAITING) {
         Process.running(process);
       }
-      if(matcher(data)) {
-        process.mailbox.remove(data);
-        Scheduler.communicationThread.sendMessage(KernelMessage.SCHEDULE(process));
-        return Tuple.create(["stop", doReceive, Tuple.create([process, matcher])]);
-      }
+      Kernel.apply(process, callback, LList.create([Tuple.create(["const".atom(), data])]), function(result): Void {
+        if(result == null) {
+          asyncThread.sendMessage(Tuple.create(["run", doReceive, Tuple.create([process, callback, ++mailboxIndex])]));
+        } else {
+          process.mailbox.remove(data);
+          Process.self().processStack.getVariablesInScope().set("$$$", result);
+        }
+      });
+      Scheduler.communicationThread.sendMessage(KernelMessage.SCHEDULE(process));
+      return Tuple.create(["stop", doReceive, Tuple.create([process, callback, mailboxIndex])]);
     }
-    return Tuple.create(["run", doReceive, Tuple.create([process, matcher])]);
+    return Tuple.create(["run", doReceive, Tuple.create([process, callback, ++mailboxIndex])]);
   }
 
   public static function workerThread(): Void {
@@ -148,17 +155,17 @@ class Scheduler {
         trace('stack is null');
         continue;
       }
-      if(process.status == ProcessState.KILLED) {
+      if(process.state == ProcessState.KILLED) {
         continue;
       }
 
       var stack: ProcessStack = process.processStack;
       var counter: Int = 0;
       var iterations: Int = Std.int(Math.random() * 2000);
-      while(process.status == ProcessState.RUNNING && counter++ < iterations) {
+      while(process.state == ProcessState.RUNNING && counter++ < iterations) {
         stack.execute();
       }
-      switch(process.status) {
+      switch(process.state) {
         case ProcessState.RUNNING:
           Scheduler.communicationThread.sendMessage(KernelMessage.SCHEDULE(process));
         case _:

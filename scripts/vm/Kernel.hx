@@ -1,8 +1,11 @@
 package vm;
 
-import lib.Modules;
+import EitherEnums.Either2;
+import lang.EitherSupport;
 import compiler.Compiler;
 import cpp.vm.Thread;
+import lib.Modules;
+import vm.Classes.Function;
 import vm.Process;
 
 using lang.AtomSupport;
@@ -51,16 +54,59 @@ class Kernel {
     return process;
   }
 
-  public static function receive(matcher: Dynamic): Process {
-    Logger.inspect(matcher);
+  public static function receive(callback: Function): Process {
     var process: Process = Process.self();
-    Scheduler.communicationThread.sendMessage(KernelMessage.RECEIVE(process, matcher));
+    Process.waiting(process);
+    Scheduler.communicationThread.sendMessage(KernelMessage.RECEIVE(process, callback));
     return process;
   }
 
   public static function send(process: Process, payload: Dynamic): Atom {
     Scheduler.communicationThread.sendMessage(KernelMessage.SEND(process, payload));
     return 'ok'.atom();
+  }
+
+  public static function apply(process: Process, fn: Function, args: LList, callback: Dynamic->Void = null): Void {
+    if(fn == null) {
+      //TODO: handle missing function error
+      Logger.inspect('throw a crazy error and kill the process!');
+      return;
+    }
+    var scopeVariables = process.processStack.getVariablesInScope();
+    var counter: Int = 0;
+    var callArgs: Array<Dynamic> = [];
+    var nextScopeVariables: Map<String, Dynamic> = new Map<String, Dynamic>();
+    for(key in scopeVariables.keys()) {
+      nextScopeVariables.set(key, scopeVariables.get(key));
+    }
+    for(arg in LList.iterator(args)) {
+      var tuple: Tuple = EitherSupport.getValue(arg);
+      var argArray = tuple.asArray();
+      var elem1: Either2<Atom, Dynamic> = argArray[0];
+      var elem2: Either2<Atom, Dynamic> = argArray[1];
+
+      var value: Dynamic = switch(cast(EitherSupport.getValue(elem1), Atom)) {
+        case {value: 'const'}:
+          EitherSupport.getValue(elem2);
+        case {value: 'var'}:
+          var varName: String = EitherSupport.getValue(elem2);
+          scopeVariables.get(varName);
+        case _:
+          Logger.inspect("!!!!!!!!!!! bad !!!!!!!!!!!");
+          null;
+      }
+      callArgs.push(value);
+      var argName: String = fn.args[counter++];
+      nextScopeVariables.set(argName, value);
+    }
+
+    var operations: Array<Operation> = Reflect.callMethod(null, fn.fn, callArgs);
+    if(callback != null) {
+      var op = new InvokeCallback(callback, "Kernel".atom(), "apply".atom(), 105);
+      operations.push(op);
+    }
+    var annaCallStack: AnnaCallStack = new AnnaCallStack(operations, nextScopeVariables);
+    process.processStack.add(annaCallStack);
   }
 
   public static function add(left: Float, right: Float): Float {

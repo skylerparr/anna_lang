@@ -432,7 +432,20 @@ class AnnaLang {
               case _:
                 throw "AnnaLang: Unexpected function argument";
             }
-          };';
+          };
+          if(Std.is(_arg${counter}, Atom)) {
+            var strAtom: String = Atom.to_s(_arg${counter});
+            var frags = strAtom.split(".");
+            if(frags.length > 1) {
+              var fun = frags.pop();
+              var module = frags.join(".");
+              var fn = Classes.getFunction(lang.AtomSupport.atom(module), lang.AtomSupport.atom(fun));
+              if(fn != null) {
+                _arg${counter} = fn;
+              }
+            }
+          }
+';
       var classVar: String = 'arg${counter}';
       var paramVar = macro class Fake {
         private var $classVar: Array<EitherEnums.Either2<Atom, Dynamic>>;
@@ -443,6 +456,7 @@ class AnnaLang {
       ++counter;
     }
     var executeBodyStr: String = '${assignments.join('\n')} ${moduleName}.${invokeFunName}(${privateArgs.join(', ')});';
+    MacroLogger.log(executeBodyStr, 'executeBodyStr');
 
     // save the return type in compiler scope to check types later
     var args: Array<String> = privateArgs.map(function(arg) { return 'null'; });
@@ -541,7 +555,7 @@ class AnnaLang {
           var expr = Macros.haxeToExpr(haxeStr);
           defined = defineFunction(expr);
         }
-        var haxeStr: String = 'ops.push(new vm.DeclareAnonFunction(@atom "${defined.internalFunctionName}", @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${MacroTools.getLineNumber(params)}))';
+        var haxeStr: String = 'ops.push(new vm.DeclareAnonFunction(@atom "${currentModuleStr}.${defined.internalFunctionName}", @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${MacroTools.getLineNumber(params)}))';
         return [Macros.haxeToExpr(haxeStr)];
       case _:
        throw new ParsingException("AnnaLang: Expected block");
