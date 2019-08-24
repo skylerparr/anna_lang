@@ -48,14 +48,6 @@ class Scheduler {
         continue;
       }
       switch(message) {
-        case KernelMessage.STOP:
-          for(thread in workerThreads) {
-            thread.sendMessage(null);
-          }
-          communicationThread = null;
-          workerThreads = null;
-          asyncThread = null;
-          return;
         case KernelMessage.SCHEDULE(process):
           var thread: Thread = workerThreads[index++ % workerThreads.length];
           threadProcessMap.set(thread.handle, process);
@@ -64,6 +56,14 @@ class Scheduler {
           Process.receive(process, matcher);
         case KernelMessage.SEND(process, payload):
           Process.putInMailbox(process, payload);
+        case KernelMessage.STOP:
+          for(thread in workerThreads) {
+            thread.sendMessage(null);
+          }
+          communicationThread = null;
+          workerThreads = null;
+          asyncThread = null;
+          return;
       }
     }
   }

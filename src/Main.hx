@@ -5,7 +5,6 @@ import haxe.ds.ObjectMap;
 import haxe.Timer;
 import haxe.CallStack;
 import haxe.Constraints.IMap;
-import haxe.macro.Context;
 import haxe.macro.Printer;
 import state.GlobalStore;
 import core.PathSettings;

@@ -1,18 +1,35 @@
 package lib;
 
+import compiler.CppiaCompiler;
 import vm.Process;
 import vm.Match;
 import vm.Operation;
 import vm.PushStack;
 import IO;
 using lang.AtomSupport;
+@:build(lang.macros.AnnaLang.init())
+@:build(lang.macros.AnnaLang.defcls(AnnaLangCompiler, {
+  @alias fs.File;
+  @alias compiler.CppiaCompiler;
 
+  @def start([Atom], {
+    @native IO.inspect("starting compiler");
+    @native CppiaCompiler.start();
+    code = @native File.read("apps/anna/anna.anna");
+    ast = @native CppiaCompiler.ast(code);
+    @native IO.inspect(ast);
+    code_string = @native CppiaCompiler.astToString(ast);
+    @native IO.inspect(code_string);
+    Boot.start();
+    @_"ok";
+  });
+}))
 @:build(lang.macros.AnnaLang.defcls(Boot, {
   @alias vm.Process;
   @alias vm.Kernel;
 
   @def start([Int], {
-//    print(get_string(), return_num(get_one()), get_two());
+    print(get_string(), return_num(get_one()), get_two());
 //    result = @native Kernel.add(get_one(), get_two());
 //    @native IO.inspect(result);
 //    result = @native Kernel.add(result, get_one());
@@ -32,21 +49,21 @@ using lang.AtomSupport;
 //    @native IO.inspect(p3);
 //    @native IO.inspect(map);
 //    @native IO.inspect("waiting...");
-    fun = @fn {
-      ([{String: foo}, [String]] => {
-        foo;
-      });
+//    fun = @fn {
+//      ([{String: foo}, [String]] => {
+//        foo;
+//      });
 //      ([{Int: int}, [Atom]] => {
 //        @native IO.inspect("got zero");
 //        @_"ok";
 //      });
-    }
-    result = fun("foo");
-    @native IO.inspect(result);
-    @native IO.inspect("waiting for data");
-    received = @native Kernel.receive(fun);
-    @native IO.inspect("received:");
-    @native IO.inspect(received);
+//    }
+//    result = fun("foo");
+//    @native IO.inspect(result);
+//    @native IO.inspect("waiting for data");
+//    received = @native Kernel.receive(fun);
+//    @native IO.inspect("received:");
+//    @native IO.inspect(received);
 
 //    print(result);
 //    received = @native Kernel.receive(@fn{
@@ -128,5 +145,6 @@ using lang.AtomSupport;
     @_'ok';
   });
 }))
+@:build(lang.macros.AnnaLang.compile())
 class Modules {
 }

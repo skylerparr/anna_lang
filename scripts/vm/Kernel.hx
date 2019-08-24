@@ -2,7 +2,7 @@ package vm;
 
 import EitherEnums.Either2;
 import lang.EitherSupport;
-import compiler.Compiler;
+import compiler.CppiaCompiler;
 import cpp.vm.Thread;
 import lib.Modules;
 import vm.Classes.Function;
@@ -17,10 +17,11 @@ class Kernel {
 
   public static function start(): Atom {
     if(Scheduler.communicationThread == null) {
+      Inspector.ttyThread = Thread.current();
       current_id = 0;
       Scheduler.start();
 
-      Compiler.subscribeAfterCompile(defineCode);
+      CppiaCompiler.subscribeAfterCompile("vm.Kernel", "defineCode");
       defineCode();
 
       return 'ok'.atom();
@@ -37,15 +38,27 @@ class Kernel {
   public static function defineCode(): Atom {
     Classes.define("CallCounter".atom(), Modules);
     Classes.define("Boot".atom(), Boot);
+    Classes.define("AnnaLangCompiler".atom(), AnnaLangCompiler);
     return 'ok'.atom();
   }
 
   public static function testSpawn(): Process {
-    Inspector.ttyThread = Thread.current();
-    stop();
-    Native.callStatic('Runtime', 'recompile', []);
+    recompile();
+    Sys.sleep(0.3);
     start();
     return spawn('Boot'.atom(), 'start_'.atom(), LList.create([]));
+  }
+
+  public static function spawnCompiler(): Process {
+    recompile();
+    Sys.sleep(0.3);
+    start();
+    return spawn('AnnaLangCompiler'.atom(), 'start_'.atom(), LList.create([]));
+  }
+
+  public static function recompile(): Atom {
+    Native.callStatic('Runtime', 'recompile', []);
+    return 'ok'.atom();
   }
 
   public static function spawn(module: Atom, fun: Atom, args: LList): Process {
