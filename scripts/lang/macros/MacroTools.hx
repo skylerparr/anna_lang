@@ -255,6 +255,23 @@ class MacroTools {
     }
   }
 
+  public static function resolveType(expr: Expr):String {
+    var type: Type = Context.typeof(expr);
+    return switch(type) {
+      case TInst(t, _):
+        t.toString();
+      case TAbstract(t, _):
+        t.toString();
+      case TDynamic(_):
+        "Dynamic";
+      case TType(t, _):
+        t.toString();
+      case t:
+        MacroLogger.log(t, 't');
+        throw "AnnaLang: Unhandled return type";
+    }
+  }
+
   public static function getAliasName(expr: Expr):String {
     var fullFunCall: Array<String> = extractFullFunCall(expr);
     return fullFunCall[fullFunCall.length - 1];

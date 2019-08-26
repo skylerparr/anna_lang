@@ -57,6 +57,13 @@ class Kernel {
     return spawn('AnnaLangCompiler'.atom(), 'start_'.atom(), LList.create([]));
   }
 
+  public static function spawnFunctionPatternMatch(): Process {
+    recompile();
+    Sys.sleep(0.3);
+    start();
+    return spawn('FunctionPatternMatching'.atom(), 'start_'.atom(), LList.create([]));
+  }
+
   public static function recompile(): Atom {
     Native.callStatic('Runtime', 'recompile', []);
     return 'ok'.atom();

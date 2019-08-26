@@ -55,7 +55,7 @@ class PushStack implements Operation {
       var argName: String = fn.args[counter++];
       nextScopeVariables.set(argName, value);
     }
-
+    callArgs.push(nextScopeVariables);
     var operations: Array<Operation> = Reflect.callMethod(null, fn.fn, callArgs);
     var annaCallStack: AnnaCallStack = new AnnaCallStack(operations, nextScopeVariables);
     processStack.add(annaCallStack);

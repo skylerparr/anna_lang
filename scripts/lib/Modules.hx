@@ -26,6 +26,7 @@ using lang.AtomSupport;
 }))
 @:build(lang.macros.AnnaLang.defcls(FunctionPatternMatching, {
   @def start([Atom], {
+    @native IO.inspect("testing function head pattern matching");
     @_"ok";
   });
 }))
@@ -35,24 +36,24 @@ using lang.AtomSupport;
 
   @def start([Int], {
     print(get_string(), return_num(get_one()), get_two());
-//    result = @native Kernel.add(get_one(), get_two());
-//    @native IO.inspect(result);
-//    result = @native Kernel.add(result, get_one());
-//    @native IO.inspect(result);
-//    one_hundred = "100";
-//    pid = @native Process.self();
-//    counter = @native Kernel.add(23, 491);
-//    @native IO.inspect(counter);
-//    @native IO.inspect(null);
-//    @native IO.inspect(pid);
-//    p3 = print();
-//    p2 = print("hello world", 90210, counter);
-//    @native IO.inspect(p2);
-//    @native IO.inspect([@_"ok", "all correct"]);
-//    @native IO.inspect({@_"ok"; "all correct";});
-//    map = cast(@native IO.inspect([ @_"ok" => "all", @_'error' => "correct"]), MMap);
-//    @native IO.inspect(p3);
-//    @native IO.inspect(map);
+    result = @native Kernel.add(get_one(), get_two());
+    @native IO.inspect(result);
+    result = @native Kernel.add(result, get_one());
+    @native IO.inspect(result);
+    one_hundred = "100";
+    pid = @native Process.self();
+    counter = @native Kernel.add(23, 491);
+    @native IO.inspect(counter);
+    @native IO.inspect(null);
+    @native IO.inspect(pid);
+    p3 = print();
+    p2 = print("hello world", 90210, counter);
+    @native IO.inspect(p2);
+    @native IO.inspect([@_"ok", "all correct"]);
+    @native IO.inspect({@_"ok"; "all correct";});
+    map = cast(@native IO.inspect([ @_"ok" => "all", @_'error' => "correct"]), MMap);
+    @native IO.inspect(p3);
+    @native IO.inspect(map);
 //    @native IO.inspect("waiting...");
 //    fun = @fn {
 //      ([{String: foo}, [String]] => {
@@ -78,11 +79,11 @@ using lang.AtomSupport;
 //    });
 //    @native IO.inspect("received:");
 //    @native IO.inspect(received);
-//    foo(p3);
-//    foo(p2);
-//    bar(map);
+    foo(p3);
+    foo(p2);
+    bar(map);
 //    @native IO.inspect({ok: "foob"}); //keyword list
-//    print(pid);
+    print(pid);
   });
 
   @def print([Int], {
@@ -118,6 +119,11 @@ using lang.AtomSupport;
   @def print({Atom: val}, [Atom], {
     @native IO.inspect(val);
     val;
+  });
+
+  @def print({Process: process}, [Atom], {
+    @native IO.inspect(process);
+    @_'ok';
   });
 
   @def foo({Int: value}, [String], {

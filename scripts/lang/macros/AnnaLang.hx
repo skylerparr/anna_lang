@@ -77,6 +77,7 @@ class AnnaLang {
             for(funArgsType in funArgsTypes) {
               funArgs.push({name: funArgsType.name, type: MacroTools.buildType(funArgsType.type)});
             }
+            funArgs.push({name: "____scopeVariables", type: MacroTools.buildType('Map<String, Dynamic>')});
             var field: Field = MacroTools.buildPublicFunction(internalFunctionName, funArgs, returnType);
             var expr: Expr = MacroTools.buildReturn(MacroTools.buildConst(CIdent('_${internalFunctionName}')));
             MacroTools.assignFunBody(field, MacroTools.buildBlock([expr]));
@@ -259,11 +260,12 @@ class AnnaLang {
             retVal.push(expr);
           }
 
-          types.push(getType(MacroContext.lastFunctionReturnType));
+          types.push(getType(StringTools.replace(MacroContext.lastFunctionReturnType, '.', '_')));
           funArgs.push('@tuple[@atom"var", "__${funName}_${argCounter}"]');
         case _:
           var typeAndValue = MacroTools.getTypeAndValue(arg);
           var type: String = getTypeForVar(typeAndValue, arg);
+          type = StringTools.replace(type, '.', '_');
           types.push(type);
           funArgs.push(typeAndValue.value);
       }
@@ -289,7 +291,7 @@ class AnnaLang {
         retVal.push(Macros.haxeToExpr(haxeStr));
         return retVal;
       } else {
-        throw new ParsingException('AnnaLang: Function ${fqFunName} not found.');
+        throw new ParsingException('AnnaLang: Function ${moduleName}.${fqFunName} not found.');
       }
     } else {
       MacroContext.lastFunctionReturnType = funDef[0].funReturnTypes[0];
@@ -361,13 +363,17 @@ class AnnaLang {
     return macro {};
   }
 
-  private static function defineFunction(params: Expr):Dynamic {
+  private static inline function defineFunction(params: Expr):Dynamic {
     var funName: String = MacroTools.getCallFunName(params);
     var allTypes: Dynamic = MacroTools.getArgTypesAndReturnTypes(params);
     var funArgsTypes: Array<Dynamic> = allTypes.argTypes;
     var types: Array<String> = [];
     for(argType in funArgsTypes) {
-      types.push(getType(argType.type));
+      var strType: String = MacroTools.resolveType(Macros.haxeToExpr(argType.type));
+      var r = ~/[A-Za-z]*<|>/g;
+      strType = r.replace(strType, '');
+      types.push(getType(strType));
+      argType.type = strType;
     }
     var argTypes: String = StringTools.replace(types.join('_'), ".", "_");
     var funBody: Array<Expr> = MacroTools.getFunBody(params);
@@ -388,7 +394,6 @@ class AnnaLang {
       funBody: funBody
     };
     funBodies.push(def);
-    MacroLogger.log(internalFunctionName, 'internalFunctionName');
     MacroContext.declaredFunctions.set(internalFunctionName, funBodies);
     return def;
   }
@@ -493,20 +498,7 @@ class AnnaLang {
     // save the return type in compiler scope to check types later
     var args: Array<String> = privateArgs.map(function(arg) { return 'null'; });
     var expr: Expr = Macros.haxeToExpr('${moduleName}.${invokeFunName}(${args.join(', ')})');
-    var type: Type = Context.typeof(expr);
-    switch(type) {
-      case TInst(t, _):
-        MacroContext.lastFunctionReturnType = t.toString();
-      case TAbstract(t, _):
-        MacroContext.lastFunctionReturnType = t.toString();
-      case TDynamic(_):
-        MacroContext.lastFunctionReturnType = "Dynamic";
-      case TType(t, _):
-        MacroContext.lastFunctionReturnType = t.toString();
-      case t:
-        MacroLogger.log(t, 't');
-        throw "AnnaLang: Unhandled return type";
-    }
+    MacroContext.lastFunctionReturnType = MacroTools.resolveType(expr);
 
     if(declaredFunctions.get(className) == null) {
       var assignReturnVar: Expr = null;
