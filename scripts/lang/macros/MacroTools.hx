@@ -168,6 +168,18 @@ class MacroTools {
     }
   }
 
+  public static function getValue(expr: Expr):Dynamic {
+    return switch(expr.expr) {
+      case EConst(CString(value)):
+        value;
+      case EConst(CInt(value)) | EConst(CFloat(value)):
+        value;
+      case e:
+        MacroLogger.log(e, 'e');
+        throw new ParsingException("AnnaLang: Unexpected value.");
+    }
+  }
+
   public static function getTypeAndValue(expr: Expr):Dynamic {
     return switch(expr.expr) {
       case EConst(CIdent(varName)):

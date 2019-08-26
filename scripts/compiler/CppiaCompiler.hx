@@ -28,14 +28,16 @@ class CppiaCompiler {
     return 'ok'.atom();
   }
 
-  public static function ast(code: String): Expr {
+  public static function ast(code: String): Dynamic {
     var ast = parser.parseString(code);
     var pos = { max: 12, min: 0, file: null };
     return new Macro(pos).convert(ast);
   }
 
-  public static function astToString(ast: Expr): String {
+  public static function astToString(ast: Dynamic): String {
+    var pos = {min: 0, max: 200, file: "/Users/skyler/programming/anna_lang/scripts/tests/AnnaListTest.hx"}
     var p: haxe.macro.Printer = new haxe.macro.Printer();
+    var e: haxe.macro.Expr = { expr: EConst(CInt("1")), pos: pos };
     return p.printExpr(ast);
   }
 

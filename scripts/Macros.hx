@@ -164,9 +164,7 @@ class Macros {
       case EObjectDecl(fields):
         retValBlock.push(expr);
       case EParenthesis(e):
-        MacroLogger.log(e, 'e');
-        MacroLogger.logExpr(e, 'e');
-        handlePatternMatch(retValBlock, e);
+        retValBlock.push(expr);
       case EReturn(e):
         var eReturnMeta = findMetaInBlock(e, null);
         retValBlock.push({expr: EReturn(eReturnMeta), pos: Context.currentPos()});
@@ -232,7 +230,8 @@ class Macros {
       case EBinop(OpMod, a, b):
         throw "AnnaLang: Unimplemented case";
       case EBinop(OpMult, a, b):
-        throw "AnnaLang: Unimplemented case";
+        var meta = findMetaInBlock(a, b);
+        retValBlock.push(meta);
       case EBinop(OpNotEq, a, b):
         throw "AnnaLang: Unimplemented case";
       case EBinop(OpOr, a, b):
@@ -389,45 +388,6 @@ class Macros {
     }
   }
 
-  public static function _if(lhs: Expr, rhs: Expr):Expr {
-    return macro {
-
-    };
-  }
-
-  public static function _match(lhs: Expr, rhs: Expr):Expr {
-    var p: Printer = new Printer();
-    var lhsStr: String = p.printExpr(lhs);
-    var rhsStr: String = p.printExpr(rhs);
-    var context: String = '${lhs.pos}';
-    context = StringTools.replace(context, Sys.getCwd(), '');
-
-    var declaredVariables: Array<String> = [];
-    switch(lhs.expr) {
-      case EMeta({name: 'tuple'}, expr):
-        switch(expr.expr) {
-          case EArrayDecl(items):
-            for(item in items) {
-              switch(item.expr) {
-                case EConst(CIdent(variable)):
-                  declaredVariables.push('var ${variable} = null;');
-                case _:
-                  //intentionally blank
-              }
-            }
-          case _:
-            throw "syntax error: Unexpected tuple values ${printer.printExpr(expr) at ${getPosContext(lhs.pos)}}";
-        }
-      case _:
-        //intentionally blank
-    }
-
-    var vars: String = declaredVariables.join('\n');
-    var haxeStr: String = '${vars}\n Macros.valuesMatch(${lhsStr}, ${rhsStr})';
-
-    return haxeToExpr(haxeStr);
-  }
-
   public static function getPosContext(pos: Position): String {
     var context: String = '${pos}';
     context = StringTools.replace(context, Sys.getCwd(), '');
@@ -437,17 +397,6 @@ class Macros {
   public static function haxeToExpr(str: String): Expr {
     var ast = parser.parseString(str);
     return new hscript.Macro(Context.currentPos()).convert(ast);
-  }
-
-  public static function handlePatternMatch(retValBlock: Array<Expr>, expr: Expr):Void {
-    switch(expr.expr) {
-      case(EBinop(OpArrow, left, right)):
-        MacroLogger.logExpr(left, 'left');
-        MacroLogger.logExpr(right, 'right');
-      case e:
-        MacroLogger.log(e, 'e');
-        throw new ParsingException("AnnaLang: Expected pattern match");
-    }
   }
   #end
 

@@ -109,6 +109,10 @@ class Tuple implements CustomType {
     return create(newArray);
   }
 
+  public static function length(tuple: Tuple): Int {
+    return tuple.asArray().length;
+  }
+
   public var __annaString: String;
 
   public function toAnnaString(): String {

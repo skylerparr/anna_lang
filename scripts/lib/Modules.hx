@@ -18,9 +18,14 @@ using lang.AtomSupport;
     code = @native File.read("apps/anna/anna.anna");
     ast = @native CppiaCompiler.ast(code);
     @native IO.inspect(ast);
-    code_string = @native CppiaCompiler.astToString(ast);
-    @native IO.inspect(code_string);
-    Boot.start();
+//    code_string = @native CppiaCompiler.astToString(ast);
+//    @native IO.inspect(code_string);
+//    Boot.start();
+    @_"ok";
+  });
+}))
+@:build(lang.macros.AnnaLang.defcls(FunctionPatternMatching, {
+  @def start([Atom], {
     @_"ok";
   });
 }))

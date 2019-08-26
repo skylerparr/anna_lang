@@ -39,6 +39,7 @@ class Kernel {
     Classes.define("CallCounter".atom(), Modules);
     Classes.define("Boot".atom(), Boot);
     Classes.define("AnnaLangCompiler".atom(), AnnaLangCompiler);
+    Classes.define("FunctionPatternMatching".atom(), FunctionPatternMatching);
     return 'ok'.atom();
   }
 
