@@ -93,12 +93,18 @@ private class ListIterator<T> {
 class AnnaList<T> extends LList {
 
   function getHead(): T {
+    if(h == null) {
+      return null;
+    }
     return h.item;
   }
 
   function getTail(): AnnaList<T> {
     if(tl == null) {
       tl = new AnnaList<T>();
+      if(h == null) {
+        return null;
+      }
       var t = h.next;
       while(t != null) {
         tl._add(t.item);

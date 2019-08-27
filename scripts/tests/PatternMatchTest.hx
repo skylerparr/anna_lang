@@ -262,4 +262,27 @@ class PatternMatchTest {
     @refute matched == null;
     @assert matched.get("number") == @_"three";
   }
+
+  public static function shouldMatchListValueWithinTuple(): Void {
+    var data: Tuple = @tuple["foo", 123, @_"ok", @list["1", 2, @_"three"], @_"cat"];
+    var matched: Map<String, Dynamic> = PatternMatch.match(@tuple["foo", 123, @_"ok", @list["1", 2, number], @_"cat"], data);
+    @refute matched == null;
+    @assert matched.get("number") == @_"three";
+  }
+
+  public static function shouldMatchListTailIfTheresOneElementInTheEntireList(): Void {
+    var data: LList = @list["foo"];
+    var matched: Map<String, Dynamic> = PatternMatch.match(@list[head | tail], data);
+    @refute matched == null;
+    @assert matched.get("head") == "foo";
+    @assert matched.get("tail") == @list[];
+  }
+
+  public static function shouldReturnNilIfListLengthIsZero(): Void {
+    var data: LList = @list[];
+    var matched: Map<String, Dynamic> = PatternMatch.match(@list[head | tail], data);
+    @refute matched == null;
+    @assert matched.get("head") == @_'nil';
+    @assert matched.get("tail") == @_'nil';
+  }
 }

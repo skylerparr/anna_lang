@@ -28,6 +28,9 @@ import EitherEnums.Either2;
 import EitherEnums.Either1;
 class EitherSupport {
   public static function getValue(e: Dynamic): Dynamic {
+    if(e == null) {
+      return lang.AtomSupport.atom("nil");
+    }
     return switch(Type.getEnum(e)) {
       case Either1:
         switch(e) {
