@@ -157,4 +157,109 @@ class PatternMatchTest {
     @assert matched.get("foo") == 123;
     @assert matched.get("status") == @tuple[@_"ok", "good to go"];
   }
+
+  public static function shouldMatchEmptyTuples(): Void {
+    var data: Tuple = @tuple[];
+    var matched: Map<String, Dynamic> = PatternMatch.match(@tuple[], data);
+    @refute matched == null;
+  }
+
+  public static function shouldMatchEmptyList(): Void {
+    var data: LList = @list[];
+    var matched: Map<String, Dynamic> = PatternMatch.match(@list[], data);
+    @refute matched == null;
+  }
+
+  public static function shouldMatchSingleItemInList(): Void {
+    var data: LList = @list["foo"];
+    var matched: Map<String, Dynamic> = PatternMatch.match(@list["foo"], data);
+    @refute matched == null;
+  }
+
+  public static function shouldAssignListToVariable(): Void {
+    var data: LList = @list["foo"];
+    var matched: Map<String, Dynamic> = PatternMatch.match(value, data);
+    @refute matched == null;
+    @assert matched.get("value") == @list["foo"];
+  }
+
+  public static function shouldNotMatchIfDifferentDataTypes(): Void {
+    var data: Dynamic = @list["foo"];
+    var matched: Map<String, Dynamic> = PatternMatch.match(@tuple["foo"], data);
+    @assert matched == null;
+  }
+
+  public static function shouldNotMatchListsOfDifferentSize(): Void {
+    var data: LList = @list["foo", "bar", "cat"];
+    var matched: Map<String, Dynamic> = PatternMatch.match(@list["foo", "bar"], data);
+    @assert matched == null;
+    var data: LList = @list["foo", "bar", "cat"];
+    var matched: Map<String, Dynamic> = PatternMatch.match(@list["foo", "bar", "cat", "tree"], data);
+    @assert matched == null;
+  }
+
+  public static function shouldMatchSingleValue(): Void {
+    var data: LList = @list["bar"];
+    var matched: Map<String, Dynamic> = PatternMatch.match(@list[foo], data);
+    @refute matched == null;
+    @assert matched.get("foo") == "bar";
+  }
+
+  public static function shouldMatchManyValues(): Void {
+    var data: LList = @list["foo", 123, @_"ok", 301.239, @_"cat"];
+    var matched: Map<String, Dynamic> = PatternMatch.match(@list[foo, int, atom, float, @_"cat"], data);
+    @refute matched == null;
+    @assert matched.get("foo") == "foo";
+    @assert matched.get("int") == 123;
+    @assert matched.get("atom") == @_"ok";
+    @assert matched.get("float") == 301.239;
+  }
+
+  public static function shouldNotMatchIfAnyValueDoesntMatch(): Void {
+    var data: LList = @list["foo", 123, @_"ok", 301.239, @_"cat"];
+    var matched: Map<String, Dynamic> = PatternMatch.match(@list[foo, 123, atom, 302.239, @_"cat"], data);
+    @assert matched == null;
+  }
+
+  public static function shouldMatchHeadAndTail(): Void {
+    var data: LList = @list["foo", 123, @_"ok", 301.239, @_"cat"];
+    var matched: Map<String, Dynamic> = PatternMatch.match(@list[head | tail], data);
+    @refute matched == null;
+    @assert matched.get("head") == "foo";
+    @assert matched.get("tail") == @list[123, @_"ok", 301.239, @_"cat"];
+  }
+
+  public static function shouldPatternMatchHeadAndAssignTail(): Void {
+    var data: LList = @list["foo", 123, @_"ok", 301.239, @_"cat"];
+    var matched: Map<String, Dynamic> = PatternMatch.match(@list["foo" | tail], data);
+    @refute matched == null;
+    @assert matched.get("tail") == @list[123, @_"ok", 301.239, @_"cat"];
+  }
+
+  public static function shouldMatchHeadAndPatternMatchTail(): Void {
+    var data: LList = @list["foo", 123, @_"ok", 301.239, @_"cat"];
+    var matched: Map<String, Dynamic> = PatternMatch.match(@list[head | @list[123, @_"ok", 301.239, @_"cat"]], data);
+    @refute matched == null;
+    @assert matched.get("head") == "foo";
+  }
+
+  public static function shouldPatternMatchHeadAndPatternMatchTail(): Void {
+    var data: LList = @list["foo", 123, @_"ok", 301.239, @_"cat"];
+    var matched: Map<String, Dynamic> = PatternMatch.match(@list["foo" | @list[123, @_"ok", 301.239, @_"cat"]], data);
+    @refute matched == null;
+  }
+
+  public static function shouldPatternMatchHeadAndSubMatchTail(): Void {
+    var data: LList = @list["foo", 123, @_"ok", 301.239, @_"cat"];
+    var matched: Map<String, Dynamic> = PatternMatch.match(@list["foo" | @list[123, @_"ok", float, @_"cat"]], data);
+    @refute matched == null;
+    @assert matched.get("float") == 301.239;
+  }
+
+  public static function shouldMatchTupleValueWithinList(): Void {
+    var data: LList = @list["foo", 123, @_"ok", @tuple["1", 2, @_"three"], @_"cat"];
+    var matched: Map<String, Dynamic> = PatternMatch.match(@list["foo" | @list[123, @_"ok", @tuple["1", 2, number], @_"cat"]], data);
+    @refute matched == null;
+    @assert matched.get("number") == @_"three";
+  }
 }

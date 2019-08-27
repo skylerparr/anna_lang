@@ -78,8 +78,52 @@ class PatternMatch {
             }
           }
         ;
+      case ECall({expr: EField({expr: EConst(CIdent("LList"))}, _)}, [{expr: ECall(_, [{expr: ECast({expr: EArrayDecl([{expr: EBinop(OpOr, head, tail)}])}, _)}])}]):
+        var individualMatches: Array<Expr> = [];
+        var strExpr: String = 'lang.EitherSupport.getValue(LList.hd(rhsList))';
+        var expr: Expr = generatePatternMatch(head, Macros.haxeToExpr(strExpr));
+        individualMatches.push(expr);
+        var strExpr: String = 'lang.EitherSupport.getValue(LList.tl(rhsList))';
+        var expr: Expr = generatePatternMatch(tail, Macros.haxeToExpr(strExpr));
+        individualMatches.push(expr);
+        var individualMatchesBlock: Expr = MacroTools.buildBlock(individualMatches);
+        macro {
+          var rhsList: LList = $e{valueExpr};
+          $e{individualMatchesBlock};
+          break;
+        }
+      case ECall({expr: EField({expr: EConst(CIdent("LList"))}, _)}, [{expr: ECall(_, [{expr: ECast({expr: EArrayDecl(values)}, _)}])}]):
+        var individualMatches: Array<Expr> = [];
+        var counter: Int = 0;
+        for(v in values) {
+          var strExpr: String = 'lang.EitherSupport.getValue(LList.hd(rhsList))';
+          var expr: Expr = generatePatternMatch(v, Macros.haxeToExpr(strExpr));
+          individualMatches.push(expr);
+          var assignTail: String = 'rhsList = LList.tl(rhsList)';
+          individualMatches.push(Macros.haxeToExpr(assignTail));
+          counter++;
+        }
+        individualMatches.pop(); //remove the last tail assigment, it's unnecessary.
+        var individualMatchesBlock: Expr = MacroTools.buildBlock(individualMatches);
+        if(individualMatchesBlock == null) {
+          individualMatchesBlock = macro {};
+        }
+        var listLength: Expr = Macros.haxeToExpr('${values.length}');
+        macro {
+          if(!Std.is($e{valueExpr}, LList)) {
+            scope = null;
+            break;
+          } else {
+            if(LList.length($e{valueExpr}) != $e{listLength}) {
+              scope = null;
+              break;
+            }
+            var rhsList: LList = $e{valueExpr};
+            $e{individualMatchesBlock}
+          }
+        }
       case e:
-        MacroLogger.log(e, 'expr');
+        MacroLogger.log(e, 'PatternMatch expr');
         macro null;
     }
   }

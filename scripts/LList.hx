@@ -30,6 +30,10 @@ class LList implements CustomType {
     return (cast list).getTail();
   }
 
+  public static function length(list: LList): Int {
+    return (cast list).length;
+  }
+
   public static function remove(list: LList, item: Any): LList {
     return (cast list)._remove(item);
   }

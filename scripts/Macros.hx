@@ -139,9 +139,7 @@ class Macros {
         var eelseMeta = findMetaInBlock(eelse, null);
         retValBlock.push({expr: EIf(econdMeta, eifMeta, eelseMeta), pos: Context.currentPos()});
       case EArray(e1, e2):
-//        throw "AnnaLang: Unimplemented case";
         retValBlock.push(expr);
-
       case EBreak:
         throw "AnnaLang: Unimplemented case";
       case ECast(e, t):
@@ -240,7 +238,9 @@ class Macros {
 
         retValBlock.push({expr: EBinop(OpNotEq, metaA, metaB), pos: Context.currentPos()});
       case EBinop(OpOr, a, b):
-        throw "AnnaLang: Unimplemented case";
+        var metaB = findMetaInBlock(b, rhs);
+        var metaA = findMetaInBlock(a, rhs);
+        retValBlock.push({expr: EBinop(OpOr, metaA, metaB), pos: Context.currentPos()});
       case EBinop(OpShl, a, b):
         throw "AnnaLang: Unimplemented case";
       case EBinop(OpShr, a, b):
