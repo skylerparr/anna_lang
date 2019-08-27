@@ -57,6 +57,11 @@ class PushStack implements Operation {
     }
     callArgs.push(nextScopeVariables);
     var operations: Array<Operation> = Reflect.callMethod(null, fn.fn, callArgs);
+    if(operations == null) {
+      //TODO: handle missing function error
+      Logger.inspect('operations is null!');
+      return;
+    }
     var annaCallStack: AnnaCallStack = new AnnaCallStack(operations, nextScopeVariables);
     processStack.add(annaCallStack);
   }

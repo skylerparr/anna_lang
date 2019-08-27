@@ -32,10 +32,12 @@ class Classes {
       funMap = new Map<Atom, Function>();
     }
     var funcs: Array<Dynamic> = Type.getClassFields(classDef);
+    var funIndex: Int = 0;
     for(fun in funcs) {
       if(StringTools.startsWith(fun, PREFIX)) {
         var origFnName: String = StringTools.replace(fun, PREFIX, '');
         origFnName = StringTools.replace(origFnName, SUFFIX, '');
+        origFnName = origFnName.substr(0, origFnName.length - 2);
         var origFnAtom: Atom = origFnName.atom();
         var classFunctions: Map<Atom, Function> = functions.get(className);
         if(classFunctions == null) {

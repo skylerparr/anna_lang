@@ -42,7 +42,7 @@ using lang.AtomSupport;
   @def count_down({Int: count}, [Int], {
     @native IO.inspect(count);
     count = @native Kernel.subtract(count, 1);
-    count;
+    count_down(count);
   });
 }))
 @:build(lang.macros.AnnaLang.defcls(Boot, {

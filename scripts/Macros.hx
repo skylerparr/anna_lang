@@ -5,7 +5,6 @@ import hscript.plus.ParserPlus;
 import lang.macros.MacroLogger;
 import haxe.macro.Printer;
 import haxe.macro.Context;
-import lang.macros.MacroLogger;
 import haxe.macro.Expr;
 using haxe.macro.Tools;
 
@@ -59,7 +58,6 @@ class Macros {
             field;
         }
       case FFun(ffun):
-        MacroLogger.log(ffun, 'ffun');
         var exprs = extractBlock(ffun.expr);
         var retValExprs: Array<Expr> = [];
         for(expr in exprs) {
