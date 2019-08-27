@@ -229,14 +229,25 @@ class MacroTools {
   public static function getArgTypesAndReturnTypes(expr: Expr):Dynamic {
     return switch(expr.expr) {
       case ECall(f, params):
-        var retVal: Dynamic = {argTypes: [], returnTypes: []};
+        var retVal: Dynamic = {argTypes: [], returnTypes: [], patterns: []};
         for(param in params) {
           switch(param.expr) {
             case EBlock(_):
               break;
             case EObjectDecl(values):
               for(value in values) {
-                retVal.argTypes.push({type: value.field, name: getIdent(value.expr)});
+                var expr: Expr = cast value.expr;
+                var nameAndPattern: Dynamic = switch(expr.expr) {
+                  case EConst(CIdent(name)):
+                    {name: name, pattern: name}
+                  case EConst(CInt(pattern)) | EConst(CString(pattern)) | EConst(CFloat(pattern)):
+                    var name = util.StringUtil.random();
+                    {name: name, pattern: pattern};
+                  case e:
+                    MacroLogger.log(e, 'e');
+                    throw new ParsingException("AnnaLang: expected variable or pattern");
+                }
+                retVal.argTypes.push({type: value.field, name: nameAndPattern.name, pattern: nameAndPattern.pattern});
               }
             case EArrayDecl(returnTypes):
               MacroContext.returnTypes = [];

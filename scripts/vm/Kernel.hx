@@ -134,4 +134,8 @@ class Kernel {
     return left + right;
   }
 
+  public static function subtract(left: Float, right: Float): Float {
+    return left - right;
+  }
+
 }

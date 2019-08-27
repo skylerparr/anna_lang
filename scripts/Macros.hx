@@ -59,6 +59,7 @@ class Macros {
             field;
         }
       case FFun(ffun):
+        MacroLogger.log(ffun, 'ffun');
         var exprs = extractBlock(ffun.expr);
         var retValExprs: Array<Expr> = [];
         for(expr in exprs) {
@@ -212,7 +213,10 @@ class Macros {
       case EBinop(OpAnd, a, b):
         throw "AnnaLang: Unimplemented case";
       case EBinop(OpBoolAnd, a, b):
-        throw "AnnaLang: Unimplemented case";
+        var metaB = findMetaInBlock(b, rhs);
+        var metaA = findMetaInBlock(a, rhs);
+
+        retValBlock.push({expr: EBinop(OpBoolAnd, metaA, metaB), pos: Context.currentPos()});
       case EBinop(OpBoolOr, a, b):
         throw "AnnaLang: Unimplemented case";
       case EBinop(OpDiv, a, b):
@@ -233,7 +237,10 @@ class Macros {
         var meta = findMetaInBlock(a, b);
         retValBlock.push(meta);
       case EBinop(OpNotEq, a, b):
-        throw "AnnaLang: Unimplemented case";
+        var metaB = findMetaInBlock(b, rhs);
+        var metaA = findMetaInBlock(a, rhs);
+
+        retValBlock.push({expr: EBinop(OpNotEq, metaA, metaB), pos: Context.currentPos()});
       case EBinop(OpOr, a, b):
         throw "AnnaLang: Unimplemented case";
       case EBinop(OpShl, a, b):

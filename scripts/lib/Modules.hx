@@ -25,9 +25,24 @@ using lang.AtomSupport;
   });
 }))
 @:build(lang.macros.AnnaLang.defcls(FunctionPatternMatching, {
+  @alias vm.Kernel;
+
   @def start([Atom], {
     @native IO.inspect("testing function head pattern matching");
+    @native IO.inspect("should count down to 0");
+    count_down(10);
     @_"ok";
+  });
+
+  @def count_down({Int: 0}, [Int], {
+    @native IO.inspect(0);
+    0;
+  });
+
+  @def count_down({Int: count}, [Int], {
+    @native IO.inspect(count);
+    count = @native Kernel.subtract(count, 1);
+    count;
   });
 }))
 @:build(lang.macros.AnnaLang.defcls(Boot, {

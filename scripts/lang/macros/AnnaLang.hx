@@ -37,9 +37,12 @@ class AnnaLang {
       var definedFunctions: Map<String, String> = new Map<String, String>();
 
       while(!allFunctionsDefined(definedFunctions)) {
+        var index: Int = 0;
+        var prevFunctionName: String = null;
+        var funNameFunDefMap: Map<String, Array<Dynamic>> = new Map<String, Array<Dynamic>>();
+
         var declaredFunctions: Map<String, Array<Dynamic>> = getUndefinedFunctions(definedFunctions);
         for(key in declaredFunctions.keys()) {
-          MacroLogger.log(key, 'key');
           definedFunctions.set(key, key);
           for(funDef in declaredFunctions.get(key)) {
             MacroContext.currentFunction = funDef.name;
@@ -66,24 +69,26 @@ class AnnaLang {
             body.push(ret);
 
             var internalFunctionName: String = funDef.internalFunctionName;
+            if(prevFunctionName == internalFunctionName) {
+              index++;
+            } else {
+              index = 0;
+            }
+            prevFunctionName = internalFunctionName;
             var varType: ComplexType = MacroTools.buildType('Array<vm.Operation>');
-            var pubVar = MacroTools.buildPublicVar('_${internalFunctionName}', varType, body);
+            var pubVar = MacroTools.buildPublicVar('_${internalFunctionName}_${index}', varType, body);
             MacroTools.addFieldToClass(MacroContext.currentModule, pubVar);
 
             // Function
-            var returnType: ComplexType = MacroTools.buildType('Array<vm.Operation>');
-            var funArgs: Array<FunctionArg> = [];
-            var funArgsTypes: Array<Dynamic> = funDef.funArgsTypes;
-            for(funArgsType in funArgsTypes) {
-              funArgs.push({name: funArgsType.name, type: MacroTools.buildType(funArgsType.type)});
+            var funDefs: Array<Dynamic> = funNameFunDefMap.get(internalFunctionName);
+            if(funDefs == null) {
+              funDefs = [];
             }
-            funArgs.push({name: "____scopeVariables", type: MacroTools.buildType('Map<String, Dynamic>')});
-            var field: Field = MacroTools.buildPublicFunction(internalFunctionName, funArgs, returnType);
-            var expr: Expr = MacroTools.buildReturn(MacroTools.buildConst(CIdent('_${internalFunctionName}')));
-            MacroTools.assignFunBody(field, MacroTools.buildBlock([expr]));
-            MacroTools.addFieldToClass(MacroContext.currentModule, field);
+            funDefs.push(funDef);
+            funNameFunDefMap.set(internalFunctionName, funDefs);
 
             // Arg types
+            var funArgsTypes: Array<Dynamic> = funDef.funArgsTypes;
             var exprs: Array<Expr> = [];
             var varType: ComplexType = MacroTools.buildType('Array<String>');
             exprs.push(Macros.haxeToExpr('var args: Array<String> = [];'));
@@ -93,9 +98,59 @@ class AnnaLang {
             }
             var ret = MacroTools.buildConst(CIdent('args'));
             exprs.push(ret);
-            var argFun = MacroTools.buildPublicVar('___${funDef.name}_${funDef.argTypes}_args', varType, exprs);
+            var argFun = MacroTools.buildPublicVar('___${funDef.name}_${funDef.argTypes}_args_${index}', varType, exprs);
             MacroTools.addFieldToClass(MacroContext.currentModule, argFun);
           }
+        }
+        index = 0;
+        prevFunctionName = null;
+        for(internalFunctionName in funNameFunDefMap.keys()) {
+          // After all the fields have been added to the class, generate the accompanying function that
+          // will handle function head pattern matching
+          var funDefs: Array<Dynamic> = funNameFunDefMap.get(internalFunctionName);
+          var field: Field = null;
+          var patternTest: String = '';
+          for(funDef in funDefs) {
+            var internalFunctionName: String = funDef.internalFunctionName;
+            if(prevFunctionName == internalFunctionName) {
+              index++;
+            } else {
+              index = 0;
+            }
+
+            var funArgsTypes: Array<Dynamic> = cast funDef.funArgsTypes;
+            var returnType: ComplexType = MacroTools.buildType('Array<vm.Operation>');
+            var funArgs: Array<FunctionArg> = [];
+            var patternMatches: Array<String> = [];
+            var patternCounter: Int = 0;
+            for(funArgsType in funArgsTypes) {
+              funArgs.push({name: funArgsType.name, type: MacroTools.buildType(funArgsType.type)});
+              MacroLogger.log(funArgsType, 'funArgsType');
+              var haxeStr: String = 'var match${patternCounter++}: Map<String, Dynamic> = lang.macros.PatternMatch.match(${funArgsType.pattern}, ${funArgsType.name});';
+              patternMatches.push(haxeStr);
+            }
+            funArgs.push({name: "____scopeVariables", type: MacroTools.buildType('Map<String, Dynamic>')});
+            field = MacroTools.buildPublicFunction(internalFunctionName, funArgs, returnType);
+            var returnCodePath: Expr = MacroTools.buildReturn(MacroTools.buildConst(CIdent('_${internalFunctionName}_${index}')));
+            if(patternMatches.length > 0) {
+              var matchStatements: Array<String> = [];
+              for(patternIndex in 0...patternMatches.length) {
+                matchStatements.push('match${patternIndex} != null');
+              }
+              patternTest += patternMatches.join("\n");
+              patternTest += 'if(${matchStatements.join(" && ")})';
+            }
+            patternTest += 'return _${internalFunctionName}_${index};';
+            if(prevFunctionName != internalFunctionName) {
+              patternTest += 'return null;';
+              var patternExpr: Expr = Macros.haxeToExpr(patternTest);
+              MacroLogger.log(patternExpr, 'patternExpr');
+              MacroTools.assignFunBody(field, patternExpr);
+              patternTest = '';
+            }
+            prevFunctionName = internalFunctionName;
+          }
+          MacroTools.addFieldToClass(MacroContext.currentModule, field);
         }
       }
 
@@ -276,7 +331,6 @@ class AnnaLang {
     var frags: Array<String> = fqFunName.split('.');
     fqFunName = frags.pop();
     var moduleName: String = frags.join('.');
-    MacroLogger.log(moduleName, 'moduleName');
     if(moduleName == "") {
       var moduleDef: ModuleDef = MacroContext.currentModuleDef;
       moduleName = moduleDef.moduleName;
@@ -391,7 +445,8 @@ class AnnaLang {
       argTypes: argTypes,
       funArgsTypes: funArgsTypes,
       funReturnTypes: allTypes.returnTypes,
-      funBody: funBody
+      funBody: funBody,
+      allTypes: allTypes
     };
     funBodies.push(def);
     MacroContext.declaredFunctions.set(internalFunctionName, funBodies);
