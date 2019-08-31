@@ -1,5 +1,7 @@
 package vm;
 
+import haxe.Timer;
+import util.TimeUtil;
 import EitherEnums.Either2;
 import lang.EitherSupport;
 import compiler.CppiaCompiler;
@@ -65,7 +67,10 @@ class Kernel {
   }
 
   public static function recompile(): Atom {
+    var startTime: Float = Timer.stamp();
     Native.callStatic('Runtime', 'recompile', []);
+    var diff: Float = (Timer.stamp() - startTime) * 1000;
+    cpp.Lib.println('Compilation Time: ${TimeUtil.getHumanTime(diff)}');
     return 'ok'.atom();
   }
 

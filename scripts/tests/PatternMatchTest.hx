@@ -1,12 +1,6 @@
 package tests;
 
-import haxe.Timer;
-import util.TimeUtil;
 import lang.macros.PatternMatch;
-import lang.UnableToMatchException;
-import anna_unit.Assert;
-import lang.EitherSupport;
-import lang.AtomSupport;
 using lang.AtomSupport;
 
 @:build(Macros.build())
