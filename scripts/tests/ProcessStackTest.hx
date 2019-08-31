@@ -28,7 +28,25 @@ class ProcessStackTest {
     stack.add(createAnnaCallStack());
 
     stack.execute();
+    @assert stack.allStacks.length == 3;
+
+    stack.execute();
+    @assert stack.allStacks.length == 3;
+
+    stack.execute();
     @assert stack.allStacks.length == 2;
+
+    stack.execute();
+    @assert stack.allStacks.length == 2;
+
+    stack.execute();
+    @assert stack.allStacks.length == 2;
+
+    stack.execute();
+    @assert stack.allStacks.length == 1;
+
+    stack.execute();
+    @assert stack.allStacks.length == 1;
 
     stack.execute();
     @assert stack.allStacks.length == 1;
