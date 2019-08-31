@@ -413,6 +413,8 @@ class AnnaLang {
     return switch(type) {
       case "Int" | "Float":
         "Number";
+      case null:
+        "LList";
       case _:
         type;
     }

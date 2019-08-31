@@ -33,6 +33,9 @@ using lang.AtomSupport;
     result = count_down(10);
     match_tuple([@_"ok", "message"]);
     match_tuple([@_"error", "An error tuple has been handled"]);
+    iterate_list({6; 5; 4; 3; 2; 1;});
+    match_list({4; "hello";});
+    match_map([@_"hello" => "world", @_"foo" => "bar"]);
     @_"ok";
   });
 
@@ -56,6 +59,27 @@ using lang.AtomSupport;
   @def match_tuple({Tuple: [@_"error", message]}, [Atom], {
     @native IO.inspect("handling error");
     @native IO.inspect(message);
+    @_"ok";
+  });
+
+  @def iterate_list({LList: {}}, [Atom], {
+    @native IO.inspect("empty list");
+    @_"ok";
+  });
+
+  @def iterate_list({LList: {hd | tl;}}, [Atom], {
+    @native IO.inspect(hd);
+    iterate_list(tl);
+  });
+
+  @def match_list({LList: {4; message;}}, [Atom], {
+    @native IO.inspect(message);
+    @_"ok";
+  });
+
+  @def match_map({MMap: [@_"hello" => value1, @_"foo" => value2]}, [Atom], {
+    @native IO.inspect(value1);
+    @native IO.inspect(value2);
     @_"ok";
   });
 }))
@@ -92,6 +116,7 @@ using lang.AtomSupport;
       });
       ([{Int: 0}, [Atom]] => {
         @native IO.inspect("got zero");
+        @native IO.inspect(map);
         @_"ok";
       });
       ([{Int: num}, [Atom]] => {
@@ -99,7 +124,7 @@ using lang.AtomSupport;
         @_"ok";
       });
     }
-    result = fun(10);
+    result = fun(map);
 //    @native IO.inspect(result);
 //    @native IO.inspect("waiting for data");
 //    received = @native Kernel.receive(fun);
@@ -135,6 +160,7 @@ using lang.AtomSupport;
     @native IO.inspect(arg3);
     @native IO.inspect(arg4);
     @native IO.inspect(list);
+    @native IO.inspect({});
     @native IO.inspect("returning");
     arg4;
   });

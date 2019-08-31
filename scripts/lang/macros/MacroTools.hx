@@ -233,7 +233,7 @@ class MacroTools {
         if(isList) {
           {type: "Tuple", value: '@tuple [@atom "const", @tuple[${listValues.join(",")}]]'};
         } else {
-          {type: "Map", value: '@tuple [@atom "const", @map[${listValues.join(",")}]]'};
+          {type: "MMap", value: '@tuple [@atom "const", @map[${listValues.join(",")}]]'};
         }
       case e:
         MacroLogger.log(e, 'e');
@@ -261,10 +261,25 @@ class MacroTools {
                   case EArrayDecl(values):
                     var name = util.StringUtil.random();
                     var items: Array<String> = [];
+                    var type: String = 'tuple';
+                    for(value in values) {
+                      switch(value.expr) {
+                        case EBinop(OpArrow, key, value):
+                          type = 'map';
+                          items.push('${printer.printExpr(key)} => ${printer.printExpr(value)}');
+                        case _:
+                          items.push(printer.printExpr(value));
+                      }
+                    }
+                    var haxeStr: String = '@${type}[${items.join(',')}]';
+                    {name: name, pattern: haxeStr};
+                  case EBlock(values):
+                    var name = util.StringUtil.random();
+                    var items: Array<String> = [];
                     for(value in values) {
                       items.push(printer.printExpr(value));
                     }
-                    var haxeStr: String = '@tuple[${items.join(',')}]';
+                    var haxeStr: String = '@list[${items.join(',')}]';
                     {name: name, pattern: haxeStr};
                   case e:
                     MacroLogger.log(e, 'e');

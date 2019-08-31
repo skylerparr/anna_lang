@@ -32,7 +32,6 @@ class PatternMatch {
       scope;
     }
 
-    MacroLogger.logExpr(retVal, 'retVal');
     return retVal;
   }
 

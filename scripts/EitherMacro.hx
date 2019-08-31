@@ -33,7 +33,6 @@ class EitherMacro {
             return macro [];
           }
           var typeAndExpr: Dynamic = typeAndExprs[i];
-          MacroLogger.log(typeAndExpr, 'typeAndExpr');
           var uniqueVarType: String = varTypeMap.get(typeAndExpr.type);
           exprs.push({ expr: EVars([{ expr: { expr: ECall({ expr: EConst(CIdent(uniqueVarType)), pos: Context.currentPos() },[typeAndExpr.expr]), pos: Context.currentPos() }, name: varName, type: TPath({ name: 'EitherEnums', sub: 'Either${numberOfElements}', pack: [], params: allTypes }) }]), pos: Context.currentPos() });
           eitherArray.push({expr: EConst(CIdent(varName)), pos: Context.currentPos()});
