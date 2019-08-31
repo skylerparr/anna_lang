@@ -30,7 +30,8 @@ using lang.AtomSupport;
   @def start([Atom], {
     @native IO.inspect("testing function head pattern matching");
     @native IO.inspect("should count down to 0");
-    count_down(10);
+    result = count_down(10);
+    @native IO.inspect(result);
     @_"ok";
   });
 
@@ -70,16 +71,21 @@ using lang.AtomSupport;
     @native IO.inspect(p3);
     @native IO.inspect(map);
 //    @native IO.inspect("waiting...");
-//    fun = @fn {
-//      ([{String: foo}, [String]] => {
-//        foo;
-//      });
-//      ([{Int: int}, [Atom]] => {
-//        @native IO.inspect("got zero");
-//        @_"ok";
-//      });
-//    }
-//    result = fun("foo");
+    fun = @fn {
+      ([{Int: 10}, [Atom]] => {
+        @native IO.inspect("got 10");
+        @_"ok";
+      });
+      ([{Int: 0}, [Atom]] => {
+        @native IO.inspect("got zero");
+        @_"ok";
+      });
+      ([{Int: num}, [Atom]] => {
+        @native IO.inspect(num);
+        @_"ok";
+      });
+    }
+    result = fun(201);
 //    @native IO.inspect(result);
 //    @native IO.inspect("waiting for data");
 //    received = @native Kernel.receive(fun);

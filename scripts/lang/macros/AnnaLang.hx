@@ -116,12 +116,13 @@ class AnnaLang {
             var returnType: ComplexType = MacroTools.buildType('Array<vm.Operation>');
             var funArgs: Array<FunctionArg> = [];
             var patternMatches: Array<String> = [];
-            var patternCounter: Int = 0;
+            var argNameCounter: Int = 0;
             for(funArgsType in funArgsTypes) {
-              funArgs.push({name: funArgsType.name, type: MacroTools.buildType(funArgsType.type)});
+              var argName: String = '_${argNameCounter++}';
+              funArgs.push({name: argName, type: MacroTools.buildType(funArgsType.type)});
               var haxeStr: String = '';
               if(funArgsType.pattern != funArgsType.name) {
-                haxeStr = 'var match${patternCounter++}: Map<String, Dynamic> = lang.macros.PatternMatch.match(${funArgsType.pattern}, ${funArgsType.name});';
+                haxeStr = 'var match: Map<String, Dynamic> = lang.macros.PatternMatch.match(${funArgsType.pattern}, ${argName});';
               }
               patternMatches.push(haxeStr);
             }
@@ -131,11 +132,9 @@ class AnnaLang {
             }
             if(patternMatches.length > 0) {
               var matchStatements: Array<String> = [];
-              var patternIndex: Int = 0;
               for(pattenMatch in patternMatches) {
                 if(pattenMatch != "") {
-                  matchStatements.push('match${patternIndex} != null');
-                  patternIndex++;
+                  matchStatements.push('match != null');
                 }
               }
               patternTest += patternMatches.join("\n");
