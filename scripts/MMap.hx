@@ -1,5 +1,6 @@
 package;
 
+import lang.AtomSupport;
 import lang.EitherSupport;
 import haxe.ds.EnumValueMap;
 import haxe.Json;
@@ -29,6 +30,10 @@ class MMap implements CustomType {
 
   public static function remove(map: MMap, key: Any): Any {
     return (cast map)._remove(key, key);
+  }
+
+  public static function hasKey(map: MMap, key: Any): Atom {
+    return (cast map)._hasKey(key);
   }
 
   public function toAnnaString(): String {
@@ -83,6 +88,15 @@ class AnnaMap<K, V> extends MMap implements CustomType {
     map.remove(strKey);
     _annaString = null;
     return this;
+  }
+
+  public function _hasKey(key: K): Atom {
+    var strKey: String = Anna.toAnnaString(key);
+    if(map.exists(strKey)) {
+      return AtomSupport.atom('true');
+    } else {
+      return AtomSupport.atom('false');
+    }
   }
 
   override public function toAnnaString(): String {

@@ -285,4 +285,67 @@ class PatternMatchTest {
     @assert matched.get("head") == @_'nil';
     @assert matched.get("tail") == @_'nil';
   }
+
+  public static function shouldMatchEmptyMap(): Void {
+    var data: MMap = @map[];
+    var matched: Map<String, Dynamic> = PatternMatch.match(@map[], data);
+    @refute matched == null;
+  }
+
+  public static function shouldAssignToVariable(): Void {
+    var data: MMap = @map[@_"key" => "value"];
+    var matched: Map<String, Dynamic> = PatternMatch.match(map, data);
+    @refute matched == null;
+    @assert data == matched.get("map");
+  }
+
+  public static function shouldNotMapMatchIfDifferentDataTypes(): Void {
+    var data: Dynamic = @list[];
+    var matched: Map<String, Dynamic> = PatternMatch.match(@map[], data);
+    @assert matched == null;
+  }
+
+  public static function shouldMatchOnAtomKey(): Void {
+    var data: MMap = @map[@_"key" => "value"];
+    var matched: Map<String, Dynamic> = PatternMatch.match(@map[@_"key" => result], data);
+    @refute matched == null;
+    @assert matched.get("result") == "value";
+  }
+
+  public static function shouldMatchStringKey(): Void {
+    var data: MMap = @map["key" => "value"];
+    var matched: Map<String, Dynamic> = PatternMatch.match(@map["key" => result], data);
+    @refute matched == null;
+    @assert matched.get("result") == "value";
+  }
+
+  public static function shouldMatchStringKeyAndValue(): Void {
+    var data: MMap = @map["key" => "value"];
+    var matched: Map<String, Dynamic> = PatternMatch.match(@map["key" => "value"], data);
+    @refute matched == null;
+  }
+
+  public static function shouldNotMatchStringKeyAndMismatchedValue(): Void {
+    var data: MMap = @map["key" => "value"];
+    var matched: Map<String, Dynamic> = PatternMatch.match(@map["key" => "foo"], data);
+    @assert matched == null;
+  }
+
+  public static function shouldMatchAtomKeyAndTupleValue(): Void {
+    var data: MMap = @map[@_"result" => @tuple[@_"ok", "super message"]];
+    var matched: Map<String, Dynamic> = PatternMatch.match(@map[@_"result" => @tuple[@_"ok", message]], data);
+    @refute matched == null;
+    @assert matched.get("message") == "super message";
+  }
+
+  public static function shouldMatchIfFewerKeysThanEntireMap(): Void {
+    var data: MMap = @map[@_"key1" => @tuple[@_"ok", "super message"], @_"key2" => "face"];
+    var matched: Map<String, Dynamic> = PatternMatch.match(@map[@_"key1" => @tuple[@_"ok", message]], data);
+    @refute matched == null;
+    @assert matched.get("message") == "super message";
+
+    var matched: Map<String, Dynamic> = PatternMatch.match(@map[@_"key2" => key2], data);
+    @refute matched == null;
+    @assert matched.get("key2") == "face";
+  }
 }

@@ -1,5 +1,6 @@
 package;
 
+import lang.ParsingException;
 import EitherEnums.Either1;
 import haxe.ds.Either;
 import lang.macros.MacroLogger;
@@ -54,6 +55,9 @@ class EitherMacro {
         var exprs: Array<Expr> = [];
         var a: Expr = null;
         var b: Expr = null;
+        if(typeAndExprs.length % 2 == 1) {
+          throw new ParsingException("AnnaLang: Unmatched map value. All maps must have a value to map to the key");
+        }
         for(i in 0...typeAndExprs.length) {
           var varType: String = alphabet[i];
           var varName: String = varType.toLowerCase();

@@ -122,6 +122,34 @@ class PatternMatch {
             $e{individualMatchesBlock}
           }
         }
+      case ECall({expr: EField({expr: EConst(CIdent("MMap"))}, _)}, [{expr: ECall(_, [{expr: ECast({expr: EArrayDecl(values)}, _)}])}]):
+        var individualMatches: Array<Expr> = [];
+        var isKey: Bool = true;
+        var key: String = null;
+        for(value in values) {
+          if(isKey) {
+            key = printer.printExpr(value);
+            var strExpr: String = 'MMap.hasKey(${printer.printExpr(valueExpr)}, ${key})';
+            var expr: Expr = generatePatternMatch(Macros.haxeToExpr('Atom.create("true")'), Macros.haxeToExpr(strExpr));
+            individualMatches.push(expr);
+          } else {
+            var strExpr: String = 'lang.EitherSupport.getValue(MMap.get(${printer.printExpr(valueExpr)}, ${key}))';
+            var expr: Expr = generatePatternMatch(value, Macros.haxeToExpr(strExpr));
+            individualMatches.push(expr);
+          }
+          isKey = !isKey;
+        }
+        var individualMatchesBlock: Expr = MacroTools.buildBlock(individualMatches);
+        if(individualMatchesBlock == null) {
+          individualMatchesBlock = macro {};
+        }
+        macro {
+          if(!Std.is($e{valueExpr}, MMap)) {
+            scope = null;
+            break;
+          }
+          $e{individualMatchesBlock};
+        }
       case e:
         MacroLogger.log(e, 'PatternMatch expr');
         macro null;
