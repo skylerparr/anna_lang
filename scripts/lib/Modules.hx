@@ -31,7 +31,8 @@ using lang.AtomSupport;
     @native IO.inspect("testing function head pattern matching");
     @native IO.inspect("should count down to 0");
     result = count_down(10);
-    @native IO.inspect(result);
+    match_tuple([@_"ok", "message"]);
+    match_tuple([@_"error", "An error tuple has been handled"]);
     @_"ok";
   });
 
@@ -44,6 +45,18 @@ using lang.AtomSupport;
     @native IO.inspect(count);
     count = @native Kernel.subtract(count, 1);
     count_down(count);
+  });
+
+  @def match_tuple({Tuple: [@_"ok", message]}, [Atom], {
+    @native IO.inspect("handling ok");
+    @native IO.inspect(message);
+    @_"ok";
+  });
+
+  @def match_tuple({Tuple: [@_"error", message]}, [Atom], {
+    @native IO.inspect("handling error");
+    @native IO.inspect(message);
+    @_"ok";
   });
 }))
 @:build(lang.macros.AnnaLang.defcls(Boot, {
@@ -73,7 +86,8 @@ using lang.AtomSupport;
 //    @native IO.inspect("waiting...");
     fun = @fn {
       ([{Int: 10}, [Atom]] => {
-        @native IO.inspect("got 10");
+        @native IO.inspect("got ten");
+        @native IO.inspect(map);
         @_"ok";
       });
       ([{Int: 0}, [Atom]] => {
@@ -85,7 +99,7 @@ using lang.AtomSupport;
         @_"ok";
       });
     }
-    result = fun(201);
+    result = fun(10);
 //    @native IO.inspect(result);
 //    @native IO.inspect("waiting for data");
 //    received = @native Kernel.receive(fun);

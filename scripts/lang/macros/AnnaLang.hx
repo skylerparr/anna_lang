@@ -130,6 +130,7 @@ class AnnaLang {
             if(field == null) {
               field = MacroTools.buildPublicFunction(internalFunctionName, funArgs, returnType);
             }
+            var makeIfBlock: Bool = false;
             if(patternMatches.length > 0) {
               var matchStatements: Array<String> = [];
               for(pattenMatch in patternMatches) {
@@ -139,10 +140,15 @@ class AnnaLang {
               }
               patternTest += patternMatches.join("\n");
               if(matchStatements.length > 0) {
-                patternTest += 'if(${matchStatements.join(" && ")})';
+                patternTest += 'if(${matchStatements.join(" && ")}) {';
+                patternTest += '__updateScope(match, ____scopeVariables);';
+                makeIfBlock = true;
               }
             }
             patternTest += 'return _${internalFunctionName}_${index};';
+            if(makeIfBlock) {
+              patternTest += "}";
+            }
             index++;
           }
           patternTest += 'return null;';
@@ -152,6 +158,19 @@ class AnnaLang {
           MacroTools.addFieldToClass(MacroContext.currentModule, field);
         }
       }
+
+      var funArgs: Array<FunctionArg> = [];
+      funArgs.push({name: 'match', type: MacroTools.buildType("Map<String, Dynamic>")});
+      funArgs.push({name: 'scope', type: MacroTools.buildType("Map<String, Dynamic>")});
+      var field = MacroTools.buildPrivateFunction('__updateScope', funArgs, MacroTools.buildType("Void"));
+      var body: Expr = macro {
+        for(key in match.keys()) {
+          scope.set(key, match.get(key));
+        }
+      }
+
+      MacroTools.assignFunBody(field, body);
+      MacroTools.addFieldToClass(MacroContext.currentModule, field);
 
       Context.defineType(cls);
 
@@ -164,7 +183,11 @@ class AnnaLang {
     }
     return [];
   }
-
+  private static inline function __updateScope(match:Map<String, Dynamic>, scope:Map<String, Dynamic>):Void {
+    for (key in match.keys()) {
+      scope.set(key, match.get(key));
+    };
+  }
   macro public static function defcls(name: Expr, body: Expr): Array<Field> {
     MacroLogger.log('==============================');
     var className: String = printer.printExpr(name);

@@ -127,6 +127,21 @@ class MacroTools {
     }
   }
 
+  public static function buildPrivateFunction(name: String, params: Array<FunctionArg>, returnType: ComplexType): Field {
+    var varName: String = '_${name}';
+
+    return {
+      access: [APrivate, AStatic, AInline],
+      kind: FFun({
+        args: params,
+        expr: null,
+        ret: returnType
+      }),
+      name: name,
+      pos: Context.currentPos()
+    }
+  }
+
   public static function buildPublicVar(name: String, varType: ComplexType, initBody: Array<Expr>): Field {
     var funName: String = name;
     var varBody: Array<Expr> = [];
@@ -243,6 +258,14 @@ class MacroTools {
                   case EConst(CInt(pattern)) | EConst(CString(pattern)) | EConst(CFloat(pattern)):
                     var name = util.StringUtil.random();
                     {name: name, pattern: pattern};
+                  case EArrayDecl(values):
+                    var name = util.StringUtil.random();
+                    var items: Array<String> = [];
+                    for(value in values) {
+                      items.push(printer.printExpr(value));
+                    }
+                    var haxeStr: String = '@tuple[${items.join(',')}]';
+                    {name: name, pattern: haxeStr};
                   case e:
                     MacroLogger.log(e, 'e');
                     throw new ParsingException("AnnaLang: expected variable or pattern");

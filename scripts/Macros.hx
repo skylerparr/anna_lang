@@ -6,6 +6,7 @@ import lang.macros.MacroLogger;
 import haxe.macro.Printer;
 import haxe.macro.Context;
 import haxe.macro.Expr;
+import lang.macros.MacroTools;
 using haxe.macro.Tools;
 
 //  =>
@@ -155,7 +156,10 @@ class Macros {
       case EDisplayNew(t):
         throw "AnnaLang: Unimplemented case";
       case EFor(it, expr):
-        retValBlock.push(expr);
+        var haxeStr: String = 'for(${printer.printExpr(it)}) {
+          ${printer.printExpr(expr)}
+        }';
+        retValBlock.push(Macros.haxeToExpr(haxeStr));
       case EIn(e1, e2):
         throw "AnnaLang: Unimplemented case";
       case EObjectDecl(fields):
