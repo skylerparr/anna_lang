@@ -1,9 +1,10 @@
 package tests;
 
+import lang.macros.Macros;
 import lang.EitherSupport;
 import anna_unit.Assert;
 using lang.AtomSupport;
-@:build(Macros.build())
+@:build(lang.macros.Macros.build())
 class AnnaListTest {
 
   public static function shouldPushElement(): Void {

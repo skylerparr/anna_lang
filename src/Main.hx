@@ -60,9 +60,6 @@ class Main {
     variables.set("clean", function() {
       Runtime.clean();
     });
-    variables.set("c", function(file: String) {
-      Runtime.compile(file, null);
-    });
     variables.set("s", function(o: Dynamic): Bool {
       o.parser = parser;
       o.interp = interp;

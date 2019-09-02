@@ -1,5 +1,0 @@
-deftype Foo.Bar.Turtle do
-  {:name, String}
-  {:age, Int}
-  {:type, String}
-end

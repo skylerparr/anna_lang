@@ -33,11 +33,11 @@ class Fn {
               throw new ParsingException("AnnaLang: Expected parenthesis");
           }
           var haxeStr: String = '${anonFunctionName}(${typesAndBody[0]}, ${printer.printExpr(typesAndBody[1])});';
-          var expr = Macros.haxeToExpr(haxeStr);
+          var expr = lang.macros.Macros.haxeToExpr(haxeStr);
           defined = Def.defineFunction(expr);
         }
         var haxeStr: String = 'ops.push(new vm.DeclareAnonFunction(@atom "${currentModuleStr}.${defined.internalFunctionName}", @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${MacroTools.getLineNumber(params)}))';
-        return [Macros.haxeToExpr(haxeStr)];
+        return [lang.macros.Macros.haxeToExpr(haxeStr)];
       case _:
         throw new ParsingException("AnnaLang: Expected block");
     }

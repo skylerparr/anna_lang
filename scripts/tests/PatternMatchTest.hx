@@ -3,7 +3,7 @@ package tests;
 import lang.macros.PatternMatch;
 using lang.AtomSupport;
 
-@:build(Macros.build())
+@:build(lang.macros.Macros.build())
 class PatternMatchTest {
 
   public static function shouldMatchStringVariableAndAssignString(): Void {

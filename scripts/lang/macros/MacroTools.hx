@@ -91,7 +91,7 @@ class MacroTools {
   }
 
   public static function buildType(typeString: String):ComplexType {
-    var expr = Macros.haxeToExpr('var x: ${typeString};');
+    var expr = lang.macros.Macros.haxeToExpr('var x: ${typeString};');
     var type = switch(expr.expr) {
       case EVars([_var]):
         _var.type;

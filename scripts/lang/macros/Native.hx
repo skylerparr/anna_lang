@@ -34,7 +34,7 @@ class Native {
       switch(arg.expr) {
         case ECall(_, _):
           var argString = '__${invokeFunName}_${argCounter} = ${printer.printExpr(arg)};';
-          arg = Macros.haxeToExpr(argString);
+          arg = lang.macros.Macros.haxeToExpr(argString);
           var exprs: Array<Expr> = AnnaLang.walkBlock(MacroTools.buildBlock([arg]));
           for(expr in exprs) {
             retVal.push(expr);
@@ -54,7 +54,7 @@ class Native {
 
     var haxeString = '${funName}.push(new vm.${invokeClass.name}(${moduleName}.${invokeFunName}, @list[${strArgs.join(', ')}],
       @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${MacroTools.getLineNumber(params)}))';
-    retVal.push(Macros.haxeToExpr(haxeString));
+    retVal.push(lang.macros.Macros.haxeToExpr(haxeString));
     return retVal;
   }
 
@@ -103,7 +103,7 @@ class Native {
 
     // save the return type in compiler scope to check types later
     var args: Array<String> = privateArgs.map(function(arg) { return 'null'; });
-    var expr: Expr = Macros.haxeToExpr('${moduleName}.${invokeFunName}(${args.join(', ')})');
+    var expr: Expr = lang.macros.Macros.haxeToExpr('${moduleName}.${invokeFunName}(${args.join(', ')})');
     MacroContext.lastFunctionReturnType = MacroTools.resolveType(expr);
 
     if(declaredFunctions.get(className) == null) {
@@ -119,7 +119,7 @@ class Native {
             }
       }
 
-      var execBody: Expr = Macros.haxeToExpr(executeBodyStr);
+      var execBody: Expr = lang.macros.Macros.haxeToExpr(executeBodyStr);
       var cls: TypeDefinition = macro class NoClass extends vm.AbstractInvokeFunction {
 
           public function new(func: Dynamic, args: LList, hostModule: Atom, hostFunction: Atom, line: Int) {

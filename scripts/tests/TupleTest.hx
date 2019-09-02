@@ -1,7 +1,8 @@
 package tests;
 
+import lang.macros.Macros;
 import anna_unit.Assert;
-@:build(Macros.build())
+@:build(lang.macros.Macros.build())
 class TupleTest {
 
   private static var tuple1: Tuple = @tuple[1, 2, 3];

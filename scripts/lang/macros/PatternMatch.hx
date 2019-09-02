@@ -42,7 +42,7 @@ class PatternMatch {
         var varName: Dynamic = v;
         var value: Dynamic = printer.printExpr(valueExpr);
         var haxeStr: String = 'scope.set("${varName}", ${value});';
-        var expr: Expr = Macros.haxeToExpr(haxeStr);
+        var expr: Expr = lang.macros.Macros.haxeToExpr(haxeStr);
         macro $e{expr};
       case EConst(CString(_)) | EConst(CInt(_)) | EConst(CFloat(_)):
         valuesNotEqual(pattern, valueExpr);
@@ -53,7 +53,7 @@ class PatternMatch {
         var counter: Int = 0;
         for(v in values) {
           var strExpr: String = 'lang.EitherSupport.getValue(arrayTuple[${counter}])';
-          var expr: Expr = generatePatternMatch(v, Macros.haxeToExpr(strExpr));
+          var expr: Expr = generatePatternMatch(v, lang.macros.Macros.haxeToExpr(strExpr));
           individualMatches.push(expr);
           counter++;
         }
@@ -62,7 +62,7 @@ class PatternMatch {
           individualMatchesBlock = macro {};
         }
 
-        var tupleLength: Expr = Macros.haxeToExpr('${values.length}');
+        var tupleLength: Expr = lang.macros.Macros.haxeToExpr('${values.length}');
         macro
           if(!Std.is($e{valueExpr}, Tuple)) {
             scope = null;
@@ -80,10 +80,10 @@ class PatternMatch {
       case ECall({expr: EField({expr: EConst(CIdent("LList"))}, _)}, [{expr: ECall(_, [{expr: ECast({expr: EArrayDecl([{expr: EBinop(OpOr, head, tail)}])}, _)}])}]):
         var individualMatches: Array<Expr> = [];
         var strExpr: String = 'lang.EitherSupport.getValue(LList.hd(rhsList))';
-        var expr: Expr = generatePatternMatch(head, Macros.haxeToExpr(strExpr));
+        var expr: Expr = generatePatternMatch(head, lang.macros.Macros.haxeToExpr(strExpr));
         individualMatches.push(expr);
         var strExpr: String = 'lang.EitherSupport.getValue(LList.tl(rhsList))';
-        var expr: Expr = generatePatternMatch(tail, Macros.haxeToExpr(strExpr));
+        var expr: Expr = generatePatternMatch(tail, lang.macros.Macros.haxeToExpr(strExpr));
         individualMatches.push(expr);
         var individualMatchesBlock: Expr = MacroTools.buildBlock(individualMatches);
         macro {
@@ -96,10 +96,10 @@ class PatternMatch {
         var counter: Int = 0;
         for(v in values) {
           var strExpr: String = 'lang.EitherSupport.getValue(LList.hd(rhsList))';
-          var expr: Expr = generatePatternMatch(v, Macros.haxeToExpr(strExpr));
+          var expr: Expr = generatePatternMatch(v, lang.macros.Macros.haxeToExpr(strExpr));
           individualMatches.push(expr);
           var assignTail: String = 'rhsList = LList.tl(rhsList)';
-          individualMatches.push(Macros.haxeToExpr(assignTail));
+          individualMatches.push(lang.macros.Macros.haxeToExpr(assignTail));
           counter++;
         }
         individualMatches.pop(); //remove the last tail assigment, it's unnecessary.
@@ -107,7 +107,7 @@ class PatternMatch {
         if(individualMatchesBlock == null) {
           individualMatchesBlock = macro {};
         }
-        var listLength: Expr = Macros.haxeToExpr('${values.length}');
+        var listLength: Expr = lang.macros.Macros.haxeToExpr('${values.length}');
         macro {
           if(!Std.is($e{valueExpr}, LList)) {
             scope = null;
@@ -129,11 +129,11 @@ class PatternMatch {
           if(isKey) {
             key = printer.printExpr(value);
             var strExpr: String = 'MMap.hasKey(${printer.printExpr(valueExpr)}, ${key})';
-            var expr: Expr = generatePatternMatch(Macros.haxeToExpr('Atom.create("true")'), Macros.haxeToExpr(strExpr));
+            var expr: Expr = generatePatternMatch(lang.macros.Macros.haxeToExpr('Atom.create("true")'), lang.macros.Macros.haxeToExpr(strExpr));
             individualMatches.push(expr);
           } else {
             var strExpr: String = 'lang.EitherSupport.getValue(MMap.get(${printer.printExpr(valueExpr)}, ${key}))';
-            var expr: Expr = generatePatternMatch(value, Macros.haxeToExpr(strExpr));
+            var expr: Expr = generatePatternMatch(value, lang.macros.Macros.haxeToExpr(strExpr));
             individualMatches.push(expr);
           }
           isKey = !isKey;

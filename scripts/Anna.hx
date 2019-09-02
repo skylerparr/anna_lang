@@ -10,7 +10,6 @@ import TypePrinter.MapPrinter;
 import haxe.ds.ObjectMap;
 import Reflect;
 import lang.CustomTypes.CustomType;
-import compiler.CppiaCompiler;
 import haxe.macro.Expr;
 import hscript.Interp;
 import hscript.Parser;
@@ -32,7 +31,6 @@ class Anna {
   public static function start():Atom {
     parser = Native.callStaticField('Main', 'parser');
     interp = Native.callStaticField('Main', 'interp');
-    CppiaCompiler.start();
     return 'ok'.atom();
   }
 

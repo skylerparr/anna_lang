@@ -1,7 +1,7 @@
 package tests;
 import haxe.Timer;
 import util.TimeUtil;
-@:build(Macros.build())
+@:build(lang.macros.Macros.build())
 class TimeUtilTest {
   public static function shouldConvertTimeToMicroSecondsWhenUnder1Millisecond(): Void {
     @assert TimeUtil.getHumanTime(0.02288818359375) == '23µs';

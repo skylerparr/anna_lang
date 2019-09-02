@@ -1,7 +1,7 @@
 package tests;
 import lang.EmptyAtomException;
 import anna_unit.Assert;
-@:build(Macros.build())
+@:build(lang.macros.Macros.build())
 class AtomTest {
 
   private static var atom1: Atom = @atom"foo";

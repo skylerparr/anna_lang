@@ -2,7 +2,7 @@ package tests;
 
 import anna_unit.Assert;
 using lang.AtomSupport;
-@:build(Macros.build())
+@:build(lang.macros.Macros.build())
 class MMapTest {
 
   private static var __map: MMap = @map['abc' => 1, 2 => "mno"]; // just verifying this'll compile

@@ -1,5 +1,6 @@
 package;
 
+import lang.macros.Macros;
 import lang.ParsingException;
 import EitherEnums.Either1;
 import haxe.ds.Either;

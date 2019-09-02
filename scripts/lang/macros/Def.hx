@@ -26,7 +26,7 @@ class Def {
     var funArgsTypes: Array<Dynamic> = allTypes.argTypes;
     var types: Array<String> = [];
     for(argType in funArgsTypes) {
-      var strType: String = MacroTools.resolveType(Macros.haxeToExpr(argType.type));
+      var strType: String = MacroTools.resolveType(lang.macros.Macros.haxeToExpr(argType.type));
       var r = ~/[A-Za-z]*<|>/g;
       strType = r.replace(strType, '');
       types.push(AnnaLang.getType(strType));

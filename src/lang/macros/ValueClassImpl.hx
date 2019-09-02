@@ -9,7 +9,7 @@ class ValueClassImpl {
 
   macro public static function build(): Array<Field> {
     MacroLogger.log("=====================");
-    MacroLogger.log('Macros: ${Context.getLocalClass()}');
+    MacroLogger.log('lang.macros.Macros: ${Context.getLocalClass()}');
 
     var fields: Array<Field> = Context.getBuildFields();
 

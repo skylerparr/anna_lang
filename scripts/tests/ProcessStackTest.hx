@@ -5,7 +5,7 @@ import anna_unit.Assert;
 import vm.SimpleProcess;
 import vm.AnnaCallStack;
 import vm.ProcessStack;
-@:build(Macros.build())
+@:build(lang.macros.Macros.build())
 class ProcessStackTest {
 
   private static var stack: ProcessStack;

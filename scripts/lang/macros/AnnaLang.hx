@@ -339,7 +339,7 @@ class AnnaLang {
 
   private static function applyBuildMacro():Void {
     var cls: TypeDefinition = MacroContext.currentModule;
-    var metaConst = MacroTools.buildConst(CIdent('Macros'));
+    var metaConst = MacroTools.buildConst(CIdent('lang.macros.Macros'));
     var metaField = MacroTools.buildExprField(metaConst, 'build');
     var metaCall = MacroTools.buildCall(metaField, []);
     var metaData = MacroTools.buildMeta(':build', [metaCall]);
@@ -358,7 +358,7 @@ class AnnaLang {
       switch(arg.expr) {
         case ECall(_, _):
           var argString = '__${funName}_${argCounter} = ${printer.printExpr(arg)};';
-          arg = Macros.haxeToExpr(argString);
+          arg = lang.macros.Macros.haxeToExpr(argString);
           var exprs: Array<Expr> = walkBlock(MacroTools.buildBlock([arg]));
           for(expr in exprs) {
             retVal.push(expr);
@@ -391,7 +391,7 @@ class AnnaLang {
     if(funDef == null) {
       if(MacroContext.lastFunctionReturnType == "AnonFunction") {
         var haxeStr: String = '${currentFunStr}.push(new vm.AnonymousFunction(@atom"${funName}", @list [${funArgs.join(", ")}], @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${lineNumber}))';
-        retVal.push(Macros.haxeToExpr(haxeStr));
+        retVal.push(lang.macros.Macros.haxeToExpr(haxeStr));
         return retVal;
       } else {
         throw new ParsingException('AnnaLang: Function ${moduleName}.${fqFunName} not found.');
@@ -399,7 +399,7 @@ class AnnaLang {
     } else {
       MacroContext.lastFunctionReturnType = funDef[0].funReturnTypes[0];
       var haxeStr: String = '${currentFunStr}.push(new vm.PushStack(@atom "${module.moduleName}", @atom "${fqFunName}", @list [${funArgs.join(", ")}], @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${lineNumber}))';
-      retVal.push(Macros.haxeToExpr(haxeStr));
+      retVal.push(lang.macros.Macros.haxeToExpr(haxeStr));
       return retVal;
     }
   }
@@ -435,7 +435,7 @@ class AnnaLang {
     var varName: String = MacroTools.getIdent(expr);
     MacroContext.varTypesInScope.set(varName, MacroContext.lastFunctionReturnType);
     var haxeStr: String = '${currentFunStr}.push(new vm.Match(@list [@tuple[@atom "const", "${varName}"]], @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${lineNumber}));';
-    return Macros.haxeToExpr(haxeStr);
+    return lang.macros.Macros.haxeToExpr(haxeStr);
   }
 
   private static function createPutIntoScope(expr: Expr, lineNumber: Int):Expr {
@@ -452,15 +452,15 @@ class AnnaLang {
       var typeAndValue = MacroTools.getTypeAndValue(arg);
       strArgs.push(typeAndValue.value);
     }
-    MacroContext.lastFunctionReturnType = getAnnaVarConstType(Macros.haxeToExpr(strArgs.join(";")));
+    MacroContext.lastFunctionReturnType = getAnnaVarConstType(lang.macros.Macros.haxeToExpr(strArgs.join(";")));
 
     var haxeStr: String = '${currentFunStr}.push(new vm.PutInScope(${strArgs.join(", ")}, @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${lineNumber}));';
-    return Macros.haxeToExpr(haxeStr);
+    return lang.macros.Macros.haxeToExpr(haxeStr);
   }
 
   public static function __(params: Expr):Expr {
     var haxeStr: String = '@atom"${MacroTools.extractFullFunCall(params)[0]}";';
-    return createPutIntoScope(Macros.haxeToExpr(haxeStr), MacroTools.getLineNumber(params));
+    return createPutIntoScope(lang.macros.Macros.haxeToExpr(haxeStr), MacroTools.getLineNumber(params));
   }
 
   public static function getAlias(str: String):String {

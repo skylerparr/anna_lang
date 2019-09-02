@@ -4,7 +4,6 @@ import haxe.Timer;
 import util.TimeUtil;
 import EitherEnums.Either2;
 import lang.EitherSupport;
-import compiler.CppiaCompiler;
 import cpp.vm.Thread;
 import lib.Modules;
 import vm.Classes.Function;
@@ -23,7 +22,6 @@ class Kernel {
       current_id = 0;
       UntestedScheduler.start();
 
-      CppiaCompiler.subscribeAfterCompile("vm.Kernel", "defineCode");
       defineCode();
 
       return 'ok'.atom();
@@ -40,7 +38,6 @@ class Kernel {
   public static function defineCode(): Atom {
     Classes.define("CallCounter".atom(), Modules);
     Classes.define("Boot".atom(), Boot);
-    Classes.define("AnnaLangCompiler".atom(), AnnaLangCompiler);
     Classes.define("FunctionPatternMatching".atom(), FunctionPatternMatching);
     return 'ok'.atom();
   }

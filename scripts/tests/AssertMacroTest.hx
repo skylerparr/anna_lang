@@ -1,6 +1,6 @@
 package tests;
 
-@:build(Macros.build())
+@:build(lang.macros.Macros.build())
 class AssertMacroTest {
   public static function shouldAssertEquality(): Void {
     var a: String = '';

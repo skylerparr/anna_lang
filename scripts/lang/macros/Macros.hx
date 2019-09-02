@@ -1,4 +1,4 @@
-package;
+package lang.macros;
 
 import lang.ParsingException;
 import hscript.plus.ParserPlus;
@@ -159,7 +159,7 @@ class Macros {
         var haxeStr: String = 'for(${printer.printExpr(it)}) {
           ${printer.printExpr(expr)}
         }';
-        retValBlock.push(Macros.haxeToExpr(haxeStr));
+        retValBlock.push(lang.macros.Macros.haxeToExpr(haxeStr));
       case EIn(e1, e2):
         throw "AnnaLang: Unimplemented case";
       case EObjectDecl(fields):
@@ -280,7 +280,7 @@ class Macros {
 
   private static function extractMeta(entry, exprL: Expr, exprR: Expr): Expr {
     var funString: String = entry.name;
-    var fun = Reflect.field(Macros, '_' + funString);
+    var fun = Reflect.field(lang.macros.Macros, '_' + funString);
     var result = fun(exprL, exprR);
     var blk = extractBlock(result);
     if(blk.length == 1) {
@@ -473,7 +473,7 @@ class Macros {
         ';
         var valueStrArr: Array<String> = [];
         for(index in 0...values.length) {
-          valueStrArr.push('Macros.valuesMatch(array[${index}], matchArray[${index}]);');
+          valueStrArr.push('lang.macros.Macros.valuesMatch(array[${index}], matchArray[${index}]);');
         }
         haxeStr = '${haxeStr}\n${valueStrArr.join('\n')}';
         haxeToExpr(haxeStr);
