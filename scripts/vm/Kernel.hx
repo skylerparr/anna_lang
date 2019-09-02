@@ -8,7 +8,7 @@ import compiler.CppiaCompiler;
 import cpp.vm.Thread;
 import lib.Modules;
 import vm.Classes.Function;
-import vm.Process;
+import vm.SimpleProcess;
 
 using lang.AtomSupport;
 
@@ -18,10 +18,10 @@ class Kernel {
   @field public static var current_id: Int;
 
   public static function start(): Atom {
-    if(Scheduler.communicationThread == null) {
+    if(UntestedScheduler.communicationThread == null) {
       Inspector.ttyThread = Thread.current();
       current_id = 0;
-      Scheduler.start();
+      UntestedScheduler.start();
 
       CppiaCompiler.subscribeAfterCompile("vm.Kernel", "defineCode");
       defineCode();
@@ -33,7 +33,7 @@ class Kernel {
   }
 
   public static function stop(): Atom {
-    Scheduler.stop();
+    UntestedScheduler.stop();
     return 'ok'.atom();
   }
 
@@ -45,21 +45,21 @@ class Kernel {
     return 'ok'.atom();
   }
 
-  public static function testSpawn(): Process {
+  public static function testSpawn(): SimpleProcess {
     recompile();
     Sys.sleep(0.3);
     start();
     return spawn('Boot'.atom(), 'start_'.atom(), LList.create([]));
   }
 
-  public static function spawnCompiler(): Process {
+  public static function spawnCompiler(): SimpleProcess {
     recompile();
     Sys.sleep(0.3);
     start();
     return spawn('AnnaLangCompiler'.atom(), 'start_'.atom(), LList.create([]));
   }
 
-  public static function spawnFunctionPatternMatch(): Process {
+  public static function spawnFunctionPatternMatch(): SimpleProcess {
     recompile();
     Sys.sleep(0.3);
     start();
@@ -74,25 +74,25 @@ class Kernel {
     return 'ok'.atom();
   }
 
-  public static function spawn(module: Atom, fun: Atom, args: LList): Process {
-    var process: Process = new Process(0, current_id++, 0, new PushStack(module, fun, args, "Kernel".atom(), "spawn".atom(), 51));
-    Scheduler.communicationThread.sendMessage(KernelMessage.SCHEDULE(process));
+  public static function spawn(module: Atom, fun: Atom, args: LList): SimpleProcess {
+    var process: SimpleProcess = new SimpleProcess(0, current_id++, 0, new PushStack(module, fun, args, "Kernel".atom(), "spawn".atom(), 51));
+    UntestedScheduler.communicationThread.sendMessage(KernelMessage.SCHEDULE(process));
     return process;
   }
 
-  public static function receive(callback: Function): Process {
-    var process: Process = Process.self();
+  public static function receive(callback: Function): SimpleProcess {
+    var process: SimpleProcess = Process.self();
     Process.waiting(process);
-    Scheduler.communicationThread.sendMessage(KernelMessage.RECEIVE(process, callback));
+    UntestedScheduler.communicationThread.sendMessage(KernelMessage.RECEIVE(process, callback));
     return process;
   }
 
-  public static function send(process: Process, payload: Dynamic): Atom {
-    Scheduler.communicationThread.sendMessage(KernelMessage.SEND(process, payload));
+  public static function send(process: SimpleProcess, payload: Dynamic): Atom {
+    UntestedScheduler.communicationThread.sendMessage(KernelMessage.SEND(process, payload));
     return 'ok'.atom();
   }
 
-  public static function apply(process: Process, fn: Function, args: LList, callback: Dynamic->Void = null): Void {
+  public static function apply(process: SimpleProcess, fn: Function, args: LList, callback: Dynamic->Void = null): Void {
     if(fn == null) {
       //TODO: handle missing function error
       Logger.inspect('throw a crazy error and kill the process!');

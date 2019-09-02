@@ -2,7 +2,7 @@ package tests;
 
 import vm.Operation;
 import anna_unit.Assert;
-import vm.Process;
+import vm.SimpleProcess;
 import vm.AnnaCallStack;
 import vm.ProcessStack;
 @:build(Macros.build())
@@ -11,7 +11,7 @@ class ProcessStackTest {
   private static var stack: ProcessStack;
 
   public static function setup(): Void {
-    stack = new ProcessStack(new Process(1, 2, 3, op()));
+    stack = new ProcessStack(new SimpleProcess(1, 2, 3, op()));
   }
 
   public static function shouldAddAnnaCallStackToTheProcessStack(): Void {

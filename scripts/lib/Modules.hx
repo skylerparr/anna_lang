@@ -2,6 +2,7 @@ package lib;
 
 import compiler.CppiaCompiler;
 import vm.Process;
+import vm.Pid;
 import vm.Match;
 import vm.Operation;
 import vm.PushStack;
@@ -85,6 +86,7 @@ using lang.AtomSupport;
 }))
 @:build(lang.macros.AnnaLang.defcls(Boot, {
   @alias vm.Process;
+  @alias vm.Pid;
   @alias vm.Kernel;
 
   @def start([Int], {
@@ -182,7 +184,7 @@ using lang.AtomSupport;
     val;
   });
 
-  @def print({Process: process}, [Atom], {
+  @def print({Pid: process}, [Atom], {
     @native IO.inspect(process);
     @_'ok';
   });

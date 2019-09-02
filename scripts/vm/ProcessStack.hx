@@ -5,11 +5,11 @@ class ProcessStack {
 
   public var allStacks: List<AnnaCallStack> = new List<AnnaCallStack>();
   public var currentStack: AnnaCallStack;
-  private var process: Process;
+  private var process: SimpleProcess;
   private var executionCount: Int;
   public var id: Int;
 
-  public function new(process: Process) {
+  public function new(process: SimpleProcess) {
     this.process = process;
     this.id = _id++;
   }

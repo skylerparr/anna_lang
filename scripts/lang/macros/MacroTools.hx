@@ -307,8 +307,13 @@ class MacroTools {
   public static function resolveType(expr: Expr):String {
     var type: Type = Context.typeof(expr);
     return switch(type) {
-      case TInst(t, _):
-        t.toString();
+      case TInst(t, other):
+        switch(t.get().interfaces) {
+          case [{t: type}]:
+            type.toString();
+          case _:
+            t.toString();
+        }
       case TAbstract(t, _):
         t.toString();
       case TDynamic(_):
