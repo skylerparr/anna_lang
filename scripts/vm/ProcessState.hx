@@ -7,4 +7,5 @@ enum ProcessState {
   WAITING;
   SLEEPING;
   KILLED;
+  PAUSED;
 }
