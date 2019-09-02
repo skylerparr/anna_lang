@@ -316,7 +316,12 @@ class AnnaLang {
               for(expr in exprs) {
                 retExprs.push(expr);
               }
-              MacroContext.lastFunctionReturnType = MacroTools.getType(type);
+              var strType: String = MacroTools.getType(type);
+              var aliasType: String = MacroContext.aliases.get(strType);
+              if(aliasType == null) {
+                aliasType = strType;
+              }
+              MacroContext.lastFunctionReturnType = aliasType;
             case _:
               blockExpr;
           }
