@@ -1,18 +1,22 @@
 package ;
 
-import TypePrinter.EnumMapPrinter;
-import haxe.ds.EnumValueMap;
-import lang.EitherSupport;
-import haxe.EnumTools.EnumValueTools;
-import haxe.EnumTools;
-import TypePrinter.StringMapPrinter;
-import TypePrinter.MapPrinter;
+import vm.UntestedScheduler;
+import vm.Inspector;
 import haxe.ds.ObjectMap;
-import Reflect;
-import lang.CustomTypes.CustomType;
+import haxe.ds.EnumValueMap;
+import vm.Classes;
+import vm.SimpleProcess;
+import vm.Kernel;
+import anna_unit.AnnaUnit;
 import haxe.macro.Expr;
 import hscript.Interp;
 import hscript.Parser;
+import lang.CustomTypes.CustomType;
+import lang.EitherSupport;
+import Reflect;
+import TypePrinter.EnumMapPrinter;
+import TypePrinter.MapPrinter;
+import TypePrinter.StringMapPrinter;
 using TypePrinter.StringPrinter;
 using TypePrinter.MapPrinter;
 using TypePrinter.ArrayPrinter;
@@ -31,6 +35,16 @@ class Anna {
   public static function start():Atom {
     parser = Native.callStaticField('Main', 'parser');
     interp = Native.callStaticField('Main', 'interp');
+    interp.variables.set("AnnaUnit", AnnaUnit);
+    Reflect.field(AnnaUnit, "main")();
+
+    interp.variables.set("Kernel", Kernel);
+    Reflect.field(Kernel, "main")();
+
+    Reflect.field(Classes, "main")();
+    Reflect.field(Inspector, "main")();
+    Reflect.field(Kernel, "main")();
+    Reflect.field(UntestedScheduler, "main")();
     return 'ok'.atom();
   }
 

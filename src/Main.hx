@@ -95,7 +95,7 @@ class Main {
       }
 
       Runtime.start('AnnaLang', '${basePath}scripts', '${basePath}out/',
-      ['${basePath}src/'], ['hscript-plus'], onComplete);
+      ['${basePath}src/', '${basePath}apps/anna_unit/lib', '${basePath}apps/shared/lib', '${basePath}apps/vm/lib'], ['hscript-plus'], onComplete);
     });
 
     pollChanges();
@@ -118,7 +118,7 @@ class Main {
           }
           if(!ready) {
             var fun = Reflect.field(clazz, "start");
-            Reflect.callMethod(clazz, fun, []);
+            fun();
           }
           ready = true;
         }
