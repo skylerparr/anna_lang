@@ -1,7 +1,7 @@
 package ;
+import lang.CustomType;
 import lang.HashTableAtoms;
 import lang.EmptyAtomException;
-import lang.CustomTypes.CustomType;
 class Atom implements CustomType {
   public static function create(name: String): Atom {
     return HashTableAtoms.get(name);

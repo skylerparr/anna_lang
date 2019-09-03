@@ -1,5 +1,6 @@
 package ;
 
+import lang.CustomType;
 import vm.UntestedScheduler;
 import vm.Inspector;
 import haxe.ds.ObjectMap;
@@ -11,7 +12,6 @@ import anna_unit.AnnaUnit;
 import haxe.macro.Expr;
 import hscript.Interp;
 import hscript.Parser;
-import lang.CustomTypes.CustomType;
 import lang.EitherSupport;
 import Reflect;
 import TypePrinter.EnumMapPrinter;

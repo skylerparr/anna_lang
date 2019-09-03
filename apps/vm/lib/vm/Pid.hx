@@ -1,5 +1,5 @@
 package vm;
-import lang.CustomTypes.CustomType;
+import lang.CustomType;
 interface Pid extends CustomType {
   public var server_id(default, never): Int;
   public var instance_id(default, never): Int;

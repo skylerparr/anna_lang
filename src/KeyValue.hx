@@ -1,6 +1,6 @@
 package;
 
-import lang.CustomTypes.CustomType;
+import lang.CustomType;
 class KeyValue<K, V> implements CustomType {
   public var key(default, never): K;
   public var value(default, never): V;

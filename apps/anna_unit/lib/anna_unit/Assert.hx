@@ -1,7 +1,7 @@
 package anna_unit;
 
+import lang.CustomType;
 import Type;
-import lang.CustomTypes;
 import lang.StandardException;
 import anna_unit.TestFailureException;
 class Assert {

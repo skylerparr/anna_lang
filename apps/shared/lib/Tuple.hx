@@ -1,7 +1,7 @@
 package ;
 
 import lang.AmbiguousFunctionException;
-import lang.CustomTypes.CustomType;
+import lang.CustomType;
 import lang.EitherSupport;
 using lang.AtomSupport;
 class Tuple implements CustomType {

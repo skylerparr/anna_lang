@@ -1,6 +1,6 @@
 package ;
 
-import lang.CustomTypes.CustomType;
+import lang.CustomType;
 import lang.EitherSupport;
 
 using StringTools;

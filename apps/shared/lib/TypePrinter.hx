@@ -1,8 +1,8 @@
 package ;
 
+import lang.CustomType;
 import haxe.ds.EnumValueMap;
 import haxe.ds.ObjectMap;
-import lang.CustomTypes.CustomType;
 import util.StringUtil;
 using lang.AtomSupport;
 class TypePrinter {

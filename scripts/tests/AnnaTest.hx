@@ -1,7 +1,7 @@
 package tests;
 
 import TypePrinter.CustomTypePrinter;
-import lang.CustomTypes.CustomType;
+import lang.CustomType;
 import haxe.Template;
 import haxe.ds.ObjectMap;
 using lang.AtomSupport;
