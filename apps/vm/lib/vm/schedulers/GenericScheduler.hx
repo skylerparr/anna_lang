@@ -6,7 +6,16 @@ using lang.AtomSupport;
 
 class GenericScheduler implements Scheduler {
 
+  private var started: Bool;
+
+  public function new() {
+  }
+
   public function start(): Atom {
+    if(started) {
+      return "already_started".atom();
+    }
+    started = true;
     return "ok".atom();
   }
 

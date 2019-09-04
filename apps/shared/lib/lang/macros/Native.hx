@@ -68,7 +68,8 @@ class Native {
     for(arg in strArgs) {
       var assign: String = '
           var _arg${counter} = {
-            switch(cast(lang.EitherSupport.getValue(arg${counter}[0]), Atom)) {
+            var paramValue: Atom = lang.EitherSupport.getValue(arg${counter}[0]);
+            switch(paramValue) {
               case {value: "const"}:
                 lang.EitherSupport.getValue(arg${counter}[1]);
               case {value: "var"}:

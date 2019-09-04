@@ -1,3 +1,7 @@
+-cp apps/shared/lib
+-cp apps/vm/lib
+-cp apps/anna_unit/lib
+-cp scripts
 -cp src
 -D analyzer-optimize
 -D scriptable
@@ -12,3 +16,5 @@
 -lib ihx
 -lib haxe-strings
 -lib hscript-plus
+-lib mockatoo
+-lib minject

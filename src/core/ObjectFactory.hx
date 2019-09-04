@@ -1,27 +1,37 @@
 package core;
 
-import haxe.ds.ObjectMap;
-class ObjectFactory {
+import minject.Injector;
 
-  private static var classMap: ObjectMap<Dynamic, String>;
+class ObjectFactory implements ObjectCreator {
+
+  public static var injector: Injector;
 
   public function new() {
-    classMap = new ObjectMap<Dynamic, String>();
   }
 
-  public function createInstance(clazz:Class<Dynamic>, ?constructorArgs:Array<Dynamic>):Dynamic {
+  public function createInstance(clazz: Class<Dynamic>, ?constructorArgs: Array<Dynamic>): Dynamic {
     if(constructorArgs == null) {
       constructorArgs = [];
     }
     var retVal = null;
-    var className: String = classMap.get(clazz);
-    if(className != null) {
-      var clazz = Type.resolveClass(className);
-      retVal = Type.createInstance(clazz, []);
-    } else {
-      retVal = Type.createInstance(clazz, []);
+    try {
+      retVal = injector.getInstance(clazz);
+    } catch(e: Dynamic) {
+      retVal = Type.createInstance(clazz, constructorArgs);
+      injector.injectInto(retVal);
+    }
+
+    if(Std.is(retVal, BaseObject)) {
+      retVal.init();
     }
 
     return retVal;
+  }
+
+  public function disposeInstance(object: BaseObject): Void {
+    if(object == null) {
+      return;
+    }
+    object.dispose();
   }
 }

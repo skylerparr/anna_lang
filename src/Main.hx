@@ -1,3 +1,4 @@
+import core.InjectionSettings;
 import hscript.plus.ParserPlus;
 import lang.HashTableAtoms;
 import hx.strings.Strings;
@@ -13,7 +14,8 @@ import hscript.Interp;
 import hscript.Parser;
 import cpp.vm.Thread;
 import ihx.HScriptEval;
-
+import mockatoo.Mockatoo.*;
+using mockatoo.Mockatoo;
 class Main {
   public static var parser: Parser = new ParserPlus();
   public static var interp: Interp;         
@@ -45,6 +47,7 @@ class Main {
     new Printer().printExpr(macro 'foo');
     Strings.charCodeAt8("foo", 0);
     GlobalStore.start();
+    new InjectionSettings();
     new Main();
   }
 
@@ -95,7 +98,7 @@ class Main {
       }
 
       Runtime.start('AnnaLang', '${basePath}scripts', '${basePath}out/',
-      ['${basePath}src/', '${basePath}apps/anna_unit/lib', '${basePath}apps/shared/lib', '${basePath}apps/vm/lib'], ['hscript-plus'], onComplete);
+      ['${basePath}src/', '${basePath}apps/anna_unit/lib', '${basePath}apps/shared/lib', '${basePath}apps/vm/lib'], ['hscript-plus', 'mockatoo', 'minject'], onComplete);
     });
 
     pollChanges();
@@ -107,7 +110,7 @@ class Main {
       var files: Array<String> = Thread.readMessage(false);
 
       if(files != null && files.length > 0) {
-        var clazz: Class<Dynamic> = Type.resolveClass("Anna");
+        var clazz: Class<Dynamic> = Anna;//Type.resolveClass("Anna");
         if(clazz != null) {
           var fields: Array<String> = Type.getClassFields(clazz);
           for(f in fields) {

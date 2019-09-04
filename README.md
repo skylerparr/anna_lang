@@ -166,7 +166,7 @@ so that I can disable the different log levels and save the line number
 - [ ] Custom Types
 - [x] Function head pattern matching
 - [ ] Pattern matching on assignment
-- [ ] lang.macros.Macros
+- [ ] Macros
 - [x] Tail call recursion
 - [x] Actor Model
 - [x] Send messages to other processes
