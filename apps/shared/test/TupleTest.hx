@@ -1,4 +1,4 @@
-package tests;
+package ;
 
 import lang.macros.Macros;
 import anna_unit.Assert;

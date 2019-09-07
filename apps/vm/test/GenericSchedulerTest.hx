@@ -1,4 +1,4 @@
-package tests;
+package ;
 
 import core.ObjectCreator;
 import vm.ProcessState;

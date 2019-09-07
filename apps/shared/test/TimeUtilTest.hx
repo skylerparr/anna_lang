@@ -1,4 +1,4 @@
-package tests;
+package ;
 import haxe.Timer;
 import util.TimeUtil;
 @:build(lang.macros.Macros.build())

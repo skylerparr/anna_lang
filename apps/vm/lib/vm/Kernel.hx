@@ -4,7 +4,6 @@ import cpp.vm.Thread;
 import EitherEnums.Either2;
 import haxe.Timer;
 import lang.EitherSupport;
-import lib.Modules;
 import util.TimeUtil;
 import vm.Classes.Function;
 import vm.SimpleProcess;
@@ -36,9 +35,8 @@ class Kernel {
   }
 
   public static function defineCode(): Atom {
-    Classes.define("CallCounter".atom(), Modules);
-    Classes.define("Boot".atom(), Boot);
-    Classes.define("FunctionPatternMatching".atom(), FunctionPatternMatching);
+//    Classes.define("Boot".atom(), Boot);
+//    Classes.define("FunctionPatternMatching".atom(), FunctionPatternMatching);
     return 'ok'.atom();
   }
 
@@ -64,10 +62,7 @@ class Kernel {
   }
 
   public static function recompile(): Atom {
-    var startTime: Float = Timer.stamp();
     Anna.compileProject();
-    var diff: Float = (Timer.stamp() - startTime) * 1000;
-    cpp.Lib.println('Compilation Time: ${TimeUtil.getHumanTime(diff)}');
     return 'ok'.atom();
   }
 

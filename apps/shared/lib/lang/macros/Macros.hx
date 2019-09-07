@@ -355,7 +355,6 @@ class Macros {
 
   private static function _map(expr: Expr, _: Expr):Expr {
     return findMeta(expr, function(expr: Expr): Expr {
-      MacroLogger.logExpr(expr, 'MMap expr');
       return macro {
         MMap.create(lang.macros.EitherMacro.genMap(cast($e{expr}, Array<Dynamic>)));
       }

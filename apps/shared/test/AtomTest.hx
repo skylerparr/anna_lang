@@ -1,4 +1,4 @@
-package tests;
+package ;
 import lang.EmptyAtomException;
 import anna_unit.Assert;
 @:build(lang.macros.Macros.build())

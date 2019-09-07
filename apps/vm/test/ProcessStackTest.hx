@@ -1,4 +1,4 @@
-package tests;
+package ;
 
 import vm.Operation;
 import anna_unit.Assert;

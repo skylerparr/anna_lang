@@ -1,17 +1,14 @@
 package ;
 
+import anna_unit.AnnaUnit;
+import util.TimeUtil;
+import haxe.Timer;
 import String;
 import project.DefaultProjectConfig;
 import project.ProjectConfig;
 import lang.CustomType;
-import vm.UntestedScheduler;
-import vm.Inspector;
 import haxe.ds.ObjectMap;
 import haxe.ds.EnumValueMap;
-import vm.Classes;
-import vm.SimpleProcess;
-import vm.Kernel;
-import anna_unit.AnnaUnit;
 import haxe.macro.Expr;
 import hscript.Interp;
 import hscript.Parser;
@@ -44,13 +41,10 @@ class Anna {
     interp.variables.set("AnnaUnit", AnnaUnit);
     Reflect.field(AnnaUnit, "main")();
 
-    interp.variables.set("Kernel", Kernel);
-    Reflect.field(Kernel, "main")();
-
-    Reflect.field(Classes, "main")();
-    Reflect.field(Inspector, "main")();
-    Reflect.field(Kernel, "main")();
-    Reflect.field(UntestedScheduler, "main")();
+//    Reflect.field(Classes, "main")();
+//    Reflect.field(Inspector, "main")();
+//    Reflect.field(Kernel, "main")();
+//    Reflect.field(UntestedScheduler, "main")();
     return 'ok'.atom();
   }
 
@@ -58,20 +52,53 @@ class Anna {
     return project;
   }
 
-  public static function compileProject(): Array<String> {
-    return Native.callStatic('Runtime', 'compileProject', [Anna.getProject()]);
+  public static function applicationRoot(): String {
+    return Native.callStaticField("core.PathSettings", "applicationBasePath");
   }
 
-  public static function add(a: Int, b: Int): Int {
-    return a + b;
+  public static function vmProjectTests(): Atom {
+    var appRoot: String = applicationRoot();
+    var project: ProjectConfig = new DefaultProjectConfig("VM", '${appRoot}apps/vm/test', 'out/',
+    ['${appRoot}src/', '${appRoot}scripts', '${appRoot}apps/shared/lib', '${appRoot}apps/vm/lib', '${appRoot}apps/anna_unit/lib'],
+    ['hscript-plus', 'sepia', 'mockatoo']
+    );
+    AnnaUnit.start(project);
+    return 'ok'.atom();
   }
 
-  public static function subtract(a: Int, b: Int): Int {
-    return a - b;
+  public static function sharedProjectTests(): Atom {
+    var appRoot: String = applicationRoot();
+    var project: ProjectConfig = new DefaultProjectConfig("VM", '${appRoot}apps/shared/test', 'out/',
+    ['${appRoot}src/', '${appRoot}scripts', '${appRoot}apps/shared/lib', '${appRoot}apps/vm/lib', '${appRoot}apps/anna_unit/lib'],
+    ['hscript-plus', 'sepia', 'mockatoo']
+    );
+    AnnaUnit.start(project);
+    return 'ok'.atom();
   }
 
-  public static function rem(a: Int, b: Int): Int {
-    return a % b;
+  public static function compileSample(): Array<String> {
+    var appRoot: String = applicationRoot();
+    var project: ProjectConfig = new DefaultProjectConfig("SampleProject", '${appRoot}apps/sample/lib', 'out/',
+          ['${appRoot}src/', '${appRoot}scripts', '${appRoot}apps/shared/lib', '${appRoot}apps/vm/lib', '${appRoot}apps/anna_unit/lib'],
+          ['hscript-plus', 'sepia']
+    );
+    var startTime: Float = Timer.stamp();
+    var files = Native.callStatic('Runtime', 'compileProject', [project]);
+    var diff: Float = (Timer.stamp() - startTime) * 1000;
+    cpp.Lib.println('Compilation Time: ${TimeUtil.getHumanTime(diff)}');
+    return files;
+  }
+
+  public static function compileProject(p: ProjectConfig = null): Array<String> {
+    if(p == null) {
+      p = Anna.getProject();
+    }
+
+    var startTime: Float = Timer.stamp();
+    var files = Native.callStatic('Runtime', 'compileProject', [p]);
+    var diff: Float = (Timer.stamp() - startTime) * 1000;
+    cpp.Lib.println('Compilation Time: ${TimeUtil.getHumanTime(diff)}');
+    return files;
   }
 
   public static function createInstance(type: Class<Dynamic>, constructorArgs: Array<Dynamic>): Dynamic {

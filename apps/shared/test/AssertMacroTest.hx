@@ -1,4 +1,4 @@
-package tests;
+package ;
 
 @:build(lang.macros.Macros.build())
 class AssertMacroTest {

@@ -1,4 +1,4 @@
-package tests.mock.fixture;
+package mock.fixture;
 
 class Sample {
   public static function foo(): Void {

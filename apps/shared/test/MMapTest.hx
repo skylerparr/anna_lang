@@ -1,4 +1,4 @@
-package tests;
+package ;
 
 import anna_unit.Assert;
 using lang.AtomSupport;

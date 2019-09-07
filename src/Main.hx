@@ -58,7 +58,7 @@ class Main {
   public function new() {
     var basePath: String = PathSettings.applicationBasePath;
     project = new DefaultProjectConfig('AnnaLang', '${basePath}scripts', '${basePath}out/',
-      ['${basePath}src/', '${basePath}apps/anna_unit/lib', '${basePath}apps/shared/lib', '${basePath}apps/vm/lib'], ['hscript-plus', 'mockatoo', 'minject', 'sepia']);
+      ['${basePath}src/', '${basePath}apps/anna_unit/lib', '${basePath}apps/shared/lib'], ['hscript-plus', 'mockatoo', 'minject', 'sepia']);
     parser.allowMetadata = true;
     parser.allowTypes = true;
     interp = HScriptEval.interp;
@@ -112,8 +112,7 @@ class Main {
 
   private inline function pollChanges(): Void {
     while(true) {
-      Sys.sleep(0.25);
-      var files: Array<String> = Thread.readMessage(false);
+      var files: Array<String> = Thread.readMessage(true);
 
       if(files != null && files.length > 0) {
         var clazz: Class<Dynamic> = Type.resolveClass("Anna");

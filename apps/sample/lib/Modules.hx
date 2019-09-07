@@ -1,10 +1,9 @@
-package lib;
+package ;
 
-import vm.Process;
+/**
+* NOT SURE WHY, but this file MUST live in the lib directory in order to compile.
+**/
 import vm.Pid;
-import vm.Match;
-import vm.Operation;
-import vm.PushStack;
 import IO;
 using lang.AtomSupport;
 @:build(lang.macros.AnnaLang.init())

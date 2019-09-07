@@ -1,4 +1,4 @@
-package tests;
+package ;
 
 import lang.macros.PatternMatch;
 using lang.AtomSupport;

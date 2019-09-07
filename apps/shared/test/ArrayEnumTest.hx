@@ -1,4 +1,4 @@
-package tests;
+package ;
 
 using lang.AtomSupport;
 

@@ -1,5 +1,6 @@
 package anna_unit;
 
+import project.ProjectConfig;
 import sys.io.File;
 import util.TimeUtil;
 import sys.FileSystem;
@@ -10,8 +11,8 @@ class AnnaUnit {
 
   @field public static var failedTests: Array<String>;
 
-  public static function start(testName: String = null): Void {
-    if(Anna.compileProject().length == 0){
+  public static function start(project: ProjectConfig): Void {
+    if(Anna.compileProject(project).length == 0){
       return;
     }
 
@@ -19,7 +20,7 @@ class AnnaUnit {
       failedTests = [];
     }
 
-    var classes: Array<String> = getTests();
+    var classes: Array<String> = getTests(project);
     classes = Native.callStatic('Random', 'shuffle', [classes]);
     var successCounter: Int = 0;
     var failureCounter: Int = 0;
@@ -30,11 +31,7 @@ class AnnaUnit {
       var fields: Array<String> = [];
       var clazz: Class<Dynamic> = Type.resolveClass(className);
       if(failedTests.length == 0) {
-        if(testName == null) {
-          fields = Type.getClassFields(clazz);
-        } else {
-          fields.push(testName);
-        }
+        fields = Type.getClassFields(clazz);
 
         if(Reflect.hasField(clazz, 'start')) {
           var fun = Reflect.field(clazz, 'start');
@@ -90,16 +87,16 @@ class AnnaUnit {
     failedTests = null;
   }
 
-  private static function getTests(): Array<String> {
-    var testDir: String = 'scripts/tests/';
+  private static function getTests(project: ProjectConfig): Array<String> {
+    var testDir: String = project.srcPath;
     var files: Array<String> = FileSystem.readDirectory(testDir);
     var retVal: Array<String> = [];
     for(file in files) {
-      var path = '${Sys.getCwd()}${testDir}${file}';
+      var path = '${testDir}/${file}';
       if(FileSystem.isDirectory(path)) {
         continue;
       }
-      retVal.push('tests.${file.replace('.hx', '')}');
+      retVal.push('${file.replace('.hx', '')}');
     }
     return retVal;
   }

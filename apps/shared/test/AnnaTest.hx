@@ -1,4 +1,4 @@
-package tests;
+package ;
 
 import TypePrinter.CustomTypePrinter;
 import lang.CustomType;
@@ -85,7 +85,7 @@ class AnnaTest {
 
   public static function shouldPrintCustomTypes(): Void {
     var sct: SampleCustomType = new SampleCustomType('name'.atom(), 'type'.atom());
-    Assert.areEqual(Anna.toAnnaString(sct), '%Tests.SampleCustomType{:name => :name, :type => :type}');
+    Assert.areEqual(Anna.toAnnaString(sct), '%SampleCustomType{:name => :name, :type => :type}');
   }
 
   public static function shouldPrintDynamicTypeToMap(): Void {
