@@ -1,7 +1,3 @@
--cp apps/shared/lib
--cp apps/vm/lib
--cp apps/anna_unit/lib
--cp scripts
 -cp src
 -D analyzer-optimize
 -D scriptable
@@ -11,7 +7,6 @@
 -main Main
 -lib sepia
 -lib random
--lib deep_equal
 -lib hx-color-trace
 -lib ihx
 -lib haxe-strings

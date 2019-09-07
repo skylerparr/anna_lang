@@ -96,7 +96,6 @@ class Main {
           mainThread.sendMessage(files);
         }
       }
-
       Runtime.start('AnnaLang', '${basePath}scripts', '${basePath}out/',
       ['${basePath}src/', '${basePath}apps/anna_unit/lib', '${basePath}apps/shared/lib', '${basePath}apps/vm/lib'], ['hscript-plus', 'mockatoo', 'minject'], onComplete);
     });
@@ -110,7 +109,7 @@ class Main {
       var files: Array<String> = Thread.readMessage(false);
 
       if(files != null && files.length > 0) {
-        var clazz: Class<Dynamic> = Anna;//Type.resolveClass("Anna");
+        var clazz: Class<Dynamic> = Type.resolveClass("Anna");
         if(clazz != null) {
           var fields: Array<String> = Type.getClassFields(clazz);
           for(f in fields) {

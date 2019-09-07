@@ -152,7 +152,13 @@ so that I can disable the different log levels and save the line number
 - If I use the generic single threaded scheduler, I can use Anna vm for the macro compiler
 - create a way to pass a tuple of AST to the compiler and have it generate anna_lang code.
 - create a way to pass anna_lang haxe AST to convert to anna_lang AST
-- Creating the anna interpreter will allow me to move to haxe 4. Since we won't be tied to sepia so much.
+- Creating the anna interpreter will allow me to move to haxe 4. Since we won't be tied to cppia so much.
+- need to dynamically generate the hxml for automatically adding class paths for non-sepia projects
+- Need to add a macro to ensure that all project files are included in the build 
+- need to update the sepia library to be a bit more like a compiler and not a CLI
+- create a configuration method for adding applications to a project
+- after creating a configuration method, that leads into external libraries to be loaded or compiled in
+- create a dependency graph and create an intelligent way to compile cppia libraries without compiling the entire binary
 
 # Language features (in progress)
 
