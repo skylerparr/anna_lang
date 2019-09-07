@@ -11,7 +11,7 @@ class AnnaUnit {
   @field public static var failedTests: Array<String>;
 
   public static function start(testName: String = null): Void {
-    if(Native.callStatic('Runtime', 'recompile', []).length == 0){
+    if(Anna.compileProject().length == 0){
       return;
     }
 

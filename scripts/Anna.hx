@@ -1,5 +1,8 @@
 package ;
 
+import String;
+import project.DefaultProjectConfig;
+import project.ProjectConfig;
 import lang.CustomType;
 import vm.UntestedScheduler;
 import vm.Inspector;
@@ -31,8 +34,11 @@ using haxe.EnumTools.EnumValueTools;
 class Anna {
   @field public static var parser: Parser;
   @field public static var interp: Interp;
+  @field public static var project: ProjectConfig;
 
-  public static function start():Atom {
+  public static function start(pc: ProjectConfig):Atom {
+    project = pc;
+
     parser = Native.callStaticField('Main', 'parser');
     interp = Native.callStaticField('Main', 'interp');
     interp.variables.set("AnnaUnit", AnnaUnit);
@@ -46,6 +52,14 @@ class Anna {
     Reflect.field(Kernel, "main")();
     Reflect.field(UntestedScheduler, "main")();
     return 'ok'.atom();
+  }
+
+  public static function getProject(): ProjectConfig {
+    return project;
+  }
+
+  public static function compileProject(): Array<String> {
+    return Native.callStatic('Runtime', 'compileProject', [Anna.getProject()]);
   }
 
   public static function add(a: Int, b: Int): Int {

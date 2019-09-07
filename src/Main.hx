@@ -1,3 +1,5 @@
+import project.DefaultProjectConfig;
+import project.ProjectConfig;
 import core.InjectionSettings;
 import hscript.plus.ParserPlus;
 import lang.HashTableAtoms;
@@ -24,6 +26,8 @@ class Main {
   private static var ready: Bool = false;
 
   public static var compilerCompleteCallbacks: Array<Void->Void> = [];
+
+  private static var project: ProjectConfig;
 
   public static function main() {
     Native;
@@ -53,15 +57,17 @@ class Main {
 
   public function new() {
     var basePath: String = PathSettings.applicationBasePath;
+    project = new DefaultProjectConfig('AnnaLang', '${basePath}scripts', '${basePath}out/',
+      ['${basePath}src/', '${basePath}apps/anna_unit/lib', '${basePath}apps/shared/lib', '${basePath}apps/vm/lib'], ['hscript-plus', 'mockatoo', 'minject', 'sepia']);
     parser.allowMetadata = true;
     parser.allowTypes = true;
     interp = HScriptEval.interp;
     var variables = interp.variables;
     variables.set("rc", function() {
-      Runtime.recompile();
+      Runtime.compileProject(project);
     });
     variables.set("clean", function() {
-      Runtime.clean();
+      Runtime.clean(project);
     });
     variables.set("s", function(o: Dynamic): Bool {
       o.parser = parser;
@@ -89,15 +95,16 @@ class Main {
       var loaded: Bool = false;
       var onComplete = function(files: Array<String>) {
         if(!loaded) {
-          var files = Runtime.loadAll();
+          var files = Runtime.loadAll(project);
           mainThread.sendMessage(files);
           loaded = true;
+          Runtime.start();
         } else {
           mainThread.sendMessage(files);
         }
       }
-      Runtime.start('AnnaLang', '${basePath}scripts', '${basePath}out/',
-      ['${basePath}src/', '${basePath}apps/anna_unit/lib', '${basePath}apps/shared/lib', '${basePath}apps/vm/lib'], ['hscript-plus', 'mockatoo', 'minject'], onComplete);
+      project.subscribeAfterCompileCallback(onComplete);
+      Runtime.compileProject(project);
     });
 
     pollChanges();
@@ -120,7 +127,7 @@ class Main {
           }
           if(!ready) {
             var fun = Reflect.field(clazz, "start");
-            fun();
+            fun(project);
           }
           ready = true;
         }

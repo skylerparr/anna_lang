@@ -65,7 +65,7 @@ class Kernel {
 
   public static function recompile(): Atom {
     var startTime: Float = Timer.stamp();
-    Native.callStatic('Runtime', 'recompile', []);
+    Anna.compileProject();
     var diff: Float = (Timer.stamp() - startTime) * 1000;
     cpp.Lib.println('Compilation Time: ${TimeUtil.getHumanTime(diff)}');
     return 'ok'.atom();
