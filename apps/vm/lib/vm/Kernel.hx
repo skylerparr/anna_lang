@@ -41,29 +41,24 @@ class Kernel {
   }
 
   public static function testSpawn(): SimpleProcess {
-    recompile();
+//    recompile();
     Sys.sleep(0.3);
     start();
     return spawn('Boot'.atom(), 'start_'.atom(), LList.create([]));
   }
 
   public static function spawnCompiler(): SimpleProcess {
-    recompile();
+//    recompile();
     Sys.sleep(0.3);
     start();
     return spawn('AnnaLangCompiler'.atom(), 'start_'.atom(), LList.create([]));
   }
 
   public static function spawnFunctionPatternMatch(): SimpleProcess {
-    recompile();
+//    recompile();
     Sys.sleep(0.3);
     start();
     return spawn('FunctionPatternMatching'.atom(), 'start_'.atom(), LList.create([]));
-  }
-
-  public static function recompile(): Atom {
-    Anna.compileProject();
-    return 'ok'.atom();
   }
 
   public static function spawn(module: Atom, fun: Atom, args: LList): SimpleProcess {

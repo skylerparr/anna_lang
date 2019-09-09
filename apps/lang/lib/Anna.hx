@@ -1,6 +1,5 @@
 package ;
 
-import anna_unit.AnnaUnit;
 import util.TimeUtil;
 import haxe.Timer;
 import String;
@@ -31,67 +30,11 @@ using haxe.EnumTools.EnumValueTools;
 class Anna {
   @field public static var parser: Parser;
   @field public static var interp: Interp;
-  @field public static var project: ProjectConfig;
 
-  public static function start(pc: ProjectConfig):Atom {
-    project = pc;
-
-    parser = Native.callStaticField('Main', 'parser');
-    interp = Native.callStaticField('Main', 'interp');
-    interp.variables.set("AnnaUnit", AnnaUnit);
-    Reflect.field(AnnaUnit, "main")();
-
-//    Reflect.field(Classes, "main")();
-//    Reflect.field(Inspector, "main")();
-//    Reflect.field(Kernel, "main")();
-//    Reflect.field(UntestedScheduler, "main")();
-    return 'ok'.atom();
-  }
-
-  public static function getProject(): ProjectConfig {
-    return project;
-  }
-
-  public static function applicationRoot(): String {
-    return Native.callStaticField("core.PathSettings", "applicationBasePath");
-  }
-
-  public static function vmProjectTests(): Atom {
-    var appRoot: String = applicationRoot();
-    var project: ProjectConfig = new DefaultProjectConfig("VM", '${appRoot}apps/vm/test', 'out/',
-    ['${appRoot}src/', '${appRoot}scripts', '${appRoot}apps/shared/lib', '${appRoot}apps/vm/lib', '${appRoot}apps/anna_unit/lib'],
-    ['hscript-plus', 'sepia', 'mockatoo']
-    );
-    AnnaUnit.start(project);
-    return 'ok'.atom();
-  }
-
-  public static function sharedProjectTests(): Atom {
-    var appRoot: String = applicationRoot();
-    var project: ProjectConfig = new DefaultProjectConfig("VM", '${appRoot}apps/shared/test', 'out/',
-    ['${appRoot}src/', '${appRoot}scripts', '${appRoot}apps/shared/lib', '${appRoot}apps/vm/lib', '${appRoot}apps/anna_unit/lib'],
-    ['hscript-plus', 'sepia', 'mockatoo']
-    );
-    AnnaUnit.start(project);
-    return 'ok'.atom();
-  }
-
-  public static function compileSample(): Array<String> {
-    var appRoot: String = applicationRoot();
-    var project: ProjectConfig = new DefaultProjectConfig("SampleProject", '${appRoot}apps/sample/lib', 'out/',
-          ['${appRoot}src/', '${appRoot}scripts', '${appRoot}apps/shared/lib', '${appRoot}apps/vm/lib', '${appRoot}apps/anna_unit/lib'],
-          ['hscript-plus', 'sepia']
-    );
-    var startTime: Float = Timer.stamp();
-    var files = Native.callStatic('Runtime', 'compileProject', [project]);
-    var diff: Float = (Timer.stamp() - startTime) * 1000;
-    cpp.Lib.println('Compilation Time: ${TimeUtil.getHumanTime(diff)}');
-    return files;
-  }
-
-  public static function compileProject(p: ProjectConfig = null): Array<String> {
+  public static function compileProject(p: ProjectConfig): Array<String> {
     if(p == null) {
-      p = Anna.getProject();
+      cpp.Lib.println('No project file provided, doing nothing.');
+      return [];
     }
 
     var startTime: Float = Timer.stamp();

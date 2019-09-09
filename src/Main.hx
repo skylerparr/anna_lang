@@ -58,7 +58,7 @@ class Main {
   public function new() {
     var basePath: String = PathSettings.applicationBasePath;
     project = new DefaultProjectConfig('AnnaLang', '${basePath}scripts', '${basePath}out/',
-      ['${basePath}src/', '${basePath}apps/anna_unit/lib', '${basePath}apps/shared/lib'], ['hscript-plus', 'mockatoo', 'minject', 'sepia']);
+      ['${basePath}src/', '${basePath}apps/anna_unit/lib', '${basePath}apps/lang/lib'], ['hscript-plus', 'mockatoo', 'minject', 'sepia']);
     parser.allowMetadata = true;
     parser.allowTypes = true;
     interp = HScriptEval.interp;
@@ -115,7 +115,7 @@ class Main {
       var files: Array<String> = Thread.readMessage(true);
 
       if(files != null && files.length > 0) {
-        var clazz: Class<Dynamic> = Type.resolveClass("Anna");
+        var clazz: Class<Dynamic> = Type.resolveClass("Runner");
         if(clazz != null) {
           var fields: Array<String> = Type.getClassFields(clazz);
           for(f in fields) {
