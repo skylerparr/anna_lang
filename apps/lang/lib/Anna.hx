@@ -39,6 +39,9 @@ class Anna {
 
     var startTime: Float = Timer.stamp();
     var files = Native.callStatic('Runtime', 'compileProject', [p]);
+    if(files == null) {
+      return ['Anna'];
+    }
     var diff: Float = (Timer.stamp() - startTime) * 1000;
     cpp.Lib.println('Compilation Time: ${TimeUtil.getHumanTime(diff)}');
     return files;

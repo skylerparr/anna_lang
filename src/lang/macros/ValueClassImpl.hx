@@ -37,7 +37,6 @@ class ValueClassImpl {
       kind: FFun({
         args: [],
         expr: macro {
-          state.GlobalState.init(module, {});
         },
         params: [],
         ret: null

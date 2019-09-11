@@ -1,0 +1,8 @@
+{
+  "application": "vm",
+  "autoStart": null,
+  "apps": ["anna_unit", "lang"],
+  "libs": [],
+  "tests": [],
+  "haxelibs": []
+}

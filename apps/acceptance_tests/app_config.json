@@ -1,0 +1,8 @@
+{
+  "application": "acceptance_tests",
+  "autoStart": null,
+  "apps": ["vm", "lang"],
+  "libs": [],
+  "tests": [],
+  "haxelibs": []
+}

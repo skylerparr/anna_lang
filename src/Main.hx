@@ -1,3 +1,4 @@
+import ihx.IHx;
 import project.DefaultProjectConfig;
 import project.ProjectConfig;
 import core.InjectionSettings;
@@ -18,6 +19,7 @@ import cpp.vm.Thread;
 import ihx.HScriptEval;
 import mockatoo.Mockatoo.*;
 using mockatoo.Mockatoo;
+using lang.AtomSupport;
 class Main {
   public static var parser: Parser = new ParserPlus();
   public static var interp: Interp;         
@@ -63,12 +65,6 @@ class Main {
     parser.allowTypes = true;
     interp = HScriptEval.interp;
     var variables = interp.variables;
-    variables.set("rc", function() {
-      Runtime.compileProject(project);
-    });
-    variables.set("clean", function() {
-      Runtime.clean(project);
-    });
     variables.set("s", function(o: Dynamic): Bool {
       o.parser = parser;
       o.interp = interp;
@@ -90,6 +86,15 @@ class Main {
     variables.set("fields", function(o: Dynamic): Dynamic {
       return Reflect.fields(o);
     });
+    #if scriptable
+
+    variables.set("rc", function() {
+      Runtime.compileProject(project);
+    });
+    variables.set("clean", function() {
+      Runtime.clean(project);
+    });
+    
     mainThread = Thread.current();
     Thread.create(function() {
       var loaded: Bool = false;
@@ -108,8 +113,13 @@ class Main {
     });
 
     pollChanges();
+    #else
+    Runner.start(project);
+    IHx.main();
+    #end
   }
 
+  #if scriptable
   private inline function pollChanges(): Void {
     while(true) {
       var files: Array<String> = Thread.readMessage(true);
@@ -136,6 +146,7 @@ class Main {
       }
     }
   }
+  #end
 
   public static function hxeval(string: String) {
     var ast = parser.parseString(string);
