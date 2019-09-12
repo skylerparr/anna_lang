@@ -35,27 +35,24 @@ class Kernel {
   }
 
   public static function defineCode(): Atom {
-//    Classes.define("Boot".atom(), Boot);
-//    Classes.define("FunctionPatternMatching".atom(), FunctionPatternMatching);
+    Classes.define("Boot".atom(), Type.resolveClass("Boot"));
+    Classes.define("FunctionPatternMatching".atom(), Type.resolveClass("FunctionPatternMatching"));
     return 'ok'.atom();
   }
 
   public static function testSpawn(): SimpleProcess {
-//    recompile();
     Sys.sleep(0.3);
     start();
     return spawn('Boot'.atom(), 'start_'.atom(), LList.create([]));
   }
 
   public static function spawnCompiler(): SimpleProcess {
-//    recompile();
     Sys.sleep(0.3);
     start();
     return spawn('AnnaLangCompiler'.atom(), 'start_'.atom(), LList.create([]));
   }
 
   public static function spawnFunctionPatternMatch(): SimpleProcess {
-//    recompile();
     Sys.sleep(0.3);
     start();
     return spawn('FunctionPatternMatching'.atom(), 'start_'.atom(), LList.create([]));

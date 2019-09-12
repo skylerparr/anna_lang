@@ -28,28 +28,28 @@ class Application {
       apps.push('"${app}"');
     }
     var appsExpr: Expr = Macros.haxeToExpr('[${apps.join(",")}]');
+    var haxeLibs: Expr = Macros.haxeToExpr("['hscript-plus', 'sepia', 'mockatoo']");
+    var includeClasses: Array<String> = [];
+    #if !scriptable
+    includeClasses = getClassesToInclude(appDir(appName + '/lib/'));
+    includeClasses = includeClasses.concat(getClassesToInclude(appDir(appName + '/test/')));
+    #end
+
+    var includeExpr: Expr = Macros.haxeToExpr('${includeClasses.join(';')}');
     return macro {
+      $e{includeExpr}
       var appRoot: String = Native.callStaticField("core.PathSettings", "applicationBasePath");
-      new project.AnnaLangProject(appRoot, $e{appNameExpr}, $e{appsExpr}, [], []);
+      new project.AnnaLangProject(appRoot, $e{appNameExpr}, $e{appsExpr}, [], $e{haxeLibs});
     }
   }
 
   #if macro
-//  private static function getAnnaLangProjectExpr(appName: String): Expr {
-//    var config: Dynamic = fetchAppConfigByName(appName);
-//    var appNameExpr: Expr = Macros.haxeToExpr('"${appName}".atom()');
-//    var apps: Array<Expr> = [];
-//    for(app in config.apps) {
-//
-//    }
-////    var appsExpr: Expr =
-//    return macro {
-//      new project.AnnaLangProject(appRoot, $e{appNameExpr}, [], [], []);
-//    }
-//  }
+  private static function appDir(appName: String): String {
+    return '${APP_DIR}${appName}';
+  }
 
   private static function fetchAppConfigByName(appName: String): Dynamic {
-    var strConfig: String = File.getContent('${APP_DIR}${appName}/${CONFIG_FILE}');
+    var strConfig: String = File.getContent('${appDir(appName)}/${CONFIG_FILE}');
     return Json.parse(strConfig);
   }
 
@@ -62,84 +62,18 @@ class Application {
         null;
     }
   }
-  #end
 
-  macro public static function defineApplication(applicationName: Expr, srcPath: Expr, outputPath: Expr, classPaths: Expr, libsPaths: Expr): Expr {
-    #if cppia
-      return macro {
-        var appRoot: String = Native.callStaticField("core.PathSettings", "applicationBasePath");
-        var applicationName: String = $e{applicationName};
-        var srcPath: String = $e{srcPath};
-        var outputPath: String = $e{outputPath};
-        var libsPaths: Array<String> = $e{libsPaths};
-        var classPaths: Array<String> = $e{classPaths};
-        for(i in 0...classPaths.length) {
-          classPaths[i] = appRoot + classPaths[i];
-        }
-        new DefaultProjectConfig(applicationName, appRoot + srcPath, outputPath, classPaths, libsPaths);
-      }
-    #else
-    var application: Expr = null;
-    var appName: String = "";
-    var classPath: String = "";
-    switch(applicationName.expr) {
-      case (EConst(CString(app))):
-        application = Macros.haxeToExpr(app);
-        appName = app;
-      case _:
-        Context.error("ApplicationName must be a string", Context.currentPos());
-    }
-    switch(srcPath.expr) {
-      case (EConst(CString(path))):
-        classPath = path + "/";
-      case _:
-        Context.error("ApplicationName must be a string", Context.currentPos());
-    }
-//    generate(classPath, appName);
-    return macro {
-      var appRoot: String = Native.callStaticField("core.PathSettings", "applicationBasePath");
-      var applicationName: String = $e{applicationName};
-      var srcPath: String = $e{srcPath};
-      var outputPath: String = $e{outputPath};
-      var libsPaths: Array<String> = $e{libsPaths};
-      var classPaths: Array<String> = $e{classPaths};
-      for(i in 0...classPaths.length) {
-        classPaths[i] = appRoot + classPaths[i];
-      }
-      new project.DefaultProjectConfig(applicationName, appRoot + srcPath, outputPath, classPaths, libsPaths);
-    }
-    #end
-  }
-
-  #if macro
-  private static function generate(classPath: String, applicationName: String): Void {
+  private static function getClassesToInclude(classPath: String): Array<String> {
     var files: Array<Dynamic> = [];
     var classes: Array<String> = [];
     gatherFilesToCompile(classPath, classPath, files, classes);
-    generateApplicationFile(classPath, applicationName, files);
-  }
-
-  private static function generateApplicationFile(classPath: String, applicationName: String, files: Array<Dynamic>): Void {
-    var classes: Array<Dynamic> = [];
-    for(file in files) {
-      var filename: String = StringTools.replace(file.scriptPath, ".hx", "");
-      var className: String = StringTools.replace(filename, "/", ".");
-      classes.push({className: className});
-    }
-    var typeDef: TypeDefinition = MacroTools.createClass(applicationName);
-
-    var field: Field = MacroTools.buildPublicFunction("main", [], MacroTools.buildType("Void"));
-    var classNames: Array<Expr> = classes.map(function(c) { return Macros.haxeToExpr('${c.className};'); });
-
-    var body: Expr = MacroTools.buildBlock(classNames);
-    field = MacroTools.assignFunBody(field, body);
-    MacroTools.addFieldToClass(typeDef, field);
-
-    Context.defineType(typeDef);
-    MacroLogger.log(typeDef, 'typeDef');
+    return classes;
   }
 
   private static function gatherFilesToCompile(path: String, classPath: String, files: Array<Dynamic>, classes: Array<String>): Void {
+    if(!FileSystem.exists(path)) {
+      return;
+    }
     var filesToCompile: Array<String> = FileSystem.readDirectory(path);
     for (script in filesToCompile) {
       var relPath: String = path + '/' + script;
@@ -150,6 +84,10 @@ class Application {
         var scriptPath: String = StringTools.replace(relPath, classPath, "");
 
         var pack: String = StringTools.replace(scriptPath, ".hx", "");
+        if(StringTools.startsWith(pack, '/')) {
+          pack = pack.substr(1);
+        }
+        MacroLogger.log(pack, 'pack');
         pack = StringTools.replace(pack, "/", ".");
         classes.push(pack);
         files.push({scriptPath: scriptPath.substr(1), fullPath: fullPath});

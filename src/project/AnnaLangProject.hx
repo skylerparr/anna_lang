@@ -18,6 +18,8 @@ class AnnaLangProject {
   @:isVar
   private var haxeLibs(get, null): Array<String>;
   private var srcDir(get, never): String;
+  private var testsDir(get, never): String;
+  private var projectDir(get, never): String;
 
   function get_appRoot(): String {
     return appRoot;
@@ -40,7 +42,16 @@ class AnnaLangProject {
   }
 
   public function get_srcDir(): String {
-    return '${appRoot}${APPS_DIR}${application.value}/${LIB_DIR}';
+    return '${projectDir}/${LIB_DIR}';
+  }
+
+  public function get_testsDir(): String {
+    return '${projectDir}/${TESTS_DIR}';
+  }
+
+
+  public function get_projectDir(): String {
+    return '${appRoot}${APPS_DIR}${application.value}';
   }
 
   public function new(appRoot: String, application: Atom, apps: Array<String>, libs: Array<Atom>, haxeLibs: Array<String>) {
@@ -58,6 +69,20 @@ class AnnaLangProject {
       projectApps.push('${appRoot}${APPS_DIR}${app}/${LIB_DIR}');
     }
     projectApps.push('${appRoot}${MAIN_SRC_DIR}');
+
+    var hxLibs: Array<String> = ['hscript-plus', 'sepia', 'mockatoo'];
+
+    return new DefaultProjectConfig(nameify(application.value), srcDir, OUTPUT_DIR, projectApps, this.haxeLibs);
+  }
+
+  public function getProjectTestsConfig(): ProjectConfig {
+    var srcDir: String = testsDir;
+    var projectApps: Array<String> = [];
+    for(app in apps) {
+      projectApps.push('${appRoot}${APPS_DIR}${app}/${LIB_DIR}');
+    }
+    projectApps.push('${appRoot}${MAIN_SRC_DIR}');
+    projectApps.push('${this.srcDir}');
 
     var hxLibs: Array<String> = ['hscript-plus', 'sepia', 'mockatoo'];
 

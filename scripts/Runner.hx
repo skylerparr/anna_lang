@@ -39,23 +39,31 @@ class Runner {
     return Native.callStaticField("core.PathSettings", "applicationBasePath");
   }
 
-  public static function vmProjectTests(): Atom {
-    cpp.Lib.println("run vm project tests");
-//    var project: ProjectConfig = Application.defineApplication("VM", 'apps/vm/test', 'out/',
-//    ['src/', 'apps/lang/lib', 'apps/vm/lib', 'apps/anna_unit/lib'],
-//    ['hscript-plus', 'sepia', 'mockatoo']
-//    );
-    AnnaUnit.start(project);
+  public static function compileVMProject(): Atom {
+    cpp.Lib.println("compiling vm project");
+    var annaProject: AnnaLangProject = Application.getProjectConfig('vm'.atom());
+    var files = Anna.compileProject(annaProject.getProjectConfig());
     return 'ok'.atom();
   }
 
-  public static function langProjectTests(): Atom {
-    cpp.Lib.println("run lang project tests");
-//    var project: ProjectConfig = Application.defineApplication("Lang", 'apps/lang/test', 'out/',
-//    ['src/', 'apps/vm/lib', 'apps/lang/lib', 'apps/anna_unit/lib'],
-//    ['hscript-plus', 'sepia', 'mockatoo']
-//    );
-    AnnaUnit.start(project);
+  public static function compileLangProject(): Atom {
+    cpp.Lib.println("Compiling lang project");
+    var annaProject: AnnaLangProject = Application.getProjectConfig('lang'.atom());
+    var files = Anna.compileProject(annaProject.getProjectConfig());
+    return 'ok'.atom();
+  }
+
+  public static function langTests(): Atom {
+    cpp.Lib.println("Running lang tests");
+    var annaProject: AnnaLangProject = Application.getProjectConfig('lang'.atom());
+    AnnaUnit.start(annaProject.getProjectTestsConfig());
+    return 'ok'.atom();
+  }
+
+  public static function vmTests(): Atom {
+    cpp.Lib.println("Running lang tests");
+    var annaProject: AnnaLangProject = Application.getProjectConfig('vm'.atom());
+    AnnaUnit.start(annaProject.getProjectTestsConfig());
     return 'ok'.atom();
   }
 
@@ -74,7 +82,7 @@ class Runner {
   public static function runAll(): Void {
     compileRunner();
     compileAcceptanceTests();
-    langProjectTests();
-    vmProjectTests();
+    compileLangProject();
+    compileVMProject();
   }
 }
