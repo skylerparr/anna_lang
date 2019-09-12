@@ -17,7 +17,6 @@ class Kernel {
 
   public static function start(): Atom {
     if(UntestedScheduler.communicationThread == null) {
-      Inspector.ttyThread = Thread.current();
       current_id = 0;
       UntestedScheduler.start();
 

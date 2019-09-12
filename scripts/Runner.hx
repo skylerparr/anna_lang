@@ -27,7 +27,8 @@ class Runner {
     interp = Native.callStaticField('Main', 'interp');
     interp.variables.set("AnnaUnit", AnnaUnit);
     Reflect.field(AnnaUnit, "main")();
-    
+
+    compileAll();
     return 'ok'.atom();
   }
 
@@ -40,17 +41,24 @@ class Runner {
   }
 
   public static function compileVMProject(): Atom {
-    cpp.Lib.println("compiling vm project");
+    trace("compiling vm project");
     var annaProject: AnnaLangProject = Application.getProjectConfig('vm'.atom());
     var files = Anna.compileProject(annaProject.getProjectConfig());
     return 'ok'.atom();
   }
 
   public static function compileLangProject(): Atom {
-    cpp.Lib.println("Compiling lang project");
+    trace("Compiling lang project");
     var annaProject: AnnaLangProject = Application.getProjectConfig('lang'.atom());
     var files = Anna.compileProject(annaProject.getProjectConfig());
     return 'ok'.atom();
+  }
+
+  public static function compileAcceptanceTests(): Array<String> {
+    trace("Compiling acceptanceTests");
+    var annaProject: AnnaLangProject = Application.getProjectConfig('acceptance_tests'.atom());
+    var files = Anna.compileProject(annaProject.getProjectConfig());
+    return files;
   }
 
   public static function langTests(): Atom {
@@ -61,28 +69,20 @@ class Runner {
   }
 
   public static function vmTests(): Atom {
-    cpp.Lib.println("Running lang tests");
+    cpp.Lib.println("Running vm tests");
     var annaProject: AnnaLangProject = Application.getProjectConfig('vm'.atom());
     AnnaUnit.start(annaProject.getProjectTestsConfig());
     return 'ok'.atom();
   }
 
-  public static function compileAcceptanceTests(): Array<String> {
-    cpp.Lib.println("Compiling acceptanceTests");
-    var annaProject: AnnaLangProject = Application.getProjectConfig('acceptance_tests'.atom());
-    var files = Anna.compileProject(annaProject.getProjectConfig());
-    return files;
-  }
-
   public static function compileRunner(): Void {
-    cpp.Lib.println("Compiling Runner");
+    cpp.Lib.println("Compiling Runner\n");
     var files = Anna.compileProject(project);
   }
 
-  public static function runAll(): Void {
-    compileRunner();
-    compileAcceptanceTests();
+  public static function compileAll(): Void {
     compileLangProject();
     compileVMProject();
+    compileAcceptanceTests();
   }
 }

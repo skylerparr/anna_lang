@@ -1,4 +1,4 @@
-package vm;
+package ;
 
 import cpp.vm.Thread;
 enum DebugMessage {

@@ -1,10 +1,11 @@
-package vm;
+package ;
 
 import haxe.macro.Context;
 import haxe.macro.Expr;
 import haxe.macro.Type.ClassType;
 import haxe.macro.Type.Ref;
 import haxe.macro.Type.TVar;
+import lang.macros.Macros;
 
 class Debug {
 
@@ -38,9 +39,9 @@ class Debug {
     var currentPos: Expr = Macros.haxeToExpr('"${Context.currentPos()}"');
 
     return macro {
-      if(!vm.Inspector.stopped && cpp.vm.Thread.current().handle != vm.Inspector.ttyThread.handle) {
+      if(!Inspector.stopped && cpp.vm.Thread.current().handle != Inspector.ttyThread.handle) {
         var currentThread: cpp.vm.Thread = cpp.vm.Thread.current();
-        vm.Inspector.debugThread = currentThread;
+        Inspector.debugThread = currentThread;
         var varMap: Map<String, Dynamic> = new Map<String, Dynamic>();
         varMap.set("this", this);
         $e{varCode}
@@ -51,16 +52,16 @@ class Debug {
             continue;
           }
           switch(message) {
-            case vm.DebugMessage.PRINT_VAR(name):
+            case DebugMessage.PRINT_VAR(name):
               Logger.inspect(varMap.get(name));
-            case vm.DebugMessage.LIST_VARS:
+            case DebugMessage.LIST_VARS:
               Logger.inspect(varMap);
-            case vm.DebugMessage.GET_VAR(name, thread):
+            case DebugMessage.GET_VAR(name, thread):
               thread.sendMessage(varMap.get(name));
-            case vm.DebugMessage.CURRENT_POS:
+            case DebugMessage.CURRENT_POS:
               Logger.inspect($e{currentPos});
-            case vm.DebugMessage.RESUME:
-              vm.Inspector.debugThread = null;
+            case DebugMessage.RESUME:
+              Inspector.debugThread = null;
               break;
           }
         }

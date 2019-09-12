@@ -1,4 +1,4 @@
-package vm;
+package ;
 import cpp.vm.Thread;
 @:build(lang.macros.ValueClassImpl.build())
 class Inspector {
@@ -58,6 +58,7 @@ class Inspector {
   }
 
   public static function start(): Void {
+    Inspector.ttyThread = Thread.current();
     stopped = false;
     if(Std.int(Math.random() * 10) == 5) {
       Logger.inspect("With great power comes great responsiblity, use with care...");
