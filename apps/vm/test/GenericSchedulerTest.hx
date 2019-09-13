@@ -2,7 +2,7 @@ package ;
 
 import core.ObjectCreator;
 import vm.ProcessState;
-import vm.ProcessStack;
+import vm.DefaultProcessStack;
 import vm.Pid;
 import vm.schedulers.GenericScheduler;
 import mockatoo.Mockatoo.*;

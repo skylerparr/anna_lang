@@ -307,7 +307,7 @@ class MacroTools {
     return switch(type) {
       case TInst(t, other):
         switch(t.get().interfaces) {
-          case [{t: type}]:
+          case [{t: type}] if(!t.get().isInterface):
             type.toString();
           case _:
             t.toString();

@@ -5,13 +5,13 @@ class SimpleProcess implements Pid {
   public var server_id(default, never): Int;
   public var instance_id(default, never): Int;
   public var group_id(default, never): Int;
-  public var processStack(default, never): ProcessStack;
+  public var processStack(default, never): DefaultProcessStack;
   public var state(default, never): ProcessState;
   public var mailbox(default, never): Array<Dynamic>;
 
   public inline function new(server_id: Int, instance_id: Int, group_id: Int, op: Operation) {
-    var processStack: ProcessStack = new ProcessStack(this);
-    processStack.add(new AnnaCallStack([op], new Map<String, Dynamic>()));
+    var processStack: DefaultProcessStack = new DefaultProcessStack(this);
+    processStack.add(new DefaultAnnaCallStack([op], new Map<String, Dynamic>()));
 
     Reflect.setField(this, 'server_id', server_id);
     Reflect.setField(this, 'instance_id', instance_id);

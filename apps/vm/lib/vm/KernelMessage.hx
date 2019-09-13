@@ -2,7 +2,7 @@ package vm;
 
 enum KernelMessage {
   STOP;
-  SCHEDULE(process: SimpleProcess);
-  RECEIVE(process: SimpleProcess, matcher: Dynamic);
-  SEND(process: SimpleProcess, payload: Dynamic);
+  SCHEDULE(process: Pid);
+  RECEIVE(process: Pid, matcher: Dynamic);
+  SEND(process: Pid, payload: Dynamic);
 }

@@ -13,13 +13,13 @@ class UntestedScheduler {
   @field public static var asyncThread: Thread;
   @field public static var index: Int;
   @field public static var asyncIndex: Int;
-  @field public static var threadProcessMap: ObjectMap<Dynamic, SimpleProcess>;
+  @field public static var threadProcessMap: ObjectMap<Dynamic, Pid>;
 
   public static function start(): Atom {
     if(communicationThread == null) {
       communicationThread = Thread.create(threadCommunicator);
       workerThreads = [];
-      threadProcessMap = new ObjectMap<Dynamic, SimpleProcess>();
+      threadProcessMap = new ObjectMap<Dynamic, Pid>();
       for(i in 0...32) {
         var thread = Thread.create(workerThread);
         workerThreads.push(thread);
@@ -104,12 +104,12 @@ class UntestedScheduler {
     }
   }
 
-  public static function sleep(process: SimpleProcess, milliseconds: Int): Void {
+  public static function sleep(process: Pid, milliseconds: Int): Void {
     var now: Float = Timer.stamp();
     asyncThread.sendMessage(Tuple.create(["run", doSleep, Tuple.create([process, now, now + (milliseconds / 1000)])]));
   }
 
-  public static function doSleep(process: SimpleProcess, startTime: Float, endTime: Float): Tuple {
+  public static function doSleep(process: Pid, startTime: Float, endTime: Float): Tuple {
     if(startTime >= endTime) {
       if(process.state == ProcessState.SLEEPING) {
         Process.running(process);
@@ -120,11 +120,11 @@ class UntestedScheduler {
     return Tuple.create(["run", doSleep, Tuple.create([process, Timer.stamp(), endTime])]);
   }
 
-  public static function receive(process: SimpleProcess, callback: Function): Void {
+  public static function receive(process: Pid, callback: Function): Void {
     asyncThread.sendMessage(Tuple.create(["run", doReceive, Tuple.create([process, callback, 0])]));
   }
 
-  public static function doReceive(process: SimpleProcess, callback: Function, mailboxIndex: Int): Tuple {
+  public static function doReceive(process: Pid, callback: Function, mailboxIndex: Int): Tuple {
     var data = process.mailbox[mailboxIndex % process.mailbox.length];
     if(data != null) {
       if(process.state == ProcessState.WAITING) {
@@ -146,7 +146,7 @@ class UntestedScheduler {
 
   public static function workerThread(): Void {
     while(true) {
-      var process: SimpleProcess = Thread.readMessage(true);
+      var process: Pid = Thread.readMessage(true);
       if(process == null) {
         return;
       }

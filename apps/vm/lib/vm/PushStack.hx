@@ -61,7 +61,7 @@ class PushStack implements Operation {
       Logger.inspect('operations is null!');
       return;
     }
-    var annaCallStack: AnnaCallStack = new AnnaCallStack(operations, nextScopeVariables);
+    var annaCallStack: AnnaCallStack = new DefaultAnnaCallStack(operations, nextScopeVariables);
     processStack.add(annaCallStack);
   }
 

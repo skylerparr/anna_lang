@@ -70,9 +70,9 @@ class AnnaLangProject {
     }
     projectApps.push('${appRoot}${MAIN_SRC_DIR}');
 
-    var hxLibs: Array<String> = ['hscript-plus', 'sepia', 'mockatoo'];
+    var hxLibs: Array<String> = ['hscript-plus', 'sepia', 'mockatoo'].concat(this.haxeLibs);
 
-    return new DefaultProjectConfig(nameify(application.value), srcDir, OUTPUT_DIR, projectApps, this.haxeLibs);
+    return new DefaultProjectConfig(nameify(application.value), srcDir, OUTPUT_DIR, projectApps, hxLibs);
   }
 
   public function getProjectTestsConfig(): ProjectConfig {

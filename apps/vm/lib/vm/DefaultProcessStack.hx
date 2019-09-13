@@ -1,15 +1,15 @@
 package vm;
 
-class ProcessStack {
+class DefaultProcessStack implements ProcessStack {
   private static var _id: Int = 0;
 
   public var allStacks: List<AnnaCallStack> = new List<AnnaCallStack>();
   public var currentStack: AnnaCallStack;
-  private var process: SimpleProcess;
+  private var process: Pid;
   private var executionCount: Int;
   public var id: Int;
 
-  public function new(process: SimpleProcess) {
+  public function new(process: Pid) {
     this.process = process;
     this.id = _id++;
   }

@@ -47,6 +47,13 @@ class Runner {
     return 'ok'.atom();
   }
 
+  public static function compileVMAPIProject(): Atom {
+    trace("compiling vm api project");
+    var annaProject: AnnaLangProject = Application.getProjectConfig('vm_api'.atom());
+    var files = Anna.compileProject(annaProject.getProjectConfig());
+    return 'ok'.atom();
+  }
+
   public static function compileLangProject(): Atom {
     trace("Compiling lang project");
     var annaProject: AnnaLangProject = Application.getProjectConfig('lang'.atom());
@@ -82,6 +89,7 @@ class Runner {
 
   public static function compileAll(): Void {
     compileLangProject();
+    compileVMAPIProject();
     compileVMProject();
     compileAcceptanceTests();
   }

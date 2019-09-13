@@ -6,7 +6,6 @@ import haxe.Timer;
 import lang.EitherSupport;
 import util.TimeUtil;
 import vm.Classes.Function;
-import vm.SimpleProcess;
 
 using lang.AtomSupport;
 
@@ -39,40 +38,40 @@ class Kernel {
     return 'ok'.atom();
   }
 
-  public static function testSpawn(): SimpleProcess {
+  public static function testSpawn(): Pid {
     start();
     return spawn('Boot'.atom(), 'start_'.atom(), LList.create([]));
   }
 
-  public static function spawnCompiler(): SimpleProcess {
+  public static function spawnCompiler(): Pid {
     start();
     return spawn('AnnaLangCompiler'.atom(), 'start_'.atom(), LList.create([]));
   }
 
-  public static function spawnFunctionPatternMatch(): SimpleProcess {
+  public static function spawnFunctionPatternMatch(): Pid {
     start();
     return spawn('FunctionPatternMatching'.atom(), 'start_'.atom(), LList.create([]));
   }
 
-  public static function spawn(module: Atom, fun: Atom, args: LList): SimpleProcess {
+  public static function spawn(module: Atom, fun: Atom, args: LList): Pid {
     var process: SimpleProcess = new SimpleProcess(0, current_id++, 0, new PushStack(module, fun, args, "Kernel".atom(), "spawn".atom(), 51));
     UntestedScheduler.communicationThread.sendMessage(KernelMessage.SCHEDULE(process));
     return process;
   }
 
-  public static function receive(callback: Function): SimpleProcess {
-    var process: SimpleProcess = Process.self();
+  public static function receive(callback: Function): Pid {
+    var process: Pid = Process.self();
     Process.waiting(process);
     UntestedScheduler.communicationThread.sendMessage(KernelMessage.RECEIVE(process, callback));
     return process;
   }
 
-  public static function send(process: SimpleProcess, payload: Dynamic): Atom {
+  public static function send(process: Pid, payload: Dynamic): Atom {
     UntestedScheduler.communicationThread.sendMessage(KernelMessage.SEND(process, payload));
     return 'ok'.atom();
   }
 
-  public static function apply(process: SimpleProcess, fn: Function, args: LList, callback: Dynamic->Void = null): Void {
+  public static function apply(process: Pid, fn: Function, args: LList, callback: Dynamic->Void = null): Void {
     if(fn == null) {
       //TODO: handle missing function error
       Logger.inspect('throw a crazy error and kill the process!');
@@ -111,7 +110,7 @@ class Kernel {
       var op = new InvokeCallback(callback, "Kernel".atom(), "apply".atom(), 105);
       operations.push(op);
     }
-    var annaCallStack: AnnaCallStack = new AnnaCallStack(operations, nextScopeVariables);
+    var annaCallStack: AnnaCallStack = new DefaultAnnaCallStack(operations, nextScopeVariables);
     process.processStack.add(annaCallStack);
   }
 

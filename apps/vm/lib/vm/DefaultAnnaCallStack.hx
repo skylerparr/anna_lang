@@ -1,6 +1,6 @@
 package vm;
 
-class AnnaCallStack {
+class DefaultAnnaCallStack implements AnnaCallStack {
   private static var _id: Int = 0;
 
   public var operations: Array<Operation>;

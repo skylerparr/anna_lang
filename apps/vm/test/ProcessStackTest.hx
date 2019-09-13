@@ -1,17 +1,19 @@
 package ;
 
+import vm.ProcessStack;
+import vm.AnnaCallStack;
+import vm.DefaultAnnaCallStack;
 import vm.Operation;
 import anna_unit.Assert;
 import vm.SimpleProcess;
-import vm.AnnaCallStack;
-import vm.ProcessStack;
+import vm.DefaultProcessStack;
 @:build(lang.macros.Macros.build())
 class ProcessStackTest {
 
-  private static var stack: ProcessStack;
+  private static var stack: DefaultProcessStack;
 
   public static function setup(): Void {
-    stack = new ProcessStack(new SimpleProcess(1, 2, 3, op()));
+    stack = new DefaultProcessStack(new SimpleProcess(1, 2, 3, op()));
   }
 
   public static function shouldAddAnnaCallStackToTheProcessStack(): Void {
@@ -60,7 +62,7 @@ class ProcessStackTest {
     for(i in 0...opCount) {
       ops.push(op());
     }
-    return new AnnaCallStack(ops, createMap());
+    return new DefaultAnnaCallStack(ops, createMap());
   }
 
   private static function createMap(): Map<String, Dynamic> {
