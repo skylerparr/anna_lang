@@ -8,6 +8,7 @@ class Classes {
 
   @field public static var classes: Map<Atom, Class<Dynamic>>;
   @field public static var functions: Map<Atom, Map<Atom, Function>>;
+  @field public static var instances: Map<Atom, Dynamic>;
 
   private static inline var PREFIX: String = '___';
   private static inline var SUFFIX: String = '_args';
@@ -15,6 +16,10 @@ class Classes {
   public static function clear(): Void {
     classes = null;
     functions = null;
+  }
+
+  public static function getInstance(className: Atom): Dynamic {
+    return instances.get(className);
   }
 
   public static inline function define(className: Atom, classDef: Class<Dynamic>): Void {
@@ -30,7 +35,12 @@ class Classes {
     if(funMap == null) {
       funMap = new Map<Atom, Function>();
     }
-    var funcs: Array<Dynamic> = Type.getClassFields(classDef);
+    var instance: Dynamic = Type.createInstance(classDef, []);
+    if(instances == null) {
+      instances = new Map<Atom, Dynamic>();
+    }
+    instances.set(className, instance);
+    var funcs: Array<String> = Type.getInstanceFields(classDef);
     var funIndex: Int = 0;
     for(fun in funcs) {
       if(StringTools.startsWith(fun, PREFIX)) {
@@ -46,7 +56,7 @@ class Classes {
         if(fn == null) {
           fn = {fn: null, args: null};
         }
-        var args: Array<String> = Reflect.getProperty(classDef, fun);
+        var args: Array<String> = Reflect.getProperty(instance, fun);
         fn.args = args;
         classFunctions.set(origFnAtom, fn);
         functions.set(className, classFunctions);
@@ -60,7 +70,7 @@ class Classes {
         if(fn == null) {
           fn = {fn: null, args: null};
         }
-        fn.fn = Reflect.field(classDef, fun);
+        fn.fn = Reflect.field(instance, fun);
         classFunctions.set(origFnAtom, fn);
         functions.set(className, classFunctions);
       }

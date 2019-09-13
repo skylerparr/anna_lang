@@ -25,6 +25,7 @@ class PushStack implements Operation {
 
   public function execute(scopeVariables: Map<String, Dynamic>, processStack: ProcessStack): Void {
     var fn: Function = Classes.getFunction(module, func);
+    var instance: Dynamic = Classes.getInstance(module);
     if(fn == null) {
       //TODO: handle missing function error
       Logger.inspect('throw a crazy error and kill the process!');
@@ -54,7 +55,7 @@ class PushStack implements Operation {
       nextScopeVariables.set(argName, value);
     }
     callArgs.push(nextScopeVariables);
-    var operations: Array<Operation> = Reflect.callMethod(null, fn.fn, callArgs);
+    var operations: Array<Operation> = Reflect.callMethod(instance, fn.fn, callArgs);
     if(operations == null) {
       //TODO: handle missing function error
       Logger.inspect('operations is null!');

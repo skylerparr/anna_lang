@@ -40,19 +40,16 @@ class Kernel {
   }
 
   public static function testSpawn(): SimpleProcess {
-    Sys.sleep(0.3);
     start();
     return spawn('Boot'.atom(), 'start_'.atom(), LList.create([]));
   }
 
   public static function spawnCompiler(): SimpleProcess {
-    Sys.sleep(0.3);
     start();
     return spawn('AnnaLangCompiler'.atom(), 'start_'.atom(), LList.create([]));
   }
 
   public static function spawnFunctionPatternMatch(): SimpleProcess {
-    Sys.sleep(0.3);
     start();
     return spawn('FunctionPatternMatching'.atom(), 'start_'.atom(), LList.create([]));
   }

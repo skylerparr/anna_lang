@@ -4,5 +4,5 @@
   "apps": ["lang", "vm"],
   "libs": [],
   "tests": [],
-  "haxelibs": ["mockatoo"]
+  "haxelibs": []
 }

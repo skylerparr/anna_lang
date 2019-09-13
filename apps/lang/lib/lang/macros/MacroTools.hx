@@ -114,7 +114,7 @@ class MacroTools {
     var varName: String = '_${name}';
 
     return {
-      access: [APublic, AStatic],
+      access: [APublic],
       kind: FFun({
         args: params,
         expr: null,
@@ -129,7 +129,7 @@ class MacroTools {
     var varName: String = '_${name}';
 
     return {
-      access: [APrivate, AStatic, AInline],
+      access: [APrivate, AInline],
       kind: FFun({
         args: params,
         expr: null,
@@ -151,7 +151,7 @@ class MacroTools {
       kind: FVar(varType, buildBlock(varBody)),
       name: funName,
       pos: Context.currentPos(),
-      access: [AStatic,APublic]
+      access: [APublic]
     }
   }
 
