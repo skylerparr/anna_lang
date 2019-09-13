@@ -52,15 +52,7 @@ class LList implements CustomType {
   public function toAnnaString(): String {
     return '';
   }
-
-  public function toHaxeString(): String {
-    return '';
-  }
-
-  public function toPattern(patternArgs: Array<KeyValue<String,String>> = null): String {
-    return '';
-  }
-
+  
   public function toString(): String {
     return "LList";
   }
@@ -211,33 +203,6 @@ class AnnaList<T> extends LList {
       _annaString = '{${s}}';
     }
     return _annaString;
-  }
-
-  override public function toHaxeString(): String {
-    var s = new StringBuf();
-    var first = true;
-    var l = h;
-    while(l != null) {
-      if(first) {
-        first = false;
-      } else {
-        s.add(', ');
-      }
-      s.add(Anna.toHaxeString(l.item));
-      l = l.next;
-    }
-    return 'lang.CustomTypes.createList("${type}", [${s}])';
-  }
-
-  override public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
-    if(patternArgs == null) {
-      patternArgs = [];
-    }
-    var retVal: Array<String> = [];
-    for(pattern in patternArgs) {
-      retVal.push('${pattern.key}: ${pattern.value}');
-    }
-    return '{${retVal.join(', ')}}';
   }
 
   public function _iterator(): ListIterator<T> {

@@ -36,14 +36,6 @@ class MMap implements CustomType {
   public function toAnnaString(): String {
     return '';
   }
-
-  public function toHaxeString(): String {
-    return '';
-  }
-
-  public function toPattern(patternArgs: Array<KeyValue<String,String>> = null): String {
-    return '';
-  }
 }
 
 @:generic
@@ -117,18 +109,6 @@ class AnnaMap<K, V> extends MMap implements CustomType {
       _annaString = '%{${items.join(', ')}}';
     }
     return _annaString;
-  }
-
-  override public function toHaxeString(): String {
-    var mapArgs: Array<String> = [];
-    for(key in map.keys()) {
-      mapArgs.push('${Anna.toHaxeString(key)} => ${Anna.toHaxeString(map.get(key))}');
-    }
-    return 'lang.CustomTypes.createMap("${keyType}", "${valueType}", cast [ ${mapArgs.join(', ')} ])';
-  }
-
-  override public function toPattern(patternArgs: Array<KeyValue<String,String>> = null): String {
-    return '';
   }
 
   public function toString(): String {

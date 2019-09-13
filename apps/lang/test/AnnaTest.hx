@@ -75,14 +75,6 @@ class AnnaTest {
     Assert.areEqual(Anna.inspect(map), '#M%{:bar => "bar", :cat => "cat", :foo => "foo"}');
   }
 
-  public static function shouldPrintMapAsHaxeMap(): Void {
-    var map: ObjectMap<Dynamic, Dynamic> = new ObjectMap();
-    map.set('foo'.atom(), "foo");
-    map.set('bar'.atom(), "bar".atom());
-    map.set('cat'.atom(), "cat");
-    Assert.areEqual(map.asHaxeString(), '[AtomSupport.atom("bar") => AtomSupport.atom("bar"), AtomSupport.atom("cat") => "cat", AtomSupport.atom("foo") => "foo"]');
-  }
-
   public static function shouldPrintCustomTypes(): Void {
     var sct: SampleCustomType = new SampleCustomType('name'.atom(), 'type'.atom());
     Assert.areEqual(Anna.toAnnaString(sct), '%SampleCustomType{:name => :name, :type => :type}');
@@ -90,7 +82,7 @@ class AnnaTest {
 
   public static function shouldPrintDynamicTypeToMap(): Void {
     var dyn: Dynamic = {foo: 'bar'.atom(), baz: 'cat'.atom()};
-    Assert.areEqual(Anna.inspect(dyn), '{ baz: AtomSupport.atom("cat"), foo: AtomSupport.atom("bar") }');
+    Assert.areEqual(Anna.inspect(dyn), '{ baz: :cat, foo: :bar }');
   }
 
   public static function shouldPrintBasicObject(): Void {
@@ -118,13 +110,5 @@ class SampleCustomType implements CustomType {
 
   public function toAnnaString(): String {
     return CustomTypePrinter.asString(this);
-  }
-
-  public function toHaxeString(): String {
-    return '';
-  }
-
-  public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
-    return '';
   }
 }

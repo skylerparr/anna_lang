@@ -24,15 +24,4 @@ class SimpleProcess implements Pid {
   public function toAnnaString(): String {
     return '#PID<${server_id}.${group_id}.${instance_id}>';
   }
-
-  public function toHaxeString(): String {
-    return '';
-  }
-
-  public function toPattern(patternArgs: Array<KeyValue<String,String>> = null): String {
-    return '';
-  }
-
-
-
 }

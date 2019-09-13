@@ -58,39 +58,6 @@ class Anna {
     return val;
   }
 
-  public static inline function toHaxeString(val: Any): String {
-    return {
-      switch(Type.typeof(val)) {
-        case TInt | TFloat:
-          val;
-        case TClass(Atom):
-          '${((val : Atom).toHaxeString())}';
-        case TClass(String):
-          '"${val}"';
-        case TClass(haxe.ds.ObjectMap):
-          MapPrinter.asHaxeString((val : ObjectMap<Dynamic, Dynamic>));
-        case TClass(haxe.ds.StringMap):
-          StringMapPrinter.asHaxeString((val : Map<String, Dynamic>));
-        case TClass(Array):
-          '${val}';
-        case TObject:
-          inspectDynamic(val);
-        case TBool:
-          '${(val : Bool)}';
-        case TNull:
-          'nil';
-        case TEnum(_) | TFunction | TUnknown:
-          '${val}';
-        case _:
-          if(Std.is(val, CustomType)) {
-            (val : CustomType).toHaxeString();
-          } else {
-            inspectObject(val);
-          }
-      }  
-    }
-  }
-
   public static inline function toAnnaString(val: Any): String {
     return {
       switch(Type.typeof(val)) {
@@ -141,39 +108,6 @@ class Anna {
     }
   }
 
-  public static inline function toHaxePattern(val: Any, patternArgs: Array<KeyValue<String, String>> = null): String {
-    return {
-      switch(Type.typeof(val)) {
-        case TClass(String):
-          '"${val}"';
-        case TClass(haxe.ds.ObjectMap):
-          MapPrinter.asHaxeString((val : ObjectMap<Dynamic, Dynamic>));
-        case TClass(haxe.ds.StringMap):
-          StringMapPrinter.asHaxeString((val : Map<String, Dynamic>));
-        case TClass(Array):
-          '${val}';
-        case TClass(Atom):
-          '${((val : Atom).toPattern(patternArgs))}';
-        case TObject:
-          '${val}';
-        case TInt | TFloat:
-          val;
-        case TBool:
-          '${(val : Bool)}';
-        case TNull:
-          'nil';
-        case TEnum(_) | TFunction | TUnknown:
-          '${val}';
-        case _:
-          if(Std.is(val, CustomType)) {
-            (val : CustomType).toPattern(patternArgs);
-          } else {
-            inspectObject(val);
-          }
-      }
-    }
-  }
-
   public static function inspect(val: Any): String {
     return toAnnaString(val);
   }
@@ -199,7 +133,7 @@ class Anna {
     });
     for(key in keys) {
       var value: Dynamic = Reflect.field(dyn, key);
-      kv.push('${key}: ${toHaxeString(value)}');
+      kv.push('${key}: ${toAnnaString(value)}');
     }
     return '{ ${kv.join(', ')} }';
   }

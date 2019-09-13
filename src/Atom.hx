@@ -32,18 +32,6 @@ class Atom implements CustomType {
     return retVal;
   }
 
-  public function toHaxeString(): String {
-    return 'AtomSupport.atom("${value}")';
-  }
-
-  public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
-    return '{value: ${value}}';
-  }
-
-  public function toString(): String {
-    return 'AtomSupport.atom("${value}")';
-  }
-
   public static function to_s(atom: Atom): String {
     return atom.value;
   }

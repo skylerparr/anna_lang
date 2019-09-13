@@ -134,51 +134,6 @@ class MapPrinter {
     }
     return '#M%{${kv.join(', ')}}';
   }
-
-  public static function asHaxeString(map: ObjectMap<Dynamic, Dynamic>): String {
-    var kv: Array<String> = [];
-    var keys: Array<Dynamic> = [];
-    for(key in map.keys()) {
-      keys.push(key);
-    }
-    keys.sort( function(a:Dynamic, b:Dynamic):Int {
-      if(Std.is(a, Atom) && Std.is(b, Atom)) {
-        if (a.value < b.value) return -1;
-        if (a.value > b.value) return 1;
-      } else if(Std.is(a, String) && Std.is(b, String)) {
-        if (a.toLowerCase() < b.toLowerCase()) return -1;
-        if (a.toLowerCase() > b.toLowerCase()) return 1;
-      } else {
-        if (a < b) return -1;
-        if (a > b) return 1;
-      }
-      return 0;
-    });
-    for(key in keys) {
-      var keyString: String = '';
-      if(key == null) {
-        key = 'nil'.atom();
-      }
-      if(Std.is(key, String)) {
-        keyString = '"${key}"';
-      } else {
-        keyString = Anna.toHaxeString(key);
-      }
-      var value: Dynamic = map.get(key);
-      var valueString: String = '';
-      if(value == null) {
-        value = 'nil'.atom();
-      }
-      if(Std.is(value, String)) {
-        valueString = '"${value}"';
-      } else {
-        valueString = Anna.toHaxeString(value);
-      }
-
-      kv.push('${keyString} => ${valueString}');
-    }
-    return '[${kv.join(', ')}]';
-  }
 }
 
 class StringPrinter {

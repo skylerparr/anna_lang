@@ -1,6 +1,6 @@
 package vm;
-//import EitherEnums.Either1;
-//import Tuple.Tuple2;
+import EitherEnums.Either1;
+import Tuple.Tuple2;
 interface Scheduler {
   /**
   * Starts the vm if it's not already running.
@@ -41,17 +41,17 @@ interface Scheduler {
   */
   function update(): Void;
 
-//  function spawn(fn: Void->Dynamic): Pid;
-//
-//  function spawn_link(fn: Void->Dynamic): Tuple2<Either1<Atom>, Either1<String>>;
-//
-//  function monitor(pid: Pid): Atom;
-//
-//  function demonitor(pid: Pid): Atom;
-//
-//  function flag(pid: Pid, flag: Atom, value: Atom): Atom;
-//
-//  function exit(pid: Pid, signal: Atom): Atom;
-//
-//  function apply(fn: Dynamic, onComplete: Dynamic->Void): Void;
+  function spawn(fn: Void->Dynamic): Pid;
+
+  function spawn_link(fn: Void->Dynamic): Tuple2<Either1<Atom>, Either1<String>>;
+
+  function monitor(pid: Pid): Atom;
+
+  function demonitor(pid: Pid): Atom;
+
+  function flag(pid: Pid, flag: Atom, value: Atom): Atom;
+
+  function exit(pid: Pid, signal: Atom): Atom;
+
+  function apply(fn: Dynamic, onComplete: Dynamic->Void): Void;
 }

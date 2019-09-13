@@ -14,16 +14,4 @@ class KeyValue<K, V> implements CustomType {
     return '%KeyValue{key: ${key}, value: ${value}}';
   }
 
-  public function toHaxeString(): String {
-    return 'new KeyValue<>(${key}, ${value})';
-  }
-
-  public function toPattern(patternArgs: Array<KeyValue<String, String>> = null): String {
-    var retVal: Array<String> = [];
-    for(pattern in patternArgs) {
-      retVal.push('${pattern.key}: ${pattern.value}');
-    }
-    return '{${retVal.join(', ')}}';
-  }
-
 }
