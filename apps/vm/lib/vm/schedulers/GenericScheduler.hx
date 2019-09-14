@@ -148,7 +148,7 @@ class GenericScheduler implements Scheduler {
     if(notRunning()) {
       return;
     }
-    var operations: Array<Operation> = fn.invoke();
+    var operations: Array<Operation> = fn.invoke([scopeVariables]);
     if(callback != null) {
       var op = new InvokeCallback(callback, "GenericScheduler".atom(), "apply".atom(), MacroTools.line());
       operations.push(op);

@@ -48,34 +48,24 @@ class Kernel {
 
   public static function testGenericScheduler(): Atom {
     defineCode();
-    thread = Thread.create(function () {
-      var scheduler: GenericScheduler = new GenericScheduler();
-      ObjectFactory.injector.mapClass(Pid, SimpleProcess);
-      scheduler.objectCreator = cast ObjectFactory.injector.getInstance(ObjectCreator);
-      currentScheduler = scheduler;
-      currentScheduler.start();
+    var scheduler: GenericScheduler = new GenericScheduler();
+    ObjectFactory.injector.mapClass(Pid, SimpleProcess);
+    scheduler.objectCreator = cast ObjectFactory.injector.getInstance(ObjectCreator);
+    currentScheduler = scheduler;
+    currentScheduler.start();
 
-      currentScheduler.spawn(function() {
-        return new PushStack('Boot'.atom(), 'start_'.atom(), LList.create([]), "Kernel".atom(), "testGenericScheduler".atom(), MacroTools.line());
-      });
-
-      while(Thread.readMessage(true)) {
-        currentScheduler.update();
-        if(scheduler.processes.length() == 0 && scheduler.sleepingProcesses.length() == 0) {
-          thread = null;
-        }
-      }
+    currentScheduler.spawn(function() {
+      return new PushStack('Boot'.atom(), 'start_'.atom(), LList.create([]), "Kernel".atom(), "testGenericScheduler".atom(), MacroTools.line());
     });
 
     return "ok".atom();
   }
 
   public static function update(): Void {
-    while(true) {
-      if(thread == null) {
-        break;
-      }
-      thread.sendMessage(true);
+    var counter: Int = 1000;
+    while(counter > 0) {
+      counter--;
+      currentScheduler.update();
     }
   }
 
@@ -147,7 +137,7 @@ class Kernel {
       nextScopeVariables.set(argName, value);
     }
 
-    var operations: Array<Operation> = fn.invoke();
+    var operations: Array<Operation> = fn.invoke(callArgs);
     if(callback != null) {
       var op = new InvokeCallback(callback, "Kernel".atom(), "apply".atom(), 105);
       operations.push(op);

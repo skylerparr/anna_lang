@@ -7,7 +7,7 @@ class SimpleFunction implements Function {
   public function new() {
   }
 
-  public function invoke(): Array<Operation> {
-    return Reflect.callMethod(null, fn, args);
+  public function invoke(callArgs: Array<Dynamic>): Array<Operation> {
+    return Reflect.callMethod(null, fn, callArgs);
   }
 }

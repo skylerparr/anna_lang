@@ -262,12 +262,12 @@ class GenericSchedulerTest {
     });
 
     pid.processStack.returns(processStack);
-    func.invoke().returns(operations);
+    func.invoke(cast any).returns(operations);
 
     scheduler.start();
     scheduler.apply(pid, func, new Map<String, Dynamic>(), function(r) {});
 
-    func.invoke().verify();
+    func.invoke(cast any).verify();
     processStack.add(cast any).verify();
 
     @assert allOperations.length == 2;
@@ -285,12 +285,12 @@ class GenericSchedulerTest {
     });
 
     pid.processStack.returns(processStack);
-    func.invoke().returns(operations);
+    func.invoke(cast any).returns(operations);
 
     scheduler.start();
     scheduler.apply(pid, func, new Map<String, Dynamic>(), null);
 
-    func.invoke().verify();
+    func.invoke(cast any).verify();
     processStack.add(cast any).verify();
 
     @assert allOperations.length == 1;
@@ -308,11 +308,11 @@ class GenericSchedulerTest {
     });
 
     pid.processStack.returns(processStack);
-    func.invoke().returns(operations);
+    func.invoke(cast any).returns(operations);
 
     scheduler.apply(pid, func, new Map<String, Dynamic>(), function(r) {});
 
-    func.invoke().verify(never);
+    func.invoke(cast any).verify(never);
     processStack.add(cast any).verify(never);
 
     @assert allOperations == null;

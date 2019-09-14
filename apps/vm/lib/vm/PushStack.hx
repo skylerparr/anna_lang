@@ -55,7 +55,7 @@ class PushStack implements Operation {
       nextScopeVariables.set(argName, value);
     }
     callArgs.push(nextScopeVariables);
-    var operations: Array<Operation> = fn.invoke();
+    var operations: Array<Operation> = fn.invoke(callArgs);
     if(operations == null) {
       //TODO: handle missing function error
       Logger.inspect('operations is null!');

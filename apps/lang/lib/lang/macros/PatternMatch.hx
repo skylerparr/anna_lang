@@ -29,7 +29,6 @@ class PatternMatch {
       }
       scope;
     }
-
     return retVal;
   }
 
