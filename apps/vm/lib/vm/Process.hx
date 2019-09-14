@@ -55,6 +55,7 @@ class Process {
 //    var process: Pid = self();
 //    Reflect.setField(process, 'state', ProcessState.SLEEPING);
 //    UntestedScheduler.sleep(process, milliseconds);
+    Kernel.currentScheduler.sleep(self(), milliseconds);
     return 'ok'.atom();
   }
 

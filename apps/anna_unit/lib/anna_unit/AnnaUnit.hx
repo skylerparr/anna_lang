@@ -63,10 +63,15 @@ class AnnaUnit {
           Reflect.callMethod(clazz, fun, []);
           successCounter++;
         } catch(e: Dynamic) {
+          var message: String = e.message;
+          if(message == null) {
+            trace(e);
+            message = e;
+          }
           failureCounter++;
           cpp.Lib.println('');
           cpp.Lib.println('failure testing ${clazz}#${field}');
-          cpp.Lib.println('${Type.getClassName(Type.getClass(e))} message: ${e.message}');
+          cpp.Lib.println('${Type.getClassName(Type.getClass(e))} message: ${message}');
           testsToRunNextTime.push(field);
           continue;
         }

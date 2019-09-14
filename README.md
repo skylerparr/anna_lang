@@ -158,7 +158,7 @@ so that I can disable the different log levels and save the line number
 - [ ] need to update the sepia library to be a bit more like a compiler and not a CLI
 - [x] create a configuration method for adding applications to a project
 - [x] after creating a configuration method, that leads into external libraries to be loaded or compiled in
-- [x] create a dependency graph and create an intelligent way to compile cppia libraries without compiling the entire binary
+- [] create a dependency graph and create an intelligent way to compile cppia libraries without compiling the entire binary
 
 # Language features (in progress)
 

@@ -16,6 +16,7 @@ class Kernel {
 
   @field public static var current_id: Int;
   @field public static var currentScheduler: Scheduler;
+  @field public static var thread: Thread;
 
   public static function start(): Atom {
     if(UntestedScheduler.communicationThread == null) {
@@ -45,8 +46,6 @@ class Kernel {
     return 'ok'.atom();
   }
 
-  private static var thread: Thread;
-
   public static function testGenericScheduler(): Atom {
     defineCode();
     thread = Thread.create(function () {
@@ -62,7 +61,7 @@ class Kernel {
 
       while(Thread.readMessage(true)) {
         currentScheduler.update();
-        if(scheduler.processes.length() == 0 && scheduler.sleepingProcesses.length == 0) {
+        if(scheduler.processes.length() == 0 && scheduler.sleepingProcesses.length() == 0) {
           thread = null;
         }
       }

@@ -1,5 +1,10 @@
 package util;
+import haxe.Timer;
 class TimeUtil {
+  public static function nowInMillis(): Int {
+    return Std.int(Timer.stamp() * 1000);
+  }
+
   public static function getHumanTime(microSeconds: Float): String {
     return switch(microSeconds) {
       case val if(microSeconds < 1):

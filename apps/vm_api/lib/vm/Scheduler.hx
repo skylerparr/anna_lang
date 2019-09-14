@@ -23,7 +23,7 @@ interface Scheduler {
   /**
   * pauses the process for number of milliseconds
   */
-  function sleep(pid: Pid, milliseconds: Float): Pid;
+  function sleep(pid: Pid, milliseconds: Int): Pid;
   /**
   * sends a process some data
   * returns @_"ok" if success, @_"error" if fail
@@ -33,7 +33,7 @@ interface Scheduler {
   * Tells the process to check its mailbox and if the mailbox is empty
   * block until mail is handled
   */
-  function receive(process: Pid, callback: Dynamic->Void, timeout: Float = -1): Void;
+  function receive(process: Pid, callback: Dynamic->Void, timeout: Int = -1): Void;
   /**
   * This must be called as the main async loop.
   */

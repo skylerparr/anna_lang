@@ -1,5 +1,6 @@
 package ;
 
+import haxe.Timer;
 import lang.macros.MacroTools;
 import vm.AnnaCallStack;
 import vm.InvokeCallback;
@@ -219,7 +220,7 @@ class GenericSchedulerTest {
     scheduler.start();
     scheduler.receive(pid, function(v) {});
     pid.setState(ProcessState.WAITING).verify();
-    @assert scheduler.sleepingProcesses.length == 1;
+    @assert scheduler.sleepingProcesses.length() == 1;
   }
 
   public static function shouldDoNothingIfPutIntoReceiveModeAndTheSchedulerIsntRunning(): Void {
@@ -344,7 +345,7 @@ class GenericSchedulerTest {
     scheduler.start();
     Assert.areSameInstance(scheduler.sleep(pid, 300), pid);
     pid.setState(ProcessState.SLEEPING).verify();
-    @assert scheduler.sleepingProcesses.length == 1;
+    @assert scheduler.sleepingProcesses.length() == 1;
     Assert.areSameInstance(scheduler.sleepingProcesses.pop().pid, pid);
   }
 
@@ -353,5 +354,31 @@ class GenericSchedulerTest {
     pid.state.returns(ProcessState.RUNNING);
     Assert.areSameInstance(scheduler.sleep(pid, 300), pid);
     pid.setState(ProcessState.SLEEPING).verify(never);
+  }
+
+  public static function pidsShouldBeExecutedAfterSleepCompletes(): Void {
+    var createdPid: Pid = mock(Pid);
+    var operation: Operation = mock(Operation);
+    var processStack: ProcessStack = mock(ProcessStack);
+    createdPid.processStack.returns(processStack);
+    objectCreator.createInstance(cast any, cast any).returns(createdPid);
+    createdPid.state.returns(ProcessState.RUNNING);
+
+    var timeout: Float = 1; // timeout after 1 second
+    var now: Float = Timer.stamp();
+
+    scheduler.start();
+    var pid = scheduler.spawn(function() { return operation; });
+    scheduler.sleep(pid, 2);
+    while(scheduler.processes.length() != 0 && scheduler.sleepingProcesses.length() != 0) {
+      scheduler.update();
+      if(Timer.stamp() - now > timeout) {
+        Assert.fail("Test timed out");
+        break;
+      }
+    }
+    Assert.success();
+    createdPid.setState(ProcessState.SLEEPING).verify();
+    createdPid.setState(ProcessState.RUNNING).verify();
   }
 }

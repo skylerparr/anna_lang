@@ -80,6 +80,8 @@ using lang.AtomSupport;
     one_hundred = "100";
     @native IO.inspect("getting self");
     pid = @native Process.self();
+    @native IO.inspect("sleeping");
+    @native Process.sleep(1000);
     counter = @native Kernel.add(23, 491);
     @native IO.inspect(counter);
     @native IO.inspect(null);

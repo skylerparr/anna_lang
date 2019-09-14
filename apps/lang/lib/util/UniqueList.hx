@@ -2,12 +2,16 @@ package util;
 
 import haxe.ds.ObjectMap;
 class UniqueList<T> {
-  private var list: List<T>;
+  private var array: Array<T>;
   private var map: ObjectMap<Dynamic, T>;
 
   public function new() {
-    list = new List<T>();
+    array = [];
     map = new ObjectMap<Dynamic, T>();
+  }
+
+  public function asArray(): Array<T> {
+    return array;
   }
 
   public function push(item: T): T {
@@ -15,7 +19,7 @@ class UniqueList<T> {
       return item;
     }
     map.set(item, item);
-    list.push(item);
+    array.push(item);
     return item;
   }
 
@@ -24,29 +28,34 @@ class UniqueList<T> {
       return item;
     }
     map.set(item, item);
-    list.add(item);
+    array.unshift(item);
     return item;
   }
 
   public function first(): T {
-    return list.first();
+    return array[0];
   }
 
   public function pop(): T {
-    var item: T = list.pop();
+    var item: T = array.pop();
     map.remove(item);
     return item;
   }
 
   public function unshift(): T {
-    var item: T = list.first();
-    list.remove(item);
+    var item: T = array[0];
+    array.remove(item);
     map.remove(item);
     return item;
   }
 
+  public function remove(item: T): Bool {
+    array.remove(item);
+    return map.remove(item);
+  }
+
   public function length(): Int {
-    return list.length;
+    return array.length;
   }
 
 }

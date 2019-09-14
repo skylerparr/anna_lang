@@ -182,7 +182,7 @@ class Macros {
       case EUntyped(e):
          throw "AnnaLang: Unimplemented case";
       case EWhile(econd, e, normalWhile):
-        throw "AnnaLang: Unimplemented case";
+        retValBlock.push(expr);
     }
     if(retValBlock.length == 1) {
       return retValBlock[0];
