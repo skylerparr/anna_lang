@@ -1,6 +1,6 @@
 package vm;
 import cpp.vm.Thread;
-import vm.Classes.Function;
+import vm.Function;
 using lang.AtomSupport;
 class Process {
   public static function putInMailbox(process: Pid, value: Dynamic): Void {
@@ -13,7 +13,7 @@ class Process {
 
   public static function isAlive(process: Pid): Atom {
     return switch(process.state) {
-      case ProcessState.COMPLETE | ProcessState.KILLED:
+      case ProcessState.COMPLETE | ProcessState.KILLED | ProcessState.CRASHED:
         'false'.atom();
       case _:
         'true'.atom();
@@ -41,19 +41,20 @@ class Process {
   }
 
   public static function receive(process: Pid, callback: Function): Atom {
-    UntestedScheduler.receive(process, callback);
+//    UntestedScheduler.receive(process, callback);
     return 'ok'.atom();
   }
 
   public static function self(): Pid {
-    var process: Pid = UntestedScheduler.threadProcessMap.get(Thread.current().handle);
-    return process;
+//    var process: Pid = UntestedScheduler.threadProcessMap.get(Thread.current().handle);
+    var pid: Pid = Kernel.currentScheduler.self();
+    return pid;
   }
 
   public static function sleep(milliseconds: Int): Atom {
-    var process: Pid = self();
-    Reflect.setField(process, 'state', ProcessState.SLEEPING);
-    UntestedScheduler.sleep(process, milliseconds);
+//    var process: Pid = self();
+//    Reflect.setField(process, 'state', ProcessState.SLEEPING);
+//    UntestedScheduler.sleep(process, milliseconds);
     return 'ok'.atom();
   }
 

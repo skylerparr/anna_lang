@@ -81,7 +81,11 @@ class Anna {
           'nil';
         case type:
           if(Std.is(val, CustomType)) {
-            (val : CustomType).toAnnaString();
+            var retVal: String = (val : CustomType).toAnnaString();
+            if(retVal == null) {
+              retVal = '${type}';
+            }
+            retVal;
           } else {
             switch(type) {
               case TFunction | TUnknown:

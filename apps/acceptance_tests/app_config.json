@@ -1,8 +1,8 @@
 {
   "application": "acceptance_tests",
   "autoStart": null,
-  "apps": ["vm_api", "vm", "lang"],
+  "apps": ["vm_api", "vm", "lang", "debugger"],
   "libs": [],
   "tests": [],
-  "haxelibs": []
+  "haxelibs": ["minject"]
 }

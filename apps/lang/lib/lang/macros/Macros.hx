@@ -178,7 +178,7 @@ class Macros {
       case ETry(e, catches):
         throw "AnnaLang: Unimplemented case";
       case EUnop(op, postFix, e):
-        throw "AnnaLang: Unimplemented case";
+        retValBlock.push(expr);
       case EUntyped(e):
          throw "AnnaLang: Unimplemented case";
       case EWhile(econd, e, normalWhile):
@@ -209,7 +209,9 @@ class Macros {
         var meta = findMetaInBlock(a, b);
         retValBlock.push(meta);
       case EBinop(OpAdd, a, b):
-        throw "AnnaLang: Unimplemented case";
+        var metaB = findMetaInBlock(b, rhs);
+        var metaA = findMetaInBlock(a, rhs);
+        retValBlock.push({expr: EBinop(OpAdd, metaA, metaB), pos: Context.currentPos()});
       case EBinop(OpAnd, a, b):
         throw "AnnaLang: Unimplemented case";
       case EBinop(OpBoolAnd, a, b):

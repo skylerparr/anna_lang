@@ -13,7 +13,9 @@ class ProcessStackTest {
   private static var stack: DefaultProcessStack;
 
   public static function setup(): Void {
-    stack = new DefaultProcessStack(new SimpleProcess(1, 2, 3, op()));
+    var pid = new SimpleProcess();
+    pid.start(op());
+    stack = new DefaultProcessStack(pid);
   }
 
   public static function shouldAddAnnaCallStackToTheProcessStack(): Void {

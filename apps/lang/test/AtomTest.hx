@@ -47,6 +47,10 @@ class AtomTest {
     }, EmptyAtomException);
   }
 
+  public static function shouldBeAbleToUseAtomWithoutKeyword(): Void {
+    Assert.areEqual(Anna.toAnnaString(@_"ok"), ':ok');
+  }
+
 }
 
 class AtomContainer {

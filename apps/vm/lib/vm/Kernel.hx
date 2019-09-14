@@ -1,11 +1,13 @@
 package vm;
 
 import cpp.vm.Thread;
+import lang.macros.MacroTools;
+import core.ObjectCreator;
+import core.ObjectFactory;
 import EitherEnums.Either2;
-import haxe.Timer;
 import lang.EitherSupport;
-import util.TimeUtil;
-import vm.Classes.Function;
+import vm.Function;
+import vm.schedulers.GenericScheduler;
 
 using lang.AtomSupport;
 
@@ -13,6 +15,7 @@ using lang.AtomSupport;
 class Kernel {
 
   @field public static var current_id: Int;
+  @field public static var currentScheduler: Scheduler;
 
   public static function start(): Atom {
     if(UntestedScheduler.communicationThread == null) {
@@ -29,6 +32,10 @@ class Kernel {
 
   public static function stop(): Atom {
     UntestedScheduler.stop();
+    if(currentScheduler != null) {
+      thread.sendMessage(false);
+      currentScheduler.stop();
+    }
     return 'ok'.atom();
   }
 
@@ -36,6 +43,41 @@ class Kernel {
     Classes.define("Boot".atom(), Type.resolveClass("Boot"));
     Classes.define("FunctionPatternMatching".atom(), Type.resolveClass("FunctionPatternMatching"));
     return 'ok'.atom();
+  }
+
+  private static var thread: Thread;
+
+  public static function testGenericScheduler(): Atom {
+    defineCode();
+    thread = Thread.create(function () {
+      var scheduler: GenericScheduler = new GenericScheduler();
+      ObjectFactory.injector.mapClass(Pid, SimpleProcess);
+      scheduler.objectCreator = cast ObjectFactory.injector.getInstance(ObjectCreator);
+      currentScheduler = scheduler;
+      currentScheduler.start();
+
+      currentScheduler.spawn(function() {
+        return new PushStack('Boot'.atom(), 'start_'.atom(), LList.create([]), "Kernel".atom(), "testGenericScheduler".atom(), MacroTools.line());
+      });
+
+      while(Thread.readMessage(true)) {
+        currentScheduler.update();
+        if(scheduler.processes.length() == 0 && scheduler.sleepingProcesses.length == 0) {
+          thread = null;
+        }
+      }
+    });
+
+    return "ok".atom();
+  }
+
+  public static function update(): Void {
+    while(true) {
+      if(thread == null) {
+        break;
+      }
+      thread.sendMessage(true);
+    }
   }
 
   public static function testSpawn(): Pid {
@@ -54,7 +96,8 @@ class Kernel {
   }
 
   public static function spawn(module: Atom, fun: Atom, args: LList): Pid {
-    var process: SimpleProcess = new SimpleProcess(0, current_id++, 0, new PushStack(module, fun, args, "Kernel".atom(), "spawn".atom(), 51));
+    var process: SimpleProcess = new SimpleProcess();
+    process.start(new PushStack(module, fun, args, "Kernel".atom(), "spawn".atom(), 51));
     UntestedScheduler.communicationThread.sendMessage(KernelMessage.SCHEDULE(process));
     return process;
   }
@@ -105,7 +148,7 @@ class Kernel {
       nextScopeVariables.set(argName, value);
     }
 
-    var operations: Array<Operation> = Reflect.callMethod(null, fn.fn, callArgs);
+    var operations: Array<Operation> = fn.invoke();
     if(callback != null) {
       var op = new InvokeCallback(callback, "Kernel".atom(), "apply".atom(), 105);
       operations.push(op);

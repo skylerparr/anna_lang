@@ -2,26 +2,43 @@ package vm;
 using lang.AtomSupport;
 
 class SimpleProcess implements Pid {
-  public var server_id(default, never): Int;
-  public var instance_id(default, never): Int;
-  public var group_id(default, never): Int;
-  public var processStack(default, never): DefaultProcessStack;
-  public var state(default, never): ProcessState;
-  public var mailbox(default, never): Array<Dynamic>;
+  public var server_id(default, null): Int;
+  public var instance_id(default, null): Int;
+  public var group_id(default, null): Int;
+  public var processStack(default, null): DefaultProcessStack;
+  public var state(default, null): ProcessState;
+  public var mailbox(default, null): Array<Dynamic>;
+  public var parent(default, null): Pid;
+  public var ancestors(default, null): Array<Pid>;
 
-  public inline function new(server_id: Int, instance_id: Int, group_id: Int, op: Operation) {
+  public inline function new() {
+    this.server_id = 1;
+    this.instance_id = 1;
+    this.group_id = 1;
+    this.state = ProcessState.RUNNING;
+    this.mailbox = [];
+  }
+
+  public function start(op: Operation): Void {
     var processStack: DefaultProcessStack = new DefaultProcessStack(this);
     processStack.add(new DefaultAnnaCallStack([op], new Map<String, Dynamic>()));
-
-    Reflect.setField(this, 'server_id', server_id);
-    Reflect.setField(this, 'instance_id', instance_id);
-    Reflect.setField(this, 'group_id', group_id);
-    Reflect.setField(this, 'processStack', processStack);
-    Reflect.setField(this, 'state', ProcessState.RUNNING);
-    Reflect.setField(this, 'mailbox', []);
+    this.processStack = processStack;
   }
 
   public function toAnnaString(): String {
     return '#PID<${server_id}.${group_id}.${instance_id}>';
+  }
+
+  public function setParent(pid: Pid): Bool {
+    parent = pid;
+    return false;
+  }
+
+  public function putInMailbox(value: Dynamic): Void {
+    this.mailbox.push(value);
+  }
+
+  public function setState(state: ProcessState): Void {
+    this.state = state;
   }
 }

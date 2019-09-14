@@ -8,4 +8,5 @@ enum ProcessState {
   SLEEPING;
   KILLED;
   PAUSED;
+  CRASHED;
 }

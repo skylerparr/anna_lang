@@ -27,9 +27,41 @@ class Assert {
     throw new TestFailureException(errString);
   }
 
+  public static function isTrue(value: Bool): Void {
+    if(!value) {
+      var errString = '';
+      errString += '\n';
+      errString += 'expected to be true, was false.\n';
+      errString += '\n';
+      fail(errString);
+    }
+  }
+
+  public static function isFalse(value: Bool): Void {
+    if(value) {
+      var errString = '';
+      errString += '\n';
+      errString += 'expected to be true, was false.\n';
+      errString += '\n';
+      fail(errString);
+    }
+  }
+
+  public static function areSameInstance(a: Dynamic, b: Dynamic, context: String = null): Void {
+    if(a != b) {
+      var errString = '';
+      errString += '\n';
+      errString += 'are not the same instance, expected to be the same instance\n';
+      errString += '\n';
+      errString += '${getContext(context)}\n';
+      errString += 'lhs: ${Anna.inspect(a)}\n';
+      errString += 'rhs: ${Anna.inspect(b)}\n';
+      fail(errString);
+    }
+  }
+
   public static function areEqual(a: Dynamic, b: Dynamic, context: String = null): Void {
     var values = [a, b];
-
 
     if(!areSameDataTypesEqual(values) &&
       !structuresAreEqual(values)) {

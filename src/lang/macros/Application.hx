@@ -9,6 +9,7 @@ import lang.macros.MacroTools;
 import haxe.macro.Context;
 import lang.macros.MacroLogger;
 import haxe.macro.Expr;
+import haxe.macro.Printer;
 #end
 import haxe.macro.Context;
 import haxe.macro.Expr;
@@ -28,7 +29,13 @@ class Application {
       apps.push('"${app}"');
     }
     var appsExpr: Expr = Macros.haxeToExpr('[${apps.join(",")}]');
-    var haxeLibs: Expr = Macros.haxeToExpr("['hscript-plus', 'sepia', 'mockatoo']");
+    var haxelibsStr: String = '';
+    var haxelibs: Array<Dynamic> = cast(config.haxelibs, Array<Dynamic>);
+    for(lib in haxelibs) {
+      haxelibsStr += ', "${lib}"';
+    }
+
+    var haxeLibs: Expr = Macros.haxeToExpr('["hscript-plus", "sepia", "mockatoo"${haxelibsStr}]');
     var includeClasses: Array<String> = [];
     #if !scriptable
     includeClasses = getClassesToInclude(appDir(appName + '/lib/'));
@@ -87,7 +94,6 @@ class Application {
         if(StringTools.startsWith(pack, '/')) {
           pack = pack.substr(1);
         }
-        MacroLogger.log(pack, 'pack');
         pack = StringTools.replace(pack, "/", ".");
         classes.push(pack);
         files.push({scriptPath: scriptPath.substr(1), fullPath: fullPath});

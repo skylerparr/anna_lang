@@ -19,6 +19,12 @@ class MacroTools {
 
   private static var printer: Printer = new Printer();
 
+  macro public static function line(): Expr {
+    var lineStr = Context.currentPos() + '';
+    var lineNo: Int = Std.parseInt(lineStr.split(':')[1]);
+    return Macros.haxeToExpr('${lineNo}');
+  }
+
   #if macro
   public static function createClass(className: String): TypeDefinition {
     return {

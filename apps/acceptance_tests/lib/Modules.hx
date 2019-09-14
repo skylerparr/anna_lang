@@ -78,6 +78,7 @@ using lang.AtomSupport;
     result = @native Kernel.add(result, get_one());
     @native IO.inspect(result);
     one_hundred = "100";
+    @native IO.inspect("getting self");
     pid = @native Process.self();
     counter = @native Kernel.add(23, 491);
     @native IO.inspect(counter);
@@ -109,7 +110,7 @@ using lang.AtomSupport;
       });
     }
     result = fun(map);
-//    @native IO.inspect(result);
+    @native IO.inspect(result);
 //    @native IO.inspect("waiting for data");
 //    received = @native Kernel.receive(fun);
 //    @native IO.inspect("received:");

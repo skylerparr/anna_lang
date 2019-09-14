@@ -3,7 +3,7 @@ package vm;
 import cpp.vm.Thread;
 import haxe.ds.ObjectMap;
 import haxe.Timer;
-import vm.Classes.Function;
+import vm.Function;
 using lang.AtomSupport;
 
 @:build(lang.macros.ValueClassImpl.build())

@@ -2,7 +2,7 @@ package vm;
 
 import EitherEnums.Either2;
 import lang.EitherSupport;
-import vm.Classes.Function;
+import vm.Function;
 import vm.Operation;
 class PushStack implements Operation {
 
@@ -55,7 +55,7 @@ class PushStack implements Operation {
       nextScopeVariables.set(argName, value);
     }
     callArgs.push(nextScopeVariables);
-    var operations: Array<Operation> = Reflect.callMethod(instance, fn.fn, callArgs);
+    var operations: Array<Operation> = fn.invoke();
     if(operations == null) {
       //TODO: handle missing function error
       Logger.inspect('operations is null!');

@@ -1,5 +1,5 @@
 package vm;
-import vm.Classes.Function;
+import vm.Function;
 using lang.AtomSupport;
 class AnonymousFunction implements Operation {
   public var func: Atom;

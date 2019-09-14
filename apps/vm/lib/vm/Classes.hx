@@ -54,7 +54,7 @@ class Classes {
         }
         var fn: Function = classFunctions.get(origFnAtom);
         if(fn == null) {
-          fn = {fn: null, args: null};
+          fn = new SimpleFunction();
         }
         var args: Array<String> = Reflect.getProperty(instance, fun);
         fn.args = args;
@@ -68,7 +68,7 @@ class Classes {
         }
         var fn: Function = classFunctions.get(origFnAtom);
         if(fn == null) {
-          fn = {fn: null, args: null};
+          fn = new SimpleFunction();
         }
         fn.fn = Reflect.field(instance, fun);
         classFunctions.set(origFnAtom, fn);
@@ -88,9 +88,4 @@ class Classes {
     }
     return null;
   }
-}
-
-typedef Function = {
-  fn: Dynamic,
-  args: Array<String>
 }
