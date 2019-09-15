@@ -51,7 +51,7 @@ interface Scheduler {
 
   function exit(pid: Pid, signal: Atom): Atom;
 
-  function apply(pid: Pid, fn: Function, scopeVariables: Map<String, Dynamic>, callback: Dynamic->Void): Void;
+  function apply(pid: Pid, fn: Function, args: Array<Dynamic>, scopeVariables: Map<String, Dynamic>, callback: Dynamic->Void): Void;
 
   function self(): Pid;
 }

@@ -265,7 +265,7 @@ class GenericSchedulerTest {
     func.invoke(cast any).returns(operations);
 
     scheduler.start();
-    scheduler.apply(pid, func, new Map<String, Dynamic>(), function(r) {});
+    scheduler.apply(pid, func, [], new Map<String, Dynamic>(), function(r) {});
 
     func.invoke(cast any).verify();
     processStack.add(cast any).verify();
@@ -288,13 +288,44 @@ class GenericSchedulerTest {
     func.invoke(cast any).returns(operations);
 
     scheduler.start();
-    scheduler.apply(pid, func, new Map<String, Dynamic>(), null);
+    scheduler.apply(pid, func, [], new Map<String, Dynamic>(), null);
 
     func.invoke(cast any).verify();
     processStack.add(cast any).verify();
 
     @assert allOperations.length == 1;
     Assert.isFalse(Std.is(allOperations.pop(), InvokeCallback));
+  }
+
+  public static function shouldPassArgsAndScopeVariablesToFunctionInvokeOnApply(): Void {
+    var pid: Pid = mock(Pid);
+    var func: Function = mock(Function);
+    var operations: Array<Operation> = [mock(Operation)];
+    var allOperations: Array<Operation> = null;
+    var processStack: ProcessStack = mock(ProcessStack);
+    processStack.add(cast any).calls(function(arg: Array<AnnaCallStack>): Void {
+      allOperations = arg[0].operations;
+    });
+
+    var scope = new Map<String, Dynamic>();
+    pid.processStack.returns(processStack);
+    func.invoke(cast any).calls(function(args: Array<Dynamic>): Array<Operation> {
+      switch(args[0]) {
+        case [one, two, three, four, five]:
+          @assert one == 1;
+          @assert two == 2.3;
+          @assert three == "3";
+          @assert four == @_"four";
+          Assert.areSameInstance(five, scope);
+        case _:
+          Assert.fail('Incorrect number of passed args. Expected 5 got ${args.length}');
+      }
+      return operations;
+    });
+
+    scheduler.start();
+    scheduler.apply(pid, func, [1, 2.3, "3", @_"four"], scope, null);
+    func.invoke(cast any).verify();
   }
 
   public static function shouldDoNothingIfCallingApplyAndSchedulerIsntRunning(): Void {
@@ -310,7 +341,7 @@ class GenericSchedulerTest {
     pid.processStack.returns(processStack);
     func.invoke(cast any).returns(operations);
 
-    scheduler.apply(pid, func, new Map<String, Dynamic>(), function(r) {});
+    scheduler.apply(pid, func, [], new Map<String, Dynamic>(), function(r) {});
 
     func.invoke(cast any).verify(never);
     processStack.add(cast any).verify(never);

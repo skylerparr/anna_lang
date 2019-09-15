@@ -144,11 +144,12 @@ class GenericScheduler implements Scheduler {
     return "killed".atom();
   }
 
-  public function apply(pid: Pid, fn: Function, scopeVariables: Map<String, Dynamic>, callback: (Dynamic) -> Void): Void {
+  public function apply(pid: Pid, fn: Function, args: Array<Dynamic>, scopeVariables: Map<String, Dynamic>, callback: (Dynamic) -> Void): Void {
     if(notRunning()) {
       return;
     }
-    var operations: Array<Operation> = fn.invoke([scopeVariables]);
+    args.push(scopeVariables);
+    var operations: Array<Operation> = fn.invoke(args);
     if(callback != null) {
       var op = new InvokeCallback(callback, "GenericScheduler".atom(), "apply".atom(), MacroTools.line());
       operations.push(op);
