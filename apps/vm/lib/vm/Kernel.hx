@@ -55,7 +55,7 @@ class Kernel {
     currentScheduler.start();
 
     currentScheduler.spawn(function() {
-      return new PushStack('Boot'.atom(), 'start_'.atom(), LList.create([]), "Kernel".atom(), "testGenericScheduler".atom(), MacroTools.line());
+      return new PushStack('Boot'.atom(), 'start'.atom(), LList.create([]), "Kernel".atom(), "testGenericScheduler".atom(), MacroTools.line());
     });
 
     return "ok".atom();

@@ -377,7 +377,11 @@ class AnnaLang {
       }
       argCounter++;
     }
-    var fqFunName = '${funName}_${types.join("_")}';
+    var spacer: String = '_';
+    if(types.length == 0) {
+     spacer = '';
+    }
+    var fqFunName = makeFqFunName(funName, types);
 
     var frags: Array<String> = fqFunName.split('.');
     fqFunName = frags.pop();
@@ -483,6 +487,18 @@ class AnnaLang {
         MacroLogger.log(e, 'e');
         throw "AnnaLang: Unexpected constant";
     }
+  }
+
+  public static inline function makeFqFunName(funName: String, types: Array<String>):String {
+    var spacer: String = '_';
+    if(types.length == 0) {
+     spacer = '';
+    }
+    return '${funName}${spacer}${sanitizeArgTypeNames(types)}';
+  }
+
+  public static function sanitizeArgTypeNames(types: Array<String>):String {
+    return StringTools.replace(types.join("_"), ".", "_");
   }
   #end
 

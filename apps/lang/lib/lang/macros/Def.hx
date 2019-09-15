@@ -31,10 +31,10 @@ class Def {
       types.push(AnnaLang.getType(strType));
       argType.type = strType;
     }
-    var argTypes: String = StringTools.replace(types.join('_'), ".", "_");
+    var argTypes: String = AnnaLang.sanitizeArgTypeNames(types);
     var funBody: Array<Expr> = MacroTools.getFunBody(params);
 
-    var internalFunctionName: String = '${funName}_${argTypes}';
+    var internalFunctionName: String = AnnaLang.makeFqFunName(funName, types);
 
     // add the functions to the context for reference later
     var funBodies: Array<Dynamic> = MacroContext.declaredFunctions.get(internalFunctionName);
