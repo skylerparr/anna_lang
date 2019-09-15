@@ -20,6 +20,10 @@ class Process {
     }
   }
 
+  public static function status(pid: Pid): String {
+    return pid.state + "";
+  }
+
   public static function exit(process: Pid): Atom {
     Reflect.setField(process, 'state', ProcessState.KILLED);
     return 'ok'.atom();

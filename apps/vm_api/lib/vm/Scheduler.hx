@@ -33,7 +33,7 @@ interface Scheduler {
   * Tells the process to check its mailbox and if the mailbox is empty
   * block until mail is handled
   */
-  function receive(process: Pid, callback: Dynamic->Void, timeout: Int = -1): Void;
+  function receive(process: Pid, fn: Function, timeout: Null<Int> = null, callback: Dynamic->Void = null): Void;
   /**
   * This must be called as the main async loop.
   */

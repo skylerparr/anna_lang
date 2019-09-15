@@ -14,7 +14,8 @@ class GenericScheduler implements Scheduler {
 
   public var processes: UniqueList<Pid>;
   public var paused: Bool;
-  public var sleepingProcesses: UniqueList<SleepSpec>;
+  public var sleepingProcesses: UniqueList<PidMetaData>;
+  public var waitingProcesses: UniqueList<PidMetaData>;
   public var currentPid: Pid;
 
   public function new() {
@@ -23,7 +24,8 @@ class GenericScheduler implements Scheduler {
   public function start(): Atom {
     if(notRunning()) {
       processes = new UniqueList<Pid>();
-      sleepingProcesses = new UniqueList<SleepSpec>();
+      sleepingProcesses = new UniqueList<PidMetaData>();
+      waitingProcesses = new UniqueList<PidMetaData>();
       return "ok".atom();
     }
     return "already_started".atom();
@@ -47,7 +49,7 @@ class GenericScheduler implements Scheduler {
       return pid;
     }
     pid.setState(ProcessState.SLEEPING);
-    sleepingProcesses.push(new SleepSpec(pid, milliseconds, null, TimeUtil.nowInMillis()));
+    sleepingProcesses.push(new PidMetaData(pid, null, milliseconds, null, TimeUtil.nowInMillis()));
     return pid;
   }
 
@@ -62,26 +64,29 @@ class GenericScheduler implements Scheduler {
     return "ok".atom();
   }
 
-  public function receive(pid: Pid, callback: (Dynamic) -> Void, timeout: Int = -1): Void {
+  public function receive(pid: Pid, fn: Function, timeout: Null<Int> = null, callback: (Dynamic) -> Void = null): Void {
     if(notRunning()) {
       return;
     }
     if(pid.state == ProcessState.RUNNING) {
       pid.setState(ProcessState.WAITING);
-      sleepingProcesses.push(new SleepSpec(pid, timeout, callback, TimeUtil.nowInMillis()));
+      waitingProcesses.push(new PidMetaData(pid, fn, 0, callback, TimeUtil.nowInMillis()));
+      if(timeout != null) {
+        sleepingProcesses.push(new PidMetaData(pid, fn, timeout, callback, TimeUtil.nowInMillis()));
+      }
     }
   }
 
   private inline function scheduleSleeping(): Void {
     var now: Int = TimeUtil.nowInMillis();
-    var pidsToWake: List<SleepSpec> = new List<SleepSpec>();
+    var pidsToWake: List<PidMetaData> = new List<PidMetaData>();
     for(spec in sleepingProcesses.asArray()) {
       if(now - spec.timestamp >= spec.timeout) {
         pidsToWake.push(spec);
       }
     }
     while(pidsToWake.length > 0) {
-      var sleepSpec: SleepSpec = pidsToWake.pop();
+      var sleepSpec: PidMetaData = pidsToWake.pop();
       if(sleepSpec == null) {
         break;
       }
@@ -91,11 +96,35 @@ class GenericScheduler implements Scheduler {
     }
   }
 
+  private inline function passMessages(): Void {
+    for(pidMeta in waitingProcesses.asArray()) {
+      var pid: Pid = pidMeta.pid;
+      waitingProcesses.remove(pidMeta);
+      processes.add(pid);
+      var data = pid.mailbox[pidMeta.mailboxIndex++ % pid.mailbox.length];
+      if(data != null) {
+        apply(pid, pidMeta.fn, [data], pid.processStack.getVariablesInScope(), function(result: Dynamic): Void {
+          if(result != null) {
+            pid.mailbox.remove(result);
+            pid.processStack.getVariablesInScope().set("$$$", result);
+            if(pidMeta.callback != null) {
+              pidMeta.callback(result);
+            }
+          }
+        });
+      } else {
+        waitingProcesses.add(pidMeta);
+        processes.remove(pid);
+      }
+    }
+  }
+
   public function update(): Void {
     if(notRunning()) {
       return;
     }
     scheduleSleeping();
+    passMessages();
     currentPid = processes.pop();
     if(currentPid == null) {
       return;
@@ -167,16 +196,19 @@ class GenericScheduler implements Scheduler {
   }
 }
 
-class SleepSpec {
+class PidMetaData {
   public var pid: Pid;
   public var timeout: Int;
   public var callback: Dynamic->Void;
   public var timestamp: Int;
+  public var mailboxIndex: Int;
+  public var fn: Function;
 
-  public function new(pid: Pid, timeout: Int, callback: Dynamic->Void, timestamp: Int) {
+  public function new(pid: Pid, fn: Function, timeout: Int, callback: Dynamic->Void, timestamp: Int) {
     this.pid = pid;
     this.timeout = timeout;
     this.callback = callback;
     this.timestamp = timestamp;
+    this.fn = fn;
   }
 }

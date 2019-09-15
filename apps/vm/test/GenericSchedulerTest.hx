@@ -214,19 +214,22 @@ class GenericSchedulerTest {
     pid.setState(ProcessState.RUNNING).verify(never);
   }
 
-  public static function shouldSetProcessToWaitingWentPutIntoReceiveMode(): Void {
+  public static function shouldSetProcessToWaitingWhenPutIntoReceiveMode(): Void {
     var pid: Pid = mock(Pid);
     pid.state.returns(ProcessState.RUNNING);
     scheduler.start();
-    scheduler.receive(pid, function(v) {});
+    var fn: Function = mock(Function);
+    scheduler.receive(pid, fn, 500);
     pid.setState(ProcessState.WAITING).verify();
     @assert scheduler.sleepingProcesses.length() == 1;
+    @assert scheduler.waitingProcesses.length() == 1;
   }
 
   public static function shouldDoNothingIfPutIntoReceiveModeAndTheSchedulerIsntRunning(): Void {
     var pid: Pid = mock(Pid);
     pid.state.returns(ProcessState.RUNNING);
-    scheduler.receive(pid, function(v) {});
+    var fn: Function = mock(Function);
+    scheduler.receive(pid, fn);
     pid.setState(ProcessState.WAITING).verify(never);
   }
 
@@ -234,8 +237,20 @@ class GenericSchedulerTest {
     var pid: Pid = mock(Pid);
     pid.state.returns(ProcessState.SLEEPING);
     scheduler.start();
-    scheduler.receive(pid, function(v) {});
+    var fn: Function = mock(Function);
+    scheduler.receive(pid, fn);
     pid.setState(ProcessState.WAITING).verify(never);
+  }
+
+  public static function shouldPutPidIntoWaitingIfTimeoutIsNull(): Void {
+    var pid: Pid = mock(Pid);
+    pid.state.returns(ProcessState.RUNNING);
+    scheduler.start();
+    var fn: Function = mock(Function);
+    scheduler.receive(pid, fn);
+    pid.setState(ProcessState.WAITING).verify();
+    @assert scheduler.sleepingProcesses.length() == 0;
+    @assert scheduler.waitingProcesses.length() == 1;
   }
 
   public static function shouldAddPidToSleepingProcesses(): Void {
@@ -243,12 +258,14 @@ class GenericSchedulerTest {
     pid.state.returns(ProcessState.RUNNING);
     scheduler.start();
     var callback = function(v) {};
-    scheduler.receive(pid, callback);
-    var sleepingPid = scheduler.sleepingProcesses.first();
-    @refute sleepingPid == null;
-    Assert.areSameInstance(sleepingPid.pid, pid);
-    @assert sleepingPid.timeout == -1;
-    Assert.areSameInstance(sleepingPid.callback, callback);
+    var fn: Function = mock(Function);
+    scheduler.receive(pid, fn, 300, callback);
+    var pidMeta = scheduler.sleepingProcesses.first();
+    @refute pidMeta == null;
+    Assert.areSameInstance(pidMeta.pid, pid);
+    @assert pidMeta.timeout == 300;
+    Assert.areSameInstance(pidMeta.callback, callback);
+    Assert.areSameInstance(pidMeta.fn, fn);
   }
 
   public static function shouldAddAnInvokeCallbackOperationToTheCurrentPidProcessStackWhenApplyingFunction(): Void {
@@ -411,5 +428,45 @@ class GenericSchedulerTest {
     Assert.success();
     createdPid.setState(ProcessState.SLEEPING).verify();
     createdPid.setState(ProcessState.RUNNING).verify();
+  }
+
+  public static function shouldBeAbleToSendMessageToProcessAndHaveTheProcessReadIt(): Void {
+    var pid: Pid = mock(Pid);
+    pid.mailbox.returns(["hello world"]);
+    pid.state.returns(ProcessState.RUNNING);
+    var processStack: ProcessStack = mock(ProcessStack);
+    var scope = new Map<String, Dynamic>();
+    processStack.getVariablesInScope().returns(scope);
+    var annaStack: AnnaCallStack = null;
+    processStack.add(cast any).calls(function(args): Void {
+      annaStack = args[0];
+    });
+    processStack.execute().calls(function(): Void {
+      scope.set("$$$", "hello world");
+      if(annaStack != null) {
+        annaStack.execute(processStack);
+      }
+    });
+    pid.processStack.returns(processStack);
+    scheduler.start();
+    scheduler.send(pid, "hello world");
+    var cbCalled: Bool = false;
+    var fn: Function = mock(Function);
+    // LOOK HERE... LOOK! LOOK! AN IMPORT NOTE HERE
+    // IF YOU DON'T PASS AT LEAST 1 OPERATION, THIS TEST
+    // WILL SEGFAULT.
+    var op: Operation = mock(Operation);
+    op.execute(cast any, cast any);
+    fn.invoke(cast any).returns([op]);
+    scheduler.receive(pid, fn, null, function(message): Void {
+      cbCalled = true;
+      @assert message == "hello world";
+    });
+    var i: Int = 0;
+    while(i < 20) {
+      scheduler.update();
+      i++;
+    }
+    Assert.isTrue(cbCalled);
   }
 }

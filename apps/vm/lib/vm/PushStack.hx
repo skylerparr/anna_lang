@@ -1,5 +1,6 @@
 package vm;
 
+import util.ArgHelper;
 import EitherEnums.Either2;
 import lang.EitherSupport;
 import vm.Function;
@@ -35,21 +36,7 @@ class PushStack implements Operation {
     var callArgs: Array<Dynamic> = [];
     var nextScopeVariables: Map<String, Dynamic> = new Map<String, Dynamic>();
     for(arg in LList.iterator(args)) {
-      var tuple: Tuple = EitherSupport.getValue(arg);
-      var argArray = tuple.asArray();
-      var elem1: Either2<Atom, Dynamic> = argArray[0];
-      var elem2: Either2<Atom, Dynamic> = argArray[1];
-
-      var value: Dynamic = switch(cast(EitherSupport.getValue(elem1), Atom)) {
-        case {value: 'const'}:
-          EitherSupport.getValue(elem2);
-        case {value: 'var'}:
-          var varName: String = EitherSupport.getValue(elem2);
-          scopeVariables.get(varName);
-        case _:
-          Logger.inspect("!!!!!!!!!!! bad !!!!!!!!!!!");
-          null;
-      }
+      var value: Dynamic = ArgHelper.extractArgValue(arg, scopeVariables);
       callArgs.push(value);
       var argName: String = fn.args[counter++];
       nextScopeVariables.set(argName, value);

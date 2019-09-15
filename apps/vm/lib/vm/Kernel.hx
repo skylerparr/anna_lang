@@ -46,7 +46,7 @@ class Kernel {
     return 'ok'.atom();
   }
 
-  public static function testGenericScheduler(): Atom {
+  public static function testGenericScheduler(): Pid {
     defineCode();
     var scheduler: GenericScheduler = new GenericScheduler();
     ObjectFactory.injector.mapClass(Pid, SimpleProcess);
@@ -54,15 +54,13 @@ class Kernel {
     currentScheduler = scheduler;
     currentScheduler.start();
 
-    currentScheduler.spawn(function() {
+    return currentScheduler.spawn(function() {
       return new PushStack('Boot'.atom(), 'start'.atom(), LList.create([]), "Kernel".atom(), "testGenericScheduler".atom(), MacroTools.line());
     });
-
-    return "ok".atom();
   }
 
   public static function update(): Void {
-    var counter: Int = 1000;
+    var counter: Int = 100;
     while(counter > 0) {
       counter--;
       currentScheduler.update();
@@ -92,14 +90,16 @@ class Kernel {
   }
 
   public static function receive(callback: Function): Pid {
-    var process: Pid = Process.self();
-    Process.waiting(process);
-    UntestedScheduler.communicationThread.sendMessage(KernelMessage.RECEIVE(process, callback));
-    return process;
+    var pid: Pid = Process.self();
+//    Process.waiting(process);
+//    UntestedScheduler.communicationThread.sendMessage(KernelMessage.RECEIVE(process, callback));
+    currentScheduler.receive(pid, callback);
+    return pid;
   }
 
-  public static function send(process: Pid, payload: Dynamic): Atom {
-    UntestedScheduler.communicationThread.sendMessage(KernelMessage.SEND(process, payload));
+  public static function send(pid: Pid, payload: Dynamic): Atom {
+//    UntestedScheduler.communicationThread.sendMessage(KernelMessage.SEND(process, payload));
+    currentScheduler.send(pid, payload);
     return 'ok'.atom();
   }
 

@@ -1,10 +1,16 @@
 package vm;
 using lang.AtomSupport;
 
+@:build(lang.macros.ValueClassImpl.build())
 class SimpleProcess implements Pid {
-  public var server_id(default, null): Int;
-  public var instance_id(default, null): Int;
-  public var group_id(default, null): Int;
+  @field public static var _instanceId: Int = 0;
+  @field public static var _groupId: Int = 0;
+  @field public static var _nodeId: Int = 0;
+
+  private var serverId: Int;
+  private var instanceId: Int;
+  private var groupId: Int;
+
   public var processStack(default, null): DefaultProcessStack;
   public var state(default, null): ProcessState;
   public var mailbox(default, null): Array<Dynamic>;
@@ -12,9 +18,9 @@ class SimpleProcess implements Pid {
   public var ancestors(default, null): Array<Pid>;
 
   public inline function new() {
-    this.server_id = 1;
-    this.instance_id = 1;
-    this.group_id = 1;
+    this.serverId = _nodeId;
+    this.groupId = _groupId;
+    this.instanceId = _instanceId++;
     this.state = ProcessState.RUNNING;
     this.mailbox = [];
   }
@@ -26,7 +32,7 @@ class SimpleProcess implements Pid {
   }
 
   public function toAnnaString(): String {
-    return '#PID<${server_id}.${group_id}.${instance_id}>';
+    return '#PID<${serverId}.${groupId}.${instanceId}>';
   }
 
   public function setParent(pid: Pid): Bool {
