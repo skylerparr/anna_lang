@@ -100,6 +100,9 @@ class GenericScheduler implements Scheduler {
   private inline function passMessages(): Void {
     for(pidMeta in waitingProcesses.asArray()) {
       var pid: Pid = pidMeta.pid;
+      if(pid.mailbox.length == 0) {
+        continue;
+      }
       var data = pid.mailbox[pidMeta.mailboxIndex++ % pid.mailbox.length];
       if(data != null) {
         waitingProcesses.remove(pidMeta);
