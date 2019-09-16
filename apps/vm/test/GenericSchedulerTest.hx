@@ -442,7 +442,7 @@ class GenericSchedulerTest {
       annaStack = args[0];
     });
     processStack.execute().calls(function(): Void {
-      scope.set("$$$", "hello world");
+      scope.set("$$$", scope.get("value_data"));
       if(annaStack != null) {
         annaStack.execute(processStack);
       }
@@ -456,12 +456,69 @@ class GenericSchedulerTest {
     // IF YOU DON'T PASS AT LEAST 1 OPERATION, THIS TEST
     // WILL SEGFAULT.
     var op: Operation = mock(Operation);
-    op.execute(cast any, cast any);
+    op.execute(cast any, cast any).calls(function(args: Array<Dynamic>): Void {
+      var scope: Map<String, Dynamic> = args[0];
+      @assert scope.get("value_data") == "hello world";
+    });
     fn.invoke(cast any).returns([op]);
+    fn.args.returns(["value_data"]);
     scheduler.receive(pid, fn, null, function(message): Void {
       cbCalled = true;
       @assert message == "hello world";
     });
+    var i: Int = 0;
+    while(i < 20) {
+      scheduler.update();
+      i++;
+    }
+    Assert.isTrue(cbCalled);
+  }
+
+  public static function shouldBeAbleToSendMessageToProcessBeforeItsReadyToReceiveAndShouldHandleItWhenPutIntoReceiveState(): Void {
+    var pid: Pid = mock(Pid);
+    pid.mailbox.returns([]);
+    pid.state.returns(ProcessState.RUNNING);
+    pid.setState(ProcessState.WAITING).calls(function(a): Void {
+      pid.state.returns(ProcessState.WAITING);
+    });
+    var processStack: ProcessStack = mock(ProcessStack);
+    var scope = new Map<String, Dynamic>();
+    processStack.getVariablesInScope().returns(scope);
+    var annaStack: AnnaCallStack = null;
+    processStack.add(cast any).calls(function(args): Void {
+      annaStack = args[0];
+    });
+    processStack.execute().calls(function(): Void {
+      scope.set("$$$", scope.get("value_data"));
+      if(annaStack != null) {
+        annaStack.execute(processStack);
+      }
+    });
+    pid.processStack.returns(processStack);
+    scheduler.start();
+    scheduler.send(pid, "hello world");
+    var cbCalled: Bool = false;
+    var fn: Function = mock(Function);
+    // LOOK HERE... LOOK! LOOK! AN IMPORT NOTE HERE
+    // IF YOU DON'T PASS AT LEAST 1 OPERATION, THIS TEST
+    // WILL SEGFAULT.
+    var op: Operation = mock(Operation);
+    op.execute(cast any, cast any).calls(function(args: Array<Dynamic>): Void {
+      var scope: Map<String, Dynamic> = args[0];
+      @assert scope.get("value_data") == "hello world";
+    });
+    fn.invoke(cast any).returns([op]);
+    fn.args.returns(["value_data"]);
+    scheduler.receive(pid, fn, null, function(message): Void {
+      cbCalled = true;
+      @assert message == "hello world";
+    });
+    pid.mailbox.returns(["hello world"]);
+    pid.setState(ProcessState.RUNNING).calls(function(a): Void {
+      pid.state.returns(ProcessState.RUNNING);
+    });
+    scheduler.update();
+
     var i: Int = 0;
     while(i < 20) {
       scheduler.update();

@@ -71,6 +71,12 @@ using lang.AtomSupport;
   @alias vm.Pid;
   @alias vm.Kernel;
 
+  @def send_message({Pid: pid, String: message}, [Atom], {
+    @native IO.inspect(pid);
+    @native IO.inspect(message);
+    @_"ok";
+  });
+
   @def start([Int], {
 //    print(get_string(), return_num(get_one()), get_two());
 //    result = @native Kernel.add(get_one(), get_two());
@@ -114,16 +120,16 @@ using lang.AtomSupport;
 //    result = fun(map);
 //    @native IO.inspect(result);
     fun_knee = @fn {
-      ([{String: value}, [Atom]] => {
+      ([{String: value}, [String]] => {
         @native IO.inspect("got zeros");
         @native IO.inspect(value);
-        @_"ok";
+        value;
       });
     }
     @native IO.inspect("waiting for data");
     received = @native Kernel.receive(fun_knee);
-//    @native IO.inspect("received:");
-//    @native IO.inspect(received);
+    @native IO.inspect("received:");
+    @native IO.inspect(received);
 
 //    print(result);
 //    received = @native Kernel.receive(@fn{

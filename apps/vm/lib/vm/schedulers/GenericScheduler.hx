@@ -1,5 +1,6 @@
 package vm.schedulers;
 
+import util.ArgHelper;
 import util.TimeUtil;
 import haxe.Timer;
 import lang.macros.MacroTools;
@@ -99,22 +100,23 @@ class GenericScheduler implements Scheduler {
   private inline function passMessages(): Void {
     for(pidMeta in waitingProcesses.asArray()) {
       var pid: Pid = pidMeta.pid;
-      waitingProcesses.remove(pidMeta);
-      processes.add(pid);
       var data = pid.mailbox[pidMeta.mailboxIndex++ % pid.mailbox.length];
       if(data != null) {
-        apply(pid, pidMeta.fn, [data], pid.processStack.getVariablesInScope(), function(result: Dynamic): Void {
+        waitingProcesses.remove(pidMeta);
+        processes.add(pid);
+        pid.setState(ProcessState.RUNNING);
+
+        var scopeVars: Map<String, Dynamic> = pid.processStack.getVariablesInScope();
+        scopeVars.set(pidMeta.fn.args[0], data);
+
+        apply(pid, pidMeta.fn, [data], scopeVars, function(result: Dynamic): Void {
           if(result != null) {
             pid.mailbox.remove(result);
-            pid.processStack.getVariablesInScope().set("$$$", result);
             if(pidMeta.callback != null) {
               pidMeta.callback(result);
             }
           }
         });
-      } else {
-        waitingProcesses.add(pidMeta);
-        processes.remove(pid);
       }
     }
   }
