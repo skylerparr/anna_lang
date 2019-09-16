@@ -78,47 +78,47 @@ using lang.AtomSupport;
   });
 
   @def start([Int], {
-//    print(get_string(), return_num(get_one()), get_two());
-//    result = @native Kernel.add(get_one(), get_two());
-//    @native IO.inspect(result);
-//    result = @native Kernel.add(result, get_one());
-//    @native IO.inspect(result);
-//    one_hundred = "100";
-//    @native IO.inspect("getting self");
-//    pid = @native Process.self();
-//    @native IO.inspect("sleeping");
-//    @native Process.sleep(1000);
-//    counter = @native Kernel.add(23, 491);
-//    @native IO.inspect(counter);
-//    @native IO.inspect(null);
-//    @native IO.inspect(pid);
-//    p3 = print();
-//    p2 = print("hello world", 90210, counter);
-//    @native IO.inspect(p2);
-//    @native IO.inspect([@_"ok", "all correct"]);
-//    @native IO.inspect({@_"ok"; "all correct";});
-//    map = cast(@native IO.inspect([ @_"ok" => "all", @_'error' => "correct"]), MMap);
-//    @native IO.inspect(p3);
-//    @native IO.inspect(map);
-//    @native IO.inspect("waiting...");
-//    fun = @fn {
-//      ([{Int: 10}, [Atom]] => {
-//        @native IO.inspect("got ten");
-//        @native IO.inspect(map);
-//        @_"ok";
-//      });
-//      ([{Int: 0}, [Atom]] => {
-//        @native IO.inspect("got zero");
-//        @native IO.inspect(map);
-//        @_"ok";
-//      });
-//      ([{Int: num}, [Atom]] => {
-//        @native IO.inspect(num);
-//        @_"ok";
-//      });
-//    }
-//    result = fun(map);
-//    @native IO.inspect(result);
+    print(get_string(), return_num(get_one()), get_two());
+    result = @native Kernel.add(get_one(), get_two());
+    @native IO.inspect(result);
+    result = @native Kernel.add(result, get_one());
+    @native IO.inspect(result);
+    one_hundred = "100";
+    @native IO.inspect("getting self");
+    pid = @native Process.self();
+    @native IO.inspect("sleeping");
+    @native Process.sleep(1000);
+    counter = @native Kernel.add(23, 491);
+    @native IO.inspect(counter);
+    @native IO.inspect(null);
+    @native IO.inspect(pid);
+    p3 = print();
+    p2 = print("hello world", 90210, counter);
+    @native IO.inspect(p2);
+    @native IO.inspect([@_"ok", "all correct"]);
+    @native IO.inspect({@_"ok"; "all correct";});
+    map = cast(@native IO.inspect([ @_"ok" => "all", @_'error' => "correct"]), MMap);
+    @native IO.inspect(p3);
+    @native IO.inspect(map);
+    @native IO.inspect("waiting...");
+    fun = @fn {
+      ([{Int: 10}, [Atom]] => {
+        @native IO.inspect("got ten");
+        @native IO.inspect(map);
+        @_"ok";
+      });
+      ([{Int: 0}, [Atom]] => {
+        @native IO.inspect("got zero");
+        @native IO.inspect(map);
+        @_"ok";
+      });
+      ([{Int: num}, [Atom]] => {
+        @native IO.inspect(num);
+        @_"ok";
+      });
+    }
+    result = fun(5);
+    @native IO.inspect(result);
     fun_knee = @fn {
       ([{String: value}, [String]] => {
         @native IO.inspect("got zeros");
@@ -130,20 +130,11 @@ using lang.AtomSupport;
     received = @native Kernel.receive(fun_knee);
     @native IO.inspect("received:");
     @native IO.inspect(received);
-
-//    print(result);
-//    received = @native Kernel.receive(@fn{
-//      ([{String: foo}, [Dynamic]] => {
-//        value;
-//      });
-//    });
-//    @native IO.inspect("received:");
-//    @native IO.inspect(received);
-//    foo(p3);
-//    foo(p2);
-//    bar(map);
+    foo(p3);
+    foo(p2);
+    bar(map);
 //    @native IO.inspect({ok: "foob"}); //keyword list
-//    print(pid);
+    print(pid);
   });
 
   @def print([Int], {
