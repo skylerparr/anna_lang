@@ -45,20 +45,15 @@ class Process {
   }
 
   public static function receive(process: Pid, callback: Function): Atom {
-//    UntestedScheduler.receive(process, callback);
     return 'ok'.atom();
   }
 
   public static function self(): Pid {
-//    var process: Pid = UntestedScheduler.threadProcessMap.get(Thread.current().handle);
     var pid: Pid = Kernel.currentScheduler.self();
     return pid;
   }
 
   public static function sleep(milliseconds: Int): Atom {
-//    var process: Pid = self();
-//    Reflect.setField(process, 'state', ProcessState.SLEEPING);
-//    UntestedScheduler.sleep(process, milliseconds);
     Kernel.currentScheduler.sleep(self(), milliseconds);
     return 'ok'.atom();
   }

@@ -1,7 +1,7 @@
 {
   "application": "vm",
   "autoStart": null,
-  "apps": ["anna_unit", "lang", "vm_api", "debugger"],
+  "apps": ["anna_unit", "lang", "vm_api"],
   "libs": [],
   "tests": [],
   "haxelibs": ["minject"]

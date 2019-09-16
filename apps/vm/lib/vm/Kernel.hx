@@ -1,6 +1,5 @@
 package vm;
 
-import cpp.vm.Thread;
 import lang.macros.MacroTools;
 import core.ObjectCreator;
 import core.ObjectFactory;
@@ -16,25 +15,15 @@ class Kernel {
 
   @field public static var current_id: Int;
   @field public static var currentScheduler: Scheduler;
-  @field public static var thread: Thread;
 
   public static function start(): Atom {
-    if(UntestedScheduler.communicationThread == null) {
-      current_id = 0;
-      UntestedScheduler.start();
-
-      defineCode();
-
-      return 'ok'.atom();
-    } else {
-      return 'already_started'.atom();
-    }
+    current_id = 0;
+    defineCode();
+    return 'ok'.atom();
   }
 
   public static function stop(): Atom {
-    UntestedScheduler.stop();
     if(currentScheduler != null) {
-      thread.sendMessage(false);
       currentScheduler.stop();
     }
     return 'ok'.atom();
@@ -83,22 +72,18 @@ class Kernel {
   }
 
   public static function spawn(module: Atom, fun: Atom, args: LList): Pid {
-    var process: SimpleProcess = new SimpleProcess();
-    process.start(new PushStack(module, fun, args, "Kernel".atom(), "spawn".atom(), 51));
-    UntestedScheduler.communicationThread.sendMessage(KernelMessage.SCHEDULE(process));
-    return process;
+    return currentScheduler.spawn(function() {
+      return new PushStack('Boot'.atom(), 'start'.atom(), LList.create([]), "Kernel".atom(), "testGenericScheduler".atom(), MacroTools.line());
+    });
   }
 
   public static function receive(callback: Function): Pid {
     var pid: Pid = Process.self();
-//    Process.waiting(process);
-//    UntestedScheduler.communicationThread.sendMessage(KernelMessage.RECEIVE(process, callback));
     currentScheduler.receive(pid, callback);
     return pid;
   }
 
   public static function send(pid: Pid, payload: Dynamic): Atom {
-//    UntestedScheduler.communicationThread.sendMessage(KernelMessage.SEND(process, payload));
     currentScheduler.send(pid, payload);
     return 'ok'.atom();
   }
