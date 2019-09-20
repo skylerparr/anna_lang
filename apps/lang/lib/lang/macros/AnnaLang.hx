@@ -440,7 +440,7 @@ class AnnaLang {
     var currentFunStr: String = MacroContext.currentVar;
     var varName: String = MacroTools.getIdent(expr);
     MacroContext.varTypesInScope.set(varName, MacroContext.lastFunctionReturnType);
-    var haxeStr: String = '${currentFunStr}.push(new vm.Match(@list [@tuple[@atom "const", "${varName}"]], @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${lineNumber}));';
+    var haxeStr: String = '${currentFunStr}.push(new vm.Assign(@list [@tuple[@atom "const", "${varName}"]], @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${lineNumber}));';
     return lang.macros.Macros.haxeToExpr(haxeStr);
   }
 

@@ -2,7 +2,7 @@ package vm;
 
 import EitherEnums.Either2;
 import lang.EitherSupport;
-class Match implements Operation {
+class Assign implements Operation {
   public var args: LList;
 
   public var hostModule: Atom;

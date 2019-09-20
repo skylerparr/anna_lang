@@ -19,10 +19,19 @@ class AnonymousFunction implements Operation {
   }
 
   public function execute(scopeVariables: Map<String, Dynamic>, processStack: ProcessStack): Void {
-    var frags = Atom.to_s(scopeVariables.get(Atom.to_s(func))).split('.');
+    var funVar: Atom = scopeVariables.get(Atom.to_s(func));
+    if(funVar == null) {
+      Logger.inspect("Anonymous function not found");
+      return;
+    }
+    var frags = Atom.to_s(funVar).split('.');
     var fun = frags.pop();
     var module = frags.join('.');
     var fn: Function = Classes.getFunction(module.atom(), fun.atom());
+    if(fn == null) {
+      Logger.inspect("Anonymous function not found");
+      return;
+    }
     Kernel.apply(Process.self(), fn, args);
   }
 

@@ -18,6 +18,7 @@ using lang.AtomSupport;
     match_tuple([@_"error", "An error tuple has been handled"]);
     iterate_list({6; 5; 4; 3; 2; 1;});
     match_list({4; "hello";});
+    match_list({8; "fire";});
     match_map([@_"hello" => "world", @_"foo" => "bar"]);
     @_"ok";
   });
@@ -137,8 +138,8 @@ using lang.AtomSupport;
     result2 = fun2("monkey");
     @native IO.inspect(result2);
 
-//    result3 = fun3("foo");
-//    @native IO.inspect(result3);
+    result3 = fun3("foo");
+    @native IO.inspect(result3);
 //    fun_knee = @fn {
 //      ([{String: value}, [String]] => {
 //        @native IO.inspect("got zeros");
