@@ -87,7 +87,6 @@ class Main {
       return Reflect.fields(o);
     });
     #if scriptable
-
     variables.set("rc", function() {
       Runtime.compileProject(project);
     });

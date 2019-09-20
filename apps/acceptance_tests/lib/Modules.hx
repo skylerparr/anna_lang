@@ -119,17 +119,37 @@ using lang.AtomSupport;
     }
     result = fun(5);
     @native IO.inspect(result);
-    fun_knee = @fn {
-      ([{String: value}, [String]] => {
-        @native IO.inspect("got zeros");
-        @native IO.inspect(value);
-        value;
+    fun2 = @fn {
+      ([{String: "cow"}, [String]] => {
+        @native IO.inspect("have a cow");
+      });
+      ([{String: val}, [String]] => {
+        @native IO.inspect("no cows");
+        @native IO.inspect(val);
       });
     }
-    @native IO.inspect("waiting for data");
-    received = @native Kernel.receive(fun_knee);
-    @native IO.inspect("received:");
-    @native IO.inspect(received);
+    result = fun(0);
+    @native IO.inspect(result);
+    result2 = fun2("cow");
+    @native IO.inspect(result2);
+    result = fun(10);
+    @native IO.inspect(result);
+    result2 = fun2("monkey");
+    @native IO.inspect(result2);
+
+//    result3 = fun3("foo");
+//    @native IO.inspect(result3);
+//    fun_knee = @fn {
+//      ([{String: value}, [String]] => {
+//        @native IO.inspect("got zeros");
+//        @native IO.inspect(value);
+//        value;
+//      });
+//    }
+//    @native IO.inspect("waiting for data");
+//    received = @native Kernel.receive(fun_knee);
+//    @native IO.inspect("received:");
+//    @native IO.inspect(received);
     foo(p3);
     foo(p2);
     bar(map);

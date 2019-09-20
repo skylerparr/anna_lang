@@ -140,7 +140,11 @@ class AnnaLang {
               funArgs.push({name: argName, type: MacroTools.buildType(funArgsType.type)});
               var haxeStr: String = '';
               if(funArgsType.pattern != funArgsType.name) {
-                haxeStr = 'var match: Map<String, Dynamic> = lang.macros.PatternMatch.match(${funArgsType.pattern}, ${argName});';
+                var pattern: String = funArgsType.pattern;
+                if(funArgsType.type == "String") {
+                  pattern = '"${pattern}"';
+                }
+                haxeStr = 'var match: Map<String, Dynamic> = lang.macros.PatternMatch.match(${pattern}, ${argName});';
               }
               patternMatches.push(haxeStr);
             }
@@ -395,13 +399,9 @@ class AnnaLang {
 
     var funDef: Dynamic = declaredFunctions.get(fqFunName);
     if(funDef == null) {
-      if(MacroContext.lastFunctionReturnType == "AnonFunction") {
-        var haxeStr: String = '${currentFunStr}.push(new vm.AnonymousFunction(@atom"${funName}", @list [${funArgs.join(", ")}], @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${lineNumber}))';
-        retVal.push(lang.macros.Macros.haxeToExpr(haxeStr));
-        return retVal;
-      } else {
-        throw new ParsingException('AnnaLang: Function ${moduleName}.${fqFunName} not found.');
-      }
+      var haxeStr: String = '${currentFunStr}.push(new vm.AnonymousFunction(@atom"${funName}", @list [${funArgs.join(", ")}], @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${lineNumber}))';
+      retVal.push(lang.macros.Macros.haxeToExpr(haxeStr));
+      return retVal;
     } else {
       MacroContext.lastFunctionReturnType = funDef[0].funReturnTypes[0];
       var haxeStr: String = '${currentFunStr}.push(new vm.PushStack(@atom "${module.moduleName}", @atom "${fqFunName}", @list [${funArgs.join(", ")}], @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${lineNumber}))';
