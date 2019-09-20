@@ -230,5 +230,5 @@ using lang.AtomSupport;
   });
 }))
 @:build(lang.macros.AnnaLang.compile())
-class Modules {
+class AcceptanceTests {
 }
