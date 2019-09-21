@@ -1,5 +1,6 @@
 package vm;
 
+import util.ArgHelper;
 import lang.macros.MacroTools;
 import core.ObjectCreator;
 import core.ObjectFactory;
@@ -88,13 +89,13 @@ class Kernel {
     return 'ok'.atom();
   }
 
-  public static function apply(process: Pid, fn: Function, args: LList, callback: Dynamic->Void = null): Void {
+  public static function apply(pid: Pid, fn: Function, args: LList, callback: Dynamic->Void = null): Void {
     if(fn == null) {
       //TODO: handle missing function error
       Logger.inspect('throw a crazy error and kill the process!');
       return;
     }
-    var scopeVariables = process.processStack.getVariablesInScope();
+    var scopeVariables = pid.processStack.getVariablesInScope();
     var counter: Int = 0;
     var callArgs: Array<Dynamic> = [];
     var nextScopeVariables: Map<String, Dynamic> = new Map<String, Dynamic>();
@@ -102,33 +103,13 @@ class Kernel {
       nextScopeVariables.set(key, scopeVariables.get(key));
     }
     for(arg in LList.iterator(args)) {
-      var tuple: Tuple = EitherSupport.getValue(arg);
-      var argArray = tuple.asArray();
-      var elem1: Either2<Atom, Dynamic> = argArray[0];
-      var elem2: Either2<Atom, Dynamic> = argArray[1];
-
-      var value: Dynamic = switch(cast(EitherSupport.getValue(elem1), Atom)) {
-        case {value: 'const'}:
-          EitherSupport.getValue(elem2);
-        case {value: 'var'}:
-          var varName: String = EitherSupport.getValue(elem2);
-          scopeVariables.get(varName);
-        case _:
-          Logger.inspect("!!!!!!!!!!! bad !!!!!!!!!!!");
-          null;
-      }
+      var value: Dynamic = ArgHelper.extractArgValue(arg, scopeVariables);
       callArgs.push(value);
       var argName: String = fn.args[counter++];
       nextScopeVariables.set(argName, value);
     }
 
-    var operations: Array<Operation> = fn.invoke(callArgs);
-    if(callback != null) {
-      var op = new InvokeCallback(callback, "Kernel".atom(), "apply".atom(), 105);
-      operations.push(op);
-    }
-    var annaCallStack: AnnaCallStack = new DefaultAnnaCallStack(operations, nextScopeVariables);
-    process.processStack.add(annaCallStack);
+    currentScheduler.apply(pid, fn, callArgs, nextScopeVariables, callback);
   }
 
   public static function add(left: Float, right: Float): Float {

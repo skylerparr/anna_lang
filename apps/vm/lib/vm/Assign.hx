@@ -4,11 +4,8 @@ import EitherEnums.Either2;
 import lang.EitherSupport;
 class Assign implements Operation {
   public var args: LList;
-
   public var hostModule: Atom;
-
   public var hostFunction: Atom;
-
   public var lineNumber: Int;
 
   public function toString(): String {
