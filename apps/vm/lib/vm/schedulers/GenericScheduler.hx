@@ -184,6 +184,10 @@ class GenericScheduler implements Scheduler {
     }
     args.push(scopeVariables);
     var operations: Array<Operation> = fn.invoke(args);
+    if(operations == null) {
+      trace("operations were null");
+      return;
+    }
     if(callback != null) {
       var op = new InvokeCallback(callback, "GenericScheduler".atom(), "apply".atom(), MacroTools.line());
       operations.push(op);

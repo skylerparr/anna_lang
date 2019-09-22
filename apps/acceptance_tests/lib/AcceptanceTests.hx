@@ -75,6 +75,7 @@ using lang.AtomSupport;
   @def send_message({Pid: pid, String: message}, [Atom], {
     @native IO.inspect(pid);
     @native IO.inspect(message);
+    @native Kernel.send(pid, message);
     @_"ok";
   });
 

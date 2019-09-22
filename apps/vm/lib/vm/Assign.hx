@@ -1,5 +1,6 @@
 package vm;
 
+import util.ArgHelper;
 import EitherEnums.Either2;
 import lang.EitherSupport;
 class Assign implements Operation {
@@ -21,14 +22,8 @@ class Assign implements Operation {
 
   public function execute(scopeVariables: Map<String, Dynamic>, processStack: ProcessStack): Void {
     for(arg in LList.iterator(args)) {
-      var tuple: Tuple = EitherSupport.getValue(arg);
-      var argArray = tuple.asArray();
-      var elem1: Either2<Atom, Dynamic> = argArray[0];
-      var elem2: Either2<Atom, Dynamic> = argArray[1];
-      switch(cast(EitherSupport.getValue(elem1), Atom)) {
-        case {value: 'const'}:
-          scopeVariables.set(EitherSupport.getValue(elem2), scopeVariables.get("$$$"));
-      }
+      var value: Dynamic = ArgHelper.extractArgValue(arg, scopeVariables);
+      scopeVariables.set(value, scopeVariables.get("$$$"));
     }
   }
 

@@ -87,6 +87,12 @@ class Runner {
     var files = Anna.compileProject(project);
   }
 
+  public static function compileCompiler(): Void {
+    cpp.Lib.println("Compiling Compiler\n");
+    var annaProject: AnnaLangProject = Application.getProjectConfig('compiler'.atom());
+    var files = Anna.compileProject(annaProject.getProjectConfig());
+  }
+
   public static function compileAll(): Void {
     compileLangProject();
     compileVMAPIProject();

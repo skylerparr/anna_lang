@@ -1,0 +1,8 @@
+{
+  "application": "compiler",
+  "autoStart": null,
+  "apps": ["vm_api", "vm", "lang"],
+  "libs": [],
+  "tests": [],
+  "haxelibs": ["minject"]
+}
