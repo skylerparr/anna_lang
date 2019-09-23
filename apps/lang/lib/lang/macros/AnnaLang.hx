@@ -220,6 +220,10 @@ class AnnaLang {
     MacroLogger.logExpr(body, 'bodyString');
 
     prewalk(body);
+    // For some unknown reason, we need to define a garbage function or haxe will crash :: eye_roll ::
+    Def.gen(Macros.haxeToExpr('alkdsjfkldsjf_ldkfj34893_dlksfj([Atom], {
+      x();
+    });'));
     MacroContext.declaredClasses.set(className, moduleDef);
     moduleDef.aliases = MacroContext.aliases;
     moduleDef.declaredFunctions = MacroContext.declaredFunctions;

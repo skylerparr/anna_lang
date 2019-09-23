@@ -41,28 +41,28 @@ class Runner {
   }
 
   public static function compileVMProject(): Atom {
-    trace("compiling vm project");
+    cpp.Lib.println("Compiling vm");
     var annaProject: AnnaLangProject = Application.getProjectConfig('vm'.atom());
     var files = Anna.compileProject(annaProject.getProjectConfig());
     return 'ok'.atom();
   }
 
   public static function compileVMAPIProject(): Atom {
-    trace("compiling vm api project");
+    cpp.Lib.println("Compiling vm api");
     var annaProject: AnnaLangProject = Application.getProjectConfig('vm_api'.atom());
     var files = Anna.compileProject(annaProject.getProjectConfig());
     return 'ok'.atom();
   }
 
   public static function compileLangProject(): Atom {
-    trace("Compiling lang project");
+    cpp.Lib.println("Compiling lang");
     var annaProject: AnnaLangProject = Application.getProjectConfig('lang'.atom());
     var files = Anna.compileProject(annaProject.getProjectConfig());
     return 'ok'.atom();
   }
 
   public static function compileAcceptanceTests(): Array<String> {
-    trace("Compiling acceptanceTests");
+    cpp.Lib.println("Compiling AcceptanceTests");
     var annaProject: AnnaLangProject = Application.getProjectConfig('acceptance_tests'.atom());
     var files = Anna.compileProject(annaProject.getProjectConfig());
     return files;
@@ -83,12 +83,12 @@ class Runner {
   }
 
   public static function compileRunner(): Void {
-    cpp.Lib.println("Compiling Runner\n");
+    cpp.Lib.println("Compiling Runner");
     var files = Anna.compileProject(project);
   }
 
   public static function compileCompiler(): Void {
-    cpp.Lib.println("Compiling Compiler\n");
+    cpp.Lib.println("Compiling Compiler");
     var annaProject: AnnaLangProject = Application.getProjectConfig('compiler'.atom());
     var files = Anna.compileProject(annaProject.getProjectConfig());
   }
@@ -97,6 +97,7 @@ class Runner {
     compileLangProject();
     compileVMAPIProject();
     compileVMProject();
+    compileCompiler();
     compileAcceptanceTests();
   }
 }

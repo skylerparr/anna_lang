@@ -1,6 +1,7 @@
 -cp src
 -cp scripts
 -cp apps/acceptance_tests/lib
+-cp apps/compiler/lib
 -cp apps/anna_unit/lib
 -cp apps/lang/lib
 -cp apps/lang/test
