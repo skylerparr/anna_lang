@@ -30,6 +30,7 @@ class Macros {
       retFields.push(newField);
     }
     MacroLogger.log("---------------------");
+    MacroLogger.log('${Context.getLocalType()}');
     MacroLogger.printFields(retFields);
     MacroLogger.log("_____________________");
     return retFields;
@@ -206,8 +207,10 @@ class Macros {
 
         retValBlock.push({expr: EBinop(OpAssign, metaA, metaB), pos: Context.currentPos()});
       case EBinop(OpEq, a, b):
-        var meta = findMetaInBlock(a, b);
-        retValBlock.push(meta);
+        var metaB = findMetaInBlock(b, rhs);
+        var metaA = findMetaInBlock(a, rhs);
+
+        retValBlock.push({expr: EBinop(OpEq, metaA, metaB), pos: Context.currentPos()});
       case EBinop(OpAdd, a, b):
         var metaB = findMetaInBlock(b, rhs);
         var metaA = findMetaInBlock(a, rhs);

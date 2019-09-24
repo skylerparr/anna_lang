@@ -33,6 +33,9 @@ class Match {
       var haxeStr: String = '${currentFunStr}.push(new vm.Assign(@tuple[@atom "const", "${varName}"], @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${MacroTools.getLineNumber(params)}));';
       return [lang.macros.Macros.haxeToExpr(haxeStr)];
     } else {
+      var currentModule: TypeDefinition = MacroContext.currentModule;
+      var currentModuleStr: String = currentModule.name;
+
       var cls: TypeDefinition = macro class NoClass extends vm.AbstractMatch {
           public function new(hostModule: Atom, hostFunction: Atom, line: Int) {
             super(hostModule, hostFunction, line);
@@ -40,6 +43,9 @@ class Match {
 
           override public function execute(scopeVariables: Map<String, Dynamic>, processStack: vm.ProcessStack): Void {
             var matched: Map<String, Dynamic> = lang.macros.PatternMatch.match($e{Macros.haxeToExpr(typeAndValue.rawValue)}, scopeVariables.get("$$$"));
+            if(matched == null) {
+              throw 'BadMatch: ${currentModuleStr}.${MacroContext.currentFunction}():${MacroTools.getLineNumber(params)} => ${printer.printExpr(params)}';
+            }
             for(key in matched.keys()) {
               scopeVariables.set(key, matched.get(key));
             }
@@ -56,9 +62,6 @@ class Match {
       cls.pack = ["vm"];
 
       Context.defineType(cls);
-
-      var currentModule: TypeDefinition = MacroContext.currentModule;
-      var currentModuleStr: String = currentModule.name;
 
       return [Macros.haxeToExpr('ops.push(new vm.${className}(@atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${MacroTools.getLineNumber(params)}));')];
     }
