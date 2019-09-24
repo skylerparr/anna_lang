@@ -33,6 +33,7 @@ class AnnaLang {
     keywordMap.set("native", lang.macros.Native.gen);
     keywordMap.set("alias", lang.macros.Alias.gen);
     keywordMap.set("def", lang.macros.Def.gen);
+    keywordMap.set("=", lang.macros.Match.gen);
     keywordMap;
   }
   #end
@@ -222,7 +223,7 @@ class AnnaLang {
     prewalk(body);
     // For some unknown reason, we need to define a garbage function or haxe will crash :: eye_roll ::
     Def.gen(Macros.haxeToExpr('alkdsjfkldsjf_ldkfj34893_dlksfj([Atom], {
-      x();
+      ok();
     });'));
     MacroContext.declaredClasses.set(className, moduleDef);
     moduleDef.aliases = MacroContext.aliases;
@@ -307,8 +308,8 @@ class AnnaLang {
               for(expr in exprs) {
                 retExprs.push(expr);
               }
-              var assignOp: Expr = createAssign(left, lineNumber);
-              retExprs.push(assignOp);
+              var assignOp: Array<Expr> = keywordMap.get("=")(left);
+              retExprs.push(assignOp[0]);
             case EConst(CString(value)) | EConst(CInt(value)) | EConst(CFloat(value)) | EConst(CIdent(value)):
               var lineNumber = MacroTools.getLineNumber(blockExpr);
               var assignOp: Expr = createPutIntoScope(blockExpr, lineNumber);
@@ -434,20 +435,7 @@ class AnnaLang {
         type;
     }
   }
-
-  public static function createAssign(expr: Expr, lineNumber: Int): Expr {
-    var moduleName: String = MacroTools.getModuleName(expr);
-    moduleName = getAlias(moduleName);
-
-    var currentModule: TypeDefinition = MacroContext.currentModule;
-    var currentModuleStr: String = currentModule.name;
-    var currentFunStr: String = MacroContext.currentVar;
-    var varName: String = MacroTools.getIdent(expr);
-    MacroContext.varTypesInScope.set(varName, MacroContext.lastFunctionReturnType);
-    var haxeStr: String = '${currentFunStr}.push(new vm.Assign(@list [@tuple[@atom "const", "${varName}"]], @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${lineNumber}));';
-    return lang.macros.Macros.haxeToExpr(haxeStr);
-  }
-
+  
   private static function createPutIntoScope(expr: Expr, lineNumber: Int):Expr {
     var moduleName: String = MacroTools.getModuleName(expr);
     moduleName = getAlias(moduleName);

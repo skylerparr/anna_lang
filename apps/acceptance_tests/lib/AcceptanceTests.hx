@@ -140,7 +140,13 @@ using lang.AtomSupport;
     @native IO.inspect(result2);
 
     result3 = fun3("foo");
+
     @native IO.inspect(result3);
+    @native IO.inspect("testing assignment matching");
+    [@_"ok", msg] = sample();
+    @native IO.inspect("expecting 'message'");
+    @native IO.inspect(msg);
+
 //    fun_knee = @fn {
 //      ([{String: value}, [String]] => {
 //        @native IO.inspect("got zeros");
@@ -157,6 +163,10 @@ using lang.AtomSupport;
     bar(map);
 //    @native IO.inspect({ok: "foob"}); //keyword list
     print(pid);
+  });
+
+  @def sample([Tuple], {
+    [@_"ok", "message"];
   });
 
   @def print([Int], {

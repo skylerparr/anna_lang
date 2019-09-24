@@ -148,6 +148,7 @@ class PatternMatch {
         }
       case e:
         MacroLogger.log(e, 'PatternMatch expr');
+        MacroLogger.logExpr(valueExpr, 'PatternMatch expr');
         macro null;
     }
   }

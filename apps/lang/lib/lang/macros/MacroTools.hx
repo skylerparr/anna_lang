@@ -202,25 +202,29 @@ class MacroTools {
   public static function getTypeAndValue(expr: Expr):Dynamic {
     return switch(expr.expr) {
       case EConst(CIdent(varName)):
-        {type: "Dynamic", value: '@tuple [@atom "var", "${varName}"]'};
+        {type: "Variable", value: '@tuple [@atom "var", "${varName}"]', rawValue: varName};
       case EConst(CString(value)):
-        {type: "String", value: '@tuple [@atom "const", "${value}"]'};
+        {type: "String", value: '@tuple [@atom "const", "${value}"]', rawValue: value};
       case EConst(CInt(value)):
-        {type: "Number", value: '@tuple [@atom "const", ${value}]'};
+        {type: "Number", value: '@tuple [@atom "const", ${value}]', rawValue: value};
       case EConst(CFloat(value)):
-        {type: "Number", value: '@tuple [@atom "const", ${value}]'};
+        {type: "Number", value: '@tuple [@atom "const", ${value}]', rawValue: value};
       case EMeta({name: "atom" | "_"}, {expr: EConst(CString(value))}):
-        {type: "Atom", value: '@tuple [@atom "const", @atom "${value}"]'};
+        var strValue: String = '@atom "${value}"';
+        {type: "Atom", value: '@tuple [@atom "const", ${strValue}]', rawValue: strValue};
       case EMeta({name: "tuple"}, {expr: EArrayDecl(values)}):
-        {type: "Tuple", value: '@tuple [@atom "const", @tuple ${values}]'};
+        var strValue: String = '@tuple ${values}';
+        {type: "Tuple", value: '@tuple [@atom "const", ${strValue}]', rawValue: strValue};
       case EMeta({name: "list"}, {expr: EArrayDecl(values)}):
-        {type: "LList", value: '@tuple [@atom "const", @tuple ${values}]'};
+        var strValue: String = '@list ${values}';
+        {type: "LList", value: '@tuple [@atom "const", ${strValue}]', rawValue: strValue};
       case EBlock(args):
         var listValues: Array<String> = [];
         for(arg in args) {
           listValues.push(printer.printExpr(arg));
         }
-        {type: "LList", value: '@tuple [@atom "const", @list[${listValues.join(",")}]]'};
+        var strValue: String = '@list[${listValues.join(",")}]';
+        {type: "LList", value: '@tuple [@atom "const", ${strValue}]', rawValue: strValue};
       case EArrayDecl(args):
         var listValues: Array<String> = [];
         var isList: Bool = false;
@@ -235,9 +239,11 @@ class MacroTools {
           }
         }
         if(isList) {
-          {type: "Tuple", value: '@tuple [@atom "const", @tuple[${listValues.join(",")}]]'};
+          var strValue: String = '@tuple[${listValues.join(",")}]';
+          {type: "Tuple", value: '@tuple [@atom "const", ${strValue}]', rawValue: strValue};
         } else {
-          {type: "MMap", value: '@tuple [@atom "const", @map[${listValues.join(",")}]]'};
+          var strValue: String = '@map[${listValues.join(",")}]';
+          {type: "MMap", value: '@tuple [@atom "const", ${strValue}]', rawValue: strValue};
         }
       case e:
         MacroLogger.log(e, 'e');
