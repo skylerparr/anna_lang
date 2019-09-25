@@ -43,6 +43,51 @@ class AnnaLang {
     return [];
   }
 
+  macro public static function defType(name: Expr, body: Expr): Array<Field> {
+    var cls: TypeDefinition = macro class NoClass extends vm.AbstractCustomType {
+      public function new(arg: Dynamic) {
+        if(arg == null) {
+          return;
+        }
+        for(field in Reflect.fields(arg)) {
+          Reflect.setField(this, field, Reflect.field(arg, field));
+        }
+      }
+    };
+    var fields: Array<Field> = [];
+    var exprs: Array<Expr> = [];
+    switch(body.expr) {
+      case EBlock(block):
+        for(expression in block) {
+          switch(expression.expr) {
+            case EVars([{expr: expr, name: name, type: type}]):
+              if(expr != null) {
+                switch(expr.expr) {
+                  case EBinop(OpMod, e, params):
+                    var str: String = 'new ${printer.printExpr(e)}(${printer.printExpr(params)})';
+                    expr = Macros.haxeToExpr(str);
+                  case e:
+                    e;
+                }
+              }
+              var field: Field = {name: name, pos: Context.currentPos(), kind: FVar(type, expr), access: [APublic]};
+              fields.push(field);
+              exprs.push(expression);
+            case _:
+              throw "AnnaLang: Unexpected code. You can only define var types. For Example: `var name: String;` or `var ellie: Bear;`";
+          }
+        }
+      case _:
+        throw "AnnaLang: Unexpected code. You can only define var types. For Example: `var name: String;` or `var ellie: Bear;`";
+    }
+    cls.fields = cls.fields.concat(fields);
+    cls.name = printer.printExpr(name);
+    applyBuildMacro(cls);
+    Context.defineType(cls);
+    MacroLogger.log(printer.printTypeDefinition(cls));
+    return [];
+  }
+
   macro public static function compile(): Array<Field> {
     for(className in MacroContext.declaredClasses.keys()) {
       var moduleDef: ModuleDef = MacroContext.declaredClasses.get(className);
@@ -51,7 +96,7 @@ class AnnaLang {
       var cls = MacroTools.createClass(className);
       MacroContext.currentModule = cls;
       MacroContext.declaredFunctions = moduleDef.declaredFunctions;
-      applyBuildMacro();
+      applyBuildMacro(cls);
 
       var definedFunctions: Map<String, String> = new Map<String, String>();
 
@@ -223,7 +268,7 @@ class AnnaLang {
     prewalk(body);
     // For some unknown reason, we need to define a garbage function or haxe will crash :: eye_roll ::
     Def.gen(Macros.haxeToExpr('alkdsjfkldsjf_ldkfj34893_dlksfj([Atom], {
-      ok();
+      @_"ok";
     });'));
     MacroContext.declaredClasses.set(className, moduleDef);
     moduleDef.aliases = MacroContext.aliases;
@@ -333,6 +378,10 @@ class AnnaLang {
                 aliasType = strType;
               }
               MacroContext.lastFunctionReturnType = aliasType;
+            case EBinop(OpMod, type, params):
+              MacroLogger.log(type, 'type');
+              MacroLogger.log(params, 'params');
+              blockExpr;
             case _:
               blockExpr;
           }
@@ -348,8 +397,7 @@ class AnnaLang {
     return retExprs;
   }
 
-  private static function applyBuildMacro():Void {
-    var cls: TypeDefinition = MacroContext.currentModule;
+  public static function applyBuildMacro(cls: TypeDefinition):Void {
     var metaConst = MacroTools.buildConst(CIdent('lang.macros.Macros'));
     var metaField = MacroTools.buildExprField(metaConst, 'build');
     var metaCall = MacroTools.buildCall(metaField, []);
@@ -378,6 +426,7 @@ class AnnaLang {
           types.push(getType(StringTools.replace(MacroContext.lastFunctionReturnType, '.', '_')));
           funArgs.push('@tuple[@atom"var", "__${funName}_${argCounter}"]');
         case _:
+          MacroLogger.log(funName, 'arg');
           var typeAndValue = MacroTools.getTypeAndValue(arg);
           var type: String = getTypeForVar(typeAndValue, arg);
           type = StringTools.replace(type, '.', '_');

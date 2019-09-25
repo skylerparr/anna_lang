@@ -113,6 +113,10 @@ class Kernel {
     currentScheduler.apply(pid, fn, callArgs, nextScopeVariables, callback);
   }
 
+  public static inline function isNull(val: Dynamic): Bool {
+    return val == null;
+  }
+
   public static function add(left: Float, right: Float): Float {
     return left + right;
   }

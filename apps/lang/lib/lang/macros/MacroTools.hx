@@ -246,7 +246,8 @@ class MacroTools {
           {type: "MMap", value: '@tuple [@atom "const", ${strValue}]', rawValue: strValue};
         }
       case e:
-        MacroLogger.log(e, 'e');
+        MacroLogger.log(expr, 'expr');
+        MacroLogger.logExpr(expr, 'expr');
         throw new ParsingException("AnnaLang: Expected type and value or variable name");
     }
   }

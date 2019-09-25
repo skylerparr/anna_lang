@@ -7,6 +7,15 @@ import vm.Pid;
 import IO;
 using lang.AtomSupport;
 @:build(lang.macros.AnnaLang.init())
+@:build(lang.macros.AnnaLang.defType(Sample, {
+  var name: String = "Ellie";
+  var age: Int;
+  var payload: MMap = @map[@_"hello" => "world"];
+  var type: Cat = Cat%{name: "Face"};
+}))
+@:build(lang.macros.AnnaLang.defType(Cat, {
+  var name: String = "Weird";
+}))
 @:build(lang.macros.AnnaLang.defcls(FunctionPatternMatching, {
   @alias vm.Kernel;
 
@@ -147,6 +156,14 @@ using lang.AtomSupport;
     @native IO.inspect("expecting 'message'");
     @native IO.inspect(msg);
 
+    cake = sample();
+    [@_"ok", message] = cake;
+    @native IO.inspect("expecting 'message'");
+    @native IO.inspect(msg);
+
+    sample_type = Sample%{name: "foo", age: 20, payload: [@_"ok" => "foo"]};
+    @native IO.inspect('printing sample type');
+    @native IO.inspect(sample_type);
 //    fun_knee = @fn {
 //      ([{String: value}, [String]] => {
 //        @native IO.inspect("got zeros");

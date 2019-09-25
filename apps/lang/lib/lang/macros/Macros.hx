@@ -207,10 +207,8 @@ class Macros {
 
         retValBlock.push({expr: EBinop(OpAssign, metaA, metaB), pos: Context.currentPos()});
       case EBinop(OpEq, a, b):
-        var metaB = findMetaInBlock(b, rhs);
-        var metaA = findMetaInBlock(a, rhs);
-
-        retValBlock.push({expr: EBinop(OpEq, metaA, metaB), pos: Context.currentPos()});
+        var meta = findMetaInBlock(a, b);
+        retValBlock.push(meta);
       case EBinop(OpAdd, a, b):
         var metaB = findMetaInBlock(b, rhs);
         var metaA = findMetaInBlock(a, rhs);

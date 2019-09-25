@@ -43,7 +43,7 @@ class Match {
 
           override public function execute(scopeVariables: Map<String, Dynamic>, processStack: vm.ProcessStack): Void {
             var matched: Map<String, Dynamic> = lang.macros.PatternMatch.match($e{Macros.haxeToExpr(typeAndValue.rawValue)}, scopeVariables.get("$$$"));
-            if(matched == null) {
+            if(Kernel.isNull(matched)) {
               throw 'BadMatch: ${currentModuleStr}.${MacroContext.currentFunction}():${MacroTools.getLineNumber(params)} => ${printer.printExpr(params)}';
             }
             for(key in matched.keys()) {
@@ -51,11 +51,7 @@ class Match {
             }
           }
       }
-      var metaConst = MacroTools.buildConst(CIdent('lang.macros.Macros'));
-      var metaField = MacroTools.buildExprField(metaConst, 'build');
-      var metaCall = MacroTools.buildCall(metaField, []);
-      var metaData = MacroTools.buildMeta(':build', [metaCall]);
-      MacroTools.addMetaToClass(cls, metaData);
+      AnnaLang.applyBuildMacro(cls);
 
       var className: String = '___${_id++}';
       cls.name = className;
