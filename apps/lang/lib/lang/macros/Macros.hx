@@ -305,7 +305,7 @@ class Macros {
   public static function findMeta(expr: Expr, callback: Expr->Expr):Expr {
     return {
       switch(expr.expr) {
-        case EArrayDecl(values) | ECall({ expr: EField({ expr: EArrayDecl(values)}, _)}, _):
+        case EArrayDecl(values) | ECall({ expr: EField({ expr: EArrayDecl(values)}, _)}, _) | EBlock(values):
           var arrayValues: Array<Expr> = [];
           for(value in values) {
             switch(value.expr) {

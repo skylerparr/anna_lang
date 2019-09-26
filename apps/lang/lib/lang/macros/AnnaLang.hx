@@ -64,8 +64,7 @@ class AnnaLang {
               if(expr != null) {
                 switch(expr.expr) {
                   case EBinop(OpMod, e, params):
-                    var str: String = 'new ${printer.printExpr(e)}(${printer.printExpr(params)})';
-                    expr = Macros.haxeToExpr(str);
+                    expr = createCustomType(e, params);
                   case e:
                     e;
                 }
@@ -81,12 +80,34 @@ class AnnaLang {
         throw "AnnaLang: Unexpected code. You can only define var types. For Example: `var name: String;` or `var ellie: Bear;`";
     }
     cls.fields = cls.fields.concat(fields);
-    cls.name = printer.printExpr(name);
+
+    var className: String = printer.printExpr(name);
+
+    var str: String = 'return new ${className}(args)';
+    var createBodyExpr = Macros.haxeToExpr(str);
+
+    var createField: Field = {
+      name: 'create',
+      pos: Context.currentPos(),
+      kind: FFun({args: [{name: 'args', type: MacroTools.buildType('Dynamic')}], expr: createBodyExpr, ret: MacroTools.buildType(className)}),
+      access: [APublic, AStatic, AInline]
+    };
+    cls.fields.push(createField);
+
+    cls.name = className;
     applyBuildMacro(cls);
     Context.defineType(cls);
     MacroLogger.log(printer.printTypeDefinition(cls));
     return [];
   }
+
+  #if macro
+  public static inline function createCustomType(type: Expr, params: Expr): Expr {
+    var str: String = '${printer.printExpr(type)}.create(${printer.printExpr(params)})';
+    var expr = Macros.haxeToExpr(str);
+    return expr;
+  }
+  #end
 
   macro public static function compile(): Array<Field> {
     for(className in MacroContext.declaredClasses.keys()) {
@@ -379,9 +400,12 @@ class AnnaLang {
               }
               MacroContext.lastFunctionReturnType = aliasType;
             case EBinop(OpMod, type, params):
-              MacroLogger.log(type, 'type');
-              MacroLogger.log(params, 'params');
-              blockExpr;
+              var lineNumber = MacroTools.getLineNumber(blockExpr);
+              MacroContext.lastFunctionReturnType = MacroTools.getIdent(type);
+              var custom:Expr = createCustomType(type, params);
+              var args: String = '@tuple [@atom "const", ${printer.printExpr(custom)}]';
+              var assignOp: Expr = putIntoScope(args, lineNumber);
+              retExprs.push(assignOp);
             case _:
               blockExpr;
           }
@@ -426,7 +450,6 @@ class AnnaLang {
           types.push(getType(StringTools.replace(MacroContext.lastFunctionReturnType, '.', '_')));
           funArgs.push('@tuple[@atom"var", "__${funName}_${argCounter}"]');
         case _:
-          MacroLogger.log(funName, 'arg');
           var typeAndValue = MacroTools.getTypeAndValue(arg);
           var type: String = getTypeForVar(typeAndValue, arg);
           type = StringTools.replace(type, '.', '_');
@@ -489,10 +512,6 @@ class AnnaLang {
     var moduleName: String = MacroTools.getModuleName(expr);
     moduleName = getAlias(moduleName);
 
-    var currentModule: TypeDefinition = MacroContext.currentModule;
-    var currentModuleStr: String = currentModule.name;
-    var currentFunStr: String = MacroContext.currentVar;
-
     var args = MacroTools.getFunBody(expr);
     var strArgs: Array<String> = [];
     for(arg in args) {
@@ -500,8 +519,16 @@ class AnnaLang {
       strArgs.push(typeAndValue.value);
     }
     MacroContext.lastFunctionReturnType = getAnnaVarConstType(lang.macros.Macros.haxeToExpr(strArgs.join(";")));
+    return putIntoScope(strArgs.join(", "), lineNumber);
+  }
 
-    var haxeStr: String = '${currentFunStr}.push(new vm.PutInScope(${strArgs.join(", ")}, @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${lineNumber}));';
+  private static function putIntoScope(args: String, lineNumber: Int): Expr {
+    var currentModule: TypeDefinition = MacroContext.currentModule;
+    var currentModuleStr: String = currentModule.name;
+    var currentFunction: String = MacroContext.currentFunction;
+    var currentFunStr: String = MacroContext.currentVar;
+
+    var haxeStr: String = '${currentFunStr}.push(new vm.PutInScope(${args}, @atom "${currentModuleStr}", @atom "${currentFunction}", ${lineNumber}));';
     return lang.macros.Macros.haxeToExpr(haxeStr);
   }
 

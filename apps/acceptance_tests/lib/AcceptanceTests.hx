@@ -12,6 +12,8 @@ using lang.AtomSupport;
   var age: Int;
   var payload: MMap = @map[@_"hello" => "world"];
   var type: Cat = Cat%{name: "Face"};
+  var legs: LList = @list{1; 2; 3;};
+  var hair: Tuple = @tuple[@_"long", "green"];
 }))
 @:build(lang.macros.AnnaLang.defType(Cat, {
   var name: String = "Weird";
@@ -161,9 +163,8 @@ using lang.AtomSupport;
     @native IO.inspect("expecting 'message'");
     @native IO.inspect(msg);
 
-    sample_type = Sample%{name: "foo", age: 20, payload: [@_"ok" => "foo"]};
-    @native IO.inspect('printing sample type');
-    @native IO.inspect(sample_type);
+    sample_type = Sample%{name: "foo", age: 20};
+    print_sample(sample_type);
 //    fun_knee = @fn {
 //      ([{String: value}, [String]] => {
 //        @native IO.inspect("got zeros");
@@ -180,6 +181,12 @@ using lang.AtomSupport;
     bar(map);
 //    @native IO.inspect({ok: "foob"}); //keyword list
     print(pid);
+  });
+
+  @def print_sample({Sample: s}, [Sample], {
+    @native IO.inspect('printing sample type');
+    @native IO.inspect(s);
+    s;
   });
 
   @def sample([Tuple], {
