@@ -104,6 +104,11 @@ class MMapTest {
     @assert getMap().toAnnaString() == '%{:error => "correct", :ok => "all"}';
   }
 
+  public static function shouldAllowCreatingMapsWithinDynamicStructures(): Void {
+    var obj: Dynamic = {foo: @map['abc'.atom() => 123], bar: @map['def'.atom() => 456]};
+    Assert.areEqual(Anna.toAnnaString(obj), '{bar: %{:def => 456}, foo: %{:abc => 123}}');
+  }
+
   private static function getMap(): MMap {
     return @map [@atom "ok" => "all", @atom "error" => "correct"];
   }

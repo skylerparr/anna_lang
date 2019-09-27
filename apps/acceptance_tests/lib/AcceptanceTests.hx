@@ -11,12 +11,13 @@ using lang.AtomSupport;
   var name: String = "Ellie";
   var age: Int;
   var payload: MMap = @map[@_"hello" => "world"];
-  var type: Cat = Cat%{name: "Face"};
+  var type: Cat = Cat%{name: "Face", face: 'numb'};
   var legs: LList = @list{1; 2; 3;};
   var hair: Tuple = @tuple[@_"long", "green"];
 }))
 @:build(lang.macros.AnnaLang.defType(Cat, {
   var name: String = "Weird";
+  var face: String = "dumb";
 }))
 @:build(lang.macros.AnnaLang.defcls(FunctionPatternMatching, {
   @alias vm.Kernel;
@@ -30,9 +31,13 @@ using lang.AtomSupport;
     iterate_list({6; 5; 4; 3; 2; 1;});
     match_list({4; "hello";});
     match_list({8; "fire";});
-    match_map([@_"hello" => "world", @_"foo" => "bar"]);
+    match_map([@_"hello" => "world", @_"foo" => "bar", @_"foocat" => [@_"cat" => "baz"]]);
     @_"ok";
   });
+//
+//  @def get_tuple([Tuple], {
+//    [@_"ok", [@_'tuple', 'free']];
+//  });
 
   @def count_down({Int: 0}, [Int], {
     @native IO.inspect(0);
@@ -163,8 +168,9 @@ using lang.AtomSupport;
     @native IO.inspect("expecting 'message'");
     @native IO.inspect(msg);
 
-    sample_type = Sample%{name: "foo", age: 20};
+    sample_type = Sample%{name: "foo", age: 20, payload: [@_"ok" => "ack"]};
     print_sample(sample_type);
+    @native IO.inspect([@_"hello" => "world", @_"foo" => "bar", @_"foocat" => [@_"cat" => "baz"]]);
 //    fun_knee = @fn {
 //      ([{String: value}, [String]] => {
 //        @native IO.inspect("got zeros");

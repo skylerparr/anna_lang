@@ -204,7 +204,7 @@ class MacroTools {
       case EConst(CIdent(varName)):
         {type: "Variable", value: '@tuple [@atom "var", "${varName}"]', rawValue: varName};
       case EConst(CString(value)):
-        {type: "String", value: '@tuple [@atom "const", "${value}"]', rawValue: value};
+        {type: "String", value: '@tuple [@atom "const", "${value}"]', rawValue: '"${value}"'};
       case EConst(CInt(value)):
         {type: "Number", value: '@tuple [@atom "const", ${value}]', rawValue: value};
       case EConst(CFloat(value)):
@@ -229,10 +229,13 @@ class MacroTools {
         var listValues: Array<String> = [];
         var isList: Bool = false;
         for(arg in args) {
+          var typeAndValue = getTypeAndValue(arg);
           switch(arg.expr) {
             case EBinop(OpArrow, key, value):
               isList = false;
-              listValues.push('${printer.printExpr(key)} => ${printer.printExpr(value)}');
+              var keyType = getTypeAndValue(key);
+              var valueType = getTypeAndValue(value);
+              listValues.push('${keyType.rawValue} => ${valueType.rawValue}');
             case _:
               isList = true;
               listValues.push(printer.printExpr(arg));
@@ -245,6 +248,19 @@ class MacroTools {
           var strValue: String = '@map[${listValues.join(",")}]';
           {type: "MMap", value: '@tuple [@atom "const", ${strValue}]', rawValue: strValue};
         }
+      case EBinop(OpArrow, lhs, rhs):
+        var lhsType = getTypeAndValue(lhs);
+        var rhsType = getTypeAndValue(rhs);
+        var rawValue: String = '@map [${lhsType.rawValue} => ${rhsType.rawValue}]';
+        {type: "MMap", value: rawValue, rawValue: rawValue};
+      case EObjectDecl(items):
+        var keyValues: Array<String> = [];
+        for(item in items) {
+          var typeAndValue = getTypeAndValue(item.expr);
+          keyValues.push('${item.field}: ${typeAndValue.rawValue}');
+        }
+        var strValue: String = '{${keyValues.join(', ')}}';
+        {type: "CustomType", value: '@tuple [@atom "const", ${strValue}]', rawValue: strValue};
       case e:
         MacroLogger.log(expr, 'expr');
         MacroLogger.logExpr(expr, 'expr');

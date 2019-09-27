@@ -164,7 +164,12 @@ class Macros {
       case EIn(e1, e2):
         throw "AnnaLang: Unimplemented case";
       case EObjectDecl(fields):
-        retValBlock.push(expr);
+        var keyValues: Array<{field:String, expr:Expr}> = [];
+        for(item in fields) {
+          var expr = findMetaInBlock(item.expr, null);
+          keyValues.push({field: item.field, expr: expr});
+        }
+        retValBlock.push({expr: EObjectDecl(keyValues), pos: Context.currentPos()});
       case EParenthesis(e):
         retValBlock.push(expr);
       case EReturn(e):

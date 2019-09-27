@@ -139,7 +139,7 @@ class Anna {
       var value: Dynamic = Reflect.field(dyn, key);
       kv.push('${key}: ${toAnnaString(value)}');
     }
-    return '{ ${kv.join(', ')} }';
+    return '{${kv.join(', ')}}';
   }
 
   public static function inspectObject(obj: Dynamic): String {

@@ -103,7 +103,9 @@ class AnnaLang {
 
   #if macro
   public static inline function createCustomType(type: Expr, params: Expr): Expr {
-    var str: String = '${printer.printExpr(type)}.create(${printer.printExpr(params)})';
+    var typeAndValue: Dynamic = MacroTools.getTypeAndValue(params);
+    typeAndValue.type = printer.printExpr(type);
+    var str: String = '${typeAndValue.type}.create(${typeAndValue.rawValue})';
     var expr = Macros.haxeToExpr(str);
     return expr;
   }

@@ -46,7 +46,7 @@ class AnnaTest {
   }
 
   public static function shouldPrintDynamic(): Void {
-    Assert.areEqual(Anna.inspect({}), '{  }');
+    Assert.areEqual(Anna.inspect({}), '{}');
   }
 
   public static function shouldPrintArrayWithValues(): Void {
@@ -82,7 +82,7 @@ class AnnaTest {
 
   public static function shouldPrintDynamicTypeToMap(): Void {
     var dyn: Dynamic = {foo: 'bar'.atom(), baz: 'cat'.atom()};
-    Assert.areEqual(Anna.inspect(dyn), '{ baz: :cat, foo: :bar }');
+    Assert.areEqual(Anna.inspect(dyn), '{baz: :cat, foo: :bar}');
   }
 
   public static function shouldPrintBasicObject(): Void {
