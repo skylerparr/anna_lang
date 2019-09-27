@@ -10,10 +10,10 @@ using lang.AtomSupport;
 @:build(lang.macros.AnnaLang.defType(Sample, {
   var name: String = "Ellie";
   var age: Int;
-  var payload: MMap = @map[@_"hello" => "world"];
+  var payload: MMap = [@_"hello" => "world"];
   var type: Cat = Cat%{name: "Face", face: 'numb'};
-  var legs: LList = @list{1; 2; 3;};
-  var hair: Tuple = @tuple[@_"long", "green"];
+  var legs: LList = {1; 2; 3;};
+  var hair: Tuple = [@_"long", "green"];
 }))
 @:build(lang.macros.AnnaLang.defType(Cat, {
   var name: String = "Weird";
@@ -34,10 +34,6 @@ using lang.AtomSupport;
     match_map([@_"hello" => "world", @_"foo" => "bar", @_"foocat" => [@_"cat" => "baz"]]);
     @_"ok";
   });
-//
-//  @def get_tuple([Tuple], {
-//    [@_"ok", [@_'tuple', 'free']];
-//  });
 
   @def count_down({Int: 0}, [Int], {
     @native IO.inspect(0);
@@ -118,7 +114,6 @@ using lang.AtomSupport;
     map = cast(@native IO.inspect([ @_"ok" => "all", @_'error' => "correct"]), MMap);
     @native IO.inspect(p3);
     @native IO.inspect(map);
-    @native IO.inspect("waiting...");
     fun = @fn {
       ([{Int: 10}, [Atom]] => {
         @native IO.inspect("got ten");
@@ -185,6 +180,10 @@ using lang.AtomSupport;
     foo(p3);
     foo(p2);
     bar(map);
+    @native IO.inspect(get_tuple());
+    @native IO.inspect(get_list());
+    @native IO.inspect(get_map());
+    @native IO.inspect(get_all());
 //    @native IO.inspect({ok: "foob"}); //keyword list
     print(pid);
   });
@@ -193,6 +192,23 @@ using lang.AtomSupport;
     @native IO.inspect('printing sample type');
     @native IO.inspect(s);
     s;
+  });
+
+  @def get_tuple([Tuple], {
+    [@_"ok", [@_'tuple', 'free']];
+  });
+
+  @def get_list([List], {
+    {1; 2; {@_"a"; @_"b"; @_"c";}};
+  });
+
+  @def get_map([MMap], {
+    [[@_"always" => "squirreling"] => "for nuts"];
+  });
+
+  @def get_all([Tuple], {
+    [@_"ok", {@_"mouse"; [@_"stinky" => "bear", @_"bean" => "dipper", [@_"foo", "bar"] => "feet",
+      @list["apple", "orange"] => "fruit", [@_"always" => "squirreling"] => "for nuts"];}];
   });
 
   @def sample([Tuple], {

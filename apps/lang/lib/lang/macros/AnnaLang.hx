@@ -66,7 +66,8 @@ class AnnaLang {
                   case EBinop(OpMod, e, params):
                     expr = createCustomType(e, params);
                   case e:
-                    e;
+                    var typeAndValue: Dynamic = MacroTools.getTypeAndValue(expr);
+                    expr = Macros.haxeToExpr(typeAndValue.rawValue);
                 }
               }
               var field: Field = {name: name, pos: Context.currentPos(), kind: FVar(type, expr), access: [APublic]};

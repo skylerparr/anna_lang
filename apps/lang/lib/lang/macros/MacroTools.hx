@@ -200,6 +200,7 @@ class MacroTools {
   }
 
   public static function getTypeAndValue(expr: Expr):Dynamic {
+    // TODO: dry a lot of this up!
     return switch(expr.expr) {
       case EConst(CIdent(varName)):
         {type: "Variable", value: '@tuple [@atom "var", "${varName}"]', rawValue: varName};
@@ -213,15 +214,34 @@ class MacroTools {
         var strValue: String = '@atom "${value}"';
         {type: "Atom", value: '@tuple [@atom "const", ${strValue}]', rawValue: strValue};
       case EMeta({name: "tuple"}, {expr: EArrayDecl(values)}):
-        var strValue: String = '@tuple ${values}';
+        var finalValues: Array<String> = [];
+        for(value in values) {
+          var typeAndValue: Dynamic = getTypeAndValue(value);
+          finalValues.push(typeAndValue.rawValue);
+        }
+        var strValue: String = '@tuple ${finalValues.join(', ')}';
         {type: "Tuple", value: '@tuple [@atom "const", ${strValue}]', rawValue: strValue};
-      case EMeta({name: "list"}, {expr: EArrayDecl(values)}):
-        var strValue: String = '@list ${values}';
+      case EMeta({name: "list"}, {expr: EArrayDecl(args)}):
+        var listValues: Array<String> = [];
+        for(arg in args) {
+          var typeAndValue: Dynamic = getTypeAndValue(arg);
+          listValues.push(typeAndValue.rawValue);
+        }
+        var strValue: String = '@list[${listValues.join(",")}]';
         {type: "LList", value: '@tuple [@atom "const", ${strValue}]', rawValue: strValue};
+      case EMeta({name: "map"}, {expr: EArrayDecl(args)}):
+        var listValues: Array<String> = [];
+        for(arg in args) {
+          var typeAndValue: Dynamic = extractMapValues(arg);
+          listValues.push(typeAndValue.rawValue);
+        }
+        var strValue: String = '@map[${listValues.join(",")}]';
+        {type: "MMap", value: '@tuple [@atom "const", ${strValue}]', rawValue: strValue};
       case EBlock(args):
         var listValues: Array<String> = [];
         for(arg in args) {
-          listValues.push(printer.printExpr(arg));
+          var typeAndValue: Dynamic = getTypeAndValue(arg);
+          listValues.push(typeAndValue.rawValue);
         }
         var strValue: String = '@list[${listValues.join(",")}]';
         {type: "LList", value: '@tuple [@atom "const", ${strValue}]', rawValue: strValue};
@@ -229,16 +249,20 @@ class MacroTools {
         var listValues: Array<String> = [];
         var isList: Bool = false;
         for(arg in args) {
-          var typeAndValue = getTypeAndValue(arg);
           switch(arg.expr) {
             case EBinop(OpArrow, key, value):
-              isList = false;
               var keyType = getTypeAndValue(key);
               var valueType = getTypeAndValue(value);
               listValues.push('${keyType.rawValue} => ${valueType.rawValue}');
             case _:
-              isList = true;
-              listValues.push(printer.printExpr(arg));
+              try {
+                var typeAndValue = extractMapValues(arg);
+                listValues.push(typeAndValue.rawValue);
+              } catch(e: Dynamic) {
+                isList = true;
+                var typeAndValue = getTypeAndValue(arg);
+                listValues.push(typeAndValue.rawValue);
+              }
           }
         }
         if(isList) {
@@ -266,6 +290,29 @@ class MacroTools {
         MacroLogger.logExpr(expr, 'expr');
         throw new ParsingException("AnnaLang: Expected type and value or variable name");
     }
+  }
+
+  private static function extractMapValues(arg: Expr):Dynamic {
+    var listValues: Array<String> = [];
+    switch(arg.expr) {
+      case EBinop(OpArrow, key, value):
+        var keyType = getTypeAndValue(key);
+        var valueType = getTypeAndValue(value);
+        listValues.push('${keyType.rawValue} => ${valueType.rawValue}');
+      case EMeta({name: "atom"}, e) | EMeta({name: "tuple"}, e) | EMeta({name: "list"}, e):
+        // special case for when map has atom, tuple, or list keys
+        var typeAndValue: Dynamic = getTypeAndValue(e);
+        listValues.push(typeAndValue.rawValue);
+      case EMeta({name: "map"}, {expr: EBinop(OpArrow, key, value)}):
+        // special case for when map has map keys
+        var keyType = getTypeAndValue(key);
+        var valueType = getTypeAndValue(value);
+        listValues.push('${keyType.rawValue} => ${valueType.rawValue}');
+      case _:
+        throw 'AnnaLang: Unexpected key ${printer.printExpr(arg)}';
+    }
+    var strValue: String = '@map[${listValues.join(",")}]';
+    return {type: "MMap", value: '@tuple [@atom "const", ${strValue}]', rawValue: strValue};
   }
 
   public static function getArgTypesAndReturnTypes(expr: Expr):Dynamic {
