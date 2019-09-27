@@ -184,6 +184,11 @@ using lang.AtomSupport;
     @native IO.inspect(get_list());
     @native IO.inspect(get_map());
     @native IO.inspect(get_all());
+
+    [@_"ok", {@_"mouse"; [@_"stinky" => "bear", @_"bean" => "dipper", [@_"foo", "bar"] => "feet",
+      @list["apple", "orange"] => "fruit", [@_"always" => "squirreling"] => for_what];}] = get_all();
+    @native IO.inspect("What is Ellie always squirreling for?");
+    @native IO.inspect(for_what);
 //    @native IO.inspect({ok: "foob"}); //keyword list
     print(pid);
   });
