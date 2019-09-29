@@ -240,7 +240,8 @@ class Macros {
       case EBinop(OpLte, a, b):
         throw "AnnaLang: Unimplemented case";
       case EBinop(OpMod, a, b):
-        throw "AnnaLang: Unimplemented case";
+        var metaB = findMetaInBlock(b, rhs);
+        retValBlock.push({expr: EBinop(OpMod, a, metaB), pos: Context.currentPos()});
       case EBinop(OpMult, a, b):
         var meta = findMetaInBlock(a, b);
         retValBlock.push(meta);

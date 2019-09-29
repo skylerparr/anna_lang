@@ -146,6 +146,24 @@ class PatternMatch {
           }
           $e{individualMatchesBlock};
         }
+      case EBinop(OpMod, type, {expr: EObjectDecl(args)}):
+        var individualMatches: Array<Expr> = [];
+        for(arg in args) {
+          var strExpr: String = 'Reflect.field(${printer.printExpr(valueExpr)}, "${arg.field}")';
+          var expr: Expr = generatePatternMatch(arg.expr, lang.macros.Macros.haxeToExpr(strExpr));
+          individualMatches.push(expr);
+        }
+        var individualMatchesBlock: Expr = MacroTools.buildBlock(individualMatches);
+        if(individualMatchesBlock == null) {
+          individualMatchesBlock = macro {};
+        }
+        macro {
+          if(!Std.is($e{valueExpr}, $e{type})) {
+            scope = null;
+            break;
+          }
+          $e{individualMatchesBlock};
+        }
       case e:
         MacroLogger.log(e, 'PatternMatch expr');
         MacroLogger.logExpr(valueExpr, 'PatternMatch expr');

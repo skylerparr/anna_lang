@@ -1,5 +1,7 @@
 package ;
 
+import Type.ValueType;
+import lang.CustomType;
 import lang.macros.PatternMatch;
 using lang.AtomSupport;
 
@@ -341,5 +343,138 @@ class PatternMatchTest {
     var matched: Map<String, Dynamic> = PatternMatch.match(@map[@_"key2" => key2], data);
     @refute matched == null;
     @assert matched.get("key2") == "face";
+  }
+
+  public static function shouldAssignCustomType(): Void {
+    var data: TestCustomType = new TestCustomType({name: "foo", age: 32});
+    var matched: Map<String, Dynamic> = PatternMatch.match(customType, data);
+    @refute matched == null;
+    @assert matched.get("customType") == data;
+  }
+
+  public static function shouldMatchCustomTypeFields(): Void {
+    var data: TestCustomType = new TestCustomType({name: "foo", age: 32});
+    var matched: Map<String, Dynamic> = PatternMatch.match(TestCustomType%{name: name, age: age}, data);
+    @refute matched == null;
+    @assert matched.get("name") == "foo";
+    @assert matched.get("age") == 32;
+  }
+
+  public static function shouldNotMatchCustomTypeFieldsIfValuesDontMatch(): Void {
+    var data: TestCustomType = new TestCustomType({name: "foo", age: 32});
+    var matched: Map<String, Dynamic> = PatternMatch.match(TestCustomType%{name: "bar", age: age}, data);
+    @assert matched == null;
+  }
+
+  public static function shouldMatchWithMixtureOfAssignments(): Void {
+    var data: TestCustomType = new TestCustomType({name: "foo", age: 32});
+    var matched: Map<String, Dynamic> = PatternMatch.match(TestCustomType%{name: "foo", age: age}, data);
+    @refute matched == null;
+    @assert matched.get("name") == null;
+    @assert matched.get("age") == 32;
+  }
+
+  public static function shouldNotMatchWithIncompatibleTypes(): Void {
+    var data: TestCustomType = new TestCustomType({name: "foo", age: 32});
+    var matched: Map<String, Dynamic> = PatternMatch.match(FooCustomType%{name: name, age: age}, data);
+    @assert matched == null;
+  }
+
+  public static function shouldPatternMatchComplexTypesAsCustomTypeFields(): Void {
+    var data: CustomTypeWithComplexTypes = new CustomTypeWithComplexTypes(
+      {
+        tup: @tuple[@_"ok", "success"],
+        list: @list[1, "two", @_"three"],
+        map: @map[@_"ok" => "more success"]
+      }
+    );
+    var matched: Map<String, Dynamic> = PatternMatch.match(
+      CustomTypeWithComplexTypes%{
+        tup: @tuple[@_"ok", tupleValue],
+        list: @list[1, listValue, @_"three"],
+        map: @map[@_"ok" => mapValue]
+      },
+      data);
+    @refute matched == null;
+    @assert matched.get("tupleValue") == "success";
+    @assert matched.get("listValue") == "two";
+    @assert matched.get("mapValue") == "more success";
+  }
+}
+
+class TestCustomType implements CustomType {
+  public var name: String;
+  public var age: Int;
+
+  public function new(args: Dynamic) {
+    name = args.name;
+    age = args.age;
+  }
+
+  public function toAnnaString(): String {
+    var fieldPairs: Array<String> = [];
+    for(field in Reflect.fields(this)) {
+      fieldPairs.push('${StringTools.replace(Anna.toAnnaString(field), '"', '')}: ${Anna.toAnnaString(Reflect.field(this, field))}');
+    }
+    var classType: ValueType = Type.typeof(this);
+    var name: String = switch(classType) {
+      case TClass(name):
+        '${name}';
+      case _:
+        "CustomType";
+    }
+    return '${name}%{${fieldPairs.join(', ')}}';
+  }
+}
+
+class FooCustomType implements CustomType {
+  public var name: String;
+  public var age: Int;
+
+  public function new(args: Dynamic) {
+    name = args.name;
+    age = args.age;
+  }
+
+  public function toAnnaString(): String {
+    var fieldPairs: Array<String> = [];
+    for(field in Reflect.fields(this)) {
+      fieldPairs.push('${StringTools.replace(Anna.toAnnaString(field), '"', '')}: ${Anna.toAnnaString(Reflect.field(this, field))}');
+    }
+    var classType: ValueType = Type.typeof(this);
+    var name: String = switch(classType) {
+      case TClass(name):
+        '${name}';
+      case _:
+        "CustomType";
+    }
+    return '${name}%{${fieldPairs.join(', ')}}';
+  }
+}
+
+class CustomTypeWithComplexTypes implements CustomType {
+  public var tup: Tuple;
+  public var list: LList;
+  public var map: MMap;
+
+  public function new(args: Dynamic) {
+    tup = args.tup;
+    list = args.list;
+    map = args.map;
+  }
+
+  public function toAnnaString(): String {
+    var fieldPairs: Array<String> = [];
+    for(field in Reflect.fields(this)) {
+      fieldPairs.push('${StringTools.replace(Anna.toAnnaString(field), '"', '')}: ${Anna.toAnnaString(Reflect.field(this, field))}');
+    }
+    var classType: ValueType = Type.typeof(this);
+    var name: String = switch(classType) {
+      case TClass(name):
+        '${name}';
+      case _:
+        "CustomType";
+    }
+    return '${name}%{${fieldPairs.join(', ')}}';
   }
 }
