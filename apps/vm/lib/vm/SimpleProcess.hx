@@ -45,6 +45,16 @@ class SimpleProcess implements Pid {
   }
 
   public function setState(state: ProcessState): Void {
+    if(this.state == ProcessState.COMPLETE || this.state == ProcessState.CRASHED || this.state == ProcessState.KILLED) {
+      return;
+    }
     this.state = state;
+    if(state == ProcessState.COMPLETE || state == ProcessState.CRASHED || state == ProcessState.KILLED) {
+      processStack.dispose();
+      processStack = null;
+      mailbox = null;
+      parent = null;
+      ancestors = null;
+    }
   }
 }

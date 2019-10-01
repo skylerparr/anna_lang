@@ -14,6 +14,18 @@ class DefaultProcessStack implements ProcessStack {
     this.id = _id++;
   }
 
+  public function init(): Void {
+  }
+
+  public function dispose(): Void {
+    for(stack in allStacks) {
+      stack.dispose();
+    }
+    allStacks = null;
+    currentStack = null;
+    process = null;
+  }
+
   public inline function add(callStack: AnnaCallStack): Void {
     if(currentStack != null && currentStack.tailCall) {
       allStacks.pop();

@@ -90,6 +90,10 @@ class Kernel {
     return 'ok'.atom();
   }
 
+  public static function exit(pid: Pid): Atom {
+    return currentScheduler.exit(pid, 'ok'.atom());
+  }
+
   public static function apply(pid: Pid, fn: Function, args: LList, callback: Dynamic->Void = null): Void {
     if(fn == null) {
       //TODO: handle missing function error

@@ -1,6 +1,7 @@
 package vm;
 
-interface AnnaCallStack {
+import core.BaseObject;
+interface AnnaCallStack extends BaseObject {
   var operations: Array<Operation>;
   var scopeVariables: Map<String, Dynamic>;
   var tailCall: Bool;

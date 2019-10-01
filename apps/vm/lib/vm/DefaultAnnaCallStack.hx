@@ -20,6 +20,15 @@ class DefaultAnnaCallStack implements AnnaCallStack {
     id = _id++;
   }
 
+  public function init(): Void {
+  }
+
+  public function dispose(): Void {
+    operations = null;
+    scopeVariables = null;
+    currentOperation = null;
+  }
+
   public inline function execute(processStack: ProcessStack): Void {
     currentOperation = operations[index++];
     if(currentOperation == null) {

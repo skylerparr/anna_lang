@@ -1,6 +1,7 @@
 package vm;
 
-interface ProcessStack {
+import core.BaseObject;
+interface ProcessStack extends BaseObject {
 
  function add(callStack: AnnaCallStack): Void;
  function execute(): Void;
