@@ -39,6 +39,8 @@ interface Scheduler {
   */
   function update(): Void;
 
+  function complete(pid: Pid): Atom;
+
   function spawn(fn: Void->Operation): Pid;
 
   function spawnLink(parentPid: Pid, fn: Void->Operation): Pid;

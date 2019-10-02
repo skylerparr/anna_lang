@@ -13,10 +13,10 @@ class GenericScheduler implements Scheduler {
   @inject
   public var objectCreator: ObjectCreator;
 
-  public var processes: UniqueList<Pid>;
+  public var pids: UniqueList<Pid>;
   public var paused: Bool;
   public var sleepingProcesses: UniqueList<PidMetaData>;
-  public var waitingProcesses: UniqueList<PidMetaData>;
+  public var pidMetaMap: Map<Pid, PidMetaData>;
   public var currentPid: Pid;
 
   public function new() {
@@ -24,9 +24,9 @@ class GenericScheduler implements Scheduler {
 
   public function start(): Atom {
     if(notRunning()) {
-      processes = new UniqueList<Pid>();
+      pids = new UniqueList<Pid>();
       sleepingProcesses = new UniqueList<PidMetaData>();
-      waitingProcesses = new UniqueList<PidMetaData>();
+      pidMetaMap = new Map<Pid, PidMetaData>();
       return "ok".atom();
     }
     return "already_started".atom();
@@ -41,7 +41,17 @@ class GenericScheduler implements Scheduler {
   }
 
   public function stop(): Atom {
-    processes = null;
+    pids = null;
+    return "ok".atom();
+  }
+
+  public function complete(pid: Pid): Atom {
+    if(notRunning()) {
+      return "not_running".atom();
+    }
+    pid.setState(ProcessState.COMPLETE);
+    pid.dispose();
+    pids.remove(pid);
     return "ok".atom();
   }
 
@@ -71,9 +81,11 @@ class GenericScheduler implements Scheduler {
     }
     if(pid.state == ProcessState.RUNNING) {
       pid.setState(ProcessState.WAITING);
-      waitingProcesses.push(new PidMetaData(pid, fn, 0, callback, TimeUtil.nowInMillis()));
+      var pidMeta: PidMetaData = new PidMetaData(pid, fn, 0, callback, TimeUtil.nowInMillis());
+      pidMetaMap.set(pid, pidMeta);
       if(timeout != null) {
-        sleepingProcesses.push(new PidMetaData(pid, fn, timeout, callback, TimeUtil.nowInMillis()));
+        pidMeta.timeout = timeout;
+        sleepingProcesses.push(pidMeta);
       }
     }
   }
@@ -93,20 +105,16 @@ class GenericScheduler implements Scheduler {
       }
       sleepingProcesses.remove(sleepSpec);
       sleepSpec.pid.setState(ProcessState.RUNNING);
-      processes.push(sleepSpec.pid);
+      pids.push(sleepSpec.pid);
     }
   }
 
-  private inline function passMessages(): Void {
-    for(pidMeta in waitingProcesses.asArray()) {
-      var pid: Pid = pidMeta.pid;
-      if(pid.mailbox.length == 0) {
-        continue;
-      }
+  private inline function passMessages(pid: Pid): Void {
+    var pidMeta: PidMetaData = pidMetaMap.get(pid);
+    if(pidMeta != null) {
       var data = pid.mailbox[pidMeta.mailboxIndex++ % pid.mailbox.length];
       if(data != null) {
-        waitingProcesses.remove(pidMeta);
-        processes.add(pid);
+        pids.add(pid);
         pid.setState(ProcessState.RUNNING);
 
         var scopeVars: Map<String, Dynamic> = pid.processStack.getVariablesInScope();
@@ -129,16 +137,16 @@ class GenericScheduler implements Scheduler {
       return;
     }
     scheduleSleeping();
-    passMessages();
-    currentPid = processes.pop();
+    currentPid = pids.pop();
     if(currentPid == null) {
       return;
     }
     if(currentPid.state == ProcessState.RUNNING) {
+      passMessages(currentPid);
       currentPid.processStack.execute();
     }
     if(currentPid.state == ProcessState.RUNNING) {
-      processes.add(currentPid);
+      pids.add(currentPid);
     }
   }
 
@@ -147,7 +155,7 @@ class GenericScheduler implements Scheduler {
       return null;
     }
     var pid: Pid = objectCreator.createInstance(Pid);
-    processes.add(pid);
+    pids.add(pid);
     pid.start(fn());
     return pid;
   }
@@ -190,7 +198,7 @@ class GenericScheduler implements Scheduler {
     }
     if(callback != null) {
       var op = new InvokeCallback(callback, "GenericScheduler".atom(), "apply".atom(), MacroTools.line());
-      operations.push(op);
+      operations.unshift(op);
     }
     var annaCallStack: AnnaCallStack = new DefaultAnnaCallStack(operations, scopeVariables);
     pid.processStack.add(annaCallStack);
@@ -201,7 +209,7 @@ class GenericScheduler implements Scheduler {
   }
 
   private inline function notRunning(): Bool {
-    return processes == null;
+    return pids == null;
   }
 }
 

@@ -25,6 +25,19 @@ class SimpleProcess implements Pid {
     this.mailbox = [];
   }
 
+  public function init(): Void {
+  }
+
+  public function dispose(): Void {
+    if(processStack != null) {
+      processStack.dispose();
+    }
+    processStack = null;
+    mailbox = null;
+    parent = null;
+    ancestors = null;
+  }
+
   public function start(op: Operation): Void {
     var processStack: DefaultProcessStack = new DefaultProcessStack(this);
     processStack.add(new DefaultAnnaCallStack([op], new Map<String, Dynamic>()));

@@ -1,6 +1,7 @@
 package vm;
+import core.BaseObject;
 import lang.CustomType;
-interface Pid extends CustomType {
+interface Pid extends BaseObject extends CustomType {
   public var processStack(default, null): ProcessStack;
   public var state(default, null): ProcessState;
   public var mailbox(default, null): Array<Dynamic>;

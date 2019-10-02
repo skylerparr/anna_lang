@@ -18,8 +18,10 @@ class DefaultProcessStack implements ProcessStack {
   }
 
   public function dispose(): Void {
-    for(stack in allStacks) {
-      stack.dispose();
+    if(allStacks != null) {
+      for(stack in allStacks) {
+        stack.dispose();
+      }
     }
     allStacks = null;
     currentStack = null;

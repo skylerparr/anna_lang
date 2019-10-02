@@ -20,31 +20,12 @@ class Process {
     }
   }
 
-  public static function status(pid: Pid): String {
-    return pid.state + "";
+  public static function status(pid: Pid): Atom {
+    return (pid.state + "").atom();
   }
 
-  public static function exit(process: Pid): Atom {
-    Reflect.setField(process, 'state', ProcessState.KILLED);
-    return 'ok'.atom();
-  }
-
-  public static function running(process: Pid): Atom {
-    Reflect.setField(process, 'state', ProcessState.RUNNING);
-    return 'ok'.atom();
-  }
-
-  public static function complete(process: Pid): Atom {
-    Reflect.setField(process, 'state', ProcessState.COMPLETE);
-    return 'ok'.atom();
-  }
-
-  public static function waiting(process: Pid): Atom {
-    Reflect.setField(process, 'state', ProcessState.WAITING);
-    return 'ok'.atom();
-  }
-
-  public static function receive(process: Pid, callback: Function): Atom {
+  public static function complete(pid: Pid): Atom {
+    Kernel.currentScheduler.complete(pid);
     return 'ok'.atom();
   }
 
