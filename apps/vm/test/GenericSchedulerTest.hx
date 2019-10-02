@@ -21,10 +21,15 @@ class GenericSchedulerTest {
   private static var scheduler: GenericScheduler;
   private static var objectCreator: ObjectCreator;
 
+  private static var createdPid: Pid;
+
   public static function setup(): Void {
     scheduler = new GenericScheduler();
     objectCreator = mock(ObjectCreator);
     scheduler.objectCreator = objectCreator;
+
+    createdPid = mock(Pid);
+    createdPid.mailbox.returns([]);
   }
 
   public static function shouldReturnOkWhenStartingScheduler(): Void {
@@ -48,7 +53,6 @@ class GenericSchedulerTest {
   }
 
   public static function shouldSpawnProcess(): Void {
-    var createdPid: Pid = mock(Pid);
     var operation: Operation = mock(Operation);
     objectCreator.createInstance(cast any, cast any).returns(createdPid);
 
@@ -62,7 +66,6 @@ class GenericSchedulerTest {
   }
 
   public static function shouldNotSpawnProcessIfSchedulerIsNotRunning(): Void {
-    var createdPid: Pid = mock(Pid);
     objectCreator.createInstance(cast any, cast any).returns(createdPid);
     var pid = scheduler.spawn(function() { return null; });
     @assert pid == null;
@@ -71,7 +74,6 @@ class GenericSchedulerTest {
 
   public static function shouldAssignParentPidWhenSpawningLink(): Void {
     var parentPid: Pid = mock(Pid);
-    var createdPid: Pid = mock(Pid);
     var operation: Operation = mock(Operation);
     objectCreator.createInstance(cast any, cast any).returns(createdPid);
 
@@ -86,7 +88,6 @@ class GenericSchedulerTest {
 
   public static function shouldReturnNullIfSchedulerIsNotRunningWhenSpawningLink(): Void {
     var parentPid: Pid = mock(Pid);
-    var createdPid: Pid = mock(Pid);
     var operation: Operation = mock(Operation);
     objectCreator.createInstance(cast any, cast any).returns(createdPid);
 
@@ -97,7 +98,6 @@ class GenericSchedulerTest {
   }
 
   public static function shouldSetPidToComplete(): Void {
-    var createdPid: Pid = mock(Pid);
     var operation: Operation = mock(Operation);
     objectCreator.createInstance(cast any, cast any).returns(createdPid);
 
@@ -107,8 +107,8 @@ class GenericSchedulerTest {
     createdPid.setState(ProcessState.COMPLETE).verify();
   }
 
+  #if !cppia
   public static function shouldDisposePidOnComplete(): Void {
-    var createdPid: Pid = mock(Pid);
     var operation: Operation = mock(Operation);
     objectCreator.createInstance(cast any, cast any).returns(createdPid);
 
@@ -119,9 +119,9 @@ class GenericSchedulerTest {
     createdPid.dispose().verify();
     @assert scheduler.pids.length() == 0;
   }
+  #end
 
   public static function shouldDoNothingIfCompleteIsCalledAndSchedulerIsNotRunning(): Void {
-    var createdPid: Pid = mock(Pid);
     var operation: Operation = mock(Operation);
     objectCreator.createInstance(cast any, cast any).returns(createdPid);
 
@@ -132,7 +132,6 @@ class GenericSchedulerTest {
   }
 
   public static function shouldInvokeTheOperationExecuteWhenCallingUpdateOnALoadedScheduler(): Void {
-    var createdPid: Pid = mock(Pid);
     var operation: Operation = mock(Operation);
     var processStack: ProcessStack = mock(ProcessStack);
     createdPid.processStack.returns(processStack);
@@ -146,7 +145,6 @@ class GenericSchedulerTest {
   }
 
   public static function shouldInvokeTheOperationExecuteMoreThanOnceWhenCallingUpdateMoreThanOnce(): Void {
-    var createdPid: Pid = mock(Pid);
     var operation: Operation = mock(Operation);
     var processStack: ProcessStack = mock(ProcessStack);
     createdPid.processStack.returns(processStack);
@@ -162,8 +160,8 @@ class GenericSchedulerTest {
   }
 
   public static function shouldRoundRobinBetweenProcessWhenCallingUpdate(): Void {
-    var createdPid: Pid = mock(Pid);
     var createdPid2: Pid = mock(Pid);
+    createdPid2.mailbox.returns([]);
     var operation: Operation = mock(Operation);
     var processStack: ProcessStack = mock(ProcessStack);
     var processStack2: ProcessStack = mock(ProcessStack);
@@ -188,7 +186,6 @@ class GenericSchedulerTest {
   }
 
   public static function shouldRemoveProcessFromProcessListIfStatusIsNotRunning(): Void {
-    var createdPid: Pid = mock(Pid);
     var operation: Operation = mock(Operation);
     var processStack: ProcessStack = mock(ProcessStack);
     createdPid.processStack.returns(processStack);
@@ -212,7 +209,6 @@ class GenericSchedulerTest {
   }
 
   public static function shouldReturnNullPidWhenSpawningIfSchedulerIsNotRunning(): Void {
-    var createdPid: Pid = mock(Pid);
     var operation: Operation = mock(Operation);
     var processStack: ProcessStack = mock(ProcessStack);
     createdPid.processStack.returns(processStack);
@@ -222,87 +218,77 @@ class GenericSchedulerTest {
   }
 
   public static function shouldUpdateAPidsMailboxWhenSendingAMessage(): Void {
-    var pid: Pid = mock(Pid);
     scheduler.start();
-    @assert @_"ok" == scheduler.send(pid, "foo");
-    pid.putInMailbox("foo").verify();
+    @assert @_"ok" == scheduler.send(createdPid, "foo");
+    createdPid.putInMailbox("foo").verify();
   }
 
   public static function shouldReturnAtomMessageThatSchedulerIsNotRunningWhenAttemptingToSendAMessage(): Void {
-    var pid: Pid = mock(Pid);
-    @assert @_"not_running" == scheduler.send(pid, "foo");
+    @assert @_"not_running" == scheduler.send(createdPid, "foo");
   }
 
   public static function shouldPutPidIntoRunningStateWentMessageIsSentToItOnlyIfItsCurrentStateIsWaiting(): Void {
-    var pid: Pid = mock(Pid);
-    pid.state.returns(ProcessState.WAITING);
+    createdPid.state.returns(ProcessState.WAITING);
     scheduler.start();
-    @assert @_"ok" == scheduler.send(pid, "foo");
-    pid.setState(ProcessState.RUNNING).verify();
+    @assert @_"ok" == scheduler.send(createdPid, "foo");
+    createdPid.setState(ProcessState.RUNNING).verify();
   }
 
   public static function shoudNotChangeStateIfStateIsRunningIfSendingMessage(): Void {
-    var pid: Pid = mock(Pid);
-    pid.state.returns(ProcessState.SLEEPING);
+    createdPid.state.returns(ProcessState.SLEEPING);
     scheduler.start();
-    @assert @_"ok" == scheduler.send(pid, "foo");
-    pid.setState(ProcessState.RUNNING).verify(never);
+    @assert @_"ok" == scheduler.send(createdPid, "foo");
+    createdPid.setState(ProcessState.RUNNING).verify(never);
   }
 
   public static function shouldSetProcessToWaitingWhenPutIntoReceiveMode(): Void {
-    var pid: Pid = mock(Pid);
-    pid.state.returns(ProcessState.RUNNING);
+    createdPid.state.returns(ProcessState.RUNNING);
     scheduler.start();
     var fn: Function = mock(Function);
-    scheduler.receive(pid, fn, 500);
-    pid.setState(ProcessState.WAITING).verify();
+    scheduler.receive(createdPid, fn, 500);
+    createdPid.setState(ProcessState.WAITING).verify();
     @assert scheduler.sleepingProcesses.length() == 1;
   }
 
   public static function shouldDoNothingIfPutIntoReceiveModeAndTheSchedulerIsntRunning(): Void {
-    var pid: Pid = mock(Pid);
-    pid.state.returns(ProcessState.RUNNING);
+    createdPid.state.returns(ProcessState.RUNNING);
     var fn: Function = mock(Function);
-    scheduler.receive(pid, fn);
-    pid.setState(ProcessState.WAITING).verify(never);
+    scheduler.receive(createdPid, fn);
+    createdPid.setState(ProcessState.WAITING).verify(never);
   }
 
   public static function shouldNotChangeStateIfReceiveIsCallOnProcessThatIsInAnyOtherStateOtherThanRUNNING(): Void {
-    var pid: Pid = mock(Pid);
-    pid.state.returns(ProcessState.SLEEPING);
+    createdPid.state.returns(ProcessState.SLEEPING);
     scheduler.start();
     var fn: Function = mock(Function);
-    scheduler.receive(pid, fn);
-    pid.setState(ProcessState.WAITING).verify(never);
+    scheduler.receive(createdPid, fn);
+    createdPid.setState(ProcessState.WAITING).verify(never);
   }
 
   public static function shouldPutPidIntoWaitingIfTimeoutIsNull(): Void {
-    var pid: Pid = mock(Pid);
-    pid.state.returns(ProcessState.RUNNING);
+    createdPid.state.returns(ProcessState.RUNNING);
     scheduler.start();
     var fn: Function = mock(Function);
-    scheduler.receive(pid, fn);
-    pid.setState(ProcessState.WAITING).verify();
+    scheduler.receive(createdPid, fn);
+    createdPid.setState(ProcessState.WAITING).verify();
     @assert scheduler.sleepingProcesses.length() == 0;
   }
 
   public static function shouldAddPidToSleepingProcesses(): Void {
-    var pid: Pid = mock(Pid);
-    pid.state.returns(ProcessState.RUNNING);
+    createdPid.state.returns(ProcessState.RUNNING);
     scheduler.start();
     var callback = function(v) {};
     var fn: Function = mock(Function);
-    scheduler.receive(pid, fn, 300, callback);
+    scheduler.receive(createdPid, fn, 300, callback);
     var pidMeta = scheduler.sleepingProcesses.first();
     @refute pidMeta == null;
-    Assert.areSameInstance(pidMeta.pid, pid);
+    Assert.areSameInstance(pidMeta.pid, createdPid);
     @assert pidMeta.timeout == 300;
     Assert.areSameInstance(pidMeta.callback, callback);
     Assert.areSameInstance(pidMeta.fn, fn);
   }
 
   public static function shouldAddAnInvokeCallbackOperationToTheCurrentPidProcessStackWhenApplyingFunction(): Void {
-    var pid: Pid = mock(Pid);
     var func: Function = mock(Function);
     var operations: Array<Operation> = [mock(Operation)];
     var allOperations: Array<Operation> = null;
@@ -311,12 +297,12 @@ class GenericSchedulerTest {
       allOperations = arg[0].operations;
     });
 
-    pid.processStack.returns(processStack);
+    createdPid.processStack.returns(processStack);
     func.invoke(cast any).returns(operations);
 
     scheduler.start();
-    scheduler.pids.push(pid);
-    scheduler.apply(pid, func, [], new Map<String, Dynamic>(), function(r) {});
+    scheduler.pids.push(createdPid);
+    scheduler.apply(createdPid, func, [], new Map<String, Dynamic>(), function(r) {});
 
     func.invoke(cast any).verify();
     processStack.add(cast any).verify();
@@ -326,7 +312,6 @@ class GenericSchedulerTest {
   }
 
   public static function shouldNotAddAnInvokeCallbackOperationToTheCurrentPidProcessStackWhenApplyingFunctionWhenCallbackIsNull(): Void {
-    var pid: Pid = mock(Pid);
     var func: Function = mock(Function);
     var operations: Array<Operation> = [mock(Operation)];
     var allOperations: Array<Operation> = null;
@@ -335,11 +320,11 @@ class GenericSchedulerTest {
       allOperations = arg[0].operations;
     });
 
-    pid.processStack.returns(processStack);
+    createdPid.processStack.returns(processStack);
     func.invoke(cast any).returns(operations);
 
     scheduler.start();
-    scheduler.apply(pid, func, [], new Map<String, Dynamic>(), null);
+    scheduler.apply(createdPid, func, [], new Map<String, Dynamic>(), null);
 
     func.invoke(cast any).verify();
     processStack.add(cast any).verify();
@@ -349,7 +334,6 @@ class GenericSchedulerTest {
   }
 
   public static function shouldPassArgsAndScopeVariablesToFunctionInvokeOnApply(): Void {
-    var pid: Pid = mock(Pid);
     var func: Function = mock(Function);
     var operations: Array<Operation> = [mock(Operation)];
     var allOperations: Array<Operation> = null;
@@ -359,7 +343,7 @@ class GenericSchedulerTest {
     });
 
     var scope = new Map<String, Dynamic>();
-    pid.processStack.returns(processStack);
+    createdPid.processStack.returns(processStack);
     func.invoke(cast any).calls(function(args: Array<Dynamic>): Array<Operation> {
       switch(args[0]) {
         case [one, two, three, four, five]:
@@ -375,12 +359,11 @@ class GenericSchedulerTest {
     });
 
     scheduler.start();
-    scheduler.apply(pid, func, [1, 2.3, "3", @_"four"], scope, null);
+    scheduler.apply(createdPid, func, [1, 2.3, "3", @_"four"], scope, null);
     func.invoke(cast any).verify();
   }
 
   public static function shouldDoNothingIfCallingApplyAndSchedulerIsntRunning(): Void {
-    var pid: Pid = mock(Pid);
     var func: Function = mock(Function);
     var operations: Array<Operation> = [mock(Operation)];
     var allOperations: Array<Operation> = null;
@@ -389,10 +372,10 @@ class GenericSchedulerTest {
       allOperations = arg[0].operations;
     });
 
-    pid.processStack.returns(processStack);
+    createdPid.processStack.returns(processStack);
     func.invoke(cast any).returns(operations);
 
-    scheduler.apply(pid, func, [], new Map<String, Dynamic>(), function(r) {});
+    scheduler.apply(createdPid, func, [], new Map<String, Dynamic>(), function(r) {});
 
     func.invoke(cast any).verify(never);
     processStack.add(cast any).verify(never);
@@ -407,7 +390,6 @@ class GenericSchedulerTest {
   }
 
   public static function shouldReturnSelf(): Void {
-    var createdPid: Pid = mock(Pid);
     var operation: Operation = mock(Operation);
     var processStack: ProcessStack = mock(ProcessStack);
     createdPid.processStack.returns(processStack);
@@ -422,24 +404,21 @@ class GenericSchedulerTest {
   }
 
   public static function shouldPutPidToSleep(): Void {
-    var pid: Pid = mock(Pid);
-    pid.state.returns(ProcessState.RUNNING);
+    createdPid.state.returns(ProcessState.RUNNING);
     scheduler.start();
-    Assert.areSameInstance(scheduler.sleep(pid, 300), pid);
-    pid.setState(ProcessState.SLEEPING).verify();
+    Assert.areSameInstance(scheduler.sleep(createdPid, 300), createdPid);
+    createdPid.setState(ProcessState.SLEEPING).verify();
     @assert scheduler.sleepingProcesses.length() == 1;
-    Assert.areSameInstance(scheduler.sleepingProcesses.pop().pid, pid);
+    Assert.areSameInstance(scheduler.sleepingProcesses.pop().pid, createdPid);
   }
 
   public static function shouldDoNothingWhenPidIsToldToSleepIfSchedulerIsNotRunning(): Void {
-    var pid: Pid = mock(Pid);
-    pid.state.returns(ProcessState.RUNNING);
-    Assert.areSameInstance(scheduler.sleep(pid, 300), pid);
-    pid.setState(ProcessState.SLEEPING).verify(never);
+    createdPid.state.returns(ProcessState.RUNNING);
+    Assert.areSameInstance(scheduler.sleep(createdPid, 300), createdPid);
+    createdPid.setState(ProcessState.SLEEPING).verify(never);
   }
 
   public static function pidsShouldBeExecutedAfterSleepCompletes(): Void {
-    var createdPid: Pid = mock(Pid);
     var operation: Operation = mock(Operation);
     var processStack: ProcessStack = mock(ProcessStack);
     createdPid.processStack.returns(processStack);
@@ -465,9 +444,9 @@ class GenericSchedulerTest {
   }
 
   public static function shouldBeAbleToSendMessageToProcessAndHaveTheProcessReadIt(): Void {
-    var pid: Pid = mock(Pid);
-    pid.mailbox.returns(["hello world"]);
-    pid.state.returns(ProcessState.RUNNING);
+    var mailbox: Array<Dynamic> = ["hello world"];
+    createdPid.mailbox.returns(mailbox);
+    createdPid.state.returns(ProcessState.RUNNING);
     var processStack: ProcessStack = mock(ProcessStack);
     var scope = new Map<String, Dynamic>();
     processStack.getVariablesInScope().returns(scope);
@@ -481,10 +460,10 @@ class GenericSchedulerTest {
         annaStack.execute(processStack);
       }
     });
-    pid.processStack.returns(processStack);
+    createdPid.processStack.returns(processStack);
     scheduler.start();
-    scheduler.pids.push(pid);
-    scheduler.send(pid, "hello world");
+    scheduler.pids.push(createdPid);
+    scheduler.send(createdPid, "hello world");
     var cbCalled: Bool = false;
     var fn: Function = mock(Function);
     // LOOK HERE... LOOK! LOOK! AN IMPORT NOTE HERE
@@ -497,7 +476,7 @@ class GenericSchedulerTest {
     });
     fn.invoke(cast any).returns([op]);
     fn.args.returns(["value_data"]);
-    scheduler.receive(pid, fn, null, function(message): Void {
+    scheduler.receive(createdPid, fn, null, function(message): Void {
       cbCalled = true;
       @assert message == "hello world";
     });
@@ -509,56 +488,59 @@ class GenericSchedulerTest {
     Assert.isTrue(cbCalled);
   }
 
-//  public static function shouldBeAbleToSendMessageToProcessBeforeItsReadyToReceiveAndShouldHandleItWhenPutIntoReceiveState(): Void {
-//    var pid: Pid = mock(Pid);
-//    pid.mailbox.returns([]);
-//    pid.state.returns(ProcessState.RUNNING);
-//    pid.setState(ProcessState.WAITING).calls(function(a): Void {
-//      pid.state.returns(ProcessState.WAITING);
-//    });
-//    var processStack: ProcessStack = mock(ProcessStack);
-//    var scope = new Map<String, Dynamic>();
-//    processStack.getVariablesInScope().returns(scope);
-//    var annaStack: AnnaCallStack = null;
-//    processStack.add(cast any).calls(function(args): Void {
-//      annaStack = args[0];
-//    });
-//    processStack.execute().calls(function(): Void {
-//      scope.set("$$$", scope.get("value_data"));
-//      if(annaStack != null) {
-//        annaStack.execute(processStack);
-//      }
-//    });
-//    pid.processStack.returns(processStack);
-//    scheduler.start();
-//    scheduler.send(pid, "hello world");
-//    var cbCalled: Bool = false;
-//    var fn: Function = mock(Function);
-//    // LOOK HERE... LOOK! LOOK! AN IMPORT NOTE HERE
-//    // IF YOU DON'T PASS AT LEAST 1 OPERATION, THIS TEST
-//    // WILL SEGFAULT.
-//    var op: Operation = mock(Operation);
-//    op.execute(cast any, cast any).calls(function(args: Array<Dynamic>): Void {
-//      var scope: Map<String, Dynamic> = args[0];
-//      @assert scope.get("value_data") == "hello world";
-//    });
-//    fn.invoke(cast any).returns([op]);
-//    fn.args.returns(["value_data"]);
-//    scheduler.receive(pid, fn, null, function(message): Void {
-//      cbCalled = true;
-//      @assert message == "hello world";
-//    });
-//    pid.mailbox.returns(["hello world"]);
-//    pid.setState(ProcessState.RUNNING).calls(function(a): Void {
-//      pid.state.returns(ProcessState.RUNNING);
-//    });
-//    scheduler.update();
-//
-//    var i: Int = 0;
-//    while(i < 20) {
-//      scheduler.update();
-//      i++;
-//    }
-//    Assert.isTrue(cbCalled);
-//  }
+  public static function shouldBeAbleToSendMessageToProcessBeforeItsReadyToReceiveAndShouldHandleItWhenPutIntoReceiveState(): Void {
+    var mailbox: Array<Dynamic> = [];
+    createdPid.mailbox.returns(mailbox);
+    createdPid.state.returns(ProcessState.RUNNING);
+    createdPid.setState(ProcessState.WAITING).calls(function(a): Void {
+      createdPid.state.returns(ProcessState.WAITING);
+    });
+    var processStack: ProcessStack = mock(ProcessStack);
+    var scope = new Map<String, Dynamic>();
+    processStack.getVariablesInScope().returns(scope);
+    var annaStack: AnnaCallStack = null;
+    processStack.add(cast any).calls(function(args): Void {
+      annaStack = args[0];
+    });
+    processStack.execute().calls(function(): Void {
+      scope.set("$$$", scope.get("value_data"));
+      if(annaStack != null) {
+        annaStack.execute(processStack);
+      }
+    });
+    createdPid.putInMailbox(cast any).calls(function(args) {
+      mailbox.push(args[0]);
+    });
+    createdPid.processStack.returns(processStack);
+    scheduler.start();
+    scheduler.pids.push(createdPid);
+    scheduler.send(createdPid, "hello world");
+    var cbCalled: Bool = false;
+    var fn: Function = mock(Function);
+    // LOOK HERE... LOOK! LOOK! AN IMPORT NOTE HERE
+    // IF YOU DON'T PASS AT LEAST 1 OPERATION, THIS TEST
+    // WILL SEGFAULT.
+    var op: Operation = mock(Operation);
+    op.execute(cast any, cast any).calls(function(args: Array<Dynamic>): Void {
+      var scope: Map<String, Dynamic> = args[0];
+      @assert scope.get("value_data") == "hello world";
+    });
+    fn.invoke(cast any).returns([op]);
+    fn.args.returns(["value_data"]);
+    scheduler.receive(createdPid, fn, null, function(message): Void {
+      cbCalled = true;
+      @assert message == "hello world";
+    });
+    createdPid.mailbox.returns(["hello world"]);
+    createdPid.setState(ProcessState.RUNNING).calls(function(a): Void {
+      createdPid.state.returns(ProcessState.RUNNING);
+    });
+
+    var i: Int = 0;
+    while(i < 20) {
+      scheduler.update();
+      i++;
+    }
+    Assert.isTrue(cbCalled);
+  }
 }

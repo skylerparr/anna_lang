@@ -1,5 +1,6 @@
 package vm.schedulers;
 
+import core.BaseObject;
 import util.ArgHelper;
 import util.TimeUtil;
 import haxe.Timer;
@@ -50,7 +51,9 @@ class GenericScheduler implements Scheduler {
       return "not_running".atom();
     }
     pid.setState(ProcessState.COMPLETE);
+    #if !cppia
     pid.dispose();
+    #end
     pids.remove(pid);
     return "ok".atom();
   }
@@ -79,14 +82,14 @@ class GenericScheduler implements Scheduler {
     if(notRunning()) {
       return;
     }
-    if(pid.state == ProcessState.RUNNING) {
+    if(pid.state == ProcessState.RUNNING && pid.mailbox.length == 0) {
       pid.setState(ProcessState.WAITING);
-      var pidMeta: PidMetaData = new PidMetaData(pid, fn, 0, callback, TimeUtil.nowInMillis());
-      pidMetaMap.set(pid, pidMeta);
-      if(timeout != null) {
-        pidMeta.timeout = timeout;
-        sleepingProcesses.push(pidMeta);
-      }
+    }
+    var pidMeta: PidMetaData = new PidMetaData(pid, fn, 0, callback, TimeUtil.nowInMillis());
+    pidMetaMap.set(pid, pidMeta);
+    if(timeout != null) {
+      pidMeta.timeout = timeout;
+      sleepingProcesses.push(pidMeta);
     }
   }
 
@@ -111,8 +114,9 @@ class GenericScheduler implements Scheduler {
 
   private inline function passMessages(pid: Pid): Void {
     var pidMeta: PidMetaData = pidMetaMap.get(pid);
-    if(pidMeta != null) {
-      var data = pid.mailbox[pidMeta.mailboxIndex++ % pid.mailbox.length];
+    if(pidMeta != null && pid.mailbox.length > 0) {
+      var mailbox: Array<Dynamic> = pid.mailbox;
+      var data = mailbox[pidMeta.mailboxIndex++ % mailbox.length];
       if(data != null) {
         pids.add(pid);
         pid.setState(ProcessState.RUNNING);
@@ -122,7 +126,7 @@ class GenericScheduler implements Scheduler {
 
         apply(pid, pidMeta.fn, [data], scopeVars, function(result: Dynamic): Void {
           if(result != null) {
-            pid.mailbox.remove(result);
+            mailbox.remove(result);
             if(pidMeta.callback != null) {
               pidMeta.callback(result);
             }
