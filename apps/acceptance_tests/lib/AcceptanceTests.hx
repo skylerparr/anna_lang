@@ -5,6 +5,7 @@ package ;
 **/
 import vm.Pid;
 import IO;
+import vm.Function;
 using lang.AtomSupport;
 @:build(lang.macros.AnnaLang.init())
 @:build(lang.macros.AnnaLang.defType(Sample, {
@@ -83,20 +84,24 @@ using lang.AtomSupport;
   @alias vm.Process;
   @alias vm.Pid;
   @alias vm.Kernel;
+  @alias vm.Function;
 
   @def test_receive([Atom], {
-    fun = @fn {
+    @native IO.inspect("waiting for data");
+    received = kernel_receive(@fn {
       ([{String: value}, [String]] => {
         @native IO.inspect("handling received message");
         @native IO.inspect(value);
         value;
       });
-    }
-    @native IO.inspect("waiting for data");
-    received = @native Kernel.receive(fun);
+    });
     @native IO.inspect("received:");
     @native IO.inspect(received);
     @_"ok";
+  });
+
+  @def kernel_receive({Function: fun}, [Dynamic], {
+    @native Kernel.receive(fun);
   });
 
   @def start([Int], {

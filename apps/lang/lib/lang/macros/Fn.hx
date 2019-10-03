@@ -16,7 +16,7 @@ class Fn {
 
   #if macro
   public static function gen(params: Expr): Array<Expr> {
-    MacroContext.lastFunctionReturnType = "AnonFunction";
+    MacroContext.lastFunctionReturnType = "vm_Function";
     var currentModule: TypeDefinition = MacroContext.currentModule;
     var currentModuleStr: String = currentModule.name;
     switch(params.expr) {
@@ -39,6 +39,8 @@ class Fn {
         var haxeStr: String = 'ops.push(new vm.DeclareAnonFunction(@atom "${currentModuleStr}.${defined.internalFunctionName}", @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${MacroTools.getLineNumber(params)}))';
         return [lang.macros.Macros.haxeToExpr(haxeStr)];
       case _:
+        MacroLogger.log(params, 'params');
+        MacroLogger.logExpr(params, 'params');
         throw new ParsingException("AnnaLang: Expected block");
     }
   }

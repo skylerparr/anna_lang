@@ -367,7 +367,22 @@ class AnnaLang {
               var funName: String = MacroTools.getCallFunName(blockExpr);
               var args: Array<Expr> = MacroTools.getFunBody(blockExpr);
               var lineNumber: Int = MacroTools.getLineNumber(expr);
-              var exprs: Array<Expr> = createPushStack(funName, args, lineNumber);
+              var pushStackArgs: Array<Expr> = [];
+              for(i in 0...args.length) {
+                var arg = args[i];
+                switch(arg.expr) {
+                  case EMeta({name: 'fn'}, expr):
+                    var exprs = keywordMap.get("fn")(expr);
+                    retExprs = retExprs.concat(exprs);
+                    var varName: String = '__${funName}';
+                    var exprs = keywordMap.get("=")(Macros.haxeToExpr(varName));
+                    retExprs = retExprs.concat(exprs);
+                    pushStackArgs.push({expr: EConst(CIdent(varName)), pos: Context.currentPos()});
+                  case _:
+                    pushStackArgs.push(arg);
+                }
+              }
+              var exprs: Array<Expr> = createPushStack(funName, pushStackArgs, lineNumber);
               for(expr in exprs) {
                 retExprs.push(expr);
               }
@@ -493,6 +508,9 @@ class AnnaLang {
   private static function getTypeForVar(typeAndValue: Dynamic, arg: Expr):String {
     return switch(arg.expr) {
       case EConst(CIdent(varName)):
+        if(typeAndValue.rawValue == "vm_Function") {
+          return "vm_Function";
+        }
         var type = MacroContext.varTypesInScope.get(varName);
         getType(type);
       case _:
