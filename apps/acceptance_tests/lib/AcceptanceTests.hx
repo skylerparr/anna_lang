@@ -84,10 +84,18 @@ using lang.AtomSupport;
   @alias vm.Pid;
   @alias vm.Kernel;
 
-  @def send_message({Pid: pid, String: message}, [Atom], {
-    @native IO.inspect(pid);
-    @native IO.inspect(message);
-    @native Kernel.send(pid, message);
+  @def test_receive([Atom], {
+    fun = @fn {
+      ([{String: value}, [String]] => {
+        @native IO.inspect("handling received message");
+        @native IO.inspect(value);
+        value;
+      });
+    }
+    @native IO.inspect("waiting for data");
+    received = @native Kernel.receive(fun);
+    @native IO.inspect("received:");
+    @native IO.inspect(received);
     @_"ok";
   });
 
@@ -166,17 +174,6 @@ using lang.AtomSupport;
     sample_type = Sample%{name: "foo", age: 20, payload: [@_"ok" => "ack"]};
     print_sample(sample_type);
     @native IO.inspect([@_"hello" => "world", @_"foo" => "bar", @_"foocat" => [@_"cat" => "baz"]]);
-//    fun_knee = @fn {
-//      ([{String: value}, [String]] => {
-//        @native IO.inspect("got zeros");
-//        @native IO.inspect(value);
-//        value;
-//      });
-//    }
-//    @native IO.inspect("waiting for data");
-//    received = @native Kernel.receive(fun_knee);
-//    @native IO.inspect("received:");
-//    @native IO.inspect(received);
     foo(p3);
     foo(p2);
     bar(map);

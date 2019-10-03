@@ -1,9 +1,6 @@
 package vm.schedulers;
 
-import core.BaseObject;
-import util.ArgHelper;
 import util.TimeUtil;
-import haxe.Timer;
 import lang.macros.MacroTools;
 import util.UniqueList;
 import core.ObjectCreator;
@@ -55,6 +52,7 @@ class GenericScheduler implements Scheduler {
     pid.dispose();
     #end
     pids.remove(pid);
+    pidMetaMap.remove(pid);
     return "ok".atom();
   }
 
@@ -74,6 +72,7 @@ class GenericScheduler implements Scheduler {
     pid.putInMailbox(payload);
     if(pid.state == ProcessState.WAITING) {
       pid.setState(ProcessState.RUNNING);
+      pids.add(pid);
     }
     return "ok".atom();
   }
@@ -123,6 +122,7 @@ class GenericScheduler implements Scheduler {
 
         var scopeVars: Map<String, Dynamic> = pid.processStack.getVariablesInScope();
         scopeVars.set(pidMeta.fn.args[0], data);
+        scopeVars.set("$$$", data);
 
         apply(pid, pidMeta.fn, [data], scopeVars, function(result: Dynamic): Void {
           if(result != null) {

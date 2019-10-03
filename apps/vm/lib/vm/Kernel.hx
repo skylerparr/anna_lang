@@ -50,6 +50,19 @@ class Kernel {
     });
   }
 
+  public static function testReceiveMessage(): Pid {
+    defineCode();
+    var scheduler: GenericScheduler = new GenericScheduler();
+    ObjectFactory.injector.mapClass(Pid, SimpleProcess);
+    scheduler.objectCreator = cast ObjectFactory.injector.getInstance(ObjectCreator);
+    currentScheduler = scheduler;
+    currentScheduler.start();
+
+    return currentScheduler.spawn(function() {
+      return new PushStack('Boot'.atom(), 'test_receive'.atom(), LList.create([]), "Kernel".atom(), "testGenericScheduler".atom(), MacroTools.line());
+    });
+  }
+
   public static function update(): Void {
     var counter: Int = 100;
     while(counter > 0) {

@@ -444,15 +444,22 @@ class GenericSchedulerTest {
   }
 
   public static function shouldBeAbleToSendMessageToProcessAndHaveTheProcessReadIt(): Void {
-    var mailbox: Array<Dynamic> = ["hello world"];
+    var mailbox: Array<Dynamic> = [];
     createdPid.mailbox.returns(mailbox);
     createdPid.state.returns(ProcessState.RUNNING);
+    createdPid.setState(ProcessState.WAITING).calls(function(a): Void {
+      createdPid.state.returns(ProcessState.WAITING);
+    });
+    createdPid.setState(ProcessState.RUNNING).calls(function(a): Void {
+      createdPid.state.returns(ProcessState.RUNNING);
+    });
     var processStack: ProcessStack = mock(ProcessStack);
     var scope = new Map<String, Dynamic>();
     processStack.getVariablesInScope().returns(scope);
     var annaStack: AnnaCallStack = null;
     processStack.add(cast any).calls(function(args): Void {
       annaStack = args[0];
+      @assert annaStack.scopeVariables.get("$$$") == "hello world";
     });
     processStack.execute().calls(function(): Void {
       scope.set("$$$", scope.get("value_data"));
@@ -460,10 +467,12 @@ class GenericSchedulerTest {
         annaStack.execute(processStack);
       }
     });
+    createdPid.putInMailbox(cast any).calls(function(args) {
+      mailbox.push(args[0]);
+    });
     createdPid.processStack.returns(processStack);
     scheduler.start();
     scheduler.pids.push(createdPid);
-    scheduler.send(createdPid, "hello world");
     var cbCalled: Bool = false;
     var fn: Function = mock(Function);
     // LOOK HERE... LOOK! LOOK! AN IMPORT NOTE HERE
@@ -473,9 +482,15 @@ class GenericSchedulerTest {
     op.execute(cast any, cast any).calls(function(args: Array<Dynamic>): Void {
       var scope: Map<String, Dynamic> = args[0];
       @assert scope.get("value_data") == "hello world";
+      @assert scope.get("$$$") == "hello world";
     });
     fn.invoke(cast any).returns([op]);
     fn.args.returns(["value_data"]);
+    var i: Int = 0;
+    while(i < 20) {
+      scheduler.update();
+      i++;
+    }
     scheduler.receive(createdPid, fn, null, function(message): Void {
       cbCalled = true;
       @assert message == "hello world";
@@ -485,7 +500,15 @@ class GenericSchedulerTest {
       scheduler.update();
       i++;
     }
+    scheduler.send(createdPid, "hello world");
+
+    var i: Int = 0;
+    while(i < 20) {
+      scheduler.update();
+      i++;
+    }
     Assert.isTrue(cbCalled);
+    op.execute(cast any, cast any).verify();
   }
 
   public static function shouldBeAbleToSendMessageToProcessBeforeItsReadyToReceiveAndShouldHandleItWhenPutIntoReceiveState(): Void {
@@ -495,12 +518,16 @@ class GenericSchedulerTest {
     createdPid.setState(ProcessState.WAITING).calls(function(a): Void {
       createdPid.state.returns(ProcessState.WAITING);
     });
+    createdPid.setState(ProcessState.RUNNING).calls(function(a): Void {
+      createdPid.state.returns(ProcessState.RUNNING);
+    });
     var processStack: ProcessStack = mock(ProcessStack);
     var scope = new Map<String, Dynamic>();
     processStack.getVariablesInScope().returns(scope);
     var annaStack: AnnaCallStack = null;
     processStack.add(cast any).calls(function(args): Void {
       annaStack = args[0];
+      @assert annaStack.scopeVariables.get("$$$") == "hello world";
     });
     processStack.execute().calls(function(): Void {
       scope.set("$$$", scope.get("value_data"));
@@ -524,16 +551,13 @@ class GenericSchedulerTest {
     op.execute(cast any, cast any).calls(function(args: Array<Dynamic>): Void {
       var scope: Map<String, Dynamic> = args[0];
       @assert scope.get("value_data") == "hello world";
+      @assert scope.get("$$$") == "hello world";
     });
     fn.invoke(cast any).returns([op]);
     fn.args.returns(["value_data"]);
     scheduler.receive(createdPid, fn, null, function(message): Void {
       cbCalled = true;
       @assert message == "hello world";
-    });
-    createdPid.mailbox.returns(["hello world"]);
-    createdPid.setState(ProcessState.RUNNING).calls(function(a): Void {
-      createdPid.state.returns(ProcessState.RUNNING);
     });
 
     var i: Int = 0;
@@ -542,5 +566,6 @@ class GenericSchedulerTest {
       i++;
     }
     Assert.isTrue(cbCalled);
+    op.execute(cast any, cast any).verify();
   }
 }

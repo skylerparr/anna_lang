@@ -42,9 +42,8 @@ class UniqueList<T> {
     return item;
   }
 
-  public function unshift(): T {
-    var item: T = array[0];
-    array.remove(item);
+  public function shift(): T {
+    var item: T = array.shift();
     map.remove(item);
     return item;
   }
