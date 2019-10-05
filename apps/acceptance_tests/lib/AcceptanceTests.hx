@@ -104,7 +104,12 @@ using lang.AtomSupport;
     @native Kernel.receive(fun);
   });
 
-  @def kernel_send({Pid: pid, Dynamic: value}, [Atom], {
+  @def kernel_send({Pid: pid, Tuple: value}, [Atom], {
+    @native Kernel.send(pid, value);
+    @_'ok';
+  });
+
+  @def kernel_send({Pid: pid, String: value}, [Atom], {
     @native Kernel.send(pid, value);
     @_'ok';
   });
@@ -114,31 +119,40 @@ using lang.AtomSupport;
   });
 
   @def state_loop({Int: value}, [Int], {
-    @native IO.inspect(value);
     received = kernel_receive(@fn {
       ([{Tuple: [@_'inc']}, [Int]] => {
-        @native IO.inspect("incrementing");
         @native Kernel.add(1, value);
       });
       ([{Tuple: [@_'get', pid]}, [Int]] => {
         kernel_send(pid, value);
         value;
       });
-      ([{Tuple: catch_all}, [Int]] => {
-        @native IO.inspect('catch all');
-        @native IO.inspect(catch_all);
-        @native IO.inspect(value);
-        value;
-      });
     });
+
     received = cast(received, Int);
     state_loop(received);
   });
 
   @def increment_state({Pid: pid}, [Atom], {
-    @native IO.inspect(pid);
     pid = cast(pid, Pid);
     kernel_send(pid, [@_'inc']);
+  });
+
+  @def get_state({Pid: pid}, [Atom], {
+    self_pid = self();
+//    kernel_send(pid, [@_'get', self_pid]);
+//    received = kernel_receive(@fn {
+//      ([{Int: value}, [Int]] => {
+//        value;
+//      });
+//    });
+//    @native IO.inspect("got state");
+//    @native IO.inspect(received);
+    @_'ok';
+  });
+
+  @def self([Pid], {
+    @native Process.self();
   });
 
   @def start_infinite_loop([Atom], {

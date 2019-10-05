@@ -203,6 +203,13 @@ class GenericScheduler implements Scheduler {
     if(notRunning()) {
       return;
     }
+    var fnScope: Map<String, Dynamic> = fn.scope;
+    for(scopeKey in fnScope.keys()) {
+      if(scopeKey == "$$$") {
+        continue;
+      }
+      scopeVariables.set(scopeKey, fnScope.get(scopeKey));
+    }
     args.push(scopeVariables);
     var operations: Array<Operation> = fn.invoke(args);
     if(operations == null) {

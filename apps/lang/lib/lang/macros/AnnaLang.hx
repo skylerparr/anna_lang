@@ -496,7 +496,6 @@ class AnnaLang {
     var declaredFunctions = module.declaredFunctions;
 
     var funDef: Dynamic = declaredFunctions.get(fqFunName);
-    MacroLogger.log(fqFunName, 'fqFunName');
     if(funDef == null) {
       var haxeStr: String = '${currentFunStr}.push(new vm.AnonymousFunction(@atom"${funName}", @list [${funArgs.join(", ")}], @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${lineNumber}))';
       retVal.push(lang.macros.Macros.haxeToExpr(haxeStr));
@@ -527,7 +526,7 @@ class AnnaLang {
       case "Int" | "Float":
         "Number";
       case null:
-        "LList";
+        getAlias(MacroContext.lastFunctionReturnType);
       case _:
         type;
     }

@@ -91,11 +91,6 @@ class Kernel {
     return spawn('Boot', 'start_state', []);
   }
 
-  public static function incState(pid: Pid): Atom {
-    send(pid, Tuple.create(lang.macros.EitherMacro.gen(cast([Atom.create("inc")], Array<Dynamic>))));
-    return 'ok'.atom();
-  }
-
   public static function incrementState(pid: Pid): Pid {
     return spawn('Boot', 'increment_state_vm_Pid', [pid]);
   }

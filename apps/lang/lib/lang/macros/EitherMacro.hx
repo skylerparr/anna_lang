@@ -20,7 +20,6 @@ class EitherMacro {
   macro public static function gen(values: Expr): Expr {
     MacroLogger.log("=====================");
     MacroLogger.log('EitherMacro.gen(): ${Context.getLocalClass()}');
-
     switch(setup(values)) {
       case [p, valueExpressions, typeAndExprs, varTypeMap, allTypes, numberOfElements]:
         var eitherArray: Array<Expr> = [];
@@ -151,7 +150,9 @@ class EitherMacro {
             typeAndExprs.push({type: "String", expr: vExpr});
           case CFloat(value):
             typeAndExprs.push({type: "Float", expr: vExpr});
-          case _:
+          case e:
+            MacroLogger.log(e, 'e');
+            typeAndExprs.push({type: "Dynamic", expr: vExpr});
         }
       case {expr: ECall(val, _fun)}:
         switch(val) {
@@ -159,7 +160,8 @@ class EitherMacro {
             typeAndExprs.push({type: "Atom", expr: vExpr});
           case {expr: EField({expr: EConst(CIdent(type))}, _)}:
             typeAndExprs.push({type: '${type}', expr: vExpr});
-          case _:
+          case e:
+            MacroLogger.log(e, 'e');
         }
       case {expr: ENew({name: type}, _args)}:
         typeAndExprs.push({type: {expr: EConst(CIdent(type)), pos: Context.currentPos()}, expr: vExpr});
@@ -167,7 +169,8 @@ class EitherMacro {
         for(expr in [e1, e2]) {
           findTypesAndExprs(typeAndExprs, expr);
         }
-      case _:
+      case e:
+        MacroLogger.log(e, 'e');
     }
   }
   #end

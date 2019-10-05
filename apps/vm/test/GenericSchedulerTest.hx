@@ -32,6 +32,12 @@ class GenericSchedulerTest {
     createdPid.mailbox.returns([]);
   }
 
+  private static function mockFunction(): Function {
+    var fn: Function = mock(Function);
+    fn.scope.returns(new Map<String, Dynamic>());
+    return fn;
+  }
+
   public static function shouldReturnOkWhenStartingScheduler(): Void {
     @assert scheduler.start() == @_"ok";
   }
@@ -244,7 +250,7 @@ class GenericSchedulerTest {
   public static function shouldSetProcessToWaitingWhenPutIntoReceiveMode(): Void {
     createdPid.state.returns(ProcessState.RUNNING);
     scheduler.start();
-    var fn: Function = mock(Function);
+    var fn: Function = mockFunction();
     scheduler.receive(createdPid, fn, 500);
     createdPid.setState(ProcessState.WAITING).verify();
     @assert scheduler.sleepingProcesses.length() == 1;
@@ -252,7 +258,7 @@ class GenericSchedulerTest {
 
   public static function shouldDoNothingIfPutIntoReceiveModeAndTheSchedulerIsntRunning(): Void {
     createdPid.state.returns(ProcessState.RUNNING);
-    var fn: Function = mock(Function);
+    var fn: Function = mockFunction();
     scheduler.receive(createdPid, fn);
     createdPid.setState(ProcessState.WAITING).verify(never);
   }
@@ -260,7 +266,7 @@ class GenericSchedulerTest {
   public static function shouldNotChangeStateIfReceiveIsCallOnProcessThatIsInAnyOtherStateOtherThanRUNNING(): Void {
     createdPid.state.returns(ProcessState.SLEEPING);
     scheduler.start();
-    var fn: Function = mock(Function);
+    var fn: Function = mockFunction();
     scheduler.receive(createdPid, fn);
     createdPid.setState(ProcessState.WAITING).verify(never);
   }
@@ -268,7 +274,7 @@ class GenericSchedulerTest {
   public static function shouldPutPidIntoWaitingIfTimeoutIsNull(): Void {
     createdPid.state.returns(ProcessState.RUNNING);
     scheduler.start();
-    var fn: Function = mock(Function);
+    var fn: Function = mockFunction();
     scheduler.receive(createdPid, fn);
     createdPid.setState(ProcessState.WAITING).verify();
     @assert scheduler.sleepingProcesses.length() == 0;
@@ -278,7 +284,7 @@ class GenericSchedulerTest {
     createdPid.state.returns(ProcessState.RUNNING);
     scheduler.start();
     var callback = function(v) {};
-    var fn: Function = mock(Function);
+    var fn: Function = mockFunction();
     scheduler.receive(createdPid, fn, 300, callback);
     var pidMeta = scheduler.sleepingProcesses.first();
     @refute pidMeta == null;
@@ -289,7 +295,7 @@ class GenericSchedulerTest {
   }
 
   public static function shouldAddAnInvokeCallbackOperationToTheCurrentPidProcessStackWhenApplyingFunction(): Void {
-    var func: Function = mock(Function);
+    var func: Function = mockFunction();
     var operations: Array<Operation> = [mock(Operation)];
     var allOperations: Array<Operation> = null;
     var processStack: ProcessStack = mock(ProcessStack);
@@ -312,7 +318,7 @@ class GenericSchedulerTest {
   }
 
   public static function shouldNotAddAnInvokeCallbackOperationToTheCurrentPidProcessStackWhenApplyingFunctionWhenCallbackIsNull(): Void {
-    var func: Function = mock(Function);
+    var func: Function = mockFunction();
     var operations: Array<Operation> = [mock(Operation)];
     var allOperations: Array<Operation> = null;
     var processStack: ProcessStack = mock(ProcessStack);
@@ -334,7 +340,7 @@ class GenericSchedulerTest {
   }
 
   public static function shouldPassArgsAndScopeVariablesToFunctionInvokeOnApply(): Void {
-    var func: Function = mock(Function);
+    var func: Function = mockFunction();
     var operations: Array<Operation> = [mock(Operation)];
     var allOperations: Array<Operation> = null;
     var processStack: ProcessStack = mock(ProcessStack);
@@ -364,7 +370,7 @@ class GenericSchedulerTest {
   }
 
   public static function shouldDoNothingIfCallingApplyAndSchedulerIsntRunning(): Void {
-    var func: Function = mock(Function);
+    var func: Function = mockFunction();
     var operations: Array<Operation> = [mock(Operation)];
     var allOperations: Array<Operation> = null;
     var processStack: ProcessStack = mock(ProcessStack);
@@ -487,7 +493,7 @@ class GenericSchedulerTest {
     scheduler.start();
     scheduler.pids.push(createdPid);
     var cbCalled: Bool = false;
-    var fn: Function = mock(Function);
+    var fn: Function = mockFunction();
     // LOOK HERE... LOOK! LOOK! AN IMPORT NOTE HERE
     // IF YOU DON'T PASS AT LEAST 1 OPERATION, THIS TEST
     // WILL SEGFAULT.
@@ -556,7 +562,7 @@ class GenericSchedulerTest {
     scheduler.pids.push(createdPid);
     scheduler.send(createdPid, "hello world");
     var cbCalled: Bool = false;
-    var fn: Function = mock(Function);
+    var fn: Function = mockFunction();
     // LOOK HERE... LOOK! LOOK! AN IMPORT NOTE HERE
     // IF YOU DON'T PASS AT LEAST 1 OPERATION, THIS TEST
     // WILL SEGFAULT.
