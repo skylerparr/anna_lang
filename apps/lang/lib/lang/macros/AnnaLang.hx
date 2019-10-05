@@ -490,9 +490,13 @@ class AnnaLang {
       moduleName = moduleDef.moduleName;
     }
     var module: ModuleDef = MacroContext.declaredClasses.get(moduleName);
+    if(module == null) {
+      throw new FunctionClauseNotFound('AnnaLang: Function ${funName}() not found.');
+    }
     var declaredFunctions = module.declaredFunctions;
 
     var funDef: Dynamic = declaredFunctions.get(fqFunName);
+    MacroLogger.log(fqFunName, 'fqFunName');
     if(funDef == null) {
       var haxeStr: String = '${currentFunStr}.push(new vm.AnonymousFunction(@atom"${funName}", @list [${funArgs.join(", ")}], @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${lineNumber}))';
       retVal.push(lang.macros.Macros.haxeToExpr(haxeStr));

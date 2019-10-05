@@ -62,6 +62,7 @@ class GenericScheduler implements Scheduler {
     }
     pid.setState(ProcessState.SLEEPING);
     sleepingProcesses.push(new PidMetaData(pid, null, milliseconds, null, TimeUtil.nowInMillis()));
+    pids.remove(pid);
     return pid;
   }
 
@@ -152,6 +153,14 @@ class GenericScheduler implements Scheduler {
     if(currentPid.state == ProcessState.RUNNING) {
       pids.add(currentPid);
     }
+  }
+
+  public function hasSomethingToExecute(): Bool {
+    scheduleSleeping();
+    if(pids.length() > 0) {
+      return true;
+    }
+    return false;
   }
 
   public function spawn(fn: Void->Operation): Pid {

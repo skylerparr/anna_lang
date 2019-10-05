@@ -104,6 +104,53 @@ using lang.AtomSupport;
     @native Kernel.receive(fun);
   });
 
+  @def kernel_send({Pid: pid, Dynamic: value}, [Atom], {
+    @native Kernel.send(pid, value);
+    @_'ok';
+  });
+
+  @def start_state([Atom], {
+    state_loop(0);
+  });
+
+  @def state_loop({Int: value}, [Int], {
+    @native IO.inspect(value);
+    received = kernel_receive(@fn {
+      ([{Tuple: [@_'inc']}, [Int]] => {
+        @native IO.inspect("incrementing");
+        @native Kernel.add(1, value);
+      });
+      ([{Tuple: [@_'get', pid]}, [Int]] => {
+        kernel_send(pid, value);
+        value;
+      });
+      ([{Tuple: catch_all}, [Int]] => {
+        @native IO.inspect('catch all');
+        @native IO.inspect(catch_all);
+        @native IO.inspect(value);
+        value;
+      });
+    });
+    received = cast(received, Int);
+    state_loop(received);
+  });
+
+  @def increment_state({Pid: pid}, [Atom], {
+    @native IO.inspect(pid);
+    pid = cast(pid, Pid);
+    kernel_send(pid, [@_'inc']);
+  });
+
+  @def start_infinite_loop([Atom], {
+    infinite_loop(1);
+  });
+
+  @def infinite_loop({Int: counter}, [Atom], {
+    @native Process.sleep(100);
+    counter = @native Kernel.add(counter, 1);
+    infinite_loop(counter);
+  });
+
   @def start([Int], {
     print(get_string(), return_num(get_one()), get_two());
     result = @native Kernel.add(get_one(), get_two());
@@ -164,6 +211,25 @@ using lang.AtomSupport;
     @native IO.inspect(result2);
 
     result3 = fun3("foo");
+
+    @native IO.inspect("pattern match tuple");
+    fun4 = @fn {
+      ([{Tuple: [@_'ok', message]}, [Tuple]] => {
+        @native IO.inspect(message);
+        [@_'ok'];
+      });
+      ([{Tuple: [@_'atom']}, [Tuple]] => {
+        @native IO.inspect("got atom");
+        [@_'ok'];
+      });
+      ([{Tuple: catch_all}, [Tuple]] => {
+        @native IO.inspect("catch_all");
+        @native IO.inspect(catch_all);
+      });
+    }
+    fun4([@_'test']);
+    fun4([@_'ok', 'hello world']);
+    fun4([@_'atom']);
 
     @native IO.inspect(result3);
     @native IO.inspect("testing assignment matching");

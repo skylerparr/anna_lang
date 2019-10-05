@@ -421,20 +421,33 @@ class GenericSchedulerTest {
   public static function pidsShouldBeExecutedAfterSleepCompletes(): Void {
     var operation: Operation = mock(Operation);
     var processStack: ProcessStack = mock(ProcessStack);
+    processStack.execute().calls(function(args): Void {
+      createdPid.state.returns(ProcessState.COMPLETE);
+    });
     createdPid.processStack.returns(processStack);
     objectCreator.createInstance(cast any, cast any).returns(createdPid);
-    createdPid.state.returns(ProcessState.RUNNING);
+    createdPid.setState(ProcessState.WAITING).calls(function(args) {
+      createdPid.state.returns(ProcessState.WAITING);
+    });
+    createdPid.setState(ProcessState.RUNNING).calls(function(args) {
+      createdPid.state.returns(ProcessState.RUNNING);
+    });
 
     var timeout: Float = 1; // timeout after 1 second
     var now: Float = Timer.stamp();
 
     scheduler.start();
-    var pid = scheduler.spawn(function() { return operation; });
+    var pid = scheduler.spawn(function() {
+      return operation;
+    });
     scheduler.sleep(pid, 2);
-    while(scheduler.pids.length() != 0 && scheduler.sleepingProcesses.length() != 0) {
+    while(true) {
       scheduler.update();
       if(Timer.stamp() - now > timeout) {
         Assert.fail("Test timed out");
+        break;
+      }
+      if(scheduler.pids.length() == 0 && scheduler.sleepingProcesses.length() == 0) {
         break;
       }
     }
@@ -567,5 +580,57 @@ class GenericSchedulerTest {
     }
     Assert.isTrue(cbCalled);
     op.execute(cast any, cast any).verify();
+  }
+
+  public static function shouldReturnFalseIfSchedulerHasNothingToDo(): Void {
+    scheduler.start();
+    Assert.isFalse(scheduler.hasSomethingToExecute());
+  }
+
+  public static function shouldReturnTrueIfSchedulerHasSomethingToDo(): Void {
+    scheduler.start();
+    var operation: Operation = mock(Operation);
+    objectCreator.createInstance(cast any, cast any).returns(createdPid);
+
+    scheduler.start();
+    scheduler.spawn(function() { return operation; });
+    Assert.isTrue(scheduler.hasSomethingToExecute());
+  }
+
+  public static function shouldCheckOnSleepingProcessWhenCheckingToSeeIfSchedulerHasSomethingToDo(): Void {
+    var operation: Operation = mock(Operation);
+    var processStack: ProcessStack = mock(ProcessStack);
+    processStack.execute().calls(function(args): Void {
+      createdPid.state.returns(ProcessState.COMPLETE);
+    });
+    createdPid.processStack.returns(processStack);
+    objectCreator.createInstance(cast any, cast any).returns(createdPid);
+    createdPid.setState(ProcessState.WAITING).calls(function(args) {
+      createdPid.state.returns(ProcessState.WAITING);
+    });
+    createdPid.setState(ProcessState.RUNNING).calls(function(args) {
+      createdPid.state.returns(ProcessState.RUNNING);
+    });
+
+    var timeout: Float = 1; // timeout after 1 second
+    var now: Float = Timer.stamp();
+
+    scheduler.start();
+    var pid = scheduler.spawn(function() {
+      return operation;
+    });
+    scheduler.sleep(pid, 2);
+    while(true) {
+      if(scheduler.hasSomethingToExecute()) {
+        scheduler.update();
+      }
+      if(Timer.stamp() - now > timeout) {
+        Assert.fail("Test timed out");
+        break;
+      }
+      if(scheduler.pids.length() == 0 && scheduler.sleepingProcesses.length() == 0) {
+        break;
+      }
+    }
   }
 }
