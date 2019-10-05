@@ -8,7 +8,6 @@ class MacroContext {
   public static var currentVar: String;
   public static var aliases: Map<String, String>;
   public static var currentFunctionArgTypes: Array<String>;
-  public static var declaredVars: Array<Dynamic>;
   public static var returnTypes: Array<String>;
   public static var declaredFunctions: Map<String, Array<Dynamic>>;
   public static var varTypesInScope: Map<String, String>;
