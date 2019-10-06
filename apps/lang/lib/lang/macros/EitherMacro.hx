@@ -150,9 +150,12 @@ class EitherMacro {
             typeAndExprs.push({type: "String", expr: vExpr});
           case CFloat(value):
             typeAndExprs.push({type: "Float", expr: vExpr});
-          case e:
-            MacroLogger.log(e, 'e');
-            typeAndExprs.push({type: "Dynamic", expr: vExpr});
+          case CIdent(ident):
+            MacroLogger.log(ident, 'ident');
+            var expr: Expr = Macros.haxeToExpr('[@atom "var", "${ident}"]');
+            MacroLogger.logExpr(expr, 'expr');
+            typeAndExprs.push({type: 'Dynamic', expr: expr});
+          case _:
         }
       case {expr: ECall(val, _fun)}:
         switch(val) {

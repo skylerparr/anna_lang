@@ -140,7 +140,7 @@ using lang.AtomSupport;
 
   @def get_state({Pid: pid}, [Atom], {
     self_pid = self();
-//    kernel_send(pid, [@_'get', self_pid]);
+    kernel_send(pid, [@_'get', self_pid]);
 //    received = kernel_receive(@fn {
 //      ([{Int: value}, [Int]] => {
 //        value;
