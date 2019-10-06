@@ -285,6 +285,9 @@ class MacroTools {
         }
         var strValue: String = '{${keyValues.join(', ')}}';
         {type: "CustomType", value: '@tuple [@atom "const", ${strValue}]', rawValue: strValue};
+      case ECast(expr, TPath({ name: type })):
+        var typeAndValue = getTypeAndValue(expr);
+        {type: AnnaLang.getAlias(type), value: typeAndValue.rawValue, rawValue: typeAndValue.rawValue};
       case e:
         MacroLogger.log(expr, 'expr');
         MacroLogger.logExpr(expr, 'expr');

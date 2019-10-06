@@ -114,6 +114,11 @@ using lang.AtomSupport;
     @_'ok';
   });
 
+  @def kernel_send({Pid: pid, Int: value}, [Atom], {
+    @native Kernel.send(pid, value);
+    @_'ok';
+  });
+
   @def start_state([Atom], {
     state_loop(0);
   });
@@ -124,7 +129,7 @@ using lang.AtomSupport;
         @native Kernel.add(1, value);
       });
       ([{Tuple: [@_'get', pid]}, [Int]] => {
-        kernel_send(pid, value);
+        kernel_send(cast(pid, Pid), cast(value, Int));
         value;
       });
     });
@@ -141,13 +146,13 @@ using lang.AtomSupport;
   @def get_state({Pid: pid}, [Atom], {
     self_pid = self();
     kernel_send(pid, [@_'get', self_pid]);
-//    received = kernel_receive(@fn {
-//      ([{Int: value}, [Int]] => {
-//        value;
-//      });
-//    });
-//    @native IO.inspect("got state");
-//    @native IO.inspect(received);
+    received = kernel_receive(@fn {
+      ([{Int: value}, [Int]] => {
+        value;
+      });
+    });
+    @native IO.inspect("got state");
+    @native IO.inspect(received);
     @_'ok';
   });
 

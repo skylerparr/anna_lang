@@ -151,9 +151,7 @@ class EitherMacro {
           case CFloat(value):
             typeAndExprs.push({type: "Float", expr: vExpr});
           case CIdent(ident):
-            MacroLogger.log(ident, 'ident');
-            var expr: Expr = Macros.haxeToExpr('[@atom "var", "${ident}"]');
-            MacroLogger.logExpr(expr, 'expr');
+            var expr: Expr = Macros.haxeToExpr('Tuple.create([Atom.create("var"), "${ident}"])');
             typeAndExprs.push({type: 'Dynamic', expr: expr});
           case _:
         }

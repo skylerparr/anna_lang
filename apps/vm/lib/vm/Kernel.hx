@@ -68,6 +68,12 @@ class Kernel {
     return 'ok'.atom();
   }
 
+  public static function restart(): Atom {
+    stop();
+    Sys.sleep(0.2);
+    return start();
+  }
+
   public static function defineCode(): Atom {
     Classes.define("Boot".atom(), Type.resolveClass("Boot"));
     Classes.define("FunctionPatternMatching".atom(), Type.resolveClass("FunctionPatternMatching"));
@@ -93,6 +99,10 @@ class Kernel {
 
   public static function incrementState(pid: Pid): Pid {
     return spawn('Boot', 'increment_state_vm_Pid', [pid]);
+  }
+
+  public static function getPidState(pid: Pid): Pid {
+    return spawn('Boot', 'get_state_vm_Pid', [pid]);
   }
 
   public static function spawn(module: String, func: String, args: Array<Dynamic>): Pid {
