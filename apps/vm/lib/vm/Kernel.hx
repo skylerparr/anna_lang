@@ -1,5 +1,6 @@
 package vm;
 
+import vm.Pid;
 import cpp.vm.Thread;
 import util.ArgHelper;
 import lang.macros.MacroTools;
@@ -82,30 +83,35 @@ class Kernel {
   }
 
   public static function testGenericScheduler(): Pid {
-    return spawn('Boot', 'start', []);
+    return testSpawn('Boot', 'start', []);
   }
 
   public static function testReceiveMessage(): Pid {
-    return spawn('Boot', 'test_receive', []);
+    return testSpawn('Boot', 'test_receive', []);
   }
 
   public static function testInfiniteLoop(): Pid {
-    return spawn('Boot', 'start_infinite_loop', []);
+    return testSpawn('Boot', 'start_infinite_loop', []);
   }
 
   public static function testStoreState(): Pid {
-    return spawn('Boot', 'start_state', []);
+    return testSpawn('Boot', 'start_state', []);
+  }
+
+  public static function testDSWithVars(): Pid {
+    restart();
+    return testSpawn('Boot', 'test_ds_with_vars', []);
   }
 
   public static function incrementState(pid: Pid): Pid {
-    return spawn('Boot', 'increment_state_vm_Pid', [pid]);
+    return testSpawn('Boot', 'increment_state_vm_Pid', [pid]);
   }
 
   public static function getPidState(pid: Pid): Pid {
-    return spawn('Boot', 'get_state_vm_Pid', [pid]);
+    return testSpawn('Boot', 'get_state_vm_Pid', [pid]);
   }
 
-  public static function spawn(module: String, func: String, args: Array<Dynamic>): Pid {
+  public static function testSpawn(module: String, func: String, args: Array<Dynamic>): Pid {
     loopingThread.sendMessage(function() {
       var createArgs: Array<Tuple> = [];
       for(arg in args) {

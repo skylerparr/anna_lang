@@ -1,5 +1,8 @@
 package vm;
 
+import EitherEnums.Either1;
+import util.ArgHelper;
+import util.ArgHelper;
 import EitherEnums.Either2;
 import lang.EitherSupport;
 class PutInScope implements Operation {
@@ -18,15 +21,7 @@ class PutInScope implements Operation {
   }
 
   public function execute(scopeVariables: Map<String, Dynamic>, processStack: ProcessStack): Void {
-    var argArray = value.asArray();
-    var elem1: Either2<Atom, Dynamic> = argArray[0];
-    var elem2: Either2<Atom, Dynamic> = argArray[1];
-    switch(cast(EitherSupport.getValue(elem1), Atom)) {
-      case {value: 'const'}:
-        scopeVariables.set("$$$", EitherSupport.getValue(elem2));
-      case {value: 'var'}:
-        scopeVariables.set("$$$", scopeVariables.get(EitherSupport.getValue(elem2)));
-    }
+    scopeVariables.set("$$$", ArgHelper.extractArgValue(A(value), scopeVariables));
   }
 
   public function isRecursive(): Bool {

@@ -170,6 +170,28 @@ using lang.AtomSupport;
     infinite_loop(counter);
   });
 
+  @def test_ds_with_vars([Atom], {
+    test_tuple('Stinkin');
+    test_list('Bean dipper');
+    test_map('Team', 'Skanna');
+    @_'ok';
+  });
+
+  @def test_tuple({String: value}, [Tuple], {
+    tup = [@_'ok', value, 2];
+    @native IO.inspect(tup);
+  });
+
+  @def test_list({String: value}, [LList], {
+    list = {@_'ok'; value; 4;};
+    @native IO.inspect(list);
+  });
+
+  @def test_map({String: team, String: name}, [MMap], {
+    map = [@_'age' => 2, @_'category' => team, @_'name' => name];
+    @native IO.inspect(map);
+  });
+
   @def start([Int], {
     print(get_string(), return_num(get_one()), get_two());
     result = @native Kernel.add(get_one(), get_two());
