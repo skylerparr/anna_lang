@@ -49,8 +49,26 @@ class AnnaLang {
         if(arg == null) {
           return;
         }
+        variables = new Map<String, String>();
         for(field in Reflect.fields(arg)) {
-          Reflect.setField(this, field, Reflect.field(arg, field));
+          var valueToAssign = Reflect.field(arg, field);
+          var tuple: Tuple = lang.EitherSupport.getValue(valueToAssign);
+          var retVal: Dynamic = arg;
+          if(Std.is(tuple, Tuple)) {
+            var argArray = tuple.asArray();
+            if(argArray.length == 2) {
+              var elem1 = argArray[0];
+              var elem2 = argArray[1];
+              retVal = switch(cast(lang.EitherSupport.getValue(elem1), Atom)) {
+                case {value: 'var'}:
+                  variables.set(field, lang.EitherSupport.getValue(elem2));
+                  null;
+                case _:
+                  elem2;
+              }
+            }
+          }
+          Reflect.setField(this, field, valueToAssign);
         }
       }
     };

@@ -5,6 +5,7 @@ import lang.CustomType;
 import lang.EitherSupport;
 using lang.AtomSupport;
 class Tuple implements CustomType {
+  public var variables: Map<String,String>;
 
   public static function elem(t: Tuple, index: Int): Any {
     var retVal = Reflect.field(t, 'var${index + 1}');

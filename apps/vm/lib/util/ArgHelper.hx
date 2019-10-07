@@ -1,5 +1,6 @@
 package util;
 
+import lang.CustomType;
 import haxe.ds.EnumValueMap;
 import EitherEnums.Either1;
 import lang.EitherSupport;
@@ -24,6 +25,8 @@ class ArgHelper {
               resolveListValues(cast value, scopeVariables);
             } else if(Std.is(value, MMap)) {
               resolveMapValues(cast value, scopeVariables);
+            } else if(Std.is(value, CustomType)) {
+              resolveCustomTypeValues(cast value, scopeVariables);
             } else {
               value;
             }
@@ -31,7 +34,6 @@ class ArgHelper {
             var varName: String = EitherSupport.getValue(elem2);
             scopeVariables.get(varName);
           case _:
-            Logger.inspect("!!!!!!!!!!! bad !!!!!!!!!!!");
             arg;
         }
       }
@@ -66,6 +68,18 @@ class ArgHelper {
       retMap.set(key, fetched);
     }
     return MMap.create(retMap);
+  }
+
+  public static inline function resolveCustomTypeValues(value: CustomType, scopeVariables: Map<String, Dynamic>): Dynamic {
+    if(value.variables != null) {
+      var variables = value.variables;
+      for(key in variables.keys()) {
+        var arg: String = variables.get(key);
+        var fetched = extractArgValue(Tuple.create([Atom.create('var'), arg]), scopeVariables);
+        Reflect.setField(value, key, fetched);
+      }
+    }
+    return value;
   }
 
 }

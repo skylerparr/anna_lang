@@ -281,7 +281,13 @@ class MacroTools {
         var keyValues: Array<String> = [];
         for(item in items) {
           var typeAndValue = getTypeAndValue(item.expr);
-          keyValues.push('${item.field}: ${typeAndValue.rawValue}');
+          var rawValue = switch(item.expr.expr) {
+            case EConst(CIdent(_)):
+              typeAndValue.value;
+            case _:
+              typeAndValue.rawValue;
+          }
+          keyValues.push('${item.field}: ${rawValue}');
         }
         var strValue: String = '{${keyValues.join(', ')}}';
         {type: "CustomType", value: '@tuple [@atom "const", ${strValue}]', rawValue: strValue};

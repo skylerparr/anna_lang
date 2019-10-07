@@ -174,6 +174,7 @@ using lang.AtomSupport;
     test_tuple('Stinkin');
     test_list('Bean dipper');
     test_map('Team', 'Skanna');
+    test_custom_type('Beanus');
     @_'ok';
   });
 
@@ -190,6 +191,12 @@ using lang.AtomSupport;
   @def test_map({String: team, String: name}, [MMap], {
     map = [@_'age' => 2, @_'category' => team, @_'name' => name];
     @native IO.inspect(map);
+  });
+
+  @def test_custom_type({String: b}, [Cat], {
+    @native IO.inspect(b);
+    cat = Cat%{name: "Face", face: b};
+    @native IO.inspect(cat);
   });
 
   @def start([Int], {

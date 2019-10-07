@@ -9,6 +9,7 @@ import lang.EitherSupport;
 using StringTools;
 
 class MMap implements CustomType {
+  public var variables: Map<String,String>;
 
   public static function create(vals: EnumValueMap<Dynamic, Dynamic>): MMap {
     var map: AnnaMap<Any, Any> = new AnnaMap<Any, Any>();

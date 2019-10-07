@@ -99,7 +99,6 @@ class Kernel {
   }
 
   public static function testDSWithVars(): Pid {
-    restart();
     return testSpawn('Boot', 'test_ds_with_vars', []);
   }
 

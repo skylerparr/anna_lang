@@ -53,6 +53,9 @@ class EitherMacro {
         var a: Expr = null;
         var b: Expr = null;
         if(typeAndExprs.length % 2 == 1) {
+          MacroLogger.log(typeAndExprs, 'typeAndExprs');
+          MacroLogger.log(valueExpressions, 'valueExpressions');
+          MacroLogger.logExpr(values, 'values');
           throw new ParsingException("AnnaLang: Unmatched map value. All maps must have a value to map to the key");
         }
         for(i in 0...typeAndExprs.length) {
