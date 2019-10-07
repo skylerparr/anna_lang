@@ -62,6 +62,7 @@ class GenericScheduler implements Scheduler {
     }
     pid.setState(ProcessState.SLEEPING);
     sleepingProcesses.push(new PidMetaData(pid, null, milliseconds, null, TimeUtil.nowInMillis()));
+    pids.remove(pid);
     return pid;
   }
 
@@ -154,6 +155,14 @@ class GenericScheduler implements Scheduler {
     }
   }
 
+  public function hasSomethingToExecute(): Bool {
+    scheduleSleeping();
+    if(pids.length() > 0) {
+      return true;
+    }
+    return false;
+  }
+
   public function spawn(fn: Void->Operation): Pid {
     if(notRunning()) {
       return null;
@@ -193,6 +202,13 @@ class GenericScheduler implements Scheduler {
   public function apply(pid: Pid, fn: Function, args: Array<Dynamic>, scopeVariables: Map<String, Dynamic>, callback: (Dynamic) -> Void): Void {
     if(notRunning()) {
       return;
+    }
+    var fnScope: Map<String, Dynamic> = fn.scope;
+    for(scopeKey in fnScope.keys()) {
+      if(scopeKey == "$$$") {
+        continue;
+      }
+      scopeVariables.set(scopeKey, fnScope.get(scopeKey));
     }
     args.push(scopeVariables);
     var operations: Array<Operation> = fn.invoke(args);

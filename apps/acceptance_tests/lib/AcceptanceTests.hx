@@ -104,6 +104,101 @@ using lang.AtomSupport;
     @native Kernel.receive(fun);
   });
 
+  @def kernel_send({Pid: pid, Tuple: value}, [Atom], {
+    @native Kernel.send(pid, value);
+    @_'ok';
+  });
+
+  @def kernel_send({Pid: pid, String: value}, [Atom], {
+    @native Kernel.send(pid, value);
+    @_'ok';
+  });
+
+  @def kernel_send({Pid: pid, Int: value}, [Atom], {
+    @native Kernel.send(pid, value);
+    @_'ok';
+  });
+
+  @def start_state([Atom], {
+    state_loop(0);
+  });
+
+  @def state_loop({Int: value}, [Int], {
+    received = kernel_receive(@fn {
+      ([{Tuple: [@_'inc']}, [Int]] => {
+        @native Kernel.add(1, value);
+      });
+      ([{Tuple: [@_'get', pid]}, [Int]] => {
+        kernel_send(cast(pid, Pid), cast(value, Int));
+        value;
+      });
+    });
+
+    received = cast(received, Int);
+    state_loop(received);
+  });
+
+  @def increment_state({Pid: pid}, [Atom], {
+    pid = cast(pid, Pid);
+    kernel_send(pid, [@_'inc']);
+  });
+
+  @def get_state({Pid: pid}, [Atom], {
+    self_pid = self();
+    kernel_send(pid, [@_'get', self_pid]);
+    received = kernel_receive(@fn {
+      ([{Int: value}, [Int]] => {
+        value;
+      });
+    });
+    @native IO.inspect("got state");
+    @native IO.inspect(received);
+    @_'ok';
+  });
+
+  @def self([Pid], {
+    @native Process.self();
+  });
+
+  @def start_infinite_loop([Atom], {
+    infinite_loop(1);
+  });
+
+  @def infinite_loop({Int: counter}, [Atom], {
+    @native Process.sleep(100);
+    counter = @native Kernel.add(counter, 1);
+    infinite_loop(counter);
+  });
+
+  @def test_ds_with_vars([Atom], {
+    test_tuple('Stinkin');
+    test_list('Bean dipper');
+    test_map('Team', 'Skanna');
+    test_custom_type('Beanus');
+    @_'ok';
+  });
+
+  @def test_tuple({String: value}, [Tuple], {
+    tup = [@_'ok', value, 2];
+    @native IO.inspect(tup);
+  });
+
+  @def test_list({String: value}, [LList], {
+    list = {@_'ok'; value; 4;};
+    @native IO.inspect(list);
+  });
+
+  @def test_map({String: team, String: name}, [MMap], {
+    map = [@_'age' => 2, @_'category' => team, @_'name' => name];
+    @native IO.inspect(map);
+  });
+
+  @def test_custom_type({String: b}, [Cat], {
+    @native IO.inspect(b);
+    cat = Cat%{name: "Face", face: b};
+    @native IO.inspect(cat);
+  });
+
   @def start([Int], {
     print(get_string(), return_num(get_one()), get_two());
     result = @native Kernel.add(get_one(), get_two());
@@ -164,6 +259,25 @@ using lang.AtomSupport;
     @native IO.inspect(result2);
 
     result3 = fun3("foo");
+
+    @native IO.inspect("pattern match tuple");
+    fun4 = @fn {
+      ([{Tuple: [@_'ok', message]}, [Tuple]] => {
+        @native IO.inspect(message);
+        [@_'ok'];
+      });
+      ([{Tuple: [@_'atom']}, [Tuple]] => {
+        @native IO.inspect("got atom");
+        [@_'ok'];
+      });
+      ([{Tuple: catch_all}, [Tuple]] => {
+        @native IO.inspect("catch_all");
+        @native IO.inspect(catch_all);
+      });
+    }
+    fun4([@_'test']);
+    fun4([@_'ok', 'hello world']);
+    fun4([@_'atom']);
 
     @native IO.inspect(result3);
     @native IO.inspect("testing assignment matching");

@@ -1,5 +1,6 @@
 package vm;
 import vm.Operation;
+using lang.AtomSupport;
 class DeclareAnonFunction implements Operation {
 
   public var func: Atom;
@@ -17,7 +18,18 @@ class DeclareAnonFunction implements Operation {
   }
 
   public function execute(scopeVariables: Map<String, Dynamic>, processStack: ProcessStack): Void {
-    scopeVariables.set("$$$", func);
+    var varName: String = Atom.to_s(func);
+    var frags = varName.split('.');
+    var fun = frags.pop();
+    var module = frags.join('.');
+    var fn: Function = Classes.getFunction(module.atom(), fun.atom());
+    if(fn == null) {
+      Logger.inspect("Anonymous function not found");
+      return;
+    }
+    fn.scope = scopeVariables;
+
+    scopeVariables.set("$$$", fn);
   }
 
   public function isRecursive(): Bool {

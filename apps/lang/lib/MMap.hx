@@ -1,5 +1,6 @@
 package ;
 
+import LList;
 import haxe.ds.EnumValueMap;
 import lang.AtomSupport;
 import lang.CustomType;
@@ -8,6 +9,7 @@ import lang.EitherSupport;
 using StringTools;
 
 class MMap implements CustomType {
+  public var variables: Map<String,String>;
 
   public static function create(vals: EnumValueMap<Dynamic, Dynamic>): MMap {
     var map: AnnaMap<Any, Any> = new AnnaMap<Any, Any>();
@@ -31,6 +33,10 @@ class MMap implements CustomType {
 
   public static function hasKey(map: MMap, key: Any): Atom {
     return (cast map)._hasKey(key);
+  }
+
+  public static function keys(map: MMap): LList {
+    return LList.create((cast map)._keys());
   }
 
   public function toAnnaString(): String {
@@ -86,6 +92,14 @@ class AnnaMap<K, V> extends MMap implements CustomType {
     } else {
       return AtomSupport.atom('false');
     }
+  }
+
+  public function _keys(): Array<Any> {
+    var retVal: Array<Any> = [];
+    for(key in map) {
+      retVal.push(key);
+    }
+    return retVal;
   }
 
   override public function toAnnaString(): String {

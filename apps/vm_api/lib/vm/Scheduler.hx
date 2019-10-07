@@ -39,6 +39,13 @@ interface Scheduler {
   */
   function update(): Void;
 
+  /**
+  * Query the schedule to see if there's anything for it to do.
+  * If this returns false, it's safe to not call update. Primarily
+  * used as a performance improvement.
+  */
+  function hasSomethingToExecute(): Bool;
+
   function complete(pid: Pid): Atom;
 
   function spawn(fn: Void->Operation): Pid;

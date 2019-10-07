@@ -20,7 +20,6 @@ class EitherMacro {
   macro public static function gen(values: Expr): Expr {
     MacroLogger.log("=====================");
     MacroLogger.log('EitherMacro.gen(): ${Context.getLocalClass()}');
-
     switch(setup(values)) {
       case [p, valueExpressions, typeAndExprs, varTypeMap, allTypes, numberOfElements]:
         var eitherArray: Array<Expr> = [];
@@ -54,6 +53,9 @@ class EitherMacro {
         var a: Expr = null;
         var b: Expr = null;
         if(typeAndExprs.length % 2 == 1) {
+          MacroLogger.log(typeAndExprs, 'typeAndExprs');
+          MacroLogger.log(valueExpressions, 'valueExpressions');
+          MacroLogger.logExpr(values, 'values');
           throw new ParsingException("AnnaLang: Unmatched map value. All maps must have a value to map to the key");
         }
         for(i in 0...typeAndExprs.length) {
@@ -151,6 +153,9 @@ class EitherMacro {
             typeAndExprs.push({type: "String", expr: vExpr});
           case CFloat(value):
             typeAndExprs.push({type: "Float", expr: vExpr});
+          case CIdent(ident):
+            var expr: Expr = Macros.haxeToExpr('Tuple.create([Atom.create("var"), "${ident}"])');
+            typeAndExprs.push({type: 'Dynamic', expr: expr});
           case _:
         }
       case {expr: ECall(val, _fun)}:
@@ -159,7 +164,8 @@ class EitherMacro {
             typeAndExprs.push({type: "Atom", expr: vExpr});
           case {expr: EField({expr: EConst(CIdent(type))}, _)}:
             typeAndExprs.push({type: '${type}', expr: vExpr});
-          case _:
+          case e:
+            MacroLogger.log(e, 'e');
         }
       case {expr: ENew({name: type}, _args)}:
         typeAndExprs.push({type: {expr: EConst(CIdent(type)), pos: Context.currentPos()}, expr: vExpr});
@@ -167,7 +173,8 @@ class EitherMacro {
         for(expr in [e1, e2]) {
           findTypesAndExprs(typeAndExprs, expr);
         }
-      case _:
+      case e:
+        MacroLogger.log(e, 'e');
     }
   }
   #end

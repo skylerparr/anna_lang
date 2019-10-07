@@ -1,5 +1,7 @@
 package vm;
 
+import vm.Pid;
+import cpp.vm.Thread;
 import util.ArgHelper;
 import lang.macros.MacroTools;
 import core.ObjectCreator;
@@ -16,18 +18,61 @@ class Kernel {
 
   @field public static var current_id: Int;
   @field public static var currentScheduler: Scheduler;
+  @field public static var loopingThread: Thread;
 
   public static function start(): Atom {
+    if(loopingThread != null) {
+      return 'already_started'.atom();
+    }
     current_id = 0;
     defineCode();
+    var scheduler: GenericScheduler = new GenericScheduler();
+    ObjectFactory.injector.mapClass(Pid, SimpleProcess);
+    scheduler.objectCreator = cast ObjectFactory.injector.getInstance(ObjectCreator);
+    currentScheduler = scheduler;
+    currentScheduler.start();
+    var parentThread: Thread = Thread.current();
+    loopingThread = Thread.create(function() {
+      while(true) {
+        var msg: Dynamic = Thread.readMessage(false);
+        if(msg == 'stop'.atom()) {
+          break;
+        }
+        if(msg != null) {
+          var pid: Pid = msg();
+          parentThread.sendMessage(pid);
+        }
+        Sys.sleep(0.001);
+        if(currentScheduler.hasSomethingToExecute()) {
+          for(i in 0...100) {
+            if(currentScheduler.hasSomethingToExecute()) {
+              currentScheduler.update();
+            } else {
+              break;
+            }
+          }
+        } else {
+          Sys.sleep(0.1);
+        }
+      }
+      currentScheduler.stop();
+      loopingThread = null;
+      currentScheduler = null;
+    });
     return 'ok'.atom();
   }
 
   public static function stop(): Atom {
     if(currentScheduler != null) {
-      currentScheduler.stop();
+      loopingThread.sendMessage('stop'.atom());
     }
     return 'ok'.atom();
+  }
+
+  public static function restart(): Atom {
+    stop();
+    Sys.sleep(0.2);
+    return start();
   }
 
   public static function defineCode(): Atom {
@@ -38,29 +83,44 @@ class Kernel {
   }
 
   public static function testGenericScheduler(): Pid {
-    defineCode();
-    var scheduler: GenericScheduler = new GenericScheduler();
-    ObjectFactory.injector.mapClass(Pid, SimpleProcess);
-    scheduler.objectCreator = cast ObjectFactory.injector.getInstance(ObjectCreator);
-    currentScheduler = scheduler;
-    currentScheduler.start();
-
-    return currentScheduler.spawn(function() {
-      return new PushStack('Boot'.atom(), 'start'.atom(), LList.create([]), "Kernel".atom(), "testGenericScheduler".atom(), MacroTools.line());
-    });
+    return testSpawn('Boot', 'start', []);
   }
 
   public static function testReceiveMessage(): Pid {
-    defineCode();
-    var scheduler: GenericScheduler = new GenericScheduler();
-    ObjectFactory.injector.mapClass(Pid, SimpleProcess);
-    scheduler.objectCreator = cast ObjectFactory.injector.getInstance(ObjectCreator);
-    currentScheduler = scheduler;
-    currentScheduler.start();
+    return testSpawn('Boot', 'test_receive', []);
+  }
 
-    return currentScheduler.spawn(function() {
-      return new PushStack('Boot'.atom(), 'test_receive'.atom(), LList.create([]), "Kernel".atom(), "testGenericScheduler".atom(), MacroTools.line());
+  public static function testInfiniteLoop(): Pid {
+    return testSpawn('Boot', 'start_infinite_loop', []);
+  }
+
+  public static function testStoreState(): Pid {
+    return testSpawn('Boot', 'start_state', []);
+  }
+
+  public static function testDSWithVars(): Pid {
+    return testSpawn('Boot', 'test_ds_with_vars', []);
+  }
+
+  public static function incrementState(pid: Pid): Pid {
+    return testSpawn('Boot', 'increment_state_vm_Pid', [pid]);
+  }
+
+  public static function getPidState(pid: Pid): Pid {
+    return testSpawn('Boot', 'get_state_vm_Pid', [pid]);
+  }
+
+  public static function testSpawn(module: String, func: String, args: Array<Dynamic>): Pid {
+    loopingThread.sendMessage(function() {
+      var createArgs: Array<Tuple> = [];
+      for(arg in args) {
+        createArgs.push(Tuple.create(["const".atom(), arg]));
+      }
+      return currentScheduler.spawn(function() {
+        return new PushStack(module.atom(), func.atom(), LList.create(cast createArgs), "Kernel".atom(), "testGenericScheduler".atom(), MacroTools.line());
+      });
     });
+    return Thread.readMessage(true);
   }
 
   public static function update(): Void {
@@ -69,27 +129,6 @@ class Kernel {
       counter--;
       currentScheduler.update();
     }
-  }
-
-  public static function testSpawn(): Pid {
-    start();
-    return spawn('Boot'.atom(), 'start_'.atom(), LList.create([]));
-  }
-
-  public static function spawnCompiler(): Pid {
-    start();
-    return spawn('AnnaLangCompiler'.atom(), 'start_'.atom(), LList.create([]));
-  }
-
-  public static function spawnFunctionPatternMatch(): Pid {
-    start();
-    return spawn('FunctionPatternMatching'.atom(), 'start_'.atom(), LList.create([]));
-  }
-
-  public static function spawn(module: Atom, fun: Atom, args: LList): Pid {
-    return currentScheduler.spawn(function() {
-      return new PushStack('Boot'.atom(), 'start'.atom(), LList.create([]), "Kernel".atom(), "testGenericScheduler".atom(), MacroTools.line());
-    });
   }
 
   public static function receive(callback: Function): Pid {

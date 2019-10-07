@@ -1,8 +1,9 @@
 package vm;
+import vm.AbstractCustomType;
 using lang.AtomSupport;
 
 @:build(lang.macros.ValueClassImpl.build())
-class SimpleProcess implements Pid {
+class SimpleProcess extends AbstractCustomType implements Pid {
   @field public static var _instanceId: Int = 0;
   @field public static var _groupId: Int = 0;
   @field public static var _nodeId: Int = 0;
@@ -44,7 +45,7 @@ class SimpleProcess implements Pid {
     this.processStack = processStack;
   }
 
-  public function toAnnaString(): String {
+  override public function toAnnaString(): String {
     return '#PID<${serverId}.${groupId}.${instanceId}>';
   }
 

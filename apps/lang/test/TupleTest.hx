@@ -89,6 +89,11 @@ class TupleTest {
     Assert.areEqual(tuple.toAnnaString(), '["ok", 1]');
   }
 
+  public static function shouldCreateTupleWithVariables(): Void {
+    var tuple: Tuple = @tuple['ok', message];
+    Assert.areEqual(tuple.toAnnaString(), '["ok", [:var, "message"]]');
+  }
+
 }
 
 class TupleContainer {
