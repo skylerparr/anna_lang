@@ -19,6 +19,7 @@ class Kernel {
   @field public static var current_id: Int;
   @field public static var currentScheduler: Scheduler;
   @field public static var loopingThread: Thread;
+  @field public static var statePid: Pid;
 
   public static function start(): Atom {
     if(loopingThread != null) {
@@ -102,6 +103,10 @@ class Kernel {
     return testSpawn('Boot', 'test_ds_with_vars', []);
   }
 
+  public static function testCountForever(): Pid {
+    return testSpawn('Boot', 'count_forever', []);
+  }
+
   public static function incrementState(pid: Pid): Pid {
     return testSpawn('Boot', 'increment_state_vm_Pid', [pid]);
   }
@@ -110,7 +115,15 @@ class Kernel {
     return testSpawn('Boot', 'get_state_vm_Pid', [pid]);
   }
 
+  public static function saveState(pid: Pid): Pid {
+    statePid = pid;
+    return pid;
+  }
+
   public static function testSpawn(module: String, func: String, args: Array<Dynamic>): Pid {
+    if(loopingThread == null) {
+      return null;
+    }
     loopingThread.sendMessage(function() {
       var createArgs: Array<Tuple> = [];
       for(arg in args) {
@@ -121,6 +134,12 @@ class Kernel {
       });
     });
     return Thread.readMessage(true);
+  }
+
+  public static function spawn(module: Atom, func: Atom, types: Tuple, args: LList): Pid {
+    return currentScheduler.spawn(function() {
+      return new PushStack(module, func, args, "Kernel".atom(), "spawn".atom(), MacroTools.line());
+    });
   }
 
   public static function update(): Void {

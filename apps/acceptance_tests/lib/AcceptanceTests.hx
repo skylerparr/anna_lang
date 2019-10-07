@@ -119,6 +119,19 @@ using lang.AtomSupport;
     @_'ok';
   });
 
+  @def count_forever([Atom], {
+    pid = @native Kernel.spawn(@_'Boot', @_'start_state', [], {});
+    @native Kernel.saveState(pid);
+    loop_increment_state(pid);
+  });
+
+  @def loop_increment_state({Pid: pid}, [Atom], {
+    pid = cast(pid, Pid);
+    increment_state(pid);
+    @native Process.sleep(100);
+    loop_increment_state(pid);
+  });
+
   @def start_state([Atom], {
     state_loop(0);
   });
@@ -151,7 +164,6 @@ using lang.AtomSupport;
         value;
       });
     });
-    @native IO.inspect("got state");
     @native IO.inspect(received);
     @_'ok';
   });
