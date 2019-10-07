@@ -96,6 +96,7 @@ class Kernel {
   }
 
   public static function testStoreState(): Pid {
+    restart();
     return testSpawn('Boot', 'start_state', []);
   }
 
@@ -130,7 +131,7 @@ class Kernel {
         createArgs.push(Tuple.create(["const".atom(), arg]));
       }
       return currentScheduler.spawn(function() {
-        return new PushStack(module.atom(), func.atom(), LList.create(cast createArgs), "Kernel".atom(), "testGenericScheduler".atom(), MacroTools.line());
+        return new PushStack(module.atom(), func.atom(), LList.create(cast createArgs), "Kernel".atom(), "testSpawn".atom(), MacroTools.line());
       });
     });
     return Thread.readMessage(true);

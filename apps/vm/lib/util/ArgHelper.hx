@@ -5,6 +5,7 @@ import haxe.ds.EnumValueMap;
 import EitherEnums.Either1;
 import lang.EitherSupport;
 import EitherEnums.Either2;
+import vm.Pid;
 class ArgHelper {
 
   public static function extractArgValue(arg: Dynamic, scopeVariables: Map<String, Dynamic>): Dynamic {
@@ -13,8 +14,8 @@ class ArgHelper {
     if(Std.is(tuple, Tuple)) {
       var argArray = tuple.asArray();
       if(argArray.length == 2) {
-        var elem1: Either2<Atom, Dynamic> = argArray[0];
-        var elem2: Either2<Atom, Dynamic> = argArray[1];
+        var elem1 = argArray[0];
+        var elem2 = argArray[1];
 
         retVal = switch(cast(EitherSupport.getValue(elem1), Atom)) {
           case {value: 'const'}:
@@ -25,7 +26,7 @@ class ArgHelper {
               resolveListValues(cast value, scopeVariables);
             } else if(Std.is(value, MMap)) {
               resolveMapValues(cast value, scopeVariables);
-            } else if(Std.is(value, CustomType)) {
+            } else if(Std.is(value, CustomType) && !Std.is(value, Pid)) {
               resolveCustomTypeValues(cast value, scopeVariables);
             } else {
               value;
@@ -33,7 +34,7 @@ class ArgHelper {
           case {value: 'var'}:
             var varName: String = EitherSupport.getValue(elem2);
             scopeVariables.get(varName);
-          case _:
+          case e:
             arg;
         }
       }
