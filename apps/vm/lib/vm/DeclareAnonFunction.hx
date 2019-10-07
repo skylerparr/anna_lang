@@ -1,4 +1,5 @@
 package vm;
+import vm.SimpleFunction;
 import vm.Operation;
 using lang.AtomSupport;
 class DeclareAnonFunction implements Operation {
@@ -27,9 +28,12 @@ class DeclareAnonFunction implements Operation {
       Logger.inspect("Anonymous function not found");
       return;
     }
-    fn.scope = scopeVariables;
+    var anonFn: Function = new SimpleFunction();
+    anonFn.fn = fn.fn;
+    anonFn.args = fn.args;
+    anonFn.scope = scopeVariables;
 
-    scopeVariables.set("$$$", fn);
+    scopeVariables.set("$$$", anonFn);
   }
 
   public function isRecursive(): Bool {
