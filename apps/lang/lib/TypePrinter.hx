@@ -170,6 +170,9 @@ class CustomTypePrinter {
 
     var fields: Array<String> = Reflect.fields(obj);
     for(field in fields) {
+      if(field == "variables") {
+        continue;
+      }
       var keyString: String = Anna.inspect(field.atom());
       var value: Dynamic = Reflect.field(obj, field);
       var valueString = Anna.inspect(value);

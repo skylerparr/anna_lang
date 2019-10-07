@@ -100,6 +100,7 @@ class AnnaTest {
 class SampleCustomType implements CustomType {
   public var name(default, never): Atom;
   public var type(default, never): Atom;
+  public var variables: Map<String,String>;
 
   public static var nil: SampleCustomType = new SampleCustomType('nil'.atom(), 'nil'.atom());
 

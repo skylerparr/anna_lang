@@ -406,6 +406,8 @@ class TestCustomType implements CustomType {
   public var name: String;
   public var age: Int;
 
+  public var variables: Map<String,String>;
+
   public function new(args: Dynamic) {
     name = args.name;
     age = args.age;
@@ -430,6 +432,7 @@ class TestCustomType implements CustomType {
 class FooCustomType implements CustomType {
   public var name: String;
   public var age: Int;
+  public var variables: Map<String,String>;
 
   public function new(args: Dynamic) {
     name = args.name;
@@ -456,6 +459,7 @@ class CustomTypeWithComplexTypes implements CustomType {
   public var tup: Tuple;
   public var list: LList;
   public var map: MMap;
+  public var variables: Map<String,String>;
 
   public function new(args: Dynamic) {
     tup = args.tup;

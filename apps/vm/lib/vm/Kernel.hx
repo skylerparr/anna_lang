@@ -43,9 +43,9 @@ class Kernel {
           var pid: Pid = msg();
           parentThread.sendMessage(pid);
         }
-        Sys.sleep(0.001);
+        Sys.sleep(0.0001);
         if(currentScheduler.hasSomethingToExecute()) {
-          for(i in 0...100) {
+          for(i in 0...1000) {
             if(currentScheduler.hasSomethingToExecute()) {
               currentScheduler.update();
             } else {
