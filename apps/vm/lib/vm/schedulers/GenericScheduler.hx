@@ -217,8 +217,8 @@ class GenericScheduler implements Scheduler {
       return;
     }
     if(callback != null) {
-      var op = new InvokeCallback(callback, "GenericScheduler".atom(), "apply".atom(), MacroTools.line());
-      operations.unshift(op);
+      var op = objectCreator.createInstance(InvokeCallback, [callback, "GenericScheduler".atom(), "apply".atom(), MacroTools.line()]);
+      op.execute(scopeVariables, pid.processStack);
     }
     var annaCallStack: AnnaCallStack = new DefaultAnnaCallStack(operations, scopeVariables);
     pid.processStack.add(annaCallStack);

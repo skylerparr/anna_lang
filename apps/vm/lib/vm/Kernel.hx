@@ -96,7 +96,6 @@ class Kernel {
   }
 
   public static function testStoreState(): Pid {
-    restart();
     return testSpawn('Boot', 'start_state', []);
   }
 
@@ -105,6 +104,7 @@ class Kernel {
   }
 
   public static function testCountForever(): Pid {
+    restart();
     return testSpawn('Boot', 'count_forever', []);
   }
 
@@ -185,7 +185,6 @@ class Kernel {
       var argName: String = fn.args[counter++];
       nextScopeVariables.set(argName, value);
     }
-
     currentScheduler.apply(pid, fn, callArgs, nextScopeVariables, callback);
   }
 

@@ -303,6 +303,9 @@ class GenericSchedulerTest {
       allOperations = arg[0].operations;
     });
 
+    var mockInvokeCallback: InvokeCallback = mock(InvokeCallback);
+    objectCreator.createInstance(InvokeCallback, cast any).returns(mockInvokeCallback);
+
     createdPid.processStack.returns(processStack);
     func.invoke(cast any).returns(operations);
 
@@ -313,8 +316,8 @@ class GenericSchedulerTest {
     func.invoke(cast any).verify();
     processStack.add(cast any).verify();
 
-    @assert allOperations.length == 2;
-    Assert.isTrue(Std.is(allOperations.shift(), InvokeCallback));
+    @assert allOperations.length == 1;
+    mockInvokeCallback.execute(cast any, cast any).verify();
   }
 
   public static function shouldNotAddAnInvokeCallbackOperationToTheCurrentPidProcessStackWhenApplyingFunctionWhenCallbackIsNull(): Void {
@@ -490,6 +493,17 @@ class GenericSchedulerTest {
       mailbox.push(args[0]);
     });
     createdPid.processStack.returns(processStack);
+
+    var mockInvokeCallback: InvokeCallback = mock(InvokeCallback);
+    var callback: Dynamic = null;
+    objectCreator.createInstance(InvokeCallback, cast any).calls(function(args): InvokeCallback {
+      callback = args[1][0];
+      return mockInvokeCallback;
+    });
+    mockInvokeCallback.execute(cast any, cast any).calls(function(args): Void {
+      callback(args[0].get("$$$"));
+    });
+
     scheduler.start();
     scheduler.pids.push(createdPid);
     var cbCalled: Bool = false;
@@ -526,6 +540,7 @@ class GenericSchedulerTest {
       scheduler.update();
       i++;
     }
+    mockInvokeCallback.execute(cast any, cast any).verify();
     Assert.isTrue(cbCalled);
     op.execute(cast any, cast any).verify();
   }
@@ -558,6 +573,17 @@ class GenericSchedulerTest {
       mailbox.push(args[0]);
     });
     createdPid.processStack.returns(processStack);
+
+    var mockInvokeCallback: InvokeCallback = mock(InvokeCallback);
+    var callback: Dynamic = null;
+    objectCreator.createInstance(InvokeCallback, cast any).calls(function(args): InvokeCallback {
+      callback = args[1][0];
+      return mockInvokeCallback;
+    });
+    mockInvokeCallback.execute(cast any, cast any).calls(function(args): Void {
+      callback(args[0].get("$$$"));
+    });
+
     scheduler.start();
     scheduler.pids.push(createdPid);
     scheduler.send(createdPid, "hello world");
@@ -584,6 +610,7 @@ class GenericSchedulerTest {
       scheduler.update();
       i++;
     }
+    mockInvokeCallback.execute(cast any, cast any).verify();
     Assert.isTrue(cbCalled);
     op.execute(cast any, cast any).verify();
   }

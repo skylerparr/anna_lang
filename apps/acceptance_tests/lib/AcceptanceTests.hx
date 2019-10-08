@@ -128,7 +128,6 @@ using lang.AtomSupport;
   @def loop_increment_state({Pid: pid}, [Atom], {
     pid = cast(pid, Pid);
     increment_state(pid);
-    @native Process.sleep(100);
     loop_increment_state(pid);
   });
 
@@ -146,7 +145,6 @@ using lang.AtomSupport;
         value;
       });
     });
-
     received = cast(received, Int);
     state_loop(received);
   });
