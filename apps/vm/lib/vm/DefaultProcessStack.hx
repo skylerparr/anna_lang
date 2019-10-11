@@ -22,10 +22,16 @@ class DefaultProcessStack implements ProcessStack {
       for(stack in allStacks) {
         stack.dispose();
       }
+      allStacks = null;
     }
-    allStacks = null;
-    currentStack = null;
+    if(currentStack != null) {
+      currentStack.dispose();
+      currentStack = null;
+    }
+    // never dispose the pid. just null it.
+    // pids will own process stacks and will create an infinite loop
     process = null;
+    executionCount = 0;
   }
 
   public inline function add(callStack: AnnaCallStack): Void {

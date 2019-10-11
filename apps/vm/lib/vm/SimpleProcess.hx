@@ -32,8 +32,8 @@ class SimpleProcess extends AbstractCustomType implements Pid {
   public function dispose(): Void {
     if(processStack != null) {
       processStack.dispose();
+      processStack = null;
     }
-    processStack = null;
     mailbox = null;
     parent = null;
     ancestors = null;

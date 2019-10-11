@@ -53,7 +53,8 @@ class PushStack implements Operation {
   }
 
   public function isRecursive(): Bool {
-    return this.module == this.hostModule && this.func == this.hostFunction;
+    var apiFunc: Atom = Classes.getApiFunction(this.module, this.func);
+    return this.module == this.hostModule && apiFunc == this.hostFunction;
   }
 
   public function toString(): String {

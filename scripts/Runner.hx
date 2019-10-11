@@ -26,7 +26,9 @@ class Runner {
     parser = Native.callStaticField('Main', 'parser');
     interp = Native.callStaticField('Main', 'interp');
     interp.variables.set("AnnaUnit", AnnaUnit);
+    #if cppia
     Reflect.field(AnnaUnit, "main")();
+    #end
 
     compileAll();
     return 'ok'.atom();

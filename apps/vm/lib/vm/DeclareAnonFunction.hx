@@ -32,6 +32,7 @@ class DeclareAnonFunction implements Operation {
     anonFn.fn = fn.fn;
     anonFn.args = fn.args;
     anonFn.scope = scopeVariables;
+    anonFn.apiFunc = hostFunction;
 
     scopeVariables.set("$$$", anonFn);
   }

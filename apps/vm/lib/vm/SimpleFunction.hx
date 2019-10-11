@@ -4,6 +4,7 @@ class SimpleFunction implements Function {
   public var args: Array<Dynamic>;
   public var fn: Dynamic;
   public var scope: Map<String, Dynamic>;
+  public var apiFunc: Atom;
 
   public function new() {
   }

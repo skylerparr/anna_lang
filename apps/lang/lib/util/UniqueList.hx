@@ -57,4 +57,7 @@ class UniqueList<T> {
     return array.length;
   }
 
+  public function iterator(): Iterator<T> {
+    return array.iterator();
+  }
 }

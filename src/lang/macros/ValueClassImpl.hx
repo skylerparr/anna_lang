@@ -8,6 +8,10 @@ import haxe.macro.Type.Ref;
 class ValueClassImpl {
 
   macro public static function build(): Array<Field> {
+    #if !cppia
+    return Context.getBuildFields();
+    #end
+
     MacroLogger.log("=====================");
     MacroLogger.log('lang.macros.Macros: ${Context.getLocalClass()}');
 

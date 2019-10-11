@@ -59,6 +59,8 @@ class Kernel {
       currentScheduler.stop();
       loopingThread = null;
       currentScheduler = null;
+      statePid = null;
+      Classes.clear();
     });
     return 'ok'.atom();
   }

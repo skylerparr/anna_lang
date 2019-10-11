@@ -141,6 +141,7 @@ class AnnaLang {
       applyBuildMacro(cls);
 
       var definedFunctions: Map<String, String> = new Map<String, String>();
+      var apiMap: Map<String, Array<Dynamic>> = new Map<String, Array<Dynamic>>();
 
       while(!allFunctionsDefined(definedFunctions)) {
         var index: Int = 0;
@@ -192,6 +193,7 @@ class AnnaLang {
             }
             funDefs.push(funDef);
             funNameFunDefMap.set(internalFunctionName, funDefs);
+            apiMap.set(funDef.name, funDefs);
 
             // Arg types
             var funArgsTypes: Array<Dynamic> = funDef.funArgsTypes;
@@ -208,7 +210,6 @@ class AnnaLang {
             MacroTools.addFieldToClass(MacroContext.currentModule, argFun);
           }
         }
-
         var fieldMap: Map<String, String> = new Map<String, String>();
         for(internalFunctionName in funNameFunDefMap.keys()) {
           // After all the fields have been added to the class, generate the accompanying function that
@@ -281,6 +282,22 @@ class AnnaLang {
 
       MacroTools.assignFunBody(field, body);
       MacroTools.addFieldToClass(MacroContext.currentModule, field);
+
+      //finally add the api definition function
+      for(funKey in apiMap.keys()) {
+        var funDefs: Array<Dynamic> = apiMap.get(funKey);
+        var allDefsStr: Array<String> = [];
+        for(funDef in funDefs) {
+          var exprStr = 'Atom.create("${funDef.internalFunctionName}")';
+          allDefsStr.remove(exprStr);
+          allDefsStr.push(exprStr);
+        }
+        var functionAtoms: Expr = Macros.haxeToExpr('[${allDefsStr.join(', ')}]');
+
+        var varType: ComplexType = MacroTools.buildType('Array<Atom>');
+        field = MacroTools.buildPublicVar('__api_${funKey}', varType, [functionAtoms]);
+        MacroTools.addFieldToClass(MacroContext.currentModule, field);
+      }
 
       Context.defineType(cls);
 

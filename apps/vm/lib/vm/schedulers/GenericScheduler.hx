@@ -39,7 +39,22 @@ class GenericScheduler implements Scheduler {
   }
 
   public function stop(): Atom {
+    if(pids == null) {
+      return "ok".atom();
+    }
+    for(pid in pids) {
+      pid.dispose();
+    }
     pids = null;
+    paused = false;
+    for(pidMeta in pidMetaMap) {
+      pidMeta.pid.dispose();
+      pidMetaMap = null;
+    }
+    if(currentPid != null) {
+      currentPid.dispose();
+      currentPid = null;
+    }
     return "ok".atom();
   }
 
