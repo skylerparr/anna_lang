@@ -3,7 +3,6 @@ package ;
 import haxe.Timer;
 import lang.macros.MacroTools;
 import vm.AnnaCallStack;
-import vm.InvokeCallback;
 import anna_unit.Assert;
 import vm.Function;
 import mockatoo.Mockatoo;
@@ -303,9 +302,6 @@ class GenericSchedulerTest {
       allOperations = arg[0].operations;
     });
 
-    var mockInvokeCallback: InvokeCallback = mock(InvokeCallback);
-    objectCreator.createInstance(InvokeCallback, cast any).returns(mockInvokeCallback);
-
     createdPid.processStack.returns(processStack);
     func.invoke(cast any).returns(operations);
 
@@ -317,7 +313,6 @@ class GenericSchedulerTest {
     processStack.add(cast any).verify();
 
     @assert allOperations.length == 1;
-    mockInvokeCallback.execute(cast any, cast any).verify();
   }
 
   public static function shouldNotAddAnInvokeCallbackOperationToTheCurrentPidProcessStackWhenApplyingFunctionWhenCallbackIsNull(): Void {
@@ -339,7 +334,6 @@ class GenericSchedulerTest {
     processStack.add(cast any).verify();
 
     @assert allOperations.length == 1;
-    Assert.isFalse(Std.is(allOperations.pop(), InvokeCallback));
   }
 
   public static function shouldPassArgsAndScopeVariablesToFunctionInvokeOnApply(): Void {
@@ -494,16 +488,6 @@ class GenericSchedulerTest {
     });
     createdPid.processStack.returns(processStack);
 
-    var mockInvokeCallback: InvokeCallback = mock(InvokeCallback);
-    var callback: Dynamic = null;
-    objectCreator.createInstance(InvokeCallback, cast any).calls(function(args): InvokeCallback {
-      callback = args[1][0];
-      return mockInvokeCallback;
-    });
-    mockInvokeCallback.execute(cast any, cast any).calls(function(args): Void {
-      callback(args[0].get("$$$"));
-    });
-
     scheduler.start();
     scheduler.pids.push(createdPid);
     var cbCalled: Bool = false;
@@ -540,7 +524,6 @@ class GenericSchedulerTest {
       scheduler.update();
       i++;
     }
-    mockInvokeCallback.execute(cast any, cast any).verify();
     Assert.isTrue(cbCalled);
     op.execute(cast any, cast any).verify();
   }
@@ -574,16 +557,6 @@ class GenericSchedulerTest {
     });
     createdPid.processStack.returns(processStack);
 
-    var mockInvokeCallback: InvokeCallback = mock(InvokeCallback);
-    var callback: Dynamic = null;
-    objectCreator.createInstance(InvokeCallback, cast any).calls(function(args): InvokeCallback {
-      callback = args[1][0];
-      return mockInvokeCallback;
-    });
-    mockInvokeCallback.execute(cast any, cast any).calls(function(args): Void {
-      callback(args[0].get("$$$"));
-    });
-
     scheduler.start();
     scheduler.pids.push(createdPid);
     scheduler.send(createdPid, "hello world");
@@ -610,7 +583,6 @@ class GenericSchedulerTest {
       scheduler.update();
       i++;
     }
-    mockInvokeCallback.execute(cast any, cast any).verify();
     Assert.isTrue(cbCalled);
     op.execute(cast any, cast any).verify();
   }

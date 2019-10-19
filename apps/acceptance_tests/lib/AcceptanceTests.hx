@@ -175,7 +175,7 @@ using lang.AtomSupport;
   });
 
   @def infinite_loop({Int: counter}, [Atom], {
-    @native Process.sleep(100);
+    @native Process.sleep(10);
     counter = @native Kernel.add(counter, 1);
     infinite_loop(counter);
   });

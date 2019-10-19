@@ -1,4 +1,5 @@
 package vm;
+import lang.ParsingException;
 import vm.AbstractCustomType;
 using lang.AtomSupport;
 
@@ -37,6 +38,9 @@ class SimpleProcess extends AbstractCustomType implements Pid {
     mailbox = null;
     parent = null;
     ancestors = null;
+    if(this.state != ProcessState.COMPLETE || this.state != ProcessState.CRASHED) {
+      state = ProcessState.KILLED;
+    }
   }
 
   public function start(op: Operation): Void {
@@ -64,11 +68,7 @@ class SimpleProcess extends AbstractCustomType implements Pid {
     }
     this.state = state;
     if(state == ProcessState.COMPLETE || state == ProcessState.CRASHED || state == ProcessState.KILLED) {
-      processStack.dispose();
-      processStack = null;
-      mailbox = null;
-      parent = null;
-      ancestors = null;
+      dispose();
     }
   }
 }

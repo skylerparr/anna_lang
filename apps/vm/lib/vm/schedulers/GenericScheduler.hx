@@ -42,6 +42,7 @@ class GenericScheduler implements Scheduler {
     if(pids == null) {
       return "ok".atom();
     }
+    #if !cppia
     for(pid in pids) {
       pid.dispose();
     }
@@ -55,6 +56,7 @@ class GenericScheduler implements Scheduler {
       currentPid.dispose();
       currentPid = null;
     }
+    #end
     return "ok".atom();
   }
 
@@ -233,10 +235,14 @@ class GenericScheduler implements Scheduler {
     }
     if(callback != null) {
       var op = objectCreator.createInstance(InvokeCallback, [callback, "GenericScheduler".atom(), "apply".atom(), MacroTools.line()]);
-      op.execute(scopeVariables, pid.processStack);
+      operations = operations.copy();
+      operations.unshift(op);
+      var annaCallStack: AnnaCallStack = new DefaultAnnaCallStack(operations, scopeVariables);
+      pid.processStack.add(annaCallStack);
+    } else {
+      var annaCallStack: AnnaCallStack = new DefaultAnnaCallStack(operations, scopeVariables);
+      pid.processStack.add(annaCallStack);
     }
-    var annaCallStack: AnnaCallStack = new DefaultAnnaCallStack(operations, scopeVariables);
-    pid.processStack.add(annaCallStack);
   }
 
   public function self(): Pid {

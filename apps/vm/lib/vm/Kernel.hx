@@ -106,7 +106,6 @@ class Kernel {
   }
 
   public static function testCountForever(): Pid {
-    restart();
     return testSpawn('Boot', 'count_forever', []);
   }
 

@@ -8,7 +8,7 @@ import EitherEnums.Either2;
 import vm.Pid;
 class ArgHelper {
 
-  public static function extractArgValue(arg: Dynamic, scopeVariables: Map<String, Dynamic>): Dynamic {
+  public static inline function extractArgValue(arg: Dynamic, scopeVariables: Map<String, Dynamic>): Dynamic {
     var tuple: Tuple = EitherSupport.getValue(arg);
     var retVal: Dynamic = arg;
     if(Std.is(tuple, Tuple)) {

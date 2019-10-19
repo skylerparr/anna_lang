@@ -43,7 +43,7 @@ class DefaultProcessStack implements ProcessStack {
   }
 
   public inline function execute(): Void {
-    if(allStacks.length == 0) {
+    if(allStacks != null && allStacks.length == 0) {
       Process.complete(process);
       return;
     }
