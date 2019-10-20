@@ -18,6 +18,7 @@ class SimpleProcess extends AbstractCustomType implements Pid {
   public var mailbox(default, null): Array<Dynamic>;
   public var parent(default, null): Pid;
   public var ancestors(default, null): Array<Pid>;
+  public var trapExit(default, null): Atom;
 
   public inline function new() {
     this.serverId = _nodeId;
@@ -68,4 +69,9 @@ class SimpleProcess extends AbstractCustomType implements Pid {
       dispose();
     }
   }
+
+  public function setTrapExit(flag: Atom): Void {
+    trapExit = flag;
+  }
+
 }

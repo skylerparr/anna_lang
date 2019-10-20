@@ -7,9 +7,11 @@ interface Pid extends BaseObject extends CustomType {
   public var mailbox(default, null): Array<Dynamic>;
   public var parent(default, null): Pid;
   public var ancestors(default, null): Array<Pid>;
+  public var trapExit(default, null): Atom;
 
   function start(op: Operation): Void;
   function setState(state: ProcessState): Void;
   function setParent(pid: Pid): Bool;
   function putInMailbox(value: Dynamic): Void;
+  function setTrapExit(flag: Atom): Void;
 }

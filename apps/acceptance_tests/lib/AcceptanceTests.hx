@@ -123,6 +123,14 @@ using lang.AtomSupport;
     @native Kernel.exit(pid);
   });
 
+  @def trap_exit({Pid: pid}, [Atom], {
+    @native Kernel.trapExit(pid);
+  });
+
+  @def untrap_exit({Pid: pid}, [Atom], {
+    @native Kernel.untrapExit(pid);
+  });
+
   @def count_forever([Atom], {
     pid = @native Kernel.spawn(@_'Boot', @_'start_state', [], {});
     @native Kernel.saveState(pid);

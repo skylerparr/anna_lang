@@ -213,12 +213,16 @@ class GenericScheduler implements Scheduler {
   }
 
   public function flag(pid: Pid, flag: Atom, value: Atom): Atom {
+    pid.setTrapExit(value);
     return "ok".atom();
   }
 
   public function exit(pid: Pid, signal: Atom): Atom {
     if(notRunning()) {
       return null;
+    }
+    if(pid.trapExit == 'true'.atom()) {
+      return 'trapped'.atom();
     }
     pid.setState(ProcessState.KILLED);
     #if !cppia

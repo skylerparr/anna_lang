@@ -686,7 +686,18 @@ class GenericSchedulerTest {
     var parentPid: Pid = createPid();
     createdPid.parent.returns(parentPid);
     scheduler.start();
-    scheduler.exit(createdPid, @_'killed');
+    scheduler.exit(createdPid, @_'kill');
     parentPid.setState(ProcessState.KILLED).verify();
+  }
+
+  public static function shouldNotExitProcessIfTrapExitIsSetToTrue(): Void {
+    createdPid.setTrapExit(Atom.create('true')).calls(function(args): Void {
+      createdPid.trapExit.returns(Atom.create('true'));
+    });
+    scheduler.start();
+    scheduler.flag(createdPid, Atom.create('trap_exit'), Atom.create('true'));
+    scheduler.exit(createdPid, @_'kill');
+
+    createdPid.setState(ProcessState.KILLED).verify(never);
   }
 }

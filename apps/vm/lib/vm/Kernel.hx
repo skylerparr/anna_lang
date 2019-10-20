@@ -117,6 +117,14 @@ class Kernel {
     return testSpawn('Boot', 'exit_vm_Pid', [pid]);
   }
 
+  public static function testTrapExit(pid: Pid): Pid {
+    return testSpawn('Boot', 'trap_exit_vm_Pid', [pid]);
+  }
+
+  public static function testUntrapExit(pid: Pid): Pid {
+    return testSpawn('Boot', 'untrap_exit_vm_Pid', [pid]);
+  }
+
   public static function getPidState(pid: Pid): Pid {
     return testSpawn('Boot', 'get_state_vm_Pid', [pid]);
   }
@@ -169,6 +177,14 @@ class Kernel {
 
   public static function exit(pid: Pid): Atom {
     return currentScheduler.exit(pid, 'kill'.atom());
+  }
+
+  public static function trapExit(pid: Pid): Atom {
+    return currentScheduler.flag(pid, 'trap_exit'.atom(), 'true'.atom());
+  }
+
+  public static function untrapExit(pid: Pid): Atom {
+    return currentScheduler.flag(pid, 'trap_exit'.atom(), 'false'.atom());
   }
 
   public static function apply(pid: Pid, fn: Function, args: LList, callback: Dynamic->Void = null): Void {
