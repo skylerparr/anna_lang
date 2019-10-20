@@ -46,7 +46,6 @@ class GenericScheduler implements Scheduler {
     for(pid in pids) {
       pid.dispose();
     }
-    pids = null;
     paused = false;
     for(pidMeta in pidMetaMap) {
       pidMeta.pid.dispose();
@@ -57,6 +56,7 @@ class GenericScheduler implements Scheduler {
       currentPid = null;
     }
     #end
+    pids = null;
     return "ok".atom();
   }
 
@@ -88,10 +88,7 @@ class GenericScheduler implements Scheduler {
       return "not_running".atom();
     }
     pid.putInMailbox(payload);
-    if(pid.state == ProcessState.WAITING) {
-      pid.setState(ProcessState.RUNNING);
-      pids.add(pid);
-    }
+    pids.add(pid);
     return "ok".atom();
   }
 
@@ -99,7 +96,7 @@ class GenericScheduler implements Scheduler {
     if(notRunning()) {
       return;
     }
-    if(pid.state == ProcessState.RUNNING && pid.mailbox.length == 0) {
+    if(pid.state == ProcessState.RUNNING) {
       pid.setState(ProcessState.WAITING);
     }
     var pidMeta: PidMetaData = new PidMetaData(pid, fn, 0, callback, TimeUtil.nowInMillis());
@@ -130,6 +127,9 @@ class GenericScheduler implements Scheduler {
   }
 
   private inline function passMessages(pid: Pid): Void {
+    if(pid.state != ProcessState.WAITING) {
+      return;
+    }
     var pidMeta: PidMetaData = pidMetaMap.get(pid);
     if(pidMeta != null && pid.mailbox.length > 0) {
       var mailbox: Array<Dynamic> = pid.mailbox;
@@ -163,8 +163,10 @@ class GenericScheduler implements Scheduler {
     if(currentPid == null) {
       return;
     }
-    if(currentPid.state == ProcessState.RUNNING) {
+    if(currentPid.state == ProcessState.WAITING) {
       passMessages(currentPid);
+    }
+    if(currentPid.state == ProcessState.RUNNING) {
       currentPid.processStack.execute();
     }
     if(currentPid.state == ProcessState.RUNNING) {
@@ -234,15 +236,10 @@ class GenericScheduler implements Scheduler {
       return;
     }
     if(callback != null) {
-      var op = objectCreator.createInstance(InvokeCallback, [callback, "GenericScheduler".atom(), "apply".atom(), MacroTools.line()]);
-      operations = operations.copy();
-      operations.unshift(op);
-      var annaCallStack: AnnaCallStack = new DefaultAnnaCallStack(operations, scopeVariables);
-      pid.processStack.add(annaCallStack);
-    } else {
-      var annaCallStack: AnnaCallStack = new DefaultAnnaCallStack(operations, scopeVariables);
-      pid.processStack.add(annaCallStack);
+      callback(scopeVariables.get("$$$"));
     }
+    var annaCallStack: AnnaCallStack = new DefaultAnnaCallStack(operations, scopeVariables);
+    pid.processStack.add(annaCallStack);
   }
 
   public function self(): Pid {

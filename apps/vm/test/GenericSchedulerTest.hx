@@ -232,11 +232,11 @@ class GenericSchedulerTest {
     @assert @_"not_running" == scheduler.send(createdPid, "foo");
   }
 
-  public static function shouldPutPidIntoRunningStateWentMessageIsSentToItOnlyIfItsCurrentStateIsWaiting(): Void {
-    createdPid.state.returns(ProcessState.WAITING);
+  public static function shouldNotChangePidStateWhenSendingAMessageToIt(): Void {
+    createdPid.state.returns(ProcessState.RUNNING);
     scheduler.start();
     @assert @_"ok" == scheduler.send(createdPid, "foo");
-    createdPid.setState(ProcessState.RUNNING).verify();
+    createdPid.setState(cast any).verify(never);
   }
 
   public static function shoudNotChangeStateIfStateIsRunningIfSendingMessage(): Void {
