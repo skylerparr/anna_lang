@@ -49,13 +49,15 @@ class DefaultProcessStack implements ProcessStack {
     }
     currentStack = allStacks.first();
     currentStack.execute(this);
-    executionCount++;
-    if(currentStack.finalCall()) {
-      var annaStack = allStacks.pop();
-      var retVal = annaStack.scopeVariables.get("$$$");
-      var nextStack = allStacks.first();
-      if(nextStack != null) {
-        nextStack.scopeVariables.set("$$$", retVal);
+    if(currentStack != null) {
+      executionCount++;
+      if(currentStack.finalCall()) {
+        var annaStack = allStacks.pop();
+        var retVal = annaStack.scopeVariables.get("$$$");
+        var nextStack = allStacks.first();
+        if(nextStack != null) {
+          nextStack.scopeVariables.set("$$$", retVal);
+        }
       }
     }
   }

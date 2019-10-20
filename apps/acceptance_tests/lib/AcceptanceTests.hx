@@ -119,6 +119,10 @@ using lang.AtomSupport;
     @_'ok';
   });
 
+  @def exit({Pid: pid}, [Atom], {
+    @native Kernel.exit(pid);
+  });
+
   @def count_forever([Atom], {
     pid = @native Kernel.spawn(@_'Boot', @_'start_state', [], {});
     @native Kernel.saveState(pid);

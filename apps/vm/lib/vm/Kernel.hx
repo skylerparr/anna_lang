@@ -113,6 +113,10 @@ class Kernel {
     return testSpawn('Boot', 'increment_state_vm_Pid', [pid]);
   }
 
+  public static function testExitPid(pid: Pid): Pid {
+    return testSpawn('Boot', 'exit_vm_Pid', [pid]);
+  }
+
   public static function getPidState(pid: Pid): Pid {
     return testSpawn('Boot', 'get_state_vm_Pid', [pid]);
   }
@@ -164,13 +168,16 @@ class Kernel {
   }
 
   public static function exit(pid: Pid): Atom {
-    return currentScheduler.exit(pid, 'ok'.atom());
+    return currentScheduler.exit(pid, 'kill'.atom());
   }
 
   public static function apply(pid: Pid, fn: Function, args: LList, callback: Dynamic->Void = null): Void {
     if(fn == null) {
       //TODO: handle missing function error
       Logger.inspect('throw a crazy error and kill the process!');
+      return;
+    }
+    if(pid.state == ProcessState.KILLED || pid.state == ProcessState.COMPLETE) {
       return;
     }
     var scopeVariables = pid.processStack.getVariablesInScope();

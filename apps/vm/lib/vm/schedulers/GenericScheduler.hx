@@ -87,9 +87,12 @@ class GenericScheduler implements Scheduler {
     if(notRunning()) {
       return "not_running".atom();
     }
-    pid.putInMailbox(payload);
-    pids.add(pid);
-    return "ok".atom();
+    if(pid.state == ProcessState.RUNNING || pid.state == ProcessState.WAITING || pid.state == ProcessState.SLEEPING) {
+      pid.putInMailbox(payload);
+      pids.add(pid);
+      return "ok".atom();
+    }
+    return exit(self(), 'crashed'.atom());
   }
 
   public function receive(pid: Pid, fn: Function, timeout: Null<Int> = null, callback: (Dynamic) -> Void = null): Void {
@@ -214,12 +217,23 @@ class GenericScheduler implements Scheduler {
   }
 
   public function exit(pid: Pid, signal: Atom): Atom {
+    if(notRunning()) {
+      return null;
+    }
     pid.setState(ProcessState.KILLED);
+    #if !cppia
+    pid.dispose();
+    #end
+    pids.remove(pid);
+    pidMetaMap.remove(pid);
     return "killed".atom();
   }
 
   public function apply(pid: Pid, fn: Function, args: Array<Dynamic>, scopeVariables: Map<String, Dynamic>, callback: (Dynamic) -> Void): Void {
     if(notRunning()) {
+      return;
+    }
+    if(pid.state != ProcessState.RUNNING) {
       return;
     }
     var fnScope: Map<String, Dynamic> = fn.scope;

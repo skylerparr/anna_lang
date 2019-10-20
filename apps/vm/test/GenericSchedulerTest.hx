@@ -28,6 +28,7 @@ class GenericSchedulerTest {
     scheduler.objectCreator = objectCreator;
 
     createdPid = mock(Pid);
+    createdPid.state.returns(ProcessState.RUNNING);
     createdPid.mailbox.returns([]);
   }
 
@@ -132,6 +133,40 @@ class GenericSchedulerTest {
 
     var pid = scheduler.spawnLink(createdPid, function() { return operation; });
     scheduler.complete(pid);
+
+    createdPid.dispose().verify(0);
+  }
+
+  public static function shouldSetPidToKilled(): Void {
+    var operation: Operation = mock(Operation);
+    objectCreator.createInstance(cast any, cast any).returns(createdPid);
+
+    scheduler.start();
+    var pid = scheduler.spawnLink(createdPid, function() { return operation; });
+    scheduler.exit(pid, @_'kill');
+    createdPid.setState(ProcessState.KILLED).verify();
+  }
+
+  #if !cppia
+  public static function shouldDisposePidOnExit(): Void {
+    var operation: Operation = mock(Operation);
+    objectCreator.createInstance(cast any, cast any).returns(createdPid);
+
+    scheduler.start();
+    var pid = scheduler.spawnLink(createdPid, function() { return operation; });
+    scheduler.exit(pid, @_'kill');
+
+    createdPid.dispose().verify();
+    @assert scheduler.pids.length() == 0;
+  }
+  #end
+
+  public static function shouldDoNothingIfExitIsCalledAndSchedulerIsNotRunning(): Void {
+    var operation: Operation = mock(Operation);
+    objectCreator.createInstance(cast any, cast any).returns(createdPid);
+
+    var pid = scheduler.spawnLink(createdPid, function() { return operation; });
+    scheduler.exit(pid, @_'kill');
 
     createdPid.dispose().verify(0);
   }
@@ -388,8 +423,11 @@ class GenericSchedulerTest {
 
   public static function shouldSetPidStateToKilledIfToldToExit(): Void {
     var pid: Pid = mock(Pid);
+    scheduler.start();
     @assert @_"killed" = scheduler.exit(pid, @_"normal");
     pid.setState(ProcessState.KILLED).verify();
+    @assert scheduler.pids.length() == 0;
+    @assert scheduler.pidMetaMap.exists(pid) == false;
   }
 
   public static function shouldReturnSelf(): Void {

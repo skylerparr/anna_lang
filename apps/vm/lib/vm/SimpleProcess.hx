@@ -38,9 +38,6 @@ class SimpleProcess extends AbstractCustomType implements Pid {
     mailbox = null;
     parent = null;
     ancestors = null;
-    if(this.state != ProcessState.COMPLETE || this.state != ProcessState.CRASHED) {
-      state = ProcessState.KILLED;
-    }
   }
 
   public function start(op: Operation): Void {
