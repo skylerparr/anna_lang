@@ -27,9 +27,14 @@ class GenericSchedulerTest {
     objectCreator = mock(ObjectCreator);
     scheduler.objectCreator = objectCreator;
 
-    createdPid = mock(Pid);
-    createdPid.state.returns(ProcessState.RUNNING);
-    createdPid.mailbox.returns([]);
+    createdPid = createPid();
+  }
+
+  private static function createPid(): Pid {
+    var pid = mock(Pid);
+    pid.state.returns(ProcessState.RUNNING);
+    pid.mailbox.returns([]);
+    return pid;
   }
 
   private static function mockFunction(): Function {
@@ -675,5 +680,13 @@ class GenericSchedulerTest {
         break;
       }
     }
+  }
+
+  public static function shouldExitParentPidIfLinked(): Void {
+    var parentPid: Pid = createPid();
+    createdPid.parent.returns(parentPid);
+    scheduler.start();
+    scheduler.exit(createdPid, @_'killed');
+    parentPid.setState(ProcessState.KILLED).verify();
   }
 }

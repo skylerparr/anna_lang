@@ -226,6 +226,9 @@ class GenericScheduler implements Scheduler {
     #end
     pids.remove(pid);
     pidMetaMap.remove(pid);
+    if(pid.parent != null) {
+      exit(pid.parent, signal);
+    }
     return "killed".atom();
   }
 
