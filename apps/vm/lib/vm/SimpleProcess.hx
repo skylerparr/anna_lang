@@ -12,6 +12,7 @@ class SimpleProcess extends AbstractCustomType implements Pid {
   private var serverId: Int;
   private var instanceId: Int;
   private var groupId: Int;
+  private var monitors: List<Pid>;
 
   public var processStack(default, null): DefaultProcessStack;
   public var state(default, null): ProcessState;
@@ -35,6 +36,22 @@ class SimpleProcess extends AbstractCustomType implements Pid {
     if(processStack != null) {
       processStack.dispose();
       processStack = null;
+    }
+    if(monitors != null) {
+      for(pid in monitors) {
+        var reason: String = switch(state) {
+          case ProcessState.KILLED:
+            'killed';
+          case ProcessState.COMPLETE:
+            'complete';
+          case ProcessState.CRASHED:
+            'crashed';
+          case _:
+            'UNKNOWN';
+        }
+        Kernel.send(pid, Tuple.create([Atom.create('DOWN'), pid, Atom.create(reason)]));
+      }
+      monitors = null;
     }
     mailbox = null;
     parent = null;
@@ -74,4 +91,26 @@ class SimpleProcess extends AbstractCustomType implements Pid {
     trapExit = flag;
   }
 
+  public function addMonitor(pid: Pid): Void {
+    if(this.state == ProcessState.COMPLETE || this.state == ProcessState.CRASHED || this.state == ProcessState.KILLED) {
+      return;
+    }
+    if(monitors == null) {
+      monitors = new List<Pid>();
+    }
+    #if !cppia
+      monitors.remove(pid);
+    #end
+    monitors.add(pid);
+  }
+
+  public function removeMonitor(pid: Pid): Void {
+    if(monitors == null) {
+     return;
+    }
+    monitors.remove(pid);
+    if(monitors.length == 0) {
+      monitors = null;
+    }
+  }
 }

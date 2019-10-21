@@ -129,6 +129,10 @@ class Kernel {
     return testSpawn('Boot', 'get_state_vm_Pid', [pid]);
   }
 
+  public static function testMonitor(): Pid {
+    return testSpawn('Boot', 'test_monitor', []);
+  }
+
   public static function saveState(pid: Pid): Pid {
     statePid = pid;
     return pid;
@@ -185,6 +189,10 @@ class Kernel {
 
   public static function untrapExit(pid: Pid): Atom {
     return currentScheduler.flag(pid, 'trap_exit'.atom(), 'false'.atom());
+  }
+
+  public static function monitor(pid: Pid): Atom {
+    return currentScheduler.monitor(Process.self(), pid);
   }
 
   public static function apply(pid: Pid, fn: Function, args: LList, callback: Dynamic->Void = null): Void {

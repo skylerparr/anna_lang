@@ -295,6 +295,16 @@ class GenericSchedulerTest {
     @assert scheduler.sleepingProcesses.length() == 1;
   }
 
+  public static function shouldAddProcessToPidRunQueueWhenCallingReceive(): Void {
+    createdPid.state.returns(ProcessState.RUNNING);
+    scheduler.start();
+    var fn: Function = mockFunction();
+    scheduler.receive(createdPid, fn, 500);
+    createdPid.setState(ProcessState.WAITING).verify();
+    @assert scheduler.pids.length() == 1;
+    @assert scheduler.pids.shift() == createdPid;
+  }
+
   public static function shouldDoNothingIfPutIntoReceiveModeAndTheSchedulerIsntRunning(): Void {
     createdPid.state.returns(ProcessState.RUNNING);
     var fn: Function = mockFunction();
@@ -699,5 +709,19 @@ class GenericSchedulerTest {
     scheduler.exit(createdPid, @_'kill');
 
     createdPid.setState(ProcessState.KILLED).verify(never);
+  }
+
+  public static function shouldAddMonitorToPid(): Void {
+    var monitorPid: Pid = createPid();
+    scheduler.start();
+    scheduler.monitor(monitorPid, createdPid);
+    createdPid.addMonitor(monitorPid).verify(1);
+  }
+
+  public static function shouldRemoveMonitorFromPid(): Void {
+    var monitorPid: Pid = createPid();
+    scheduler.start();
+    scheduler.demonitor(monitorPid, createdPid);
+    createdPid.removeMonitor(monitorPid).verify(1);
   }
 }

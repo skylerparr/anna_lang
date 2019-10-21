@@ -14,4 +14,7 @@ interface Pid extends BaseObject extends CustomType {
   function setParent(pid: Pid): Bool;
   function putInMailbox(value: Dynamic): Void;
   function setTrapExit(flag: Atom): Void;
+  function addMonitor(pid: Pid): Void;
+  function removeMonitor(pid: Pid): Void;
+
 }

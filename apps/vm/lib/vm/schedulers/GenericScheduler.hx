@@ -104,6 +104,7 @@ class GenericScheduler implements Scheduler {
     }
     var pidMeta: PidMetaData = new PidMetaData(pid, fn, 0, callback, TimeUtil.nowInMillis());
     pidMetaMap.set(pid, pidMeta);
+    pids.add(pid);
     if(timeout != null) {
       pidMeta.timeout = timeout;
       sleepingProcesses.push(pidMeta);
@@ -205,10 +206,18 @@ class GenericScheduler implements Scheduler {
   }
 
   public function monitor(parentPid: Pid, pid: Pid): Atom {
+    if(notRunning()) {
+      return null;
+    }
+    pid.addMonitor(parentPid);
     return "ok".atom();
   }
 
-  public function demonitor(pid: Pid): Atom {
+  public function demonitor(parentPid: Pid, pid: Pid): Atom {
+    if(notRunning()) {
+      return null;
+    }
+    pid.removeMonitor(parentPid);
     return "ok".atom();
   }
 

@@ -54,7 +54,7 @@ interface Scheduler {
 
   function monitor(parentPid: Pid, pid: Pid): Atom;
 
-  function demonitor(pid: Pid): Atom;
+  function demonitor(parentPid: Pid, pid: Pid): Atom;
 
   function flag(pid: Pid, flag: Atom, value: Atom): Atom;
 

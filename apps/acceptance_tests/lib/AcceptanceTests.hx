@@ -100,6 +100,34 @@ using lang.AtomSupport;
     @_"ok";
   });
 
+  @def test_monitor([Atom], {
+    waiter = @native Kernel.spawn(@_'Boot', @_'start_wait', [], {});
+    @native Kernel.monitor(waiter);
+    @native IO.inspect("sleeping");
+    @native Process.sleep(1000);
+    @native IO.inspect("telling waiter to exit");
+    @native Kernel.exit(waiter);
+    @native IO.inspect("waiting for message");
+    message = kernel_receive(@fn {
+      ([{Tuple: status}, [Tuple]] => {
+        status;
+      });
+    });
+    @native IO.inspect(message);
+    @_'ok';
+  });
+
+  @def start_wait([Atom], {
+    @native IO.inspect("waiting");
+    kernel_receive(@fn {
+      ([[String]] => {
+        @_'nil';
+      });
+    });
+    @native IO.inspect("this shouldn't happen");
+    @_'ok';
+  });
+
   @def kernel_receive({Function: fun}, [Dynamic], {
     @native Kernel.receive(fun);
   });
