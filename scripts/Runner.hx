@@ -100,6 +100,6 @@ class Runner {
     compileVMAPIProject();
     compileVMProject();
     compileCompiler();
-    compileAcceptanceTests();
+//    compileAcceptanceTests();
   }
 }

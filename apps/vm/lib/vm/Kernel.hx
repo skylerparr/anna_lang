@@ -82,7 +82,12 @@ class Kernel {
     Classes.define("Boot".atom(), Type.resolveClass("Boot"));
     Classes.define("FunctionPatternMatching".atom(), Type.resolveClass("FunctionPatternMatching"));
     Classes.define("CompilerMain".atom(), Type.resolveClass("CompilerMain"));
+    Classes.define("Str".atom(), Type.resolveClass("Str"));
     return 'ok'.atom();
+  }
+
+  public static function testCompiler(): Pid {
+    return testSpawn('CompilerMain', 'start', []);
   }
 
   public static function testGenericScheduler(): Pid {
@@ -179,6 +184,14 @@ class Kernel {
     return 'ok'.atom();
   }
 
+  public static function crash(pid: Pid): Atom {
+    Logger.inspect("*** EXIT ***");
+    Logger.inspect(pid);
+    Process.printStackTrace(pid);
+    Logger.inspect("************");
+    return currentScheduler.exit(pid, 'crash'.atom());
+  }
+
   public static function exit(pid: Pid): Atom {
     return currentScheduler.exit(pid, 'kill'.atom());
   }
@@ -232,4 +245,19 @@ class Kernel {
     return left - right;
   }
 
+  public static function mult(left: Float, right: Float): Float {
+    return left * right;
+  }
+
+  public static function div(left: Float, right: Float): Float {
+    return left / right;
+  }
+
+  public static function mod(left: Float, right: Float): Float {
+    return left % right;
+  }
+
+  public static function concat(lhs: String, rhs: String): String {
+    return lhs + rhs;
+  }
 }

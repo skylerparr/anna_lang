@@ -43,4 +43,16 @@ class Process {
     var processStack = process.processStack;
     processStack.add(new DefaultAnnaCallStack(ops, processStack.getVariablesInScope()));
   }
+
+  public static function registerPid(pid: Pid, name: Atom): Atom {
+    return Kernel.currentScheduler.registerPid(pid, name);
+  }
+
+  public static function unregisterPid(name: Atom): Atom {
+    return Kernel.currentScheduler.unregisterPid(name);
+  }
+
+  public static function getPidByName(name: Atom): Pid {
+    return Kernel.currentScheduler.getPidByName(name);
+  }
 }

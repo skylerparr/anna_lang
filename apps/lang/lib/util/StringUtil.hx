@@ -34,4 +34,8 @@ class StringUtil {
 
     return result;
   }
+
+  public static function concat(lhs: String, rhs: String): String {
+    return lhs + rhs;
+  }
 }

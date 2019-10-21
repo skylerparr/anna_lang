@@ -16,6 +16,7 @@ class GenericScheduler implements Scheduler {
   public var sleepingProcesses: UniqueList<PidMetaData>;
   public var pidMetaMap: Map<Pid, PidMetaData>;
   public var currentPid: Pid;
+  public var registeredPids: Map<Atom, Pid>;
 
   public function new() {
   }
@@ -25,6 +26,7 @@ class GenericScheduler implements Scheduler {
       pids = new UniqueList<Pid>();
       sleepingProcesses = new UniqueList<PidMetaData>();
       pidMetaMap = new Map<Pid, PidMetaData>();
+      registeredPids = new Map<Atom, Pid>();
       return "ok".atom();
     }
     return "already_started".atom();
@@ -55,6 +57,7 @@ class GenericScheduler implements Scheduler {
       currentPid.dispose();
       currentPid = null;
     }
+    registeredPids = null;
     #end
     pids = null;
     return "ok".atom();
@@ -233,7 +236,13 @@ class GenericScheduler implements Scheduler {
     if(pid.trapExit == 'true'.atom()) {
       return 'trapped'.atom();
     }
-    pid.setState(ProcessState.KILLED);
+    if(signal == 'kill'.atom()) {
+      pid.setState(ProcessState.KILLED);
+    } else if(signal == 'crash'.atom()) {
+      pid.setState(ProcessState.CRASHED);
+    } else {
+      pid.setState(ProcessState.COMPLETE);
+    }
     #if !cppia
     pid.dispose();
     #end
@@ -262,7 +271,7 @@ class GenericScheduler implements Scheduler {
     args.push(scopeVariables);
     var operations: Array<Operation> = fn.invoke(args);
     if(operations == null) {
-      trace("operations were null");
+      Kernel.crash(Process.self());
       return;
     }
     if(callback != null) {
@@ -274,6 +283,20 @@ class GenericScheduler implements Scheduler {
 
   public function self(): Pid {
     return currentPid;
+  }
+
+  public function registerPid(pid: Pid, name: Atom): Atom {
+    registeredPids.set(name, pid);
+    return 'ok'.atom();
+  }
+
+  public function unregisterPid(name: Atom): Atom {
+    registeredPids.remove(name);
+    return 'ok'.atom();
+  }
+
+  public function getPidByName(name: Atom): Pid {
+    return registeredPids.get(name);
   }
 
   private inline function notRunning(): Bool {

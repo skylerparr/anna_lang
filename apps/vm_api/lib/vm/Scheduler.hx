@@ -63,4 +63,10 @@ interface Scheduler {
   function apply(pid: Pid, fn: Function, args: Array<Dynamic>, scopeVariables: Map<String, Dynamic>, callback: Dynamic->Void): Void;
 
   function self(): Pid;
+
+  function registerPid(pid: Pid, name: Atom): Atom;
+
+  function unregisterPid(name: Atom): Atom;
+
+  function getPidByName(name: Atom): Pid;
 }

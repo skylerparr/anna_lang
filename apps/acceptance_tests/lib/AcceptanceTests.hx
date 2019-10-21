@@ -308,7 +308,9 @@ using lang.AtomSupport;
     result2 = fun2("monkey");
     @native IO.inspect(result2);
 
+    @native Kernel.trapExit(pid);
     result3 = fun3("foo");
+    @native Kernel.untrapExit(pid);
 
     @native IO.inspect("pattern match tuple");
     fun4 = @fn {

@@ -439,8 +439,22 @@ class GenericSchedulerTest {
   public static function shouldSetPidStateToKilledIfToldToExit(): Void {
     var pid: Pid = mock(Pid);
     scheduler.start();
-    @assert @_"killed" = scheduler.exit(pid, @_"normal");
+    @assert @_"killed" = scheduler.exit(pid, @_"kill");
     pid.setState(ProcessState.KILLED).verify();
+    @assert scheduler.pids.length() == 0;
+    @assert scheduler.pidMetaMap.exists(pid) == false;
+
+    var pid: Pid = mock(Pid);
+    scheduler.start();
+    @assert @_"killed" = scheduler.exit(pid, @_"normal");
+    pid.setState(ProcessState.COMPLETE).verify();
+    @assert scheduler.pids.length() == 0;
+    @assert scheduler.pidMetaMap.exists(pid) == false;
+    var pid: Pid = mock(Pid);
+    scheduler.start();
+
+    @assert @_"killed" = scheduler.exit(pid, @_"crash");
+    pid.setState(ProcessState.CRASHED).verify();
     @assert scheduler.pids.length() == 0;
     @assert scheduler.pidMetaMap.exists(pid) == false;
   }

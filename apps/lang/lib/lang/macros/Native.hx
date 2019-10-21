@@ -75,7 +75,8 @@ class Native {
               case {value: "var"}:
                 scope.get(lang.EitherSupport.getValue(arg${counter}[1]));
               case _:
-                throw "AnnaLang: Unexpected function argument";
+                Kernel.crash(Process.self());
+                return;
             }
           };
           if(Std.is(_arg${counter}, Atom)) {
