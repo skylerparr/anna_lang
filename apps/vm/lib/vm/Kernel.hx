@@ -79,14 +79,15 @@ class Kernel {
   }
 
   public static function defineCode(): Atom {
-    Classes.define("Boot".atom(), Type.resolveClass("Boot"));
-    Classes.define("FunctionPatternMatching".atom(), Type.resolveClass("FunctionPatternMatching"));
+//    Classes.define("Boot".atom(), Type.resolveClass("Boot"));
+//    Classes.define("FunctionPatternMatching".atom(), Type.resolveClass("FunctionPatternMatching"));
     Classes.define("CompilerMain".atom(), Type.resolveClass("CompilerMain"));
     Classes.define("Str".atom(), Type.resolveClass("Str"));
     return 'ok'.atom();
   }
 
   public static function testCompiler(): Pid {
+    restart();
     return testSpawn('CompilerMain', 'start', []);
   }
 

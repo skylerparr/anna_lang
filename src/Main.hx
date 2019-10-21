@@ -113,8 +113,11 @@ class Main {
 
     pollChanges();
     #else
-    Runner.start(project);
-    IHx.main();
+    Thread.create(function() {
+      Runner.start(project);
+    });
+    Thread.readMessage(true);
+//    IHx.main();
     #end
   }
 

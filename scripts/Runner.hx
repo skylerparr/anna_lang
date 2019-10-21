@@ -28,9 +28,12 @@ class Runner {
     interp.variables.set("AnnaUnit", AnnaUnit);
     #if cppia
     Reflect.field(AnnaUnit, "main")();
+    compileAll();
+    #else
+    var cls: Class<Dynamic> = Type.resolveClass('vm.Kernel');
+    Reflect.callMethod(null, Reflect.field(cls, 'testCompiler'), []);
     #end
 
-    compileAll();
     return 'ok'.atom();
   }
 

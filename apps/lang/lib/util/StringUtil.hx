@@ -38,4 +38,8 @@ class StringUtil {
   public static function concat(lhs: String, rhs: String): String {
     return lhs + rhs;
   }
+
+  public static function fromCharCode(charCode: Int): String {
+    return String.fromCharCode(charCode);
+  }
 }

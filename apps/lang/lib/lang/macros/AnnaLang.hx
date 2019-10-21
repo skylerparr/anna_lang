@@ -157,6 +157,10 @@ class AnnaLang {
             MacroContext.varTypesInScope = new Map<String, String>();
             MacroContext.lastFunctionReturnType = "";
 
+            for(argType in cast(funDef.funArgsTypes, Array<Dynamic>)) {
+              MacroContext.varTypesInScope.set(argType.name, argType.type);
+            }
+
             // Actual operations this function will be doing
             var funBody = funDef.funBody;
             var body: Array<Expr> = [];
