@@ -102,7 +102,6 @@ class Main {
           var files = Runtime.loadAll(project);
           mainThread.sendMessage(files);
           loaded = true;
-          Runtime.start();
         } else {
           mainThread.sendMessage(files);
         }
@@ -117,7 +116,6 @@ class Main {
       Runner.start(project);
     });
     Thread.readMessage(true);
-//    IHx.main();
     #end
   }
 

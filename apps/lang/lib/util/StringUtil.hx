@@ -42,4 +42,16 @@ class StringUtil {
   public static function fromCharCode(charCode: Int): String {
     return String.fromCharCode(charCode);
   }
+
+  public static function substring(string: String, start: Int, end: Int): String {
+    return string.substring(start, end);
+  }
+
+  public static function length(string: String): Int {
+    return string.length;
+  }
+
+  public static function rpad(string: String, c: String, l: Int): String {
+    return StringTools.rpad(string, c, l);
+  }
 }

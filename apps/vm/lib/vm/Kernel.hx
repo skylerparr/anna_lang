@@ -1,5 +1,6 @@
 package vm;
 
+import project.ProjectConfig;
 import vm.Pid;
 import cpp.vm.Thread;
 import util.ArgHelper;
@@ -20,6 +21,7 @@ class Kernel {
   @field public static var currentScheduler: Scheduler;
   @field public static var loopingThread: Thread;
   @field public static var statePid: Pid;
+  @field public static var projectConfig: ProjectConfig;
 
   public static function start(): Atom {
     if(loopingThread != null) {
@@ -87,7 +89,6 @@ class Kernel {
   }
 
   public static function testCompiler(): Pid {
-    restart();
     return testSpawn('CompilerMain', 'start', []);
   }
 
@@ -158,6 +159,34 @@ class Kernel {
       });
     });
     return Thread.readMessage(true);
+  }
+
+  public static function recompile(): Atom {
+    var mainThread: Thread = Thread.current();
+    Thread.create(function() {
+      Reflect.callMethod(null, Reflect.field(Type.resolveClass('Runner'), 'compileCompiler'), [function() {
+        switchToIA();
+      }]);
+    });
+    return 'ok'.atom();
+  }
+
+  public static function switchToHaxe(): Atom {
+    Thread.create(function() {
+      Reflect.callMethod(null, Reflect.field(Type.resolveClass('Runtime'), 'start'), []);
+    });
+    return 'ok'.atom();
+  }
+
+  public static function switchToIA(): Atom {
+    Reflect.callMethod(null, Reflect.field(Type.resolveClass('Runtime'), 'stop'), []);
+    restart();
+    testCompiler();
+    return 'ok'.atom();
+  }
+
+  public static function setProject(pc: ProjectConfig): Void {
+    projectConfig = pc;
   }
 
   public static function spawn(module: Atom, func: Atom, types: Tuple, args: LList): Pid {

@@ -29,10 +29,11 @@ class Runner {
     #if cppia
     Reflect.field(AnnaUnit, "main")();
     compileAll();
-    #else
-    var cls: Class<Dynamic> = Type.resolveClass('vm.Kernel');
-    Reflect.callMethod(null, Reflect.field(cls, 'testCompiler'), []);
     #end
+    var cls: Class<Dynamic> = Type.resolveClass('vm.Kernel');
+    Reflect.callMethod(null, Reflect.field(cls, 'setProject'), [pc]);
+    Reflect.callMethod(null, Reflect.field(cls, 'start'), []);
+    Reflect.callMethod(null, Reflect.field(cls, 'testCompiler'), []);
 
     return 'ok'.atom();
   }
@@ -92,17 +93,23 @@ class Runner {
     var files = Anna.compileProject(project);
   }
 
-  public static function compileCompiler(): Void {
+  public static function compileCompiler(onComplete: Void->Void = null): Void {
     cpp.Lib.println("Compiling Compiler");
     var annaProject: AnnaLangProject = Application.getProjectConfig('compiler'.atom());
     var files = Anna.compileProject(annaProject.getProjectConfig());
+    if(onComplete != null) {
+      onComplete();
+    }
   }
 
-  public static function compileAll(): Void {
+  public static function compileAll(onComplete: Void->Void = null): Void {
     compileLangProject();
     compileVMAPIProject();
     compileVMProject();
     compileCompiler();
 //    compileAcceptanceTests();
+    if(onComplete != null) {
+      onComplete();
+    }
   }
 }
