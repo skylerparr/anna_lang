@@ -24,6 +24,56 @@ import util.StringUtil;
     @native StringUtil.rpad(string, c_string, length);
   });
 }))
+@:build(lang.macros.AnnaLang.defcls(System, {
+  @def print({String: str}, [Atom], {
+    @native IO.print(str);
+  });
+
+  @def println({String: str}, [Atom], {
+    @native IO.println(str);
+  });
+}))
+@:build(lang.macros.AnnaLang.defcls(CommandHandler, {
+  @alias vm.Kernel;
+
+  @def process_command({String: 'exit'}, [Atom], {
+    System.println('');
+    System.println('exiting...');
+    @_'nil';
+  });
+
+  @def process_command({String: 'recompile'}, [Atom], {
+    System.println('');
+    @native Kernel.recompile();
+    @native Kernel.stop();
+    @_'ok';
+  });
+
+  @def process_command({String: 'compile_vm'}, [Atom], {
+    System.println('');
+    @native Kernel.compileVM();
+    @native Kernel.stop();
+    @_'ok';
+  });
+
+  @def process_command({String: 'haxe'}, [Atom], {
+    System.println('');
+    @native Kernel.switchToHaxe();
+    @native Kernel.stop();
+    @_'nil';
+  });
+
+  @def process_command({String: ''}, [Atom], {
+    System.println('');
+    CompilerMain.prompt();
+  });
+
+  @def process_command({String: cmd}, [Atom], {
+    System.println('');
+    System.println(cmd);
+    CompilerMain.prompt();
+  });
+}))
 @:build(lang.macros.AnnaLang.defcls(CompilerMain, {
   @alias vm.Process;
   @alias vm.Kernel;
@@ -31,12 +81,12 @@ import util.StringUtil;
   @def start({
     self = @native Process.self();
     @native Kernel.saveState(self);
-    println('Interacive Anna version 0.0.0');
+    System.println('Interacive Anna version 0.0.0');
     prompt();
   });
 
   @def prompt([Atom], {
-    print('ia> ');
+    System.print('ia> ');
     collect_user_input('');
   });
 
@@ -47,13 +97,13 @@ import util.StringUtil;
 
   // enter
   @def handle_input({Int: 13, String: current_string}, [String], {
-    process_command(current_string);
+    CommandHandler.process_command(current_string);
   });
 
   // ctrl+d
   @def handle_input({Int: 4, String: current_string}, [String], {
-    println('');
-    println('exiting...');
+    System.println('');
+    System.println('exiting...');
     @_'nil';
   });
 
@@ -65,56 +115,18 @@ import util.StringUtil;
     string_to_print = Str.concat('ia> ', current_string);
     string_to_print = Str.concat('\r', string_to_print);
     new_prompt = Str.concat(string_to_print, ' ');
-    print(new_prompt);
-    print(string_to_print);
+    System.print(new_prompt);
+    System.print(string_to_print);
     collect_user_input(current_string);
   });
 
   @def handle_input({Int: code, String: current_string}, [String], {
     str = Str.from_char_code(code);
-    print(str);
+    System.print(str);
     current_string = Str.concat(current_string, str);
     collect_user_input(current_string);
   });
 
-  @def process_command({String: 'exit'}, [Atom], {
-    println('');
-    println('exiting...');
-    @_'nil';
-  });
-
-  @def process_command({String: 'recompile'}, [Atom], {
-    println('');
-    @native Kernel.recompile();
-    @native Kernel.stop();
-    @_'ok';
-  });
-
-  @def process_command({String: 'haxe'}, [Atom], {
-    println('');
-    @native Kernel.switchToHaxe();
-    @native Kernel.stop();
-    @_'nil';
-  });
-
-  @def process_command({String: ''}, [Atom], {
-    println('');
-    prompt();
-  });
-
-  @def process_command({String: cmd}, [Atom], {
-    println('');
-    println(cmd);
-    prompt();
-  });
-
-  @def print({String: str}, [Atom], {
-    @native IO.print(str);
-  });
-
-  @def println({String: str}, [Atom], {
-    @native IO.println(str);
-  });
 }))
 @:build(lang.macros.AnnaLang.compile())
 class Compiler {

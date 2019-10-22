@@ -46,10 +46,13 @@ class Runner {
     return Native.callStaticField("core.PathSettings", "applicationBasePath");
   }
 
-  public static function compileVMProject(): Atom {
+  public static function compileVMProject(onComplete: Void->Void = null): Atom {
     cpp.Lib.println("Compiling vm");
     var annaProject: AnnaLangProject = Application.getProjectConfig('vm'.atom());
     var files = Anna.compileProject(annaProject.getProjectConfig());
+    if(onComplete != null) {
+      onComplete();
+    }
     return 'ok'.atom();
   }
 

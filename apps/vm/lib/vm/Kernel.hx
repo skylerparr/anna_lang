@@ -85,6 +85,8 @@ class Kernel {
 //    Classes.define("FunctionPatternMatching".atom(), Type.resolveClass("FunctionPatternMatching"));
     Classes.define("CompilerMain".atom(), Type.resolveClass("CompilerMain"));
     Classes.define("Str".atom(), Type.resolveClass("Str"));
+    Classes.define("System".atom(), Type.resolveClass("System"));
+    Classes.define("CommandHandler".atom(), Type.resolveClass("CommandHandler"));
     return 'ok'.atom();
   }
 
@@ -166,6 +168,16 @@ class Kernel {
     Thread.create(function() {
       Reflect.callMethod(null, Reflect.field(Type.resolveClass('Runner'), 'compileCompiler'), [function() {
         switchToIA();
+      }]);
+    });
+    return 'ok'.atom();
+  }
+
+  public static function compileVM(): Atom {
+    var mainThread: Thread = Thread.current();
+    Thread.create(function() {
+      Reflect.callMethod(null, Reflect.field(Type.resolveClass('Runner'), 'compileVMProject'), [function() {
+        recompile();
       }]);
     });
     return 'ok'.atom();
