@@ -11,8 +11,6 @@ class DefaultAnnaCallStack implements AnnaCallStack {
 
   public var currentOperation: Operation;
 
-  public var tailCall: Bool;
-
   public inline function new(code: Array<Operation>, scopeVariables: Map<String, Dynamic>) {
     this.operations = code;
     this.scopeVariables = scopeVariables;
