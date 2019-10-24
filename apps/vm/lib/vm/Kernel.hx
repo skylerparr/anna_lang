@@ -207,6 +207,12 @@ class Kernel {
     });
   }
 
+  public static function spawn_link(module: Atom, func: Atom, types: Tuple, args: LList): Pid {
+    return currentScheduler.spawnLink(Process.self(), function() {
+      return new PushStack(module, func, args, "Kernel".atom(), "spawn_link".atom(), MacroTools.line());
+    });
+  }
+
   public static function update(): Void {
     var counter: Int = 100;
     while(counter > 0) {
