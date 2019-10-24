@@ -7,8 +7,9 @@ class Process {
     process.mailbox.push(value);
   }
 
-  public static function printStackTrace(process: Pid): Void {
+  public static function printStackTrace(process: Pid): Atom {
     process.processStack.printStackTrace();
+    return 'ok'.atom();
   }
 
   public static function isAlive(process: Pid): Atom {

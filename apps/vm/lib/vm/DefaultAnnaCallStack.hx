@@ -34,7 +34,6 @@ class DefaultAnnaCallStack implements AnnaCallStack {
     if(currentOperation == null) {
       return;
     }
-    tailCall = currentOperation.isRecursive();
     var scope = new Map<String, Dynamic>();
     for(key in scopeVariables.keys()) {
       scope.set(key, scopeVariables.get(key));
