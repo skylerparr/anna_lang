@@ -3,6 +3,7 @@ package util;
 class StringUtil {
 
   public static var CAPITALS: EReg = ~/[A-Z]/;
+  private static var CHARS = "abcdefghijklmnopqrstuvwxyz";
 
   public static function capitalizePackage(string: String): String {
     var retVal: Array<String> = [];
@@ -17,19 +18,21 @@ class StringUtil {
   }
 
   public static function random(length:Int = 10):String {
-    var chars = "abcdefghijklmnopqrstuvwxyz";
-    if (length == 0)
+    if (length == 0) {
       return "";
+    }
 
-    if (length < 0)
+    if (length < 0) {
       throw "[count] must be positive value";
+    }
 
-    if (chars == null)
+    if (CHARS == null) {
       throw "[chars] must not be null";
+    }
 
     var result: String = "";
     for (i in 0...length) {
-      result += chars.charAt(Math.floor(chars.length * Math.random()));
+      result += CHARS.charAt(Math.floor(CHARS.length * Math.random()));
     }
 
     return result;

@@ -164,6 +164,25 @@ class PatternMatch {
           }
           $e{individualMatchesBlock};
         }
+      case EBlock([base, suffix]):
+        MacroLogger.log(base, 'base');
+        MacroLogger.log(suffix, 'suffix');
+        var valueStr: String = '${printer.printExpr(valueExpr)}.substring(${printer.printExpr(base)}.length)';
+        var exprMatch: Expr = generatePatternMatch(suffix, Macros.haxeToExpr(valueStr));
+        MacroLogger.logExpr(exprMatch, 'exprMatch');
+        macro {
+          for(i in 0...$e{base}.length) {
+            if($e{base}.charAt(i) != $e{valueExpr}.charAt(i)) {
+              scope = null;
+              break;
+            }
+          }
+          if(scope == null) {
+            break;
+          }
+          $e{exprMatch};
+          break;
+        }
       case e:
         MacroLogger.log(e, 'PatternMatch expr');
         MacroLogger.logExpr(valueExpr, 'PatternMatch expr');

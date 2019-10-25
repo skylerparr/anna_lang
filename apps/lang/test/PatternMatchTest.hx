@@ -400,6 +400,19 @@ class PatternMatchTest {
     @assert matched.get("listValue") == "two";
     @assert matched.get("mapValue") == "more success";
   }
+
+  public static function shouldPatternMatchTheEndOfAString(): Void {
+    var data: String = "hello world";
+    var matched: Map<String, Dynamic> = PatternMatch.match("hello " => variable, data);
+    @refute matched == null;
+    @assert matched.get("variable") == "world";
+  }
+
+  public static function shouldNotPatternMatchTheEndOfAStringIfDoesntMatch(): Void {
+    var data: String = "hello world";
+    var matched: Map<String, Dynamic> = PatternMatch.match("foo " => variable, data);
+    @assert matched == null;
+  }
 }
 
 class TestCustomType implements CustomType {
