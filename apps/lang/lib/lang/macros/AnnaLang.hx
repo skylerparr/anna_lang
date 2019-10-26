@@ -235,7 +235,10 @@ class AnnaLang {
               if(funArgsType.pattern != funArgsType.name) {
                 var pattern: String = funArgsType.pattern;
                 if(funArgsType.type == "String") {
-                  pattern = '"${pattern}"';
+                  var ereg: EReg = ~/".*".*=>/;
+                  if(!ereg.match(pattern)) {
+                    pattern = '"${pattern}"';
+                  }
                 }
                 haxeStr = 'var match: Map<String, Dynamic> = lang.macros.PatternMatch.match(${pattern}, ${argName});';
               }

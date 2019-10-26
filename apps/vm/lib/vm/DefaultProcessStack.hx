@@ -52,6 +52,9 @@ class DefaultProcessStack implements ProcessStack {
     }
     currentStack = allStacks.first();
     currentStack.execute(this);
+    if(currentStack == null) {
+      return;
+    }
     if(currentStack.finalCall()) {
       var annaStack = allStacks.pop();
       var retVal = annaStack.scopeVariables.get("$$$");

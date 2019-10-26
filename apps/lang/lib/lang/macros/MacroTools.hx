@@ -364,6 +364,9 @@ class MacroTools {
                     }
                     var haxeStr: String = '@list[${items.join(',')}]';
                     {name: name, pattern: haxeStr};
+                  case EBinop(OpArrow, {expr: EConst(CString(name))}, {expr: EConst(CIdent(pattern))}):
+                    var patternStr = printer.printExpr(expr);
+                    {name: name, pattern: patternStr}
                   case e:
                     MacroLogger.log(e, 'e');
                     throw new ParsingException("AnnaLang: expected variable or pattern");

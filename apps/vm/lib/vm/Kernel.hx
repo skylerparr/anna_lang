@@ -98,6 +98,10 @@ class Kernel {
     return testSpawn('Boot', 'start', []);
   }
 
+  public static function testFunctionPatternMatching(): Pid {
+    return testSpawn('FunctionPatternMatching', 'start', []);
+  }
+
   public static function testReceiveMessage(): Pid {
     return testSpawn('Boot', 'test_receive', []);
   }
@@ -184,9 +188,7 @@ class Kernel {
   }
 
   public static function switchToHaxe(): Atom {
-    Thread.create(function() {
-      Reflect.callMethod(null, Reflect.field(Type.resolveClass('Runtime'), 'start'), []);
-    });
+    Reflect.callMethod(null, Reflect.field(Type.resolveClass('Runtime'), 'start'), []);
     return 'ok'.atom();
   }
 

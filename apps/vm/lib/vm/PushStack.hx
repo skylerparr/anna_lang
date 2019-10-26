@@ -43,8 +43,7 @@ class PushStack implements Operation {
     callArgs.push(nextScopeVariables);
     var operations: Array<Operation> = fn.invoke(callArgs);
     if(operations == null) {
-      //TODO: handle missing function error
-      Logger.inspect('operations is null!');
+      Kernel.crash(Process.self());
       return;
     }
     var annaCallStack: AnnaCallStack = new DefaultAnnaCallStack(operations, nextScopeVariables);

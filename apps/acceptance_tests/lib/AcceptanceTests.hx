@@ -29,9 +29,11 @@ using lang.AtomSupport;
     result = count_down(10);
     match_tuple([@_"ok", "message"]);
     match_tuple([@_"error", "An error tuple has been handled"]);
-    iterate_list({6; 5; 4; 3; 2; 1;});
-    match_list({4; "hello";});
+    match_string("hello world");
+    match_list({4; "should be 4";});
     match_list({8; "fire";});
+    iterate_list({});
+    iterate_list({6; 5; 4; 3; 2; 1;});
     match_map([@_"hello" => "world", @_"foo" => "bar", @_"foocat" => [@_"cat" => "baz"]]);
     @_"ok";
   });
@@ -66,7 +68,9 @@ using lang.AtomSupport;
 
   @def iterate_list({LList: {hd | tl;}}, [Atom], {
     @native IO.inspect(hd);
-    iterate_list(tl);
+    @native IO.inspect(tl);
+    //todo: Infer that this is LList
+    iterate_list(cast(tl, LList));
   });
 
   @def match_list({LList: {4; message;}}, [Atom], {
@@ -74,9 +78,20 @@ using lang.AtomSupport;
     @_"ok";
   });
 
+  @def match_list({LList: list}, [Atom], {
+    @native IO.inspect(list);
+    @_"ok";
+  });
+
   @def match_map({MMap: [@_"hello" => value1, @_"foo" => value2]}, [Atom], {
     @native IO.inspect(value1);
     @native IO.inspect(value2);
+    @_"ok";
+  });
+
+  @def match_string({String: "hello " => variable}, [Atom], {
+    @native IO.inspect("expect world");
+    @native IO.inspect(variable);
     @_"ok";
   });
 }))
@@ -352,6 +367,10 @@ using lang.AtomSupport;
     @native IO.inspect(get_list());
     @native IO.inspect(get_map());
     @native IO.inspect(get_all());
+
+    @native IO.inspect("test string pattern match, expect: world");
+    "hello " => variable = "hello world";
+    @native IO.inspect(variable);
 
     [@_"ok", {@_"mouse"; [@_"stinky" => "bear", @_"bean" => "dipper", [@_"foo", "bar"] => "feet",
       @list["apple", "orange"] => "fruit", [@_"always" => "squirreling"] => for_what];}] = get_all();
