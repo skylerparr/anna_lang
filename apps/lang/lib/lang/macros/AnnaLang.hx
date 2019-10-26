@@ -539,9 +539,13 @@ class AnnaLang {
 
     var funDef: Dynamic = declaredFunctions.get(fqFunName);
     if(funDef == null) {
-      var haxeStr: String = '${currentFunStr}.push(new vm.AnonymousFunction(@atom"${funName}", @list [${funArgs.join(", ")}], @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${lineNumber}))';
-      retVal.push(lang.macros.Macros.haxeToExpr(haxeStr));
-      return retVal;
+      var varTypeInScope: String = MacroContext.varTypesInScope.get(funName);
+      if(varTypeInScope == 'vm_Function') {
+        var haxeStr: String = '${currentFunStr}.push(new vm.AnonymousFunction(@atom"${funName}", @list [${funArgs.join(", ")}], @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${lineNumber}))';
+        retVal.push(lang.macros.Macros.haxeToExpr(haxeStr));
+        return retVal;
+      }
+      throw 'Function ${funName} at line ${lineNumber} not found';
     } else {
       MacroContext.lastFunctionReturnType = funDef[0].funReturnTypes[0];
       var haxeStr: String = '${currentFunStr}.push(new vm.PushStack(@atom "${module.moduleName}", @atom "${fqFunName}", @list [${funArgs.join(", ")}], @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${lineNumber}))';

@@ -457,6 +457,12 @@ class MacroTools {
     return lineNo;
   }
 
+  public static function getLineNumberFromContext():Int {
+    var lineStr: String = '${Context.currentPos()}';
+    var lineNo: Int = Std.parseInt(lineStr.split(':')[1]);
+    return lineNo;
+  }
+
   public static function getType(tpath: ComplexType):String {
     return switch(tpath) {
       case TPath({name: name}):

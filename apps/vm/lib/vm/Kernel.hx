@@ -40,6 +40,9 @@ class Kernel {
   }
 
   public static function run(): Void {
+    #if scriptable
+    Thread.create(function() {
+    #end
     while(started) {
       if(msg == 'stop'.atom()) {
         break;
@@ -64,6 +67,9 @@ class Kernel {
     currentScheduler = null;
     statePid = null;
     Classes.clear();
+    #if scriptable
+    });
+    #end
   }
 
   public static function stop(): Atom {
@@ -80,8 +86,8 @@ class Kernel {
   }
 
   public static function defineCode(): Atom {
-//    Classes.define("Boot".atom(), Type.resolveClass("Boot"));
-//    Classes.define("FunctionPatternMatching".atom(), Type.resolveClass("FunctionPatternMatching"));
+    Classes.define("Boot".atom(), Type.resolveClass("Boot"));
+    Classes.define("FunctionPatternMatching".atom(), Type.resolveClass("FunctionPatternMatching"));
     Classes.define("CompilerMain".atom(), Type.resolveClass("CompilerMain"));
     Classes.define("Str".atom(), Type.resolveClass("Str"));
     Classes.define("System".atom(), Type.resolveClass("System"));
