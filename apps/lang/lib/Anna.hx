@@ -26,11 +26,14 @@ using StringTools;
 using haxe.EnumTools;
 using haxe.EnumTools.EnumValueTools;
 
+#if !macro
 @:build(lang.macros.ValueClassImpl.build())
+#end
 class Anna {
   @field public static var parser: Parser;
   @field public static var interp: Interp;
 
+  #if !macro
   public static function compileProject(p: ProjectConfig): Array<String> {
     if(p == null) {
       cpp.Lib.println('No project file provided, doing nothing.');
@@ -46,7 +49,7 @@ class Anna {
     cpp.Lib.println('Compilation Time: ${TimeUtil.getHumanTime(diff)}');
     return files;
   }
-
+  #end
   public static function createInstance(type: Class<Dynamic>, constructorArgs: Array<Dynamic>): Dynamic {
     return Type.createInstance(type, constructorArgs);
   }

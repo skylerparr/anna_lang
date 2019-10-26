@@ -57,4 +57,9 @@ class StringUtil {
   public static function rpad(string: String, c: String, l: Int): String {
     return StringTools.rpad(string, c, l);
   }
+
+  public static function split(string: String, delimiter: String): LList {
+    var array: Array<String> = string.split(delimiter);
+    return LList.create(cast array);
+  }
 }

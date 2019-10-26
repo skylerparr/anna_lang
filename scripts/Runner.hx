@@ -34,6 +34,8 @@ class Runner {
     Reflect.callMethod(null, Reflect.field(cls, 'setProject'), [pc]);
     Reflect.callMethod(null, Reflect.field(cls, 'start'), []);
     Reflect.callMethod(null, Reflect.field(cls, 'testCompiler'), []);
+    Reflect.callMethod(null, Reflect.field(cls, 'run'), []);
+//    Reflect.callMethod(null, Reflect.field(cls, 'switchToHaxe'), []);
 
     return 'ok'.atom();
   }

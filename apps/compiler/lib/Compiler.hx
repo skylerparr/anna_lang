@@ -23,6 +23,14 @@ import util.StringUtil;
   @def rpad({String: string, String: c_string, Int: length}, [String], {
     @native StringUtil.rpad(string, c_string, length);
   });
+
+}))
+@:build(lang.macros.AnnaLang.defcls(File, {
+  @alias sys.io.File;
+
+  @def get_content({String: file_path}, [String], {
+    @native File.getContent(file_path);
+  });
 }))
 @:build(lang.macros.AnnaLang.defcls(System, {
   @def print({String: str}, [Atom], {

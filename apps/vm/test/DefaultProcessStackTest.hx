@@ -8,7 +8,7 @@ import anna_unit.Assert;
 import vm.SimpleProcess;
 import vm.DefaultProcessStack;
 @:build(lang.macros.Macros.build())
-class ProcessStackTest {
+class DefaultProcessStackTest {
 
   private static var stack: DefaultProcessStack;
 
@@ -23,31 +23,13 @@ class ProcessStackTest {
     stack.add(createAnnaCallStack());
     stack.add(createAnnaCallStack());
 
-    @assert stack.allStacks.length == 3;
+    @assert stack.allStacks.length == 0;
   }
 
   public static function shouldExecuteStackAndPopAnnaStack(): Void {
     stack.add(createAnnaCallStack());
     stack.add(createAnnaCallStack());
     stack.add(createAnnaCallStack());
-
-    stack.execute();
-    @assert stack.allStacks.length == 3;
-
-    stack.execute();
-    @assert stack.allStacks.length == 3;
-
-    stack.execute();
-    @assert stack.allStacks.length == 2;
-
-    stack.execute();
-    @assert stack.allStacks.length == 2;
-
-    stack.execute();
-    @assert stack.allStacks.length == 2;
-
-    stack.execute();
-    @assert stack.allStacks.length == 1;
 
     stack.execute();
     @assert stack.allStacks.length == 1;
