@@ -19,12 +19,13 @@ class Kernel {
 
   @field public static var current_id: Int;
   @field public static var currentScheduler: Scheduler;
-  @field public static var loopingThread: Thread;
   @field public static var statePid: Pid;
   @field public static var projectConfig: ProjectConfig;
+  @field public static var started: Bool;
+  @field public static var msg: Dynamic;
 
   public static function start(): Atom {
-    if(loopingThread != null) {
+    if(started) {
       return 'already_started'.atom();
     }
     current_id = 0;
@@ -34,42 +35,40 @@ class Kernel {
     scheduler.objectCreator = cast ObjectFactory.injector.getInstance(ObjectCreator);
     currentScheduler = scheduler;
     currentScheduler.start();
-    var parentThread: Thread = Thread.current();
-    loopingThread = Thread.create(function() {
-      while(true) {
-        var msg: Dynamic = Thread.readMessage(false);
-        if(msg == 'stop'.atom()) {
-          break;
-        }
-        if(msg != null) {
-          var pid: Pid = msg();
-          parentThread.sendMessage(pid);
-        }
-        Sys.sleep(0.0001);
-        if(currentScheduler.hasSomethingToExecute()) {
-          for(i in 0...1000) {
-            if(currentScheduler.hasSomethingToExecute()) {
-              currentScheduler.update();
-            } else {
-              break;
-            }
-          }
-        } else {
-          Sys.sleep(0.1);
-        }
-      }
-      currentScheduler.stop();
-      loopingThread = null;
-      currentScheduler = null;
-      statePid = null;
-      Classes.clear();
-    });
+    started = true;
     return 'ok'.atom();
+  }
+
+  public static function run(): Void {
+    while(started) {
+      if(msg == 'stop'.atom()) {
+        break;
+      }
+      if(msg != null) {
+        var pid: Pid = msg();
+      }
+      Sys.sleep(0.0001);
+      if(currentScheduler.hasSomethingToExecute()) {
+        for(i in 0...1000) {
+          if(currentScheduler.hasSomethingToExecute()) {
+            currentScheduler.update();
+          } else {
+            break;
+          }
+        }
+      } else {
+        Sys.sleep(0.1);
+      }
+    }
+    currentScheduler.stop();
+    currentScheduler = null;
+    statePid = null;
+    Classes.clear();
   }
 
   public static function stop(): Atom {
     if(currentScheduler != null) {
-      loopingThread.sendMessage('stop'.atom());
+      started = false;
     }
     return 'ok'.atom();
   }
@@ -152,38 +151,29 @@ class Kernel {
   }
 
   public static function testSpawn(module: String, func: String, args: Array<Dynamic>): Pid {
-    if(loopingThread == null) {
+    if(!started) {
       return null;
     }
-    loopingThread.sendMessage(function() {
-      var createArgs: Array<Tuple> = [];
-      for(arg in args) {
-        createArgs.push(Tuple.create(["const".atom(), arg]));
-      }
-      return currentScheduler.spawn(function() {
-        return new PushStack(module.atom(), func.atom(), LList.create(cast createArgs), "Kernel".atom(), "testSpawn".atom(), MacroTools.line());
-      });
+    var createArgs: Array<Tuple> = [];
+    for(arg in args) {
+      createArgs.push(Tuple.create(["const".atom(), arg]));
+    }
+    return currentScheduler.spawn(function() {
+      return new PushStack(module.atom(), func.atom(), LList.create(cast createArgs), "Kernel".atom(), "testSpawn".atom(), MacroTools.line());
     });
-    return Thread.readMessage(true);
   }
 
   public static function recompile(): Atom {
-    var mainThread: Thread = Thread.current();
-    Thread.create(function() {
-      Reflect.callMethod(null, Reflect.field(Type.resolveClass('Runner'), 'compileCompiler'), [function() {
-        switchToIA();
-      }]);
-    });
+    Reflect.callMethod(null, Reflect.field(Type.resolveClass('Runner'), 'compileCompiler'), [function() {
+      switchToIA();
+    }]);
     return 'ok'.atom();
   }
 
   public static function compileVM(): Atom {
-    var mainThread: Thread = Thread.current();
-    Thread.create(function() {
-      Reflect.callMethod(null, Reflect.field(Type.resolveClass('Runner'), 'compileVMProject'), [function() {
-        recompile();
-      }]);
-    });
+    Reflect.callMethod(null, Reflect.field(Type.resolveClass('Runner'), 'compileVMProject'), [function() {
+      recompile();
+    }]);
     return 'ok'.atom();
   }
 

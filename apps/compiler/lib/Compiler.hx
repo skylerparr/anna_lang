@@ -39,6 +39,7 @@ import util.StringUtil;
   @def process_command({String: 'exit'}, [Atom], {
     System.println('');
     System.println('exiting...');
+    @native Kernel.stop();
     @_'nil';
   });
 
@@ -104,6 +105,7 @@ import util.StringUtil;
   @def handle_input({Int: 4, String: current_string}, [String], {
     System.println('');
     System.println('exiting...');
+    @native Kernel.stop();
     @_'nil';
   });
 

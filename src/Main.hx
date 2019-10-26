@@ -112,10 +112,7 @@ class Main {
 
     pollChanges();
     #else
-    Thread.create(function() {
-      Runner.start(project);
-    });
-    Thread.readMessage(true);
+    Runner.start(project);
     #end
   }
 
