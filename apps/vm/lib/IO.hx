@@ -3,7 +3,7 @@ class IO {
   public static function print(str: String): Atom {
     #if cpp
     cpp.Lib.print(str);
-    #elseif python
+    #elseif (python || java || cs)
     trace(str);
     #elseif js
     trace(str);
@@ -15,7 +15,7 @@ class IO {
   public static function println(str: String): Atom {
     #if cpp
     cpp.Lib.print(str + '\r\n');
-    #elseif python
+    #elseif (python || java || cs)
     trace(str + '\r\n');
     #elseif js
     trace(str);
@@ -30,7 +30,7 @@ class IO {
   }
 
   public static function gets(): String {
-    #if (cpp || python)
+    #if (cpp || python || java || cs)
     var char: Int = Sys.getChar(false);
     return String.fromCharCode(char);
     #elseif js
@@ -41,7 +41,7 @@ class IO {
   }
 
   public static function getsCharCode(): Int {
-    #if (cpp || python)
+    #if (cpp || python || java || cs)
     return Sys.getChar(false);
     #elseif js
     trace('charcode');

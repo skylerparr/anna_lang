@@ -3,7 +3,6 @@ import project.ProjectConfig;
 import core.InjectionSettings;
 import hscript.plus.ParserPlus;
 import lang.HashTableAtoms;
-import hx.strings.Strings;
 import haxe.ds.ObjectMap;
 import haxe.Timer;
 import haxe.CallStack;
@@ -54,7 +53,6 @@ class Main {
     Timer.stamp();
     new Date(2018, 1, 1, 0, 0, 0).getTime();
     new Printer().printExpr(macro 'foo');
-    Strings.charCodeAt8("foo", 0);
     GlobalStore.start();
     new InjectionSettings();
     new Main();

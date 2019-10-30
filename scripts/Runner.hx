@@ -2,7 +2,6 @@ package ;
 
 import project.AnnaLangProject;
 import lang.macros.Application;
-import anna_unit.AnnaUnit;
 import hscript.Interp;
 import hscript.Parser;
 import project.DefaultProjectConfig;
@@ -26,8 +25,8 @@ class Runner {
     #if cppia
     parser = Native.callStaticField('Main', 'parser');
     interp = Native.callStaticField('Main', 'interp');
-    interp.variables.set("AnnaUnit", AnnaUnit);
-    Reflect.field(AnnaUnit, "main")();
+    interp.variables.set("AnnaUnit", anna_unit.AnnaUnit);
+    Reflect.field(anna_unit.AnnaUnit, "main")();
     compileAll();
     var cls: Class<Dynamic> = Type.resolveClass('vm.Kernel');
     Reflect.callMethod(null, Reflect.field(cls, 'setProject'), [pc]);
@@ -93,14 +92,14 @@ class Runner {
   public static function langTests(): Atom {
     trace("Running lang tests");
     var annaProject: AnnaLangProject = Application.getProjectConfig('lang'.atom());
-    AnnaUnit.start(annaProject.getProjectTestsConfig());
+    anna_unit.AnnaUnit.start(annaProject.getProjectTestsConfig());
     return 'ok'.atom();
   }
 
   public static function vmTests(): Atom {
     trace("Running vm tests");
     var annaProject: AnnaLangProject = Application.getProjectConfig('vm'.atom());
-    AnnaUnit.start(annaProject.getProjectTestsConfig());
+    anna_unit.AnnaUnit.start(annaProject.getProjectTestsConfig());
     return 'ok'.atom();
   }
 

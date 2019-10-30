@@ -7,9 +7,12 @@
 -D analyzer-optimize
 -D hscriptPos
 -D HXCPP_M64
--cpp anna_static
+-java anna-java.java
 -main Main
+#-dce no
 -lib sepia
 -lib random
+-lib hx-color-trace
+-lib haxe-strings
 -lib hscript-plus
 -lib minject
