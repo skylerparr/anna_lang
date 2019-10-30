@@ -14,10 +14,10 @@
 -js anna-js.js
 -main Main
 -dce no
+-lib hxnodejs
 -lib sepia
 -lib random
 -lib hx-color-trace
-#-lib ihx
 -lib haxe-strings
 -lib hscript-plus
 -lib mockatoo
