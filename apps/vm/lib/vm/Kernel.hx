@@ -2,7 +2,6 @@ package vm;
 
 import project.ProjectConfig;
 import vm.Pid;
-import cpp.vm.Thread;
 import util.ArgHelper;
 import lang.macros.MacroTools;
 import core.ObjectCreator;
@@ -41,12 +40,10 @@ class Kernel {
 
   public static function run(): Void {
     #if scriptable
-    Thread.create(function() {
+    cpp.vm.Thread.create(function() {
     #end
+    #if (cpp || scriptable)
     while(started) {
-      if(msg == 'stop'.atom()) {
-        break;
-      }
       if(msg != null) {
         var pid: Pid = msg();
       }
@@ -67,10 +64,39 @@ class Kernel {
     currentScheduler = null;
     statePid = null;
     Classes.clear();
+    #end
     #if scriptable
     });
     #end
+    #if js
+    js.Node.process.nextTick(onNextTick);
+    #end
   }
+
+  #if js
+  public static function onNextTick():Void {
+    if(!started) {
+      currentScheduler.stop();
+      currentScheduler = null;
+      statePid = null;
+      Classes.clear();
+      return;
+    }
+    if(msg != null) {
+      var pid: Pid = msg();
+    }
+    if(currentScheduler.hasSomethingToExecute()) {
+      for(i in 0...1000) {
+        if(currentScheduler.hasSomethingToExecute()) {
+          currentScheduler.update();
+        } else {
+          break;
+        }
+      }
+    }
+    js.Node.process.nextTick(onNextTick);
+  }
+  #end
 
   public static function stop(): Atom {
     if(currentScheduler != null) {
@@ -79,15 +105,11 @@ class Kernel {
     return 'ok'.atom();
   }
 
-  public static function restart(): Atom {
-    stop();
-    Sys.sleep(0.2);
-    return start();
-  }
-
   public static function defineCode(): Atom {
-//    Classes.define("Boot".atom(), Type.resolveClass("Boot"));
-//    Classes.define("FunctionPatternMatching".atom(), Type.resolveClass("FunctionPatternMatching"));
+    #if cppia
+    Classes.define("Boot".atom(), Type.resolveClass("Boot"));
+    Classes.define("FunctionPatternMatching".atom(), Type.resolveClass("FunctionPatternMatching"));
+    #end
     Classes.define("CompilerMain".atom(), Type.resolveClass("CompilerMain"));
     Classes.define("Str".atom(), Type.resolveClass("Str"));
     Classes.define("System".atom(), Type.resolveClass("System"));
@@ -97,6 +119,26 @@ class Kernel {
 
   public static function testCompiler(): Pid {
     return testSpawn('CompilerMain', 'start', []);
+  }
+
+  public static function testSpawn(module: String, func: String, args: Array<Dynamic>): Pid {
+    if(!started) {
+      return null;
+    }
+    var createArgs: Array<Tuple> = [];
+    for(arg in args) {
+      createArgs.push(Tuple.create(["const".atom(), arg]));
+    }
+    return currentScheduler.spawn(function() {
+      return new PushStack(module.atom(), func.atom(), LList.create(cast createArgs), "Kernel".atom(), "testSpawn".atom(), MacroTools.line());
+    });
+  }
+
+  #if cppia
+  public static function restart(): Atom {
+    stop();
+    Sys.sleep(0.2);
+    return start();
   }
 
   public static function testGenericScheduler(): Pid {
@@ -155,44 +197,44 @@ class Kernel {
     statePid = pid;
     return pid;
   }
-
-  public static function testSpawn(module: String, func: String, args: Array<Dynamic>): Pid {
-    if(!started) {
-      return null;
-    }
-    var createArgs: Array<Tuple> = [];
-    for(arg in args) {
-      createArgs.push(Tuple.create(["const".atom(), arg]));
-    }
-    return currentScheduler.spawn(function() {
-      return new PushStack(module.atom(), func.atom(), LList.create(cast createArgs), "Kernel".atom(), "testSpawn".atom(), MacroTools.line());
-    });
-  }
+  #end
 
   public static function recompile(): Atom {
+    #if cppia
     Reflect.callMethod(null, Reflect.field(Type.resolveClass('Runner'), 'compileCompiler'), [function() {
       switchToIA();
     }]);
     return 'ok'.atom();
+    #end
+    return 'not_available'.atom();
   }
 
   public static function compileVM(): Atom {
+    #if cppia
     Reflect.callMethod(null, Reflect.field(Type.resolveClass('Runner'), 'compileVMProject'), [function() {
       recompile();
     }]);
     return 'ok'.atom();
+    #end
+    return 'not_available'.atom();
   }
 
   public static function switchToHaxe(): Atom {
+    #if cppia
     Reflect.callMethod(null, Reflect.field(Type.resolveClass('Runtime'), 'start'), []);
     return 'ok'.atom();
+    #end
+    return 'not_available'.atom();
   }
 
   public static function switchToIA(): Atom {
+    #if cppia
     Reflect.callMethod(null, Reflect.field(Type.resolveClass('Runtime'), 'stop'), []);
     restart();
     testCompiler();
     return 'ok'.atom();
+    #end
+    return 'not_available'.atom();
   }
 
   public static function setProject(pc: ProjectConfig): Void {
@@ -209,14 +251,6 @@ class Kernel {
     return currentScheduler.spawnLink(Process.self(), function() {
       return new PushStack(module, func, args, "Kernel".atom(), "spawn_link".atom(), MacroTools.line());
     });
-  }
-
-  public static function update(): Void {
-    var counter: Int = 100;
-    while(counter > 0) {
-      counter--;
-      currentScheduler.update();
-    }
   }
 
   public static function receive(callback: Function): Pid {

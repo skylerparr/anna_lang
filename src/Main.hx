@@ -1,4 +1,3 @@
-import ihx.IHx;
 import project.DefaultProjectConfig;
 import project.ProjectConfig;
 import core.InjectionSettings;
@@ -15,16 +14,20 @@ import core.PathSettings;
 import hscript.Macro;
 import hscript.Interp;
 import hscript.Parser;
+#if scriptable
 import cpp.vm.Thread;
 import ihx.HScriptEval;
-import mockatoo.Mockatoo.*;
 using mockatoo.Mockatoo;
+#end
+
 using lang.AtomSupport;
 class Main {
   public static var parser: Parser = new ParserPlus();
   public static var interp: Interp;         
 
+  #if scriptable
   private static var mainThread: Thread;
+  #end
   private static var ready: Bool = false;
 
   public static var compilerCompleteCallbacks: Array<Void->Void> = [];
@@ -61,6 +64,8 @@ class Main {
     var basePath: String = PathSettings.applicationBasePath;
     project = new DefaultProjectConfig('AnnaLang', '${basePath}scripts', '${basePath}out/',
       ['${basePath}src/', '${basePath}apps/anna_unit/lib', '${basePath}apps/lang/lib'], ['hscript-plus', 'mockatoo', 'minject', 'sepia']);
+
+    #if scriptable
     parser.allowMetadata = true;
     parser.allowTypes = true;
     interp = HScriptEval.interp;
@@ -86,7 +91,6 @@ class Main {
     variables.set("fields", function(o: Dynamic): Dynamic {
       return Reflect.fields(o);
     });
-    #if scriptable
     variables.set("rc", function() {
       Runtime.compileProject(project);
     });

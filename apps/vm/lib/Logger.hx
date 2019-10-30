@@ -11,7 +11,7 @@ class Logger {
     if(label != null) {
       labelStr = label + ': ';
     }
-    cpp.Lib.print(labelStr + Anna.toAnnaString(term) + '\r\n');
+    trace(labelStr + Anna.toAnnaString(term) + '\r\n');
   }
 
 }

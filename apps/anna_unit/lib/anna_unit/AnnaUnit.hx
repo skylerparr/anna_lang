@@ -1,14 +1,15 @@
 package anna_unit;
 
+#if scriptable
 import project.ProjectConfig;
-import sys.io.File;
 import util.TimeUtil;
 import sys.FileSystem;
 import haxe.Timer;
 using StringTools;
 @:build(lang.macros.ValueClassImpl.build())
+#end
 class AnnaUnit {
-
+  #if scriptable
   @field public static var failedTests: Array<String>;
 
   public static function start(project: ProjectConfig): Void {
@@ -105,5 +106,5 @@ class AnnaUnit {
     }
     return retVal;
   }
-
+  #end
 }

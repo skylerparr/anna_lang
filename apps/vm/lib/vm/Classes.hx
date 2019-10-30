@@ -64,6 +64,7 @@ class Classes {
         if(fn == null) {
           fn = new SimpleFunction();
         }
+        fn.cls = instance;
         var args: Array<String> = Reflect.getProperty(instance, fun);
         fn.args = args;
         classFunctions.set(origFnAtom, fn);
@@ -92,6 +93,7 @@ class Classes {
         if(fn == null) {
           fn = new SimpleFunction();
         }
+        fn.cls = instance;
         fn.fn = Reflect.field(instance, fun);
         classFunctions.set(origFnAtom, fn);
         functions.set(className, classFunctions);

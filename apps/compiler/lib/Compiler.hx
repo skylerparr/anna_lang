@@ -26,10 +26,13 @@ import util.StringUtil;
 
 }))
 @:build(lang.macros.AnnaLang.defcls(File, {
-  @alias sys.io.File;
 
   @def get_content({String: file_path}, [String], {
-    @native File.getContent(file_path);
+    #if cpp
+    @native sys.io.File.getContent(file_path);
+    #else
+    '';
+    #end
   });
 }))
 @:build(lang.macros.AnnaLang.defcls(System, {
@@ -89,7 +92,6 @@ import util.StringUtil;
 
   @def start({
     self = @native Process.self();
-    @native Kernel.saveState(self);
     System.println('Interacive Anna version 0.0.0');
     prompt();
   });

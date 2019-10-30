@@ -1,7 +1,5 @@
 package ;
 
-import sys.io.FileOutput;
-import sys.io.File;
 class Native {
 
   public static function call(o:Dynamic, funStr:String, args:Array<Dynamic>):Dynamic {

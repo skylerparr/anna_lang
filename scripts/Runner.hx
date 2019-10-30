@@ -23,19 +23,29 @@ class Runner {
   public static function start(pc: ProjectConfig):Atom {
     project = pc;
 
+    #if cppia
     parser = Native.callStaticField('Main', 'parser');
     interp = Native.callStaticField('Main', 'interp');
     interp.variables.set("AnnaUnit", AnnaUnit);
-    #if cppia
     Reflect.field(AnnaUnit, "main")();
     compileAll();
-    #end
     var cls: Class<Dynamic> = Type.resolveClass('vm.Kernel');
     Reflect.callMethod(null, Reflect.field(cls, 'setProject'), [pc]);
     Reflect.callMethod(null, Reflect.field(cls, 'start'), []);
     Reflect.callMethod(null, Reflect.field(cls, 'testCompiler'), []);
     Reflect.callMethod(null, Reflect.field(cls, 'run'), []);
 //    Reflect.callMethod(null, Reflect.field(cls, 'switchToHaxe'), []);
+    #else
+    var annaProject: AnnaLangProject = Application.getProjectConfig('compiler'.atom());
+    var files = Anna.compileProject(annaProject.getProjectConfig());
+//    if(onComplete != null) {
+//      onComplete();
+//    }
+    vm.Kernel.setProject(pc);
+    vm.Kernel.start();
+    vm.Kernel.testCompiler();
+    vm.Kernel.run();
+    #end
 
     return 'ok'.atom();
   }
@@ -48,8 +58,9 @@ class Runner {
     return Native.callStaticField("core.PathSettings", "applicationBasePath");
   }
 
+  #if cppia
   public static function compileVMProject(onComplete: Void->Void = null): Atom {
-    cpp.Lib.println("Compiling vm");
+    trace("Compiling vm");
     var annaProject: AnnaLangProject = Application.getProjectConfig('vm'.atom());
     var files = Anna.compileProject(annaProject.getProjectConfig());
     if(onComplete != null) {
@@ -59,47 +70,47 @@ class Runner {
   }
 
   public static function compileVMAPIProject(): Atom {
-    cpp.Lib.println("Compiling vm api");
+    trace("Compiling vm api");
     var annaProject: AnnaLangProject = Application.getProjectConfig('vm_api'.atom());
     var files = Anna.compileProject(annaProject.getProjectConfig());
     return 'ok'.atom();
   }
 
   public static function compileLangProject(): Atom {
-    cpp.Lib.println("Compiling lang");
+    trace("Compiling lang");
     var annaProject: AnnaLangProject = Application.getProjectConfig('lang'.atom());
     var files = Anna.compileProject(annaProject.getProjectConfig());
     return 'ok'.atom();
   }
 
   public static function compileAcceptanceTests(): Array<String> {
-    cpp.Lib.println("Compiling AcceptanceTests");
+    trace("Compiling AcceptanceTests");
     var annaProject: AnnaLangProject = Application.getProjectConfig('acceptance_tests'.atom());
     var files = Anna.compileProject(annaProject.getProjectConfig());
     return files;
   }
 
   public static function langTests(): Atom {
-    cpp.Lib.println("Running lang tests");
+    trace("Running lang tests");
     var annaProject: AnnaLangProject = Application.getProjectConfig('lang'.atom());
     AnnaUnit.start(annaProject.getProjectTestsConfig());
     return 'ok'.atom();
   }
 
   public static function vmTests(): Atom {
-    cpp.Lib.println("Running vm tests");
+    trace("Running vm tests");
     var annaProject: AnnaLangProject = Application.getProjectConfig('vm'.atom());
     AnnaUnit.start(annaProject.getProjectTestsConfig());
     return 'ok'.atom();
   }
 
   public static function compileRunner(): Void {
-    cpp.Lib.println("Compiling Runner");
+    trace("Compiling Runner");
     var files = Anna.compileProject(project);
   }
 
   public static function compileCompiler(onComplete: Void->Void = null): Void {
-    cpp.Lib.println("Compiling Compiler");
+    trace("Compiling Compiler");
     var annaProject: AnnaLangProject = Application.getProjectConfig('compiler'.atom());
     var files = Anna.compileProject(annaProject.getProjectConfig());
     if(onComplete != null) {
@@ -112,9 +123,10 @@ class Runner {
     compileVMAPIProject();
     compileVMProject();
     compileCompiler();
-//    compileAcceptanceTests();
+    compileAcceptanceTests();
     if(onComplete != null) {
       onComplete();
     }
   }
+  #end
 }

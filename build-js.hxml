@@ -11,13 +11,14 @@
 -D analyzer-optimize
 -D hscriptPos
 -D HXCPP_M64
--cpp anna_static
+-js anna-js.js
 -main Main
 -dce no
 -lib sepia
 -lib random
 -lib hx-color-trace
--lib ihx
+#-lib ihx
 -lib haxe-strings
 -lib hscript-plus
+-lib mockatoo
 -lib minject

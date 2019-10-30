@@ -1,6 +1,4 @@
 package vm;
-import cpp.vm.Thread;
-import vm.Function;
 using lang.AtomSupport;
 class Process {
   public static function putInMailbox(process: Pid, value: Dynamic): Void {

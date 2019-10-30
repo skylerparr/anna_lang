@@ -36,7 +36,7 @@ class Anna {
   #if !macro
   public static function compileProject(p: ProjectConfig): Array<String> {
     if(p == null) {
-      cpp.Lib.println('No project file provided, doing nothing.');
+      trace('No project file provided, doing nothing.');
       return [];
     }
 
@@ -46,7 +46,7 @@ class Anna {
       return ['Anna'];
     }
     var diff: Float = (Timer.stamp() - startTime) * 1000;
-    cpp.Lib.println('Compilation Time: ${TimeUtil.getHumanTime(diff)}');
+    trace('Compilation Time: ${TimeUtil.getHumanTime(diff)}');
     return files;
   }
   #end
