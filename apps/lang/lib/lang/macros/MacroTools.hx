@@ -203,7 +203,12 @@ class MacroTools {
     // TODO: dry a lot of this up!
     return switch(expr.expr) {
       case EConst(CIdent(varName)):
-        {type: "Variable", value: '@tuple [@atom "var", "${varName}"]', rawValue: varName};
+        var const: Expr = MacroContext.currentModuleDef.constants.get(varName);
+        if(const == null) {
+          {type: "Variable", value: '@tuple [@atom "var", "${varName}"]', rawValue: varName};
+        } else {
+          getTypeAndValue(const);
+        }
       case EConst(CString(value)):
         {type: "String", value: '@tuple [@atom "const", "${value}"]', rawValue: '"${value}"'};
       case EConst(CInt(value)):
@@ -272,11 +277,17 @@ class MacroTools {
           var strValue: String = '@map[${listValues.join(",")}]';
           {type: "MMap", value: '@tuple [@atom "const", ${strValue}]', rawValue: strValue};
         }
+      case EBinop(OpArrow, const, {expr: EBinop(OpAssign, pattern, rhs)}):
+        var strConst: String = printer.printExpr(pattern);
+        {type: "String", value: '@tuple [@atom "var", "${strConst}"]', rawValue: printer.printExpr(expr)};
       case EBinop(OpArrow, lhs, rhs):
         var lhsType = getTypeAndValue(lhs);
         var rhsType = getTypeAndValue(rhs);
         var rawValue: String = '@map [${lhsType.rawValue} => ${rhsType.rawValue}]';
         {type: "MMap", value: rawValue, rawValue: rawValue};
+      case EMeta({name: '__stringMatch'}, expr):
+        var value: String = printer.printExpr(expr);
+        {type: "String", value: value, rawValue: value};
       case EObjectDecl(items):
         var keyValues: Array<String> = [];
         for(item in items) {
@@ -440,7 +451,7 @@ class MacroTools {
         body;
       case EConst(_):
         [expr];
-      case EMeta(_, _) | EArrayDecl(_) | EBlock(_):
+      case EMeta(_, _) | EArrayDecl(_) | EBlock(_) | EBinop(OpArrow, _, _):
         [expr];
       case e:
         MacroLogger.log(e, 'e');
@@ -494,7 +505,7 @@ class MacroTools {
       case EConst(CString(value)) | EConst(CInt(value)) | EConst(CFloat(value)):
         acc.push(value);
         acc;
-      case EMeta(_, _) | EArrayDecl(_) | EBlock(_):
+      case EMeta(_, _) | EArrayDecl(_) | EBlock(_) | EBinop(OpArrow, _, _):
         acc.push(printer.printExpr(expr));
         acc;
       case e:

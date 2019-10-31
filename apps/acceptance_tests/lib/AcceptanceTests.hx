@@ -101,6 +101,8 @@ using lang.AtomSupport;
   @alias vm.Kernel;
   @alias vm.Function;
 
+  @const VALUE = "A constant value";
+
   @def test_receive([Atom], {
     @native IO.inspect("waiting for data");
     received = kernel_receive(@fn {
@@ -373,6 +375,8 @@ using lang.AtomSupport;
     @native IO.inspect("What is Ellie always squirreling for?");
     @native IO.inspect(for_what);
 //    @native IO.inspect({ok: "foob"}); //keyword list
+    @native IO.inspect("Expect: a constant value");
+    @native IO.inspect(VALUE);
     print(pid);
   });
 

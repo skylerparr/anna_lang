@@ -16,7 +16,7 @@ class Fn {
 
   #if macro
   public static function gen(params: Expr): Array<Expr> {
-    MacroLogger.logExpr(params, 'params');
+    MacroLogger.logExpr(params, 'anonymous fn params');
     MacroContext.lastFunctionReturnType = "vm_Function";
     var currentModule: TypeDefinition = MacroContext.currentModule;
     var currentModuleStr: String = currentModule.name;

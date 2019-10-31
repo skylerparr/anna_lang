@@ -33,6 +33,7 @@ class AnnaLang {
     keywordMap.set("native", lang.macros.Native.gen);
     keywordMap.set("alias", lang.macros.Alias.gen);
     keywordMap.set("def", lang.macros.Def.gen);
+    keywordMap.set("const", lang.macros.Const.gen);
     keywordMap.set("=", lang.macros.Match.gen);
     keywordMap;
   }
@@ -327,6 +328,7 @@ class AnnaLang {
     var className: String = printer.printExpr(name);
     var moduleDef: ModuleDef = new ModuleDef(className);
     MacroContext.aliases = new Map<String, String>();
+    MacroContext.currentModuleDef = moduleDef;
     MacroContext.declaredFunctions = new Map<String, Array<Dynamic>>();
     MacroLogger.log(className, 'name');
     MacroLogger.logExpr(body, 'bodyString');
@@ -466,6 +468,15 @@ class AnnaLang {
               var args: String = '@tuple [@atom "const", ${printer.printExpr(custom)}]';
               var assignOp: Expr = putIntoScope(args, lineNumber);
               retExprs.push(assignOp);
+            case EBinop(OpArrow, left, {expr: EBinop(OpAssign, match, right)}):
+              var lineNumber = MacroTools.getLineNumber(right);
+              var exprs = walkBlock(MacroTools.buildBlock([right]));
+              for(expr in exprs) {
+                retExprs.push(expr);
+              }
+              var left = Macros.haxeToExpr('@__stringMatch ${printer.printExpr(left)} => ${printer.printExpr(match)}');
+              var assignOp: Array<Expr> = keywordMap.get("=")(left);
+              retExprs.push(assignOp[0]);
             case _:
               blockExpr;
           }
