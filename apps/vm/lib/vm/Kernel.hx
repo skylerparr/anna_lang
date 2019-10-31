@@ -110,6 +110,7 @@ class Kernel {
     Classes.define("Boot".atom(), Type.resolveClass("Boot"));
     Classes.define("FunctionPatternMatching".atom(), Type.resolveClass("FunctionPatternMatching"));
     #end
+    Classes.define("Kernel".atom(), Type.resolveClass("Kernel"));
     Classes.define("CompilerMain".atom(), Type.resolveClass("CompilerMain"));
     Classes.define("Str".atom(), Type.resolveClass("Str"));
     Classes.define("System".atom(), Type.resolveClass("System"));
