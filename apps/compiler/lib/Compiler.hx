@@ -1,5 +1,7 @@
 package ;
-import util.StringUtil;
+import vm.Pid;
+import IO;
+import vm.Function;
 @:build(lang.macros.AnnaLang.init())
 @:build(lang.macros.AnnaLang.defcls(Str, {
   @alias util.StringUtil;
@@ -33,6 +35,16 @@ import util.StringUtil;
     '';
     #end
   });
+}))
+@:build(lang.macros.AnnaLang.defcls(Kernel, {
+  @alias vm.Pid;
+  @alias vm.Kernel;
+  @alias vm.Function;
+
+  @def kernel_receive({Function: fun}, [Dynamic], {
+    @native Kernel.receive(fun);
+  });
+
 }))
 @:build(lang.macros.AnnaLang.defcls(System, {
   @def print({String: str}, [Atom], {
@@ -95,17 +107,71 @@ import util.StringUtil;
   @alias vm.Process;
   @alias vm.Kernel;
 
-  @const VSN = '0.0.1';
+  @const VSN = '0.0.0';
+  @const PID_COUNTER = @_'counter';
 
   @def start({
-    self = @native Process.self();
+    counter_pid = @native Kernel.spawn_link(@_'CompilerMain', @_'start_counter', [], {});
+    @native Process.registerPid(counter_pid, PID_COUNTER);
     welcome = Str.concat('Interacive Anna version ', VSN);
     System.println(welcome);
     prompt();
   });
 
+  @def start_counter([Int], {
+    counter_loop(0);
+  });
+
+  @def counter_loop({Int: current_value}, [Int], {
+    fun = @fn {
+      ([{Tuple: [@_'inc']}, [Int]] => {
+        @native Kernel.add(1, current_value);
+      });
+      ([{Tuple: [@_'get', pid]}, [Int]] => {
+        @native Kernel.send(cast(pid, Pid), cast(current_value, Int));
+        current_value;
+      });
+    }
+    received = @native Kernel.receive(fun);
+    received = cast(received, Int);
+    counter_loop(received);
+  });
+
+  @def increment_state([Atom], {
+    pid = @native Process.getPidByName(PID_COUNTER);
+    kernel_send(pid, [@_'inc']);
+  });
+
+  @def get_counter([Int], {
+    pid = @native Process.getPidByName(PID_COUNTER);
+    self_pid = @native Process.self();
+    kernel_send(pid, [@_'get', self_pid]);
+    fun = @fn {
+      ([{Int: value}, [Int]] => {
+        value;
+      });
+    }
+    received = @native Kernel.receive(fun);
+    received;
+  });
+
+  @def kernel_send({Pid: pid, Tuple: value}, [Atom], {
+    @native Kernel.send(pid, value);
+    @_'ok';
+  });
+
+  @def kernel_send({Pid: pid, Int: value}, [Atom], {
+    @native Kernel.send(pid, value);
+    @_'ok';
+  });
+
   @def prompt([Atom], {
-    System.print('ia> ');
+    prefix = 'ia(';
+    counter = get_counter();
+    prefix = Str.concat(prefix, cast(counter, String));
+    prompt_string = Str.concat(prefix, ')> ');
+    System.print(prompt_string);
+    increment_state();
     collect_user_input('');
   });
 

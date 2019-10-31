@@ -407,6 +407,28 @@ class AnnaLang {
               for(expr in exprs) {
                 retExprs.push(expr);
               }
+            case ECall({ expr: EField({ expr: EConst(CIdent(moduleName))}, funName) }, params):
+              var args: Array<Expr> = MacroTools.getFunBody(blockExpr);
+              var lineNumber: Int = MacroTools.getLineNumber(expr);
+              var pushStackArgs: Array<Expr> = [];
+              for(i in 0...args.length) {
+                var arg = args[i];
+                switch(arg.expr) {
+                  case EMeta({name: 'fn'}, expr):
+                    var exprs = keywordMap.get("fn")(expr);
+                    retExprs = retExprs.concat(exprs);
+                    var varName: String = '${funName}';
+                    var exprs = keywordMap.get("=")(Macros.haxeToExpr(varName));
+                    retExprs = retExprs.concat(exprs);
+                    pushStackArgs.push({expr: EConst(CIdent(varName)), pos: Context.currentPos()});
+                  case _:
+                    pushStackArgs.push(arg);
+                }
+              }
+              var exprs: Array<Expr> = createPushStack(moduleName, funName, pushStackArgs, lineNumber);
+              for(expr in exprs) {
+                retExprs.push(expr);
+              }
             case ECall(expr, args):
               var funName: String = MacroTools.getCallFunName(blockExpr);
               var args: Array<Expr> = MacroTools.getFunBody(blockExpr);
@@ -426,7 +448,10 @@ class AnnaLang {
                     pushStackArgs.push(arg);
                 }
               }
-              var exprs: Array<Expr> = createPushStack(funName, pushStackArgs, lineNumber);
+              var currentModule: TypeDefinition = MacroContext.currentModule;
+              var currentModuleStr: String = currentModule.name;
+
+              var exprs: Array<Expr> = createPushStack(currentModuleStr, funName, pushStackArgs, lineNumber);
               for(expr in exprs) {
                 retExprs.push(expr);
               }
@@ -500,9 +525,7 @@ class AnnaLang {
     MacroTools.addMetaToClass(cls, metaData);
   }
 
-  private static function createPushStack(funName: String, args: Array<Expr>, lineNumber: Int):Array<Expr> {
-    var currentModule: TypeDefinition = MacroContext.currentModule;
-    var currentModuleStr: String = currentModule.name;
+  private static function createPushStack(currentModuleStr: String, funName: String, args: Array<Expr>, lineNumber: Int):Array<Expr> {
     var currentFunStr: String = MacroContext.currentVar;
     var retVal: Array<Expr> = [];
     var types: Array<String> = [];
@@ -537,7 +560,7 @@ class AnnaLang {
 
     var frags: Array<String> = fqFunName.split('.');
     fqFunName = frags.pop();
-    var moduleName: String = frags.join('.');
+    var moduleName: String = currentModuleStr;
     if(moduleName == "") {
       var moduleDef: ModuleDef = MacroContext.currentModuleDef;
       moduleName = moduleDef.moduleName;
@@ -556,7 +579,7 @@ class AnnaLang {
         retVal.push(lang.macros.Macros.haxeToExpr(haxeStr));
         return retVal;
       }
-      throw 'Function ${funName} at line ${lineNumber} not found';
+      throw 'Function ${moduleName}.${funName} at line ${lineNumber} not found';
     } else {
       MacroContext.lastFunctionReturnType = funDef[0].funReturnTypes[0];
       var haxeStr: String = '${currentFunStr}.push(new vm.PushStack(@atom "${module.moduleName}", @atom "${fqFunName}", @list [${funArgs.join(", ")}], @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${lineNumber}))';
