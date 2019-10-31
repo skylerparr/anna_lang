@@ -41,7 +41,7 @@ import vm.Function;
   @alias vm.Kernel;
   @alias vm.Function;
 
-  @def kernel_receive({Function: fun}, [Dynamic], {
+  @def receive({Function: fun}, [Dynamic], {
     @native Kernel.receive(fun);
   });
 
@@ -123,7 +123,7 @@ import vm.Function;
   });
 
   @def counter_loop({Int: current_value}, [Int], {
-    fun = @fn {
+    received = Kernel.receive(@fn {
       ([{Tuple: [@_'inc']}, [Int]] => {
         @native Kernel.add(1, current_value);
       });
@@ -131,8 +131,7 @@ import vm.Function;
         @native Kernel.send(cast(pid, Pid), cast(current_value, Int));
         current_value;
       });
-    }
-    received = @native Kernel.receive(fun);
+    });
     received = cast(received, Int);
     counter_loop(received);
   });
@@ -146,12 +145,11 @@ import vm.Function;
     pid = @native Process.getPidByName(PID_COUNTER);
     self_pid = @native Process.self();
     kernel_send(pid, [@_'get', self_pid]);
-    fun = @fn {
+    received = Kernel.receive(@fn {
       ([{Int: value}, [Int]] => {
         value;
       });
-    }
-    received = @native Kernel.receive(fun);
+    });
     received;
   });
 
