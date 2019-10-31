@@ -119,7 +119,7 @@ import vm.Function;
   });
 
   @def start_counter([Int], {
-    counter_loop(0);
+    counter_loop(1);
   });
 
   @def counter_loop({Int: current_value}, [Int], {
@@ -166,13 +166,16 @@ import vm.Function;
   });
 
   @def prompt([Atom], {
+    prompt_string = get_prompt();
+    System.print(prompt_string);
+    collect_user_input('');
+  });
+
+  @def get_prompt([String], {
     prefix = 'ia(';
     counter = get_counter();
     prefix = Str.concat(prefix, cast(counter, String));
-    prompt_string = Str.concat(prefix, ')> ');
-    System.print(prompt_string);
-    increment_state();
-    collect_user_input('');
+    Str.concat(prefix, ')> ');
   });
 
   @def collect_user_input({String: current_string}, [String], {
@@ -190,6 +193,7 @@ import vm.Function;
 
   // enter
   @def handle_input({Int: 13, String: current_string}, [String], {
+    increment_state();
     result = CommandHandler.process_command(current_string);
     handle_result(result);
   });
@@ -207,7 +211,7 @@ import vm.Function;
     len = Str.length(current_string);
     len = @native Kernel.subtract(len, 1);
     current_string = Str.substring(current_string, 0, len);
-    string_to_print = Str.concat('ia> ', current_string);
+    string_to_print = Str.concat(get_prompt(), current_string);
     string_to_print = Str.concat('\r', string_to_print);
     new_prompt = Str.concat(string_to_print, ' ');
     System.print(new_prompt);
