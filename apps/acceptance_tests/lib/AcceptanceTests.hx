@@ -102,6 +102,7 @@ using lang.AtomSupport;
   @alias vm.Function;
 
   @const VALUE = "A constant value";
+  @const VSN = 10.30;
 
   @def test_receive([Atom], {
     @native IO.inspect("waiting for data");
@@ -376,7 +377,8 @@ using lang.AtomSupport;
     @native IO.inspect(for_what);
 //    @native IO.inspect({ok: "foob"}); //keyword list
     @native IO.inspect("Expect: a constant value");
-    @native IO.inspect(VALUE);
+    print(VALUE);
+    foo(VSN);
     print(pid);
   });
 

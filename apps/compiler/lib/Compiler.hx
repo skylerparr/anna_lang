@@ -95,11 +95,12 @@ import util.StringUtil;
   @alias vm.Process;
   @alias vm.Kernel;
 
-  @const version('0.0.0');
+  @const VSN = '0.0.1';
 
   @def start({
     self = @native Process.self();
-    System.println('Interacive Anna version 0.0.0');
+    welcome = Str.concat('Interacive Anna version ', VSN);
+    System.println(welcome);
     prompt();
   });
 

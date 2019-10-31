@@ -571,8 +571,12 @@ class AnnaLang {
         if(typeAndValue.rawValue == "vm_Function") {
           return "vm_Function";
         }
-        var type = MacroContext.varTypesInScope.get(varName);
-        getType(type);
+        if(MacroContext.currentModuleDef.constants.get(varName) == null) {
+          var type = MacroContext.varTypesInScope.get(varName);
+          getType(type);
+        } else {
+          typeAndValue.type;
+        }
       case _:
         getType(typeAndValue.type);
     }
