@@ -235,7 +235,7 @@ class AnnaLang {
               if(funArgsType.pattern != funArgsType.name) {
                 var pattern: String = funArgsType.pattern;
                 if(funArgsType.type == "String") {
-                  var ereg: EReg = ~/".*".*=>/;
+                  var ereg: EReg = ~/"|'.*"|'.*=>/;
                   if(!ereg.match(pattern)) {
                     pattern = '"${pattern}"';
                   }

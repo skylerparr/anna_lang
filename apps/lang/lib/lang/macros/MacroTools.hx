@@ -367,6 +367,9 @@ class MacroTools {
                   case EBinop(OpArrow, {expr: EConst(CString(name))}, {expr: EConst(CIdent(pattern))}):
                     var patternStr = printer.printExpr(expr);
                     {name: name, pattern: patternStr}
+                  case EMeta({name: name}, expr):
+                    var patternStr = printer.printExpr(expr);
+                    {name: name, pattern: '@_${patternStr}'}
                   case e:
                     MacroLogger.log(e, 'e');
                     throw new ParsingException("AnnaLang: expected variable or pattern");

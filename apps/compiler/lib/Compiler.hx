@@ -26,7 +26,6 @@ import util.StringUtil;
 
 }))
 @:build(lang.macros.AnnaLang.defcls(File, {
-
   @def get_content({String: file_path}, [String], {
     #if cpp
     @native sys.io.File.getContent(file_path);
@@ -58,14 +57,14 @@ import util.StringUtil;
     System.println('');
     @native Kernel.recompile();
     @native Kernel.stop();
-    @_'ok';
+    @_'nil';
   });
 
   @def process_command({String: 'compile_vm'}, [Atom], {
     System.println('');
     @native Kernel.compileVM();
     @native Kernel.stop();
-    @_'ok';
+    @_'nil';
   });
 
   @def process_command({String: 'haxe'}, [Atom], {
@@ -75,20 +74,28 @@ import util.StringUtil;
     @_'nil';
   });
 
+  @def process_command({String: 'c ' => file}, [Atom], {
+    System.println('');
+    System.println(cast(file, String));
+    @_'ok';
+  });
+
   @def process_command({String: ''}, [Atom], {
     System.println('');
-    CompilerMain.prompt();
+    @_'ok';
   });
 
   @def process_command({String: cmd}, [Atom], {
     System.println('');
     System.println(cmd);
-    CompilerMain.prompt();
+    @_'ok';
   });
 }))
 @:build(lang.macros.AnnaLang.defcls(CompilerMain, {
   @alias vm.Process;
   @alias vm.Kernel;
+
+  @const version('0.0.0');
 
   @def start({
     self = @native Process.self();
@@ -106,9 +113,18 @@ import util.StringUtil;
     handle_input(input, current_string);
   });
 
+  @def handle_result({Atom: @_'ok'}, [Atom], {
+    prompt();
+  });
+
+  @def handle_result({Atom: _}, [Atom], {
+    @_'nil';
+  });
+
   // enter
   @def handle_input({Int: 13, String: current_string}, [String], {
-    CommandHandler.process_command(current_string);
+    result = CommandHandler.process_command(current_string);
+    handle_result(result);
   });
 
   // ctrl+d
@@ -129,6 +145,36 @@ import util.StringUtil;
     new_prompt = Str.concat(string_to_print, ' ');
     System.print(new_prompt);
     System.print(string_to_print);
+    collect_user_input(current_string);
+  });
+
+  // up arrow
+  @def handle_input({Int: 65, String: current_string}, [String], {
+    collect_user_input(current_string);
+  });
+
+  // down arrow
+  @def handle_input({Int: 66, String: current_string}, [String], {
+    collect_user_input(current_string);
+  });
+
+  // right arrow
+  @def handle_input({Int: 67, String: current_string}, [String], {
+    collect_user_input(current_string);
+  });
+
+  // left arrow
+  @def handle_input({Int: 68, String: current_string}, [String], {
+    collect_user_input(current_string);
+  });
+
+  // ? not sure why this is happening
+  @def handle_input({Int: 91, String: current_string}, [String], {
+    collect_user_input(current_string);
+  });
+
+  // ? not sure why this is happening
+  @def handle_input({Int: 27, String: current_string}, [String], {
     collect_user_input(current_string);
   });
 
