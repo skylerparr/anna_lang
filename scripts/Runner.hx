@@ -27,19 +27,19 @@ class Runner {
     interp = Native.callStaticField('Main', 'interp');
     interp.variables.set("AnnaUnit", anna_unit.AnnaUnit);
     Reflect.field(anna_unit.AnnaUnit, "main")();
-    compileAll();
-    var cls: Class<Dynamic> = Type.resolveClass('vm.Kernel');
-    Reflect.callMethod(null, Reflect.field(cls, 'setProject'), [pc]);
-    Reflect.callMethod(null, Reflect.field(cls, 'start'), []);
-    Reflect.callMethod(null, Reflect.field(cls, 'testCompiler'), []);
-    Reflect.callMethod(null, Reflect.field(cls, 'run'), []);
-//    Reflect.callMethod(null, Reflect.field(cls, 'switchToHaxe'), []);
+    compileAll(function() {
+      var cls: Class<Dynamic> = Type.resolveClass('vm.Kernel');
+      if(cls == null) {
+        return;
+      }
+      Reflect.callMethod(null, Reflect.field(cls, 'setProject'), [pc]);
+      Reflect.callMethod(null, Reflect.field(cls, 'start'), []);
+      Reflect.callMethod(null, Reflect.field(cls, 'testCompiler'), []);
+      Reflect.callMethod(null, Reflect.field(cls, 'run'), []);
+    });
     #else
     var annaProject: AnnaLangProject = Application.getProjectConfig('compiler'.atom());
     var files = Anna.compileProject(annaProject.getProjectConfig());
-//    if(onComplete != null) {
-//      onComplete();
-//    }
     vm.Kernel.setProject(pc);
     vm.Kernel.start();
     vm.Kernel.testCompiler();

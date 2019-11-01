@@ -158,11 +158,6 @@ import vm.Function;
     @_'ok';
   });
 
-  @def kernel_send({Pid: pid, Int: value}, [Atom], {
-    @native Kernel.send(pid, value);
-    @_'ok';
-  });
-
   @def prompt([Atom], {
     prompt_string = get_prompt();
     System.print(prompt_string);
