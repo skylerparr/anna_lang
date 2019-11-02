@@ -313,12 +313,14 @@ import vm.Function;
   // up arrow
   @def handle_input({Int: 65, String: current_string}, [String], {
     current_string = History.back();
+    System.print('i');
     print_prompt(current_string);
   });
 
   // down arrow
   @def handle_input({Int: 66, String: current_string}, [String], {
     current_string = History.forward();
+    System.print('i');
     print_prompt(current_string);
   });
 
@@ -336,16 +338,6 @@ import vm.Function;
   @def handle_input({Int: 21, String: current_string}, [String], {
     print_prompt('');
   });
-
-  // ? not sure why this is happening
-//  @def handle_input({Int: 91, String: current_string}, [String], {
-//    collect_user_input(current_string);
-//  });
-//
-//  // ? not sure why this is happening
-//  @def handle_input({Int: 27, String: current_string}, [String], {
-//    collect_user_input(current_string);
-//  });
 
   @def handle_input({Int: code, String: current_string}, [String], {
     str = Str.from_char_code(code);
