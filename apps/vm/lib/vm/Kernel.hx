@@ -112,6 +112,7 @@ class Kernel {
     #end
     Classes.define("Kernel".atom(), Type.resolveClass("Kernel"));
     Classes.define("CompilerMain".atom(), Type.resolveClass("CompilerMain"));
+    Classes.define("History".atom(), Type.resolveClass("History"));
     Classes.define("Str".atom(), Type.resolveClass("Str"));
     Classes.define("System".atom(), Type.resolveClass("System"));
     Classes.define("CommandHandler".atom(), Type.resolveClass("CommandHandler"));

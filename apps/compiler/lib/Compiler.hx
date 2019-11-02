@@ -1,4 +1,5 @@
 package ;
+import vm.Kernel;
 import vm.Pid;
 import IO;
 import vm.Function;
@@ -26,6 +27,10 @@ import vm.Function;
     @native StringUtil.rpad(string, c_string, length);
   });
 
+  @def string_to_int({String: s}, [Int], {
+    @native Std.int(s);
+  });
+
 }))
 @:build(lang.macros.AnnaLang.defcls(File, {
   @def get_content({String: file_path}, [String], {
@@ -45,6 +50,18 @@ import vm.Function;
     @native Kernel.receive(fun);
   });
 
+  @def send({Pid: pid, Tuple: value}, [Atom], {
+    @native Kernel.send(pid, value);
+    @_'ok';
+  });
+
+  @def add({Float: a, Float: b}, [Float], {
+    @native Kernel.add(a, b);
+  });
+
+  @def subtract({Float: a, Float: b}, [Float], {
+    @native Kernel.subtract(a, b);
+  });
 }))
 @:build(lang.macros.AnnaLang.defcls(System, {
   @def print({String: str}, [Atom], {
@@ -86,6 +103,16 @@ import vm.Function;
     @_'nil';
   });
 
+  @def process_command({String: 'v ' => number}, [String], {
+    //todo: need to infer string pattern matchesß
+    System.println('');
+    index = Str.string_to_int(cast(number, String));
+    index = Kernel.subtract(index, 1);
+    command = History.get(cast(index, Int));
+    System.println(command);
+    @_'ok';
+  });
+
   @def process_command({String: 'c ' => file}, [Atom], {
     System.println('');
     System.println(cast(file, String));
@@ -103,59 +130,135 @@ import vm.Function;
     @_'ok';
   });
 }))
+@:build(lang.macros.AnnaLang.defcls(History, {
+  @alias vm.Process;
+  @alias vm.Kernel;
+
+  @const PID_HISTORY = @_'history';
+
+  @def start([Tuple], {
+    history_pid = @native Kernel.spawn(@_'History', @_'start_history', [], {});
+    @native Process.registerPid(history_pid, PID_HISTORY);
+
+    [@_'ok', history_pid];
+  });
+
+  @def start_history([String], {
+    history_loop([1, {}, 0]);
+  });
+
+  @def history_loop({Tuple: history}, [Tuple], {
+    received = Kernel.receive(@fn {
+      ([{Tuple: [@_'current_line', @_'inc']}] => {
+        [current_line, commands, scroll_pos] = history;
+        current_line = Kernel.add(cast(current_line, Int), 1);
+        [current_line, commands, scroll_pos];
+      });
+      ([{Tuple: [@_'current_line', @_'get', pid]}] => {
+        [current_line, _, _] = history;
+        @native Kernel.send(pid, current_line);
+        history;
+      });
+      ([{Tuple: [@_'scroll', @_'back', pid]}] => {
+        [current_line, commands, scroll_pos] = history;
+        total_commands = @native LList.length(commands);
+        scroll_pos = Kernel.subtract(scroll_pos, 1);
+        command = @native LList.getAt(commands, scroll_pos);
+        @native Kernel.send(pid, command);
+        [current_line, commands, scroll_pos];
+      });
+      ([{Tuple: [@_'scroll', @_'forward', pid]}] => {
+        [current_line, commands, scroll_pos] = history;
+        total_commands = @native LList.length(commands);
+        scroll_pos = Kernel.add(cast(scroll_pos, Int), 1);
+        command = @native LList.getAt(commands, scroll_pos);
+        @native Kernel.send(pid, command);
+        [current_line, commands, scroll_pos];
+      });
+      ([{Tuple: [@_'push', val]}, [Tuple]] => {
+        [current_line, commands, scroll_pos] = history;
+        commands = @native LList.add(commands, val);
+        scroll_pos = @native LList.length(commands);
+        [current_line, commands, scroll_pos];
+      });
+      ([{Tuple: [@_'get', index, respond]}, [Tuple]] => {
+        [_, commands, _] = history;
+        value = @native LList.getAt(commands, index);
+        @native Kernel.send(cast(respond, Pid), cast(value, String));
+        history;
+      });
+    });
+    history_loop(cast(received, Tuple));
+  });
+
+  @def increment_line([Atom], {
+    pid = @native Process.getPidByName(PID_HISTORY);
+    Kernel.send(pid, [@_'current_line', @_'inc']);
+  });
+
+  @def get_counter([Int], {
+    pid = @native Process.getPidByName(PID_HISTORY);
+    self = @native Process.self();
+    Kernel.send(pid, [@_'current_line', @_'get', self]);
+    Kernel.receive(@fn {
+      ([{Int: line}, [Int]] => {
+        line;
+      });
+    });
+  });
+
+  @def push({String: command}, [Atom], {
+    pid = @native Process.getPidByName(PID_HISTORY);
+    Kernel.send(pid, [@_'push', command]);
+    @_'ok';
+  });
+
+  @def get({Int: index}, [String], {
+    pid = @native Process.getPidByName(PID_HISTORY);
+    self = @native Process.self();
+    Kernel.send(pid, [@_'get', index, self]);
+    Kernel.receive(@fn {
+      ([{String: command}, [String]] => {
+        command;
+      });
+    });
+  });
+
+  @def back([String], {
+    pid = @native Process.getPidByName(PID_HISTORY);
+    self = @native Process.self();
+    Kernel.send(pid, [@_'scroll', @_'back', self]);
+    Kernel.receive(@fn {
+      ([{String: command}, [String]] => {
+        command;
+      });
+    });
+  });
+
+  @def forward([String], {
+    pid = @native Process.getPidByName(PID_HISTORY);
+    self = @native Process.self();
+    Kernel.send(pid, [@_'scroll', @_'forward', self]);
+    Kernel.receive(@fn {
+      ([{String: command}, [String]] => {
+        command;
+      });
+    });
+  });
+}))
 @:build(lang.macros.AnnaLang.defcls(CompilerMain, {
   @alias vm.Process;
   @alias vm.Kernel;
 
   @const VSN = '0.0.0';
-  @const PID_COUNTER = @_'counter';
+  @const PREFIX = 'ia(';
 
   @def start({
-    counter_pid = @native Kernel.spawn_link(@_'CompilerMain', @_'start_counter', [], {});
-    @native Process.registerPid(counter_pid, PID_COUNTER);
+    status = History.start();
+
     welcome = Str.concat('Interacive Anna version ', VSN);
     System.println(welcome);
     prompt();
-  });
-
-  @def start_counter([Int], {
-    counter_loop(1);
-  });
-
-  @def counter_loop({Int: current_value}, [Int], {
-    received = Kernel.receive(@fn {
-      ([{Tuple: [@_'inc']}, [Int]] => {
-        @native Kernel.add(1, current_value);
-      });
-      ([{Tuple: [@_'get', pid]}, [Int]] => {
-        @native Kernel.send(cast(pid, Pid), cast(current_value, Int));
-        current_value;
-      });
-    });
-    received = cast(received, Int);
-    counter_loop(received);
-  });
-
-  @def increment_state([Atom], {
-    pid = @native Process.getPidByName(PID_COUNTER);
-    kernel_send(pid, [@_'inc']);
-  });
-
-  @def get_counter([Int], {
-    pid = @native Process.getPidByName(PID_COUNTER);
-    self_pid = @native Process.self();
-    kernel_send(pid, [@_'get', self_pid]);
-    received = Kernel.receive(@fn {
-      ([{Int: value}, [Int]] => {
-        value;
-      });
-    });
-    received;
-  });
-
-  @def kernel_send({Pid: pid, Tuple: value}, [Atom], {
-    @native Kernel.send(pid, value);
-    @_'ok';
   });
 
   @def prompt([Atom], {
@@ -165,9 +268,8 @@ import vm.Function;
   });
 
   @def get_prompt([String], {
-    prefix = 'ia(';
-    counter = get_counter();
-    prefix = Str.concat(prefix, cast(counter, String));
+    counter = History.get_counter();
+    prefix = Str.concat(PREFIX, cast(counter, String));
     Str.concat(prefix, ')> ');
   });
 
@@ -186,7 +288,8 @@ import vm.Function;
 
   // enter
   @def handle_input({Int: 13, String: current_string}, [String], {
-    increment_state();
+    History.increment_line();
+    History.push(current_string);
     result = CommandHandler.process_command(current_string);
     handle_result(result);
   });
@@ -204,22 +307,19 @@ import vm.Function;
     len = Str.length(current_string);
     len = @native Kernel.subtract(len, 1);
     current_string = Str.substring(current_string, 0, len);
-    string_to_print = Str.concat(get_prompt(), current_string);
-    string_to_print = Str.concat('\r', string_to_print);
-    new_prompt = Str.concat(string_to_print, ' ');
-    System.print(new_prompt);
-    System.print(string_to_print);
-    collect_user_input(current_string);
+    print_prompt(current_string);
   });
 
   // up arrow
   @def handle_input({Int: 65, String: current_string}, [String], {
-    collect_user_input(current_string);
+    current_string = History.back();
+    print_prompt(current_string);
   });
 
   // down arrow
   @def handle_input({Int: 66, String: current_string}, [String], {
-    collect_user_input(current_string);
+    current_string = History.forward();
+    print_prompt(current_string);
   });
 
   // right arrow
@@ -232,20 +332,37 @@ import vm.Function;
     collect_user_input(current_string);
   });
 
-  // ? not sure why this is happening
-  @def handle_input({Int: 91, String: current_string}, [String], {
-    collect_user_input(current_string);
+  // ctrl+u
+  @def handle_input({Int: 21, String: current_string}, [String], {
+    print_prompt('');
   });
 
   // ? not sure why this is happening
-  @def handle_input({Int: 27, String: current_string}, [String], {
-    collect_user_input(current_string);
-  });
+//  @def handle_input({Int: 91, String: current_string}, [String], {
+//    collect_user_input(current_string);
+//  });
+//
+//  // ? not sure why this is happening
+//  @def handle_input({Int: 27, String: current_string}, [String], {
+//    collect_user_input(current_string);
+//  });
 
   @def handle_input({Int: code, String: current_string}, [String], {
     str = Str.from_char_code(code);
     System.print(str);
     current_string = Str.concat(current_string, str);
+    collect_user_input(current_string);
+  });
+
+  @def print_prompt({String: current_string}, {
+    //todo: actually measure this
+    str_prompt = '\r                                       ';
+    System.print(str_prompt);
+    str_prompt = get_prompt();
+
+    str_prompt = Str.concat(str_prompt, current_string);
+    str_prompt = Str.concat('\r', str_prompt);
+    System.print(str_prompt);
     collect_user_input(current_string);
   });
 

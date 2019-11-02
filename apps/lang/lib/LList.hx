@@ -16,6 +16,10 @@ class LList implements CustomType {
     return retVal;
   }
 
+  public static function getAt(list: LList, index: Int): Any {
+    return (cast list)._getAt(index);
+  }
+
   public static function push(list: LList, value: Any): LList {
     return (cast list)._push(value);
   }
@@ -132,6 +136,25 @@ class AnnaList<T> extends LList {
       case _:
         
     }
+  }
+
+  public function _getAt(index: Float): T {
+    if(index < 0) {
+      index = Math.abs(index);
+      index = length - index % length;
+    }
+    var counter: Int = 0;
+
+    var first = true;
+    var retVal: ListNode<T> = h;
+    while(counter != index % length) {
+      retVal = retVal.next;
+      if(retVal == null) {
+        retVal = h;
+      }
+      counter++;
+    }
+    return retVal.item;
   }
 
   public function _push(item: T): AnnaList<T> {

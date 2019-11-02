@@ -163,6 +163,7 @@ so that I can disable the different log levels and save the line number
 # Language features (in progress)
 
 - [ ] Modules
+- [ ] Interfaces
 - [x] Functions
 - [x] Basic types: Arrays, Maps, Lists, Tuples, Strings, Ints, Floats, Atoms
 - [x] Type checking. Type inference with casts
@@ -176,6 +177,14 @@ so that I can disable the different log levels and save the line number
 - [x] Tail call recursion
 - [x] Actor Model
 - [x] Send messages to other processes
-- [ ] Integration with target language
+- [x] Integration with target language *there's bugs in the haxe Stdlib :( 
 - [ ] Release compilation for various targets
 - [ ] Standard library
+
+# NOTES TO SELF
+
+- Create a smarter logging system. Like:
+  - log once
+  - log every n secs/mins/etc. 
+    - Will only log if log regex is logged N times within a given period of time
+

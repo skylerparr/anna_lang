@@ -579,7 +579,7 @@ class AnnaLang {
         retVal.push(lang.macros.Macros.haxeToExpr(haxeStr));
         return retVal;
       }
-      throw 'Function ${moduleName}.${funName} at line ${lineNumber} not found';
+      throw 'Function ${moduleName}.${fqFunName} at line ${lineNumber} not found';
     } else {
       MacroContext.lastFunctionReturnType = funDef[0].funReturnTypes[0];
       var haxeStr: String = '${currentFunStr}.push(new vm.PushStack(@atom "${module.moduleName}", @atom "${fqFunName}", @list [${funArgs.join(", ")}], @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${lineNumber}))';
