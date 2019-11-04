@@ -125,6 +125,9 @@ import vm.Function;
   });
 
   @def process_command({String: cmd}, [Atom], {
+    History.increment_line();
+    History.push(cmd);
+
     System.println('');
     System.println(cmd);
     @_'ok';
@@ -133,6 +136,7 @@ import vm.Function;
 @:build(lang.macros.AnnaLang.defcls(History, {
   @alias vm.Process;
   @alias vm.Kernel;
+  @alias vm.Pid;
 
   @const PID_HISTORY = @_'history';
 
@@ -162,35 +166,13 @@ import vm.Function;
       ([{Tuple: [@_'scroll', @_'back', pid]}] => {
         [current_line, commands, scroll_pos] = history;
         scroll_pos = Kernel.subtract(cast(scroll_pos, Int), 1);
-
-        handle_commands = @fn {
-          ([{LList: {}}, [Atom]] => {
-            @native Kernel.send(pid, '');
-          });
-          ([{LList: commands}, [Atom]] => {
-            total_commands = @native LList.length(commands);
-            command = @native LList.getAt(commands, scroll_pos);
-            @native Kernel.send(pid, command);
-          });
-        }
-        handle_commands(commands);
+        handle_history(cast(commands, LList), cast(pid, Pid), scroll_pos);
         [current_line, commands, scroll_pos];
       });
       ([{Tuple: [@_'scroll', @_'forward', pid]}] => {
         [current_line, commands, scroll_pos] = history;
         scroll_pos = Kernel.add(cast(scroll_pos, Int), 1);
-
-        handle_commands = @fn {
-          ([{LList: {}}, [Atom]] => {
-            @native Kernel.send(pid, '');
-          });
-          ([{LList: commands}, [Atom]] => {
-            total_commands = @native LList.length(commands);
-            command = @native LList.getAt(commands, scroll_pos);
-            @native Kernel.send(pid, command);
-          });
-        }
-        handle_commands(commands);
+        handle_history(cast(commands, LList), cast(pid, Pid), scroll_pos);
         [current_line, commands, scroll_pos];
       });
       ([{Tuple: [@_'push', val]}, [Tuple]] => {
@@ -207,6 +189,16 @@ import vm.Function;
       });
     });
     history_loop(cast(received, Tuple));
+  });
+
+  @def handle_history({LList: {}, Pid: pid, Int: _}, [Atom], {
+    @native Kernel.send(pid, '');
+  });
+
+  @def handle_history({LList: commands, Pid: pid, Int: scroll_pos}, [Atom], {
+    total_commands = @native LList.length(commands);
+    command = @native LList.getAt(commands, scroll_pos);
+    @native Kernel.send(pid, command);
   });
 
   @def increment_line([Atom], {
@@ -306,8 +298,6 @@ import vm.Function;
 
   // enter
   @def handle_input({Int: 13, String: current_string}, [String], {
-    History.increment_line();
-    History.push(current_string);
     result = CommandHandler.process_command(current_string);
     handle_result(result);
   });
@@ -322,6 +312,7 @@ import vm.Function;
 
   // backspace
   @def handle_input({Int: 127, String: current_string}, [String], {
+    clear_prompt(current_string);
     len = Str.length(current_string);
     len = @native Kernel.subtract(len, 1);
     current_string = Str.substring(current_string, 0, len);
@@ -330,6 +321,7 @@ import vm.Function;
 
   // up arrow
   @def handle_input({Int: 65, String: current_string}, [String], {
+    clear_prompt(current_string);
     current_string = History.back();
     System.print('i');
     print_prompt(current_string);
@@ -337,6 +329,7 @@ import vm.Function;
 
   // down arrow
   @def handle_input({Int: 66, String: current_string}, [String], {
+    clear_prompt(current_string);
     current_string = History.forward();
     System.print('i');
     print_prompt(current_string);
@@ -354,6 +347,7 @@ import vm.Function;
 
   // ctrl+u
   @def handle_input({Int: 21, String: current_string}, [String], {
+    clear_prompt(current_string);
     print_prompt('');
   });
 
@@ -364,14 +358,18 @@ import vm.Function;
     collect_user_input(current_string);
   });
 
-  @def print_prompt({String: current_string}, {
-    //todo: actually measure this
-    str_prompt = '\r                                       ';
-    System.print(str_prompt);
-    str_prompt = get_prompt();
+  @def clear_prompt({String: current_string}, {
+    str_len = Str.length(current_string);
+    str_len = Kernel.add(str_len, 10);
+    clear_string = Str.rpad('\r', ' ', str_len);
+    System.print(clear_string);
+  });
 
+  @def print_prompt({String: current_string}, {
+    str_prompt = get_prompt();
     str_prompt = Str.concat(str_prompt, current_string);
     str_prompt = Str.concat('\r', str_prompt);
+    str_prompt = Str.rpad(str_prompt, ' ', 7);
     System.print(str_prompt);
     collect_user_input(current_string);
   });
