@@ -161,18 +161,36 @@ import vm.Function;
       });
       ([{Tuple: [@_'scroll', @_'back', pid]}] => {
         [current_line, commands, scroll_pos] = history;
-        total_commands = @native LList.length(commands);
-        scroll_pos = Kernel.subtract(scroll_pos, 1);
-        command = @native LList.getAt(commands, scroll_pos);
-        @native Kernel.send(pid, command);
+        scroll_pos = Kernel.subtract(cast(scroll_pos, Int), 1);
+
+        handle_commands = @fn {
+          ([{LList: {}}, [Atom]] => {
+            @native Kernel.send(pid, '');
+          });
+          ([{LList: commands}, [Atom]] => {
+            total_commands = @native LList.length(commands);
+            command = @native LList.getAt(commands, scroll_pos);
+            @native Kernel.send(pid, command);
+          });
+        }
+        handle_commands(commands);
         [current_line, commands, scroll_pos];
       });
       ([{Tuple: [@_'scroll', @_'forward', pid]}] => {
         [current_line, commands, scroll_pos] = history;
-        total_commands = @native LList.length(commands);
         scroll_pos = Kernel.add(cast(scroll_pos, Int), 1);
-        command = @native LList.getAt(commands, scroll_pos);
-        @native Kernel.send(pid, command);
+
+        handle_commands = @fn {
+          ([{LList: {}}, [Atom]] => {
+            @native Kernel.send(pid, '');
+          });
+          ([{LList: commands}, [Atom]] => {
+            total_commands = @native LList.length(commands);
+            command = @native LList.getAt(commands, scroll_pos);
+            @native Kernel.send(pid, command);
+          });
+        }
+        handle_commands(commands);
         [current_line, commands, scroll_pos];
       });
       ([{Tuple: [@_'push', val]}, [Tuple]] => {

@@ -147,6 +147,9 @@ class AnnaList<T> extends LList {
 
     var first = true;
     var retVal: ListNode<T> = h;
+    if(retVal == null) {
+      return null;
+    }
     while(counter != index % length) {
       retVal = retVal.next;
       if(retVal == null) {

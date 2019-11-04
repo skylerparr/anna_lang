@@ -352,6 +352,9 @@ class MacroTools {
                   case EConst(CInt(pattern)) | EConst(CString(pattern)) | EConst(CFloat(pattern)):
                     var name = util.StringUtil.random();
                     {name: name, pattern: pattern};
+                  case EObjectDecl(values):
+                    var name = util.StringUtil.random();
+                    {name: name, pattern: '@list[]'};
                   case EArrayDecl(values):
                     var name = util.StringUtil.random();
                     var items: Array<String> = [];

@@ -166,6 +166,12 @@ class PatternMatchTest {
     @refute matched == null;
   }
 
+  public static function shouldNotMatchEmptyList(): Void {
+    var data: LList = @list['foo'];
+    var matched: Map<String, Dynamic> = PatternMatch.match(@list[], data);
+    @assert matched == null;
+  }
+
   public static function shouldMatchSingleItemInList(): Void {
     var data: LList = @list["foo"];
     var matched: Map<String, Dynamic> = PatternMatch.match(@list["foo"], data);
