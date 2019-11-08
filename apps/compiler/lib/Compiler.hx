@@ -125,7 +125,6 @@ import vm.Function;
   });
 
   @def process_command({String: cmd}, [Atom], {
-    History.increment_line();
     History.push(cmd);
 
     System.println('');
@@ -298,6 +297,7 @@ import vm.Function;
 
   // enter
   @def handle_input({Int: 13, String: current_string}, [String], {
+    History.increment_line();
     result = CommandHandler.process_command(current_string);
     handle_result(result);
   });
