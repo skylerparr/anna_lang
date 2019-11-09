@@ -1,0 +1,377 @@
+package vm.schedulers;
+import cpp.vm.Thread.ThreadHandle;
+import cpp.vm.Thread;
+import util.TimeUtil;
+import lang.macros.MacroTools;
+import util.UniqueList;
+import core.ObjectCreator;
+import vm.schedulers.GenericScheduler.PidMetaData;
+import haxe.ds.ObjectMap;
+import core.ObjectFactory;
+
+using lang.AtomSupport;
+
+class CPPMultiThreadedScheduler implements Scheduler {
+  public var numberOfThreads: Int = 8;
+
+  @inject
+  public var objectCreator: ObjectCreator;
+
+  public var pids: UniqueList<Pid>;
+  public var paused: Bool;
+  public var sleepingProcesses: UniqueList<PidMetaData>;
+  public var pidMetaMap: Map<Pid, PidMetaData>;
+  public var currentPid: Pid;
+  public var registeredPids: Map<Atom, Pid>;
+
+  public var threadSchedulerMap: Map<ThreadHandle, GenericScheduler>;
+  public var threadMap: Map<ThreadHandle, Thread>;
+  public var asyncThread: Thread;
+
+  public var runningPids(get, null): Array<Pid>;
+
+  function get_runningPids(): Array<Pid> {
+    return pids.asArray();
+  }
+
+  public var sleepingPids(get, null): Array<Pid>;
+
+  function get_sleepingPids(): Array<Pid> {
+    var retVal: Array<Pid> = [];
+    for(pidMeta in sleepingProcesses) {
+      retVal.push(pidMeta.pid);
+    }
+    return retVal;
+  }
+
+  public function new() {
+  }
+
+  public function start(): Atom {
+    if(notRunning()) {
+      pids = new UniqueList();
+      registeredPids = new Map<Atom, Pid>();
+      asyncThread = Thread.create(onAsyncThreadStarted);
+      threadMap = new ObjectMap<ThreadHandle, Thread>();
+      threadSchedulerMap = new ObjectMap<ThreadHandle, GenericScheduler>();
+      for(i in 0...numberOfThreads) {
+        var scheduler: GenericScheduler = new GenericScheduler();
+        scheduler.objectCreator = objectCreator;
+
+        var thread: Thread = Thread.create(function() {
+          scheduler.start();
+          startScheduler(scheduler);
+        });
+        threadSchedulerMap.set(thread.handle, scheduler);
+        threadMap.set(thread.handle, thread);
+      }
+      return "ok".atom();
+    }
+    return "already_started".atom();
+  }
+
+  private inline function getThreadWithFewestPids(): Thread {
+    var threadWithFewestPids: ThreadHandle = null;
+    var schedulerWithFewestPids: Scheduler = null;
+    for(threadHandle in threadSchedulerMap.keys()) {
+      var scheduler: GenericScheduler = threadSchedulerMap.get(threadHandle);
+
+      if(threadWithFewestPids == null) {
+        threadWithFewestPids = threadHandle;
+        schedulerWithFewestPids = scheduler;
+        continue;
+      }
+      if(schedulerWithFewestPids.runningPids.length > scheduler.runningPids.length) {
+        threadWithFewestPids = threadHandle;
+      }
+    }
+    return threadMap.get(threadWithFewestPids);
+  }
+
+
+  private inline function getThreadForPid(pid: Pid): Thread {
+    var retVal: Thread = null;
+    for(threadHandle in threadSchedulerMap.keys()) {
+      var scheduler: GenericScheduler = threadSchedulerMap.get(threadHandle);
+      if(scheduler.pids.exists(pid)) {
+        retVal = threadMap.get(threadHandle);
+        break;
+      } else {
+        for(sleepingPidMeta in scheduler.sleepingProcesses) {
+          if(sleepingPidMeta.pid == pid) {
+            retVal = threadMap.get(threadHandle);
+            break;
+          }
+        }
+      }
+    }
+    return retVal;
+  }
+
+  private function onAsyncThreadStarted(): Void {
+    var running: Bool = true;
+    while(running) {
+      var message: KernelMessage = Thread.readMessage(true);
+      switch(message) {
+        case COMPLETE(pid):
+          for(scheduler in threadSchedulerMap) {
+            scheduler.complete(pid);
+          }
+        case SEND(pid, payload, respondThread):
+          var thread: Thread = getThreadForPid(pid);
+          if(thread == null) {
+            trace("thread is null");
+          } else {
+            thread.sendMessage(SEND(pid, payload, respondThread));
+          }
+        case RECEIVE(pid, fn, timeout, callback):
+          var thread: Thread = getThreadForPid(pid);
+          if(thread == null) {
+            trace("thread is null");
+          } else {
+            thread.sendMessage(RECEIVE(pid, fn, timeout, callback));
+          }
+        case APPLY(pid, fn, args, scopeVariables, callback):
+          var thread: Thread = getThreadForPid(pid);
+          thread.sendMessage(APPLY(pid, fn, args, scopeVariables, callback));
+        case SPAWN(fn, respondThread):
+          var thread: Thread = getThreadWithFewestPids();
+          if(thread.handle == respondThread.handle) {
+            var scheduler: GenericScheduler = threadSchedulerMap.get(thread.handle);
+            var pid = scheduler.spawn(fn);
+            respondThread.sendMessage(pid);
+          } else {
+            thread.sendMessage(SPAWN(fn, respondThread));
+          }
+        case SPAWN_LINK(pid, fn, respondThread):
+          var thread: Thread = getThreadWithFewestPids();
+          thread.sendMessage(SPAWN_LINK(pid, fn, respondThread));
+        case SLEEP(pid, milliseconds):
+          var thread: Thread = getThreadForPid(pid);
+          thread.sendMessage(SLEEP(pid, milliseconds));
+        case EXIT(pid, signal, respondThread):
+          var thread: Thread = getThreadForPid(pid);
+          thread.sendMessage(EXIT(pid, signal, respondThread));
+        case MONITOR(parentPid, pid):
+          var thread: Thread = getThreadForPid(pid);
+          thread.sendMessage(MONITOR(parentPid, pid));
+        case DEMONITOR(parentPid, pid):
+          var thread: Thread = getThreadForPid(pid);
+          thread.sendMessage(DEMONITOR(parentPid, pid));
+        case REGISTER_PID(pid, name):
+          registeredPids.set(name, pid);
+        case UNREGISTER_PID(name):
+          registeredPids.remove(name);
+        case STOP:
+        running = false;
+        case PAUSE | RESUME:
+      }
+    }
+    for(thread in threadMap) {
+      thread.sendMessage(STOP);
+    }
+    threadSchedulerMap = null;
+    threadMap = null;
+    asyncThread = null;
+    registeredPids = null;
+  }
+
+  private function startScheduler(scheduler: Scheduler): Void {
+    var running: Bool = true;
+    while(running) {
+      var message: KernelMessage = Thread.readMessage(false);
+      if(message != null) {
+        switch(message) {
+          case SEND(pid, payload, respondThread):
+            var response = scheduler.send(pid, payload);
+            respondThread.sendMessage(response);
+          case RECEIVE(pid, fn, timeout, callback):
+            scheduler.receive(pid, fn, timeout, callback);
+          case APPLY(pid, fn, args, scopeVariables, callback):
+            scheduler.apply(pid, fn, args, scopeVariables, callback);
+          case SPAWN(fn, respondThread):
+            var response = scheduler.spawn(fn);
+            respondThread.sendMessage(response);
+          case SPAWN_LINK(parentPid, fn, respondThread):
+            var response = scheduler.spawnLink(parentPid, fn);
+            respondThread.sendMessage(response);
+          case SLEEP(pid, milliseconds):
+            scheduler.sleep(pid, milliseconds);
+          case EXIT(pid, signal, respondThread):
+            var response = scheduler.exit(pid, signal);
+            respondThread.sendMessage(response);
+          case MONITOR(parentPid, pid):
+            scheduler.monitor(parentPid, pid);
+          case DEMONITOR(parentPid, pid):
+            scheduler.demonitor(parentPid, pid);
+          case STOP:
+            running = false;
+          case _:
+        }
+      }
+
+      if(scheduler.hasSomethingToExecute()) {
+        for(i in 0...1000) {
+          if(scheduler.hasSomethingToExecute()) {
+            scheduler.update();
+          } else {
+            break;
+          }
+        }
+      } else {
+        Sys.sleep(0.1);
+      }
+    }
+    scheduler.stop();
+  }
+
+  public function pause(): Atom {
+    return "ok".atom();
+  }
+
+  public function resume(): Atom {
+    return "ok".atom();
+  }
+
+  public function stop(): Atom {
+    if(pids == null) {
+      return "ok".atom();
+    }
+    asyncThread.sendMessage(STOP);
+    return "ok".atom();
+  }
+
+  public function complete(pid: Pid): Atom {
+    if(notRunning()) {
+      return "not_running".atom();
+    }
+    asyncThread.sendMessage(COMPLETE(pid));
+    return "ok".atom();
+  }
+
+  public function sleep(pid: Pid, milliseconds: Int): Pid {
+    if(notRunning()) {
+      return pid;
+    }
+    asyncThread.sendMessage(SLEEP(pid, milliseconds));
+    return pid;
+  }
+
+  public function send(pid: Pid, payload: Dynamic): Atom {
+    if(notRunning()) {
+      return "not_running".atom();
+    }
+    Logger.inspect(pid);
+    asyncThread.sendMessage(SEND(pid, payload, Thread.current()));
+    return Thread.readMessage(true);
+  }
+
+  public function receive(pid: Pid, fn: Function, timeout: Null<Int> = null, callback: (Dynamic) -> Void = null): Void {
+    if(notRunning()) {
+      return;
+    }
+    Logger.inspect(pid);
+    asyncThread.sendMessage(RECEIVE(pid, fn, timeout, callback));
+  }
+
+  public function update(): Void {
+
+  }
+
+  public function hasSomethingToExecute(): Bool {
+    return false;
+  }
+
+  public function spawn(fn: Void->Operation): Pid {
+    if(notRunning()) {
+      return null;
+    }
+    asyncThread.sendMessage(SPAWN(fn, Thread.current()));
+    var pid: Pid = Thread.readMessage(true);
+    return pid;
+  }
+
+  public function spawnLink(parentPid: Pid, fn: Void->Operation): Pid {
+    asyncThread.sendMessage(SPAWN_LINK(parentPid, fn, Thread.current()));
+    var pid: Pid = Thread.readMessage(true);
+    return pid;
+  }
+
+  public function monitor(parentPid: Pid, pid: Pid): Atom {
+    if(notRunning()) {
+      return null;
+    }
+    asyncThread.sendMessage(MONITOR(parentPid, pid));
+    return "ok".atom();
+  }
+
+  public function demonitor(parentPid: Pid, pid: Pid): Atom {
+    if(notRunning()) {
+      return null;
+    }
+    asyncThread.sendMessage(DEMONITOR(parentPid, pid));
+    return "ok".atom();
+  }
+
+  public function flag(pid: Pid, flag: Atom, value: Atom): Atom {
+    pid.setTrapExit(value);
+    return "ok".atom();
+  }
+
+  public function exit(pid: Pid, signal: Atom): Atom {
+    if(notRunning()) {
+      return null;
+    }
+    asyncThread.sendMessage(EXIT(pid, signal, Thread.current()));
+    return Thread.readMessage(true);
+  }
+
+  public function apply(pid: Pid, fn: Function, args: Array<Dynamic>, scopeVariables: Map<String, Dynamic>, callback: (Dynamic) -> Void): Void {
+    if(notRunning()) {
+      return;
+    }
+    asyncThread.sendMessage(APPLY(pid, fn, args, scopeVariables, callback));
+  }
+
+  public function self(): Pid {
+    var scheduler: Scheduler = threadSchedulerMap.get(Thread.current().handle);
+    return scheduler.self();
+  }
+
+  public function registerPid(pid: Pid, name: Atom): Atom {
+    asyncThread.sendMessage(REGISTER_PID(pid, name));
+    return 'ok'.atom();
+  }
+
+  public function unregisterPid(name: Atom): Atom {
+    asyncThread.sendMessage(UNREGISTER_PID(name));
+    return 'ok'.atom();
+  }
+
+  public function getPidByName(name: Atom): Pid {
+    return registeredPids.get(name);
+  }
+
+  private inline function notRunning(): Bool {
+    return pids == null;
+  }
+}
+
+enum KernelMessage {
+  STOP;
+  PAUSE;
+  RESUME;
+  REGISTER_PID(pid: Pid, name: Atom);
+  UNREGISTER_PID(name: Atom);
+  COMPLETE(pid: Pid);
+  SLEEP(pid: Pid, milliseconds: Int);
+  SEND(pid: Pid, payload: Dynamic, thread: Thread);
+  RECEIVE(pid: Pid, fn: Function, timeout: Null<Int>, callback: (Dynamic) -> Void);
+  SPAWN(fn: Void->Operation, thread: Thread);
+  SPAWN_LINK(parentPid: Pid, fn: Void->Operation, thread: Thread);
+  MONITOR(parentPid: Pid, pid: Pid);
+  DEMONITOR(parentPid: Pid, pid: Pid);
+  EXIT(pid: Pid, signal: Atom, thread: Thread);
+  APPLY(pid: Pid, fn: Function, args: Array<Dynamic>, scopeVariables: Map<String, Dynamic>, callback: (Dynamic) -> Void);
+}
+

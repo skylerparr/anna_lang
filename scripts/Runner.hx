@@ -122,7 +122,7 @@ class Runner {
     compileVMAPIProject();
     compileVMProject();
     compileCompiler();
-    compileAcceptanceTests();
+//    compileAcceptanceTests();
     if(onComplete != null) {
       onComplete();
     }

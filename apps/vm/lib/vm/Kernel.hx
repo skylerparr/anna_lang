@@ -1,5 +1,6 @@
 package vm;
 
+import vm.schedulers.CPPMultiThreadedScheduler;
 import project.ProjectConfig;
 import vm.Pid;
 import util.ArgHelper;
@@ -107,8 +108,8 @@ class Kernel {
 
   public static function defineCode(): Atom {
     #if cppia
-    Classes.define("Boot".atom(), Type.resolveClass("Boot"));
-    Classes.define("FunctionPatternMatching".atom(), Type.resolveClass("FunctionPatternMatching"));
+//    Classes.define("Boot".atom(), Type.resolveClass("Boot"));
+//    Classes.define("FunctionPatternMatching".atom(), Type.resolveClass("FunctionPatternMatching"));
     #end
     Classes.define("Kernel".atom(), Type.resolveClass("Kernel"));
     Classes.define("CompilerMain".atom(), Type.resolveClass("CompilerMain"));
@@ -257,11 +258,13 @@ class Kernel {
 
   public static function receive(callback: Function): Pid {
     var pid: Pid = Process.self();
+    Logger.inspect(pid);
     currentScheduler.receive(pid, callback);
     return pid;
   }
 
   public static function send(pid: Pid, payload: Dynamic): Atom {
+    Logger.inspect(pid);
     currentScheduler.send(pid, payload);
     return 'ok'.atom();
   }

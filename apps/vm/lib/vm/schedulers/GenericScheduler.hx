@@ -18,6 +18,22 @@ class GenericScheduler implements Scheduler {
   public var currentPid: Pid;
   public var registeredPids: Map<Atom, Pid>;
 
+  public var runningPids(get, null): Array<Pid>;
+
+  function get_runningPids(): Array<Pid> {
+    return pids.asArray();
+  }
+
+  public var sleepingPids(get, null): Array<Pid>;
+
+  function get_sleepingPids(): Array<Pid> {
+    var retVal: Array<Pid> = [];
+    for(pidMeta in sleepingProcesses) {
+      retVal.push(pidMeta.pid);
+    }
+    return retVal;
+  }
+
   public function new() {
   }
 
@@ -67,6 +83,9 @@ class GenericScheduler implements Scheduler {
     if(notRunning()) {
       return "not_running".atom();
     }
+    if(!pidMetaMap.exists(pid)) {
+      return 'ok'.atom();
+    }
     pid.setState(ProcessState.COMPLETE);
     #if !cppia
     pid.dispose();
@@ -78,6 +97,9 @@ class GenericScheduler implements Scheduler {
 
   public function sleep(pid: Pid, milliseconds: Int): Pid {
     if(notRunning()) {
+      return pid;
+    }
+    if(!pidMetaMap.exists(pid)) {
       return pid;
     }
     pid.setState(ProcessState.SLEEPING);
