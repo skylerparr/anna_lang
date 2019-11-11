@@ -18,12 +18,21 @@ class GenericScheduler implements Scheduler {
   public var currentPid: Pid;
   public var registeredPids: Map<Atom, Pid>;
 
+  public var _allPids: UniqueList<Pid>;
+
+  public var allPids(get, null): Array<Pid>;
+
+  function get_allPids():Array<Pid> {
+    return _allPids.asArray();
+  }
+
   public function new() {
   }
 
   public function start(): Atom {
     if(notRunning()) {
       pids = new UniqueList<Pid>();
+      _allPids = new UniqueList<Pid>();
       sleepingProcesses = new UniqueList<PidMetaData>();
       pidMetaMap = new Map<Pid, PidMetaData>();
       registeredPids = new Map<Atom, Pid>();
@@ -45,7 +54,7 @@ class GenericScheduler implements Scheduler {
       return "ok".atom();
     }
     #if !cppia
-    for(pid in pids) {
+    for(pid in _allPids) {
       pid.dispose();
     }
     paused = false;
@@ -60,6 +69,7 @@ class GenericScheduler implements Scheduler {
     registeredPids = null;
     #end
     pids = null;
+    _allPids = null;
     return "ok".atom();
   }
 
@@ -72,6 +82,7 @@ class GenericScheduler implements Scheduler {
     pid.dispose();
     #end
     pids.remove(pid);
+    _allPids.remove(pid);
     pidMetaMap.remove(pid);
     return "ok".atom();
   }
@@ -93,6 +104,7 @@ class GenericScheduler implements Scheduler {
     if(pid.state == ProcessState.RUNNING || pid.state == ProcessState.WAITING || pid.state == ProcessState.SLEEPING) {
       pid.putInMailbox(payload);
       pids.add(pid);
+      _allPids.push(pid);
       return "ok".atom();
     }
     return exit(self(), 'crashed'.atom());
@@ -108,6 +120,7 @@ class GenericScheduler implements Scheduler {
     var pidMeta: PidMetaData = new PidMetaData(pid, fn, 0, callback, TimeUtil.nowInMillis());
     pidMetaMap.set(pid, pidMeta);
     pids.add(pid);
+    _allPids.push(pid);
     if(timeout != null) {
       pidMeta.timeout = timeout;
       sleepingProcesses.push(pidMeta);
@@ -143,6 +156,7 @@ class GenericScheduler implements Scheduler {
       var data = mailbox[pidMeta.mailboxIndex++ % mailbox.length];
       if(data != null) {
         pids.add(pid);
+        _allPids.push(pid);
         pid.setState(ProcessState.RUNNING);
 
         var scopeVars: Map<String, Dynamic> = pid.processStack.getVariablesInScope();
@@ -177,6 +191,7 @@ class GenericScheduler implements Scheduler {
       currentPid.processStack.execute();
     }
     if(currentPid.state == ProcessState.RUNNING) {
+      _allPids.push(currentPid);
       pids.add(currentPid);
     }
   }
@@ -195,6 +210,7 @@ class GenericScheduler implements Scheduler {
     }
     var pid: Pid = objectCreator.createInstance(Pid);
     pids.add(pid);
+    _allPids.push(pid);
     pid.start(fn());
     return pid;
   }

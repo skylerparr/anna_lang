@@ -1,5 +1,6 @@
 package vm;
 interface Scheduler {
+  var allPids(get, null): Array<Pid>;
   /**
   * Starts the vm if it's not already running.
   * returns @_"ok" if sucessfully started @_"already_started" if already started
