@@ -14,6 +14,10 @@ class UniqueList<T> {
     return array;
   }
 
+  public function exists(t: T): Bool {
+    return map.exists(t);
+  }
+
   public function push(item: T): T {
     if(map.exists(item)) {
       return item;

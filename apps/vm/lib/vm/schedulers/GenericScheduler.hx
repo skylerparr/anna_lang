@@ -7,6 +7,13 @@ import core.ObjectCreator;
 using lang.AtomSupport;
 
 class GenericScheduler implements Scheduler {
+  private static var _id: Int = 0;
+
+  @:isVar
+  public var id(get, null): Int;
+  function get_id(): Int {
+    return id;
+  }
 
   @inject
   public var objectCreator: ObjectCreator;
@@ -27,6 +34,7 @@ class GenericScheduler implements Scheduler {
   }
 
   public function new() {
+    id = _id++;
   }
 
   public function start(): Atom {
@@ -285,6 +293,7 @@ class GenericScheduler implements Scheduler {
       scopeVariables.set(scopeKey, fnScope.get(scopeKey));
     }
     args.push(scopeVariables);
+//    Logger.inspect(args, "args");
     var operations: Array<Operation> = fn.invoke(args);
     if(operations == null) {
       Kernel.crash(Process.self());
@@ -293,6 +302,7 @@ class GenericScheduler implements Scheduler {
     if(callback != null) {
       callback(scopeVariables.get("$$$"));
     }
+//    Logger.inspect(Tuple.create([pid, fn, args, scopeVariables]), "apply");
     var annaCallStack: AnnaCallStack = new DefaultAnnaCallStack(operations, scopeVariables);
     pid.processStack.add(annaCallStack);
   }

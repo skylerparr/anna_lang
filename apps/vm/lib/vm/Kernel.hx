@@ -1,5 +1,6 @@
 package vm;
 
+import vm.schedulers.CPPMultithreadedScheduler;
 import project.ProjectConfig;
 import vm.Pid;
 import util.ArgHelper;
@@ -141,6 +142,23 @@ class Kernel {
     stop();
     Sys.sleep(0.2);
     return start();
+  }
+  
+  public static function switchToMultithreadedScheduler():Void {
+    stop();
+    Sys.sleep(0.2);
+
+    current_id = 0;
+    defineCode();
+
+    var scheduler: CPPMultithreadedScheduler = new CPPMultithreadedScheduler();
+    ObjectFactory.injector.mapClass(Pid, SimpleProcess);
+    scheduler.objectCreator = cast ObjectFactory.injector.getInstance(ObjectCreator);
+    currentScheduler = scheduler;
+    currentScheduler.start();
+    started = true;
+
+    run();
   }
 
   public static function testGenericScheduler(): Pid {
