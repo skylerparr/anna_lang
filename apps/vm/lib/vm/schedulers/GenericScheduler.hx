@@ -113,9 +113,10 @@ class GenericScheduler implements Scheduler {
       pid.putInMailbox(payload);
       pids.add(pid);
       _allPids.push(pid);
-      return "ok".atom();
+    } else {
+      exit(self(), 'crashed'.atom());
     }
-    return exit(self(), 'crashed'.atom());
+    return "ok".atom();
   }
 
   public function receive(pid: Pid, fn: Function, timeout: Null<Int> = null, callback: (Dynamic) -> Void = null): Void {

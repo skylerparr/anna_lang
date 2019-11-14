@@ -11,7 +11,7 @@ import core.ObjectFactory;
 
 using lang.AtomSupport;
 
-class CPPMultithreadedScheduler implements Scheduler {
+class CPPMultithreadedMessagePassingScheduler implements Scheduler {
   public var numberOfThreads: Int = 8;
 
   @inject
@@ -107,9 +107,9 @@ class CPPMultithreadedScheduler implements Scheduler {
           for(scheduler in threadSchedulerMap) {
             scheduler.complete(pid);
           }
-        case SEND(pid, payload, respondThread):
+        case SEND(pid, payload):
           var thread: Thread = getThreadForPid(pid);
-          thread.sendMessage(SEND(pid, payload, respondThread));
+          thread.sendMessage(SEND(pid, payload));
         case RECEIVE(pid, fn, timeout, callback):
           var thread: Thread = getThreadForPid(pid);
           thread.sendMessage(RECEIVE(pid, fn, timeout, callback));
@@ -163,6 +163,7 @@ class CPPMultithreadedScheduler implements Scheduler {
     threadMap = null;
     asyncThread = null;
     registeredPids = null;
+    pids = null;
   }
 
   private function startScheduler(scheduler: Scheduler): Void {
@@ -182,7 +183,6 @@ class CPPMultithreadedScheduler implements Scheduler {
         Sys.sleep(0.1);
       }
     }
-    scheduler.stop();
   }
 
   public function pause(): Atom {
@@ -235,8 +235,8 @@ class CPPMultithreadedScheduler implements Scheduler {
     if(currentThread == getThreadForPid(pid).handle) {
       return threadSchedulerMap.get(currentThread).send(pid, payload);
     } else {
-      asyncThread.sendMessage(SEND(pid, payload, Thread.current()));
-      return Thread.readMessage(true);
+      asyncThread.sendMessage(SEND(pid, payload));
+      return "ok".atom();
     }
   }
 
@@ -344,7 +344,7 @@ enum KernelMessage {
   UNREGISTER_PID(name: Atom);
   COMPLETE(pid: Pid);
   SLEEP(pid: Pid, milliseconds: Int);
-  SEND(pid: Pid, payload: Dynamic, thread: Thread);
+  SEND(pid: Pid, payload: Dynamic);
   RECEIVE(pid: Pid, fn: Function, timeout: Null<Int>, callback: (Dynamic) -> Void);
   SPAWN(fn: Void->Operation, thread: Thread);
   SPAWN_LINK(parentPid: Pid, fn: Void->Operation, thread: Thread);

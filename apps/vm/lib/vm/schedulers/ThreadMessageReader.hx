@@ -9,9 +9,8 @@ class ThreadMessageReader {
           break;
         } else {
           switch(message) {
-            case SEND(pid, payload, respondThread):
-              var response = $e{scheduler}.send(pid, payload);
-              respondThread.sendMessage(response);
+            case SEND(pid, payload):
+              $e{scheduler}.send(pid, payload);
             case RECEIVE(pid, fn, timeout, callback):
               $e{scheduler}.receive(pid, fn, timeout, callback);
             case APPLY(pid, fn, args, scopeVariables, callback):
@@ -33,7 +32,8 @@ class ThreadMessageReader {
               scheduler.demonitor(parentPid, pid);
             case STOP:
               running = false;
-              break;
+              $e{scheduler}.stop();
+              return;
             case _:
           }
         }

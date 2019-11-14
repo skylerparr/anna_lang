@@ -1,6 +1,6 @@
 package vm;
 
-import vm.schedulers.CPPMultithreadedScheduler;
+import vm.schedulers.CPPMultithreadedMessagePassingScheduler;
 import project.ProjectConfig;
 import vm.Pid;
 import util.ArgHelper;
@@ -28,7 +28,7 @@ class Kernel {
       return 'already_started'.atom();
     }
     defineCode();
-    var scheduler: CPPMultithreadedScheduler = new CPPMultithreadedScheduler();
+    var scheduler: CPPMultithreadedMessagePassingScheduler = new CPPMultithreadedMessagePassingScheduler();
     ObjectFactory.injector.mapClass(Pid, SimpleProcess);
     scheduler.objectCreator = cast ObjectFactory.injector.getInstance(ObjectCreator);
     currentScheduler = scheduler;
