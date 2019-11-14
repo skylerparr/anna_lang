@@ -17,7 +17,6 @@ using lang.AtomSupport;
 @:build(lang.macros.ValueClassImpl.build())
 class Kernel {
 
-  @field public static var current_id: Int;
   @field public static var currentScheduler: Scheduler;
   @field public static var statePid: Pid;
   @field public static var projectConfig: ProjectConfig;
@@ -28,9 +27,8 @@ class Kernel {
     if(started) {
       return 'already_started'.atom();
     }
-    current_id = 0;
     defineCode();
-    var scheduler: GenericScheduler = new GenericScheduler();
+    var scheduler: CPPMultithreadedScheduler = new CPPMultithreadedScheduler();
     ObjectFactory.injector.mapClass(Pid, SimpleProcess);
     scheduler.objectCreator = cast ObjectFactory.injector.getInstance(ObjectCreator);
     currentScheduler = scheduler;
@@ -148,7 +146,6 @@ class Kernel {
     stop();
     Sys.sleep(0.2);
 
-    current_id = 0;
     defineCode();
 
     var scheduler: CPPMultithreadedScheduler = new CPPMultithreadedScheduler();

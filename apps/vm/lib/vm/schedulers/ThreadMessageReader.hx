@@ -11,22 +11,22 @@ class ThreadMessageReader {
           switch(message) {
             case SEND(pid, payload, respondThread):
               var response = $e{scheduler}.send(pid, payload);
-            respondThread.sendMessage(response);
+              respondThread.sendMessage(response);
             case RECEIVE(pid, fn, timeout, callback):
               $e{scheduler}.receive(pid, fn, timeout, callback);
             case APPLY(pid, fn, args, scopeVariables, callback):
               $e{scheduler}.apply(pid, fn, args, scopeVariables, callback);
             case SPAWN(fn, respondThread):
               var response = $e{scheduler}.spawn(fn);
-            respondThread.sendMessage(response);
+              respondThread.sendMessage(response);
             case SPAWN_LINK(parentPid, fn, respondThread):
               var response = $e{scheduler}.spawnLink(parentPid, fn);
-            respondThread.sendMessage(response);
+              respondThread.sendMessage(response);
             case SLEEP(pid, milliseconds):
               $e{scheduler}.sleep(pid, milliseconds);
             case EXIT(pid, signal, respondThread):
               var response = $e{scheduler}.exit(pid, signal);
-            respondThread.sendMessage(response);
+              respondThread.sendMessage(response);
             case MONITOR(parentPid, pid):
               scheduler.monitor(parentPid, pid);
             case DEMONITOR(parentPid, pid):

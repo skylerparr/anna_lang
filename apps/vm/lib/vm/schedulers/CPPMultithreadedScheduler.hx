@@ -205,7 +205,12 @@ class CPPMultithreadedScheduler implements Scheduler {
     if(notRunning()) {
       return "not_running".atom();
     }
-    asyncThread.sendMessage(COMPLETE(pid));
+    var currentThread: ThreadHandle = Thread.current().handle;
+    if(currentThread == getThreadForPid(pid).handle) {
+      threadSchedulerMap.get(currentThread).complete(pid);
+    } else {
+      asyncThread.sendMessage(COMPLETE(pid));
+    }
     return "ok".atom();
   }
 
@@ -213,7 +218,12 @@ class CPPMultithreadedScheduler implements Scheduler {
     if(notRunning()) {
       return pid;
     }
-    asyncThread.sendMessage(SLEEP(pid, milliseconds));
+    var currentThread: ThreadHandle = Thread.current().handle;
+    if(currentThread == getThreadForPid(pid).handle) {
+      threadSchedulerMap.get(currentThread).sleep(pid, milliseconds);
+    } else {
+      asyncThread.sendMessage(SLEEP(pid, milliseconds));
+    }
     return pid;
   }
 
@@ -221,15 +231,25 @@ class CPPMultithreadedScheduler implements Scheduler {
     if(notRunning()) {
       return "not_running".atom();
     }
-    asyncThread.sendMessage(SEND(pid, payload, Thread.current()));
-    return Thread.readMessage(true);
+    var currentThread: ThreadHandle = Thread.current().handle;
+    if(currentThread == getThreadForPid(pid).handle) {
+      return threadSchedulerMap.get(currentThread).send(pid, payload);
+    } else {
+      asyncThread.sendMessage(SEND(pid, payload, Thread.current()));
+      return Thread.readMessage(true);
+    }
   }
 
   public function receive(pid: Pid, fn: Function, timeout: Null<Int> = null, callback: (Dynamic) -> Void = null): Void {
     if(notRunning()) {
       return;
     }
-    asyncThread.sendMessage(RECEIVE(pid, fn, timeout, callback));
+    var currentThread: ThreadHandle = Thread.current().handle;
+    if(currentThread == getThreadForPid(pid).handle) {
+      threadSchedulerMap.get(currentThread).receive(pid, fn, timeout, callback);
+    } else {
+      asyncThread.sendMessage(RECEIVE(pid, fn, timeout, callback));
+    }
   }
 
   public function update(): Void {
@@ -290,9 +310,6 @@ class CPPMultithreadedScheduler implements Scheduler {
     }
     var scheduler: GenericScheduler = threadSchedulerMap.get(Thread.current().handle);
     scheduler.apply(pid, fn, args, scopeVariables, callback);
-//    asyncThread.sendMessage(APPLY(pid, fn, args, scopeVariables, callback));
-//    var message = Thread.readMessage(true);
-//    Logger.inspect(message, "read message");
   }
 
   public function self(): Pid {
