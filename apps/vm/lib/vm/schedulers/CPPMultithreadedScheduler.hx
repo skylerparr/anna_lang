@@ -24,8 +24,8 @@ class CPPMultithreadedScheduler implements Scheduler {
   public var currentPid: Pid;
   public var registeredPids: Map<Atom, Pid>;
 
-  public var threadSchedulerMap: Map<ThreadHandle, GenericScheduler>;
-  public var threadMap: Map<ThreadHandle, Thread>;
+  public var threadSchedulerMap: ObjectMap<ThreadHandle, GenericScheduler>;
+  public var threadMap: ObjectMap<ThreadHandle, Thread>;
   public var asyncThread: Thread;
 
   public var allPids(get, null): Array<Pid>;
