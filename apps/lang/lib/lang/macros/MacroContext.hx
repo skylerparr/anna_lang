@@ -13,6 +13,7 @@ class MacroContext {
   public static var varTypesInScope: Map<String, String>;
   public static var lastFunctionReturnType: String;
   public static var declaredClasses: Map<String, ModuleDef>;
+  public static var declaredInterfaces: Map<String, ModuleDef>;
   public static var currentModuleDef: ModuleDef;
   #end
 

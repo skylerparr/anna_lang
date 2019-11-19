@@ -34,6 +34,7 @@ class AnnaLang {
     keywordMap.set("alias", lang.macros.Alias.gen);
     keywordMap.set("def", lang.macros.Def.gen);
     keywordMap.set("const", lang.macros.Const.gen);
+    keywordMap.set("impl", lang.macros.Impl.gen);
     keywordMap.set("=", lang.macros.Match.gen);
     keywordMap;
   }
@@ -41,6 +42,37 @@ class AnnaLang {
 
   macro public static function init(): Array<Field> {
     MacroContext.declaredClasses = new Map<String, ModuleDef>();
+    MacroContext.declaredInterfaces = new Map<String, ModuleDef>();
+    return [];
+  }
+
+  macro public static function defApi(name:Expr, body:Expr):Array<Field> {
+    var interfaceName: String = MacroTools.getIdent(name);
+    var moduleDef = new ModuleDef(interfaceName);
+    MacroContext.declaredFunctions = new Map<String, Array<Dynamic>>();
+    switch(body.expr) {
+      case EBlock(exprs):
+        for(blockExpr in exprs) {
+          switch(blockExpr.expr) {
+            case EMeta({name: 'def'}, params):
+              var def: Dynamic = lang.macros.Def.defineFunction(params);
+              var arrayDef: Array<Dynamic> = moduleDef.declaredFunctions.get(def.internalFunctionName);
+              if(arrayDef == null) {
+                arrayDef = [];
+              }
+              arrayDef.push(def);
+              moduleDef.declaredFunctions.set(def.internalFunctionName, arrayDef);
+            case e:
+              MacroLogger.log(e, 'e');
+              throw "AnnaLang defApi Prewalk: Not sure what to do here yet";
+          }
+        }
+      case e:
+        MacroLogger.log(e, 'e');
+        throw "AnnaLang defApi Prewalk: Not sure what to do here yet";
+    }
+    MacroContext.declaredInterfaces.set(interfaceName, moduleDef);
+
     return [];
   }
 
@@ -215,6 +247,9 @@ class AnnaLang {
             MacroTools.addFieldToClass(MacroContext.currentModule, argFun);
           }
         }
+
+        validateImplementedInterfaces(moduleDef);
+
         var fieldMap: Map<String, String> = new Map<String, String>();
         for(internalFunctionName in funNameFunDefMap.keys()) {
           // After all the fields have been added to the class, generate the accompanying function that
@@ -323,7 +358,7 @@ class AnnaLang {
       scope.set(key, match.get(key));
     };
   }
-  macro public static function defcls(name: Expr, body: Expr): Array<Field> {
+  macro public static function defCls(name: Expr, body: Expr): Array<Field> {
     MacroLogger.log('==============================');
     var className: String = printer.printExpr(name);
     var moduleDef: ModuleDef = new ModuleDef(className);
@@ -346,6 +381,22 @@ class AnnaLang {
   }
 
   #if macro
+
+  public static function validateImplementedInterfaces(moduleDef: ModuleDef):Void {
+    for(iface in moduleDef.interfaces) {
+      var interfaceDef: ModuleDef = MacroContext.declaredInterfaces.get(iface);
+      if(interfaceDef == null) {
+        throw 'AnnaLang: interface ${iface} is not defined.';
+      }
+
+      for(internalFunctionName in interfaceDef.declaredFunctions.keys()) {
+        var fun = moduleDef.declaredFunctions.get(internalFunctionName);
+        if(fun == null) {
+          throw 'AnnaLang: ${moduleDef.moduleName} missing interface function ${internalFunctionName} as specified in ${interfaceDef.moduleName}.';
+        }
+      }
+    }
+  }
 
   private static function allFunctionsDefined(definedFunctions: Map<String, String>):Bool {
     for(key in MacroContext.declaredFunctions.keys()) {
@@ -567,7 +618,10 @@ class AnnaLang {
     }
     var module: ModuleDef = MacroContext.declaredClasses.get(moduleName);
     if(module == null) {
-      throw new FunctionClauseNotFound('AnnaLang: Function ${funName}() not found.');
+      module = MacroContext.declaredInterfaces.get(moduleName);
+      if(module == null) {
+        throw new FunctionClauseNotFound('AnnaLang: Function ${funName}() not found on module ${moduleName}.');
+      }
     }
     var declaredFunctions = module.declaredFunctions;
 

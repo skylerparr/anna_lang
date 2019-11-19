@@ -339,7 +339,7 @@ class CPPMultithreadedScheduler implements Scheduler {
       threadSchedulerMessagesMap.get(currentThread).scheduler.exit(pid, signal);
     } else {
       var threadForPid: ThreadHandle = getThreadForPid(pid).handle;
-      push(threadSchedulerMessagesMap.get(currentThread), EXIT(pid, signal, Thread.current()));
+      push(threadSchedulerMessagesMap.get(threadForPid), EXIT(pid, signal, Thread.current()));
     }
 
     return Thread.readMessage(true);

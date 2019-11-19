@@ -20,7 +20,40 @@ using lang.AtomSupport;
   var name: String = "Weird";
   var face: String = "dumb";
 }))
-@:build(lang.macros.AnnaLang.defcls(FunctionPatternMatching, {
+@:build(lang.macros.AnnaLang.defApi(SampleApi, {
+  @def get_api_name([String]);
+  @def query_function({Atom: name}, [Tuple]);
+  @def query_function({String: name}, [Tuple]);
+}))
+@:build(lang.macros.AnnaLang.defApi(SampleApi2, {
+  @def get_api_age([Int]);
+  @def start({Atom: name}, [Tuple]);
+}))
+@:build(lang.macros.AnnaLang.defCls(SampleImpl, {
+  @impl SampleApi;
+  @impl SampleApi2;
+
+  @def get_api_name([String], {
+    "SampleImpl";
+  });
+
+  @def query_function({String: name}, [Tuple], {
+    [@_'ok', name];
+  });
+
+  @def query_function({Atom: name}, [Tuple], {
+    [@_'ok', 'foo'];
+  });
+
+  @def get_api_age([Int], {
+    1;
+  });
+
+  @def start({Atom: name}, [Tuple], {
+    [@_'ok', @_'started'];
+  });
+}))
+@:build(lang.macros.AnnaLang.defCls(FunctionPatternMatching, {
   @alias vm.Kernel;
 
   @def start([Atom], {
@@ -95,7 +128,7 @@ using lang.AtomSupport;
     @_"ok";
   });
 }))
-@:build(lang.macros.AnnaLang.defcls(Boot, {
+@:build(lang.macros.AnnaLang.defCls(Boot, {
   @alias vm.Process;
   @alias vm.Pid;
   @alias vm.Kernel;
@@ -478,6 +511,12 @@ using lang.AtomSupport;
 
   @def get_atom([Atom], {
     @_'ok';
+  });
+
+  @def get_api_name([String], {
+    @native IO.inspect("getting api name");
+    name = SampleApi.get_api_name();
+    @native IO.inspect(name);
   });
 }))
 @:build(lang.macros.AnnaLang.compile())

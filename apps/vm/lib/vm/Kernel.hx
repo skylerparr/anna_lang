@@ -115,6 +115,8 @@ class Kernel {
     #if cppia
     Classes.define("Boot".atom(), Type.resolveClass("Boot"));
     Classes.define("FunctionPatternMatching".atom(), Type.resolveClass("FunctionPatternMatching"));
+    Classes.define("SampleApi".atom(), Type.resolveClass("SampleImpl"));
+    Classes.define("SampleApi2".atom(), Type.resolveClass("SampleImpl"));
     #end
     Classes.define("Kernel".atom(), Type.resolveClass("Kernel"));
     Classes.define("CompilerMain".atom(), Type.resolveClass("CompilerMain"));
@@ -224,6 +226,10 @@ class Kernel {
 
   public static function testMonitor(): Pid {
     return testSpawn('Boot', 'test_monitor', []);
+  }
+
+  public static function testApi(): Pid {
+    return testSpawn('Boot', 'get_api_name', []);
   }
 
   public static function saveState(pid: Pid): Pid {

@@ -4,7 +4,7 @@ import vm.Pid;
 import IO;
 import vm.Function;
 @:build(lang.macros.AnnaLang.init())
-@:build(lang.macros.AnnaLang.defcls(Str, {
+@:build(lang.macros.AnnaLang.defCls(Str, {
   @alias util.StringUtil;
 
   @def concat({String: lhs, String: rhs}, [String], {
@@ -32,7 +32,7 @@ import vm.Function;
   });
 
 }))
-@:build(lang.macros.AnnaLang.defcls(File, {
+@:build(lang.macros.AnnaLang.defCls(File, {
   @def get_content({String: file_path}, [String], {
     #if cpp
     @native sys.io.File.getContent(file_path);
@@ -41,7 +41,7 @@ import vm.Function;
     #end
   });
 }))
-@:build(lang.macros.AnnaLang.defcls(Kernel, {
+@:build(lang.macros.AnnaLang.defCls(Kernel, {
   @alias vm.Pid;
   @alias vm.Kernel;
   @alias vm.Function;
@@ -63,7 +63,7 @@ import vm.Function;
     @native Kernel.subtract(a, b);
   });
 }))
-@:build(lang.macros.AnnaLang.defcls(System, {
+@:build(lang.macros.AnnaLang.defCls(System, {
   @def print({String: str}, [Atom], {
     @native IO.print(str);
   });
@@ -72,7 +72,7 @@ import vm.Function;
     @native IO.println(str);
   });
 }))
-@:build(lang.macros.AnnaLang.defcls(CommandHandler, {
+@:build(lang.macros.AnnaLang.defCls(CommandHandler, {
   @alias vm.Kernel;
 
   @def process_command({String: 'exit'}, [Atom], {
@@ -132,7 +132,7 @@ import vm.Function;
     @_'ok';
   });
 }))
-@:build(lang.macros.AnnaLang.defcls(History, {
+@:build(lang.macros.AnnaLang.defCls(History, {
   @alias vm.Process;
   @alias vm.Kernel;
   @alias vm.Pid;
@@ -255,7 +255,7 @@ import vm.Function;
     });
   });
 }))
-@:build(lang.macros.AnnaLang.defcls(CompilerMain, {
+@:build(lang.macros.AnnaLang.defCls(CompilerMain, {
   @alias vm.Process;
   @alias vm.Kernel;
 
