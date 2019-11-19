@@ -4,7 +4,7 @@ import minject.Injector;
 
 class ObjectFactory implements ObjectCreator {
 
-  public static var injector: Injector;
+  public var injector: Injector;
 
   public function new() {
   }
@@ -13,17 +13,23 @@ class ObjectFactory implements ObjectCreator {
     if(constructorArgs == null) {
       constructorArgs = [];
     }
+    trace(clazz);
     var retVal = null;
     try {
+      trace(injector);
       retVal = injector.getInstance(clazz);
     } catch(e: Dynamic) {
+      trace(e);
       retVal = Type.createInstance(clazz, constructorArgs);
+      trace(retVal);
       injector.injectInto(retVal);
     }
 
     if(Std.is(retVal, BaseObject)) {
+      trace('init');
       retVal.init();
     }
+    trace(retVal);
 
     return retVal;
   }

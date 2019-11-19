@@ -13,6 +13,7 @@ import vm.Function;
 import vm.schedulers.GenericScheduler;
 
 using lang.AtomSupport;
+import minject.Injector;
 
 @:build(lang.macros.ValueClassImpl.build())
 class Kernel {
@@ -27,10 +28,16 @@ class Kernel {
     if(started) {
       return 'already_started'.atom();
     }
+    Logger.init();
     defineCode();
-    var scheduler: CPPMultithreadedMessagePassingScheduler = new CPPMultithreadedMessagePassingScheduler();
-    ObjectFactory.injector.mapClass(Pid, SimpleProcess);
-    scheduler.objectCreator = cast ObjectFactory.injector.getInstance(ObjectCreator);
+    var scheduler: vm.schedulers.CPPMultithreadedScheduler = new vm.schedulers.CPPMultithreadedScheduler();
+
+    var objectFactory: ObjectFactory = new ObjectFactory();
+    objectFactory.injector = new Injector();
+    objectFactory.injector.mapValue(ObjectCreator, objectFactory);
+    objectFactory.injector.mapClass(Pid, SimpleProcess);
+    scheduler.objectCreator = objectFactory;
+
     currentScheduler = scheduler;
     currentScheduler.start();
     started = true;
@@ -130,6 +137,10 @@ class Kernel {
     for(arg in args) {
       createArgs.push(Tuple.create(["const".atom(), arg]));
     }
+    #if cpp
+    //need this or we get a segfault
+    Sys.sleep(0.0001);
+    #end
     return currentScheduler.spawn(function() {
       return new PushStack(module.atom(), func.atom(), LList.create(cast createArgs), "Kernel".atom(), "testSpawn".atom(), MacroTools.line());
     });
@@ -148,9 +159,14 @@ class Kernel {
 
     defineCode();
 
-    var scheduler: CPPMultithreadedScheduler = new CPPMultithreadedScheduler();
-    ObjectFactory.injector.mapClass(Pid, SimpleProcess);
-    scheduler.objectCreator = cast ObjectFactory.injector.getInstance(ObjectCreator);
+    var scheduler: vm.schedulers.CPPMultithreadedScheduler = new vm.schedulers.CPPMultithreadedScheduler();
+
+    var objectFactory: ObjectFactory = new ObjectFactory();
+    objectFactory.injector = new Injector();
+    objectFactory.injector.mapValue(ObjectCreator, objectFactory);
+    objectFactory.injector.mapClass(Pid, SimpleProcess);
+    scheduler.objectCreator = objectFactory;
+
     currentScheduler = scheduler;
     currentScheduler.start();
     started = true;

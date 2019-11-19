@@ -114,7 +114,7 @@ class GenericScheduler implements Scheduler {
       pids.add(pid);
       _allPids.push(pid);
     } else {
-      exit(self(), 'crashed'.atom());
+      exit(Process.self(), 'crashed'.atom());
     }
     return "ok".atom();
   }
@@ -174,7 +174,7 @@ class GenericScheduler implements Scheduler {
 
         apply(pid, pidMeta.fn, [data], scopeVars, function(result: Dynamic): Void {
           if(result != null) {
-            mailbox.remove(result);
+            mailbox.remove(data);
             if(pidMeta.callback != null) {
               pidMeta.callback(result);
             }
@@ -217,7 +217,7 @@ class GenericScheduler implements Scheduler {
     if(notRunning()) {
       return null;
     }
-    var pid: Pid = objectCreator.createInstance(Pid);
+    var pid: Pid = new SimpleProcess();
     pids.add(pid);
     _allPids.push(pid);
     pid.start(fn());
@@ -294,7 +294,6 @@ class GenericScheduler implements Scheduler {
       scopeVariables.set(scopeKey, fnScope.get(scopeKey));
     }
     args.push(scopeVariables);
-//    Logger.inspect(args, "args");
     var operations: Array<Operation> = fn.invoke(args);
     if(operations == null) {
       Kernel.crash(Process.self());
@@ -303,7 +302,6 @@ class GenericScheduler implements Scheduler {
     if(callback != null) {
       callback(scopeVariables.get("$$$"));
     }
-//    Logger.inspect(Tuple.create([pid, fn, args, scopeVariables]), "apply");
     var annaCallStack: AnnaCallStack = new DefaultAnnaCallStack(operations, scopeVariables);
     pid.processStack.add(annaCallStack);
   }

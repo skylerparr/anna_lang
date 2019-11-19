@@ -19,9 +19,6 @@ class CPPMultithreadedMessagePassingScheduler implements Scheduler {
 
   public var pids: UniqueList<Pid>;
   public var paused: Bool;
-  public var sleepingProcesses: UniqueList<PidMetaData>;
-  public var pidMetaMap: Map<Pid, PidMetaData>;
-  public var currentPid: Pid;
   public var registeredPids: Map<Atom, Pid>;
 
   public var threadSchedulerMap: ObjectMap<ThreadHandle, GenericScheduler>;
@@ -77,7 +74,6 @@ class CPPMultithreadedMessagePassingScheduler implements Scheduler {
     }
     return threadMap.get(threadWithFewestPids);
   }
-
 
   private inline function getThreadForPid(pid: Pid): Thread {
     var retVal: Thread = null;
@@ -194,7 +190,7 @@ class CPPMultithreadedMessagePassingScheduler implements Scheduler {
   }
 
   public function stop(): Atom {
-    if(pids == null) {
+    if(notRunning()) {
       return "ok".atom();
     }
     asyncThread.sendMessage(STOP);
