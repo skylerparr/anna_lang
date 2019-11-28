@@ -412,7 +412,53 @@ using lang.AtomSupport;
     @native IO.inspect("Expect: a constant value");
     print(VALUE);
     foo(VSN);
+    @native IO.inspect("Expect: 'SampleImpl'");
+    name = get_api_name();
+    @native IO.inspect(name);
+
+    spawn_pid = @native Kernel.spawn(@_'Boot', @_'test_exit', [], {});
+//    @native Kernel.exit(spawn_pid);
+    @native Process.registerPid(spawn_pid, @_'spawn_pid');
+    @native Process.sleep(1200);
+    status = @native Process.isAlive(spawn_pid);
+    @native IO.inspect("spawn pid status, should be false");
+    @native IO.inspect(status);
+
+    linked_pid = @native Process.getPidByName(@_'linked_pid');
+    @native IO.inspect(linked_pid);
+    status = @native Process.isAlive(linked_pid);
+    @native IO.inspect("linked pid status, should be false");
+    @native IO.inspect(status);
+
     print(pid);
+  });
+
+  @def test_exit([Atom], {
+    child_pid = @native Kernel.spawn_link(@_'Boot', @_'spawn_child', [], {});
+    @native IO.inspect('child pid');
+    @native IO.inspect(child_pid);
+    @native Process.registerPid(child_pid, @_'linked_pid');
+    status = @native Process.isAlive(child_pid);
+//    @native Kernel.exit(child_pid);
+//    @native IO.inspect("child pid status");
+//    @native IO.inspect(status);
+    @native Process.sleep(1000);
+    @native Kernel.exit(child_pid);
+    @native IO.inspect('should not see this');
+    @_'ok';
+  });
+
+  @def spawn_child([Atom], {
+    @native IO.inspect('spawn child pid');
+    @native Process.sleep(2000);
+//    spawn_pid = @native Process.getPidByName(@_'spawn_pid');
+//    @native IO.inspect("sending exit signal to");
+//    @native IO.inspect(spawn_pid);
+//    @native Kernel.exit(spawn_pid);
+//
+//    @native Process.sleep(1000);
+    @native IO.inspect('child spawn should not see this');
+    @_'ok';
   });
 
   @def print_sample({Sample: s}, [Sample], {
@@ -514,9 +560,7 @@ using lang.AtomSupport;
   });
 
   @def get_api_name([String], {
-    @native IO.inspect("getting api name");
-    name = SampleApi.get_api_name();
-    @native IO.inspect(name);
+    SampleApi.get_api_name();
   });
 }))
 @:build(lang.macros.AnnaLang.compile())

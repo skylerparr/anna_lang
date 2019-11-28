@@ -311,8 +311,11 @@ class Kernel {
     return currentScheduler.exit(pid, 'crash'.atom());
   }
 
-  public static function exit(pid: Pid): Atom {
-    return currentScheduler.exit(pid, 'kill'.atom());
+  public static function exit(pid: Pid, signal: Atom = null): Atom {
+    if(signal == null) {
+      signal = 'kill'.atom();
+    }
+    return currentScheduler.exit(pid, signal);
   }
 
   public static function trapExit(pid: Pid): Atom {

@@ -162,8 +162,8 @@ so that I can disable the different log levels and save the line number
 
 # Language features (in progress)
 
-- [ ] Modules
-- [ ] Interfaces
+- [x] Modules
+- [x] Interfaces
 - [x] Functions
 - [x] Basic types: Arrays, Maps, Lists, Tuples, Strings, Ints, Floats, Atoms
 - [x] Type checking. Type inference with casts

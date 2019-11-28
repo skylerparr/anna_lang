@@ -1,5 +1,6 @@
 package ;
 
+import EitherEnums;
 import util.TimeUtil;
 import haxe.Timer;
 import String;
@@ -61,11 +62,15 @@ class Anna {
     return val;
   }
 
-  public static inline function toAnnaString(val: Any): String {
+  public static inline function toAnnaString(val: Any, gettingEnum: Bool = false): String {
     return {
       switch(Type.typeof(val)) {
-        case TEnum(_):
-          toAnnaString(EitherSupport.getValue(val));
+        case TEnum(e):
+          if(gettingEnum) {
+            '${val}';
+          } else {
+            toAnnaString(EitherSupport.getValue(val), true);
+          }
         case TClass(Atom):
           '${((val : Atom).toAnnaString())}';
         case TInt | TFloat:

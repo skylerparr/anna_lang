@@ -106,15 +106,23 @@ class GenericScheduler implements Scheduler {
   }
 
   public function send(pid: Pid, payload: Dynamic): Atom {
+    Logger.log(notRunning(), "notRunning?");
     if(notRunning()) {
       return "not_running".atom();
     }
+    Logger.log(Tuple.create([pid, pid.state]), 'pid');
     if(pid.state == ProcessState.RUNNING || pid.state == ProcessState.WAITING || pid.state == ProcessState.SLEEPING) {
+      Logger.log(payload, 'payload');
+      Logger.log(pid, 'put in mailbox');
       pid.putInMailbox(payload);
+      Logger.log(pids.length(), 'pids.length');
       pids.add(pid);
+      Logger.log(_allPids.length(), '_allPids.length');
       _allPids.push(pid);
     } else {
-      exit(Process.self(), 'crashed'.atom());
+      Logger.log('', 'exit case');
+      Logger.log(Process.self(), 'exit');
+      Kernel.exit(Process.self(), 'crashed'.atom());
     }
     return "ok".atom();
   }
@@ -230,6 +238,7 @@ class GenericScheduler implements Scheduler {
       return null;
     }
     pid.setParent(parentPid);
+    parentPid.addChild(pid);
     return pid;
   }
 
@@ -261,20 +270,14 @@ class GenericScheduler implements Scheduler {
     if(pid.trapExit == 'true'.atom()) {
       return 'trapped'.atom();
     }
+    pids.remove(pid);
+    pidMetaMap.remove(pid);
     if(signal == 'kill'.atom()) {
       pid.setState(ProcessState.KILLED);
     } else if(signal == 'crash'.atom()) {
       pid.setState(ProcessState.CRASHED);
     } else {
       pid.setState(ProcessState.COMPLETE);
-    }
-    #if !cppia
-    pid.dispose();
-    #end
-    pids.remove(pid);
-    pidMetaMap.remove(pid);
-    if(pid.parent != null) {
-      exit(pid.parent, signal);
     }
     return "killed".atom();
   }

@@ -1,4 +1,5 @@
 package vm;
+import util.UniqueList;
 import lang.ParsingException;
 import vm.AbstractCustomType;
 using lang.AtomSupport;
@@ -13,6 +14,7 @@ class SimpleProcess extends AbstractCustomType implements Pid {
   private var instanceId: Int;
   private var groupId: Int;
   private var monitors: List<Pid>;
+  private var _children: UniqueList<Pid>;
 
   public var processStack(default, null): DefaultProcessStack;
   public var state(default, null): ProcessState;
@@ -20,6 +22,16 @@ class SimpleProcess extends AbstractCustomType implements Pid {
   public var parent(default, null): Pid;
   public var ancestors(default, null): Array<Pid>;
   public var trapExit(default, null): Atom;
+  public var children(get, null):Array<Pid>;
+
+  function get_children():Array<Pid> {
+    #if cppia
+    if(this._children == null) {
+      this._children = new UniqueList();
+    }
+    #end
+    return this._children.asArray();
+  }
 
   public inline function new() {
     this.serverId = _nodeId;
@@ -27,6 +39,7 @@ class SimpleProcess extends AbstractCustomType implements Pid {
     this.instanceId = _instanceId++;
     this.state = ProcessState.RUNNING;
     this.mailbox = [];
+    this._children = new UniqueList();
   }
 
   public function init(): Void {
@@ -53,9 +66,16 @@ class SimpleProcess extends AbstractCustomType implements Pid {
       }
       monitors = null;
     }
+    for(childPid in _children) {
+      Kernel.exit(childPid, 'kill'.atom());
+    }
+    if(parent != null) {
+      Kernel.exit(parent, 'kill'.atom());
+    }
     mailbox = null;
     parent = null;
     ancestors = null;
+    _children = null;
   }
 
   public function start(op: Operation): Void {
@@ -112,5 +132,13 @@ class SimpleProcess extends AbstractCustomType implements Pid {
     if(monitors.length == 0) {
       monitors = null;
     }
+  }
+
+  public function addChild(pid:Pid):Void {
+    this._children.add(pid);
+  }
+
+  public function removeChild(pid:Pid):Void {
+    this._children.remove(pid);
   }
 }

@@ -2,9 +2,7 @@ package util;
 
 import lang.CustomType;
 import haxe.ds.EnumValueMap;
-import EitherEnums.Either1;
 import lang.EitherSupport;
-import EitherEnums.Either2;
 import vm.Pid;
 class ArgHelper {
 
