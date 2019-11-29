@@ -128,7 +128,6 @@ class CPPMultithreadedScheduler implements Scheduler {
         respondThread.sendMessage(response);
       case EXIT(pid, signal, respondThread):
         var threadForPid: ThreadHandle = getThreadForPid(pid).handle;
-        Logger.log(threadForPid, 'currentThread');
         if(threadForPid == null) {
           return;
         }
@@ -264,6 +263,9 @@ class CPPMultithreadedScheduler implements Scheduler {
       threadSchedulerMessagesMap.get(currentThread).scheduler.complete(pid);
     } else {
       var threadForPid: ThreadHandle = getThreadForPid(pid).handle;
+      if(threadForPid == null) {
+        return 'nil'.atom();
+      }
       push(threadSchedulerMessagesMap.get(threadForPid), COMPLETE(pid));
     }
     return "ok".atom();
@@ -278,6 +280,9 @@ class CPPMultithreadedScheduler implements Scheduler {
       threadSchedulerMessagesMap.get(currentThread).scheduler.sleep(pid, milliseconds);
     } else {
       var threadForPid: ThreadHandle = getThreadForPid(pid).handle;
+      if(threadForPid == null) {
+        return pid;
+      }
       push(threadSchedulerMessagesMap.get(threadForPid), SLEEP(pid, milliseconds));
     }
     return pid;
@@ -301,6 +306,9 @@ class CPPMultithreadedScheduler implements Scheduler {
     } else {
       Logger.log(pid, 'scheduler send different thread');
       var threadForPid: ThreadHandle = getThreadForPid(pid).handle;
+      if(threadForPid == null) {
+        return 'nil'.atom();
+      }
       push(threadSchedulerMessagesMap.get(threadForPid), SEND(pid, payload));
     }
     return "ok".atom();
@@ -315,6 +323,9 @@ class CPPMultithreadedScheduler implements Scheduler {
       threadSchedulerMessagesMap.get(currentThread).scheduler.receive(pid, fn, timeout, callback);
     } else {
       var threadForPid: ThreadHandle = getThreadForPid(pid).handle;
+      if(threadForPid == null) {
+        return;
+      }
       push(threadSchedulerMessagesMap.get(threadForPid), RECEIVE(pid, fn, timeout, callback));
     }
   }
@@ -361,6 +372,9 @@ class CPPMultithreadedScheduler implements Scheduler {
       threadSchedulerMessagesMap.get(currentThread).scheduler.monitor(parentPid, pid);
     } else {
       var threadForPid: ThreadHandle = getThreadForPid(parentPid).handle;
+      if(threadForPid == null) {
+        return 'nil'.atom();
+      }
       push(threadSchedulerMessagesMap.get(parentPid), MONITOR(parentPid, pid));
     }
     return "ok".atom();
@@ -375,6 +389,9 @@ class CPPMultithreadedScheduler implements Scheduler {
       threadSchedulerMessagesMap.get(currentThread).scheduler.demonitor(parentPid, pid);
     } else {
       var threadForPid: ThreadHandle = getThreadForPid(parentPid).handle;
+      if(threadForPid == null) {
+        return 'nil'.atom();
+      }
       push(threadSchedulerMessagesMap.get(threadForPid), DEMONITOR(parentPid, pid));
     }
     return "ok".atom();

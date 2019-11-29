@@ -57,13 +57,13 @@ class Logger {
     var frags: Array<String> = locStr.split('/');
     frags = frags[frags.length - 1].split(':');
     var position: Expr = lang.macros.Macros.haxeToExpr('"${frags[0]}:${frags[1]}"');
+    return macro {};
     return macro {
       var labelStr: String = '';
       if($e{label} != null) {
         labelStr = $e{position} + ':' + $e{label} + ': ';
       }
       var log: String = labelStr + Anna.toAnnaString($e{term}) + '\r\n';
-      cpp.Lib.print(log);
       Logger.sendLog(log);
     }
   }
