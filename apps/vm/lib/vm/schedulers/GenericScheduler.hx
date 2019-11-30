@@ -61,6 +61,7 @@ class GenericScheduler implements Scheduler {
     if(pids == null) {
       return "ok".atom();
     }
+    Logger.log(id, 'stopping scheduler');
     #if !cppia
     for(pid in _allPids) {
       pid.dispose();
@@ -152,6 +153,7 @@ class GenericScheduler implements Scheduler {
         pidsToWake.push(spec);
       }
     }
+    Logger.log(pidsToWake.length, 'number of pids to wake');
     while(pidsToWake.length > 0) {
       var sleepSpec: PidMetaData = pidsToWake.pop();
       if(sleepSpec == null) {
@@ -161,6 +163,7 @@ class GenericScheduler implements Scheduler {
       sleepSpec.pid.setState(ProcessState.RUNNING);
       pids.push(sleepSpec.pid);
     }
+    Logger.log('done scheduling sleeping');
   }
 
   private inline function passMessages(pid: Pid): Void {
@@ -198,9 +201,11 @@ class GenericScheduler implements Scheduler {
     }
     scheduleSleeping();
     currentPid = pids.pop();
+    Logger.log(currentPid, '${id} current pid');
     if(currentPid == null) {
       return;
     }
+    Logger.log(currentPid.state, 'pid state');
     if(currentPid.state == ProcessState.WAITING) {
       passMessages(currentPid);
     }
@@ -215,6 +220,7 @@ class GenericScheduler implements Scheduler {
 
   public function hasSomethingToExecute(): Bool {
     scheduleSleeping();
+    Logger.log(pids.length(), 'number of pids');
     if(pids.length() > 0) {
       return true;
     }

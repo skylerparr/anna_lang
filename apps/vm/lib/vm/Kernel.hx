@@ -66,6 +66,7 @@ class Kernel {
         Sys.sleep(0.1);
       }
     }
+    Logger.log('stopping kernel scheduler');
     currentScheduler.stop();
     currentScheduler = null;
     statePid = null;
@@ -143,7 +144,9 @@ class Kernel {
     //need this or we get a segfault
     Sys.sleep(0.0001);
     #end
+    Logger.log('spawning test process');
     return currentScheduler.spawn(function() {
+      Logger.log('notifying kernel to test spawn');
       return new PushStack(module.atom(), func.atom(), LList.create(cast createArgs), "Kernel".atom(), "testSpawn".atom(), MacroTools.line());
     });
   }
@@ -241,6 +244,7 @@ class Kernel {
   public static function recompile(): Atom {
     #if cppia
     Reflect.callMethod(null, Reflect.field(Type.resolveClass('Runner'), 'compileCompiler'), [function() {
+      Logger.log('switch to ia');
       switchToIA();
     }]);
     return 'ok'.atom();
@@ -260,7 +264,11 @@ class Kernel {
 
   public static function switchToHaxe(): Atom {
     #if cppia
-    Reflect.callMethod(null, Reflect.field(Type.resolveClass('Runtime'), 'start'), []);
+    stop();
+    Sys.sleep(0.1);
+    cpp.vm.Thread.create(function() {
+      Reflect.callMethod(null, Reflect.field(Type.resolveClass('Runtime'), 'start'), []);
+    });
     return 'ok'.atom();
     #end
     return 'not_available'.atom();
@@ -268,8 +276,11 @@ class Kernel {
 
   public static function switchToIA(): Atom {
     #if cppia
+    Logger.log('stopping runtime');
     Reflect.callMethod(null, Reflect.field(Type.resolveClass('Runtime'), 'stop'), []);
+    Logger.log('restarting Kernel');
     restart();
+    Logger.log('starting compiler');
     testCompiler();
     return 'ok'.atom();
     #end

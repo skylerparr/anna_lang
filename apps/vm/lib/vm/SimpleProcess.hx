@@ -90,7 +90,7 @@ class SimpleProcess extends AbstractCustomType implements Pid {
 
   public function setParent(pid: Pid): Bool {
     parent = pid;
-    return false;
+    return true;
   }
 
   public function putInMailbox(value: Dynamic): Void {
@@ -119,7 +119,7 @@ class SimpleProcess extends AbstractCustomType implements Pid {
       monitors = new List<Pid>();
     }
     #if !cppia
-      monitors.remove(pid);
+    monitors.remove(pid);
     #end
     monitors.add(pid);
   }

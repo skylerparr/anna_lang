@@ -33,7 +33,7 @@ class Logger {
     #if !macro
     #if (cpp || cppia)
     sys.io.File.saveContent(filePath, '');
-    logThread = cpp.vm.Thread.create(logListener);
+//    logThread = cpp.vm.Thread.create(logListener);
     #end
     #end
   }
@@ -61,9 +61,10 @@ class Logger {
     return macro {
       var labelStr: String = '';
       if($e{label} != null) {
-        labelStr = $e{position} + ':' + $e{label} + ': ';
+        labelStr = $e{label} + ': ';
       }
-      var log: String = labelStr + Anna.toAnnaString($e{term}) + '\r\n';
+      var log: String = $e{position} + ':' + labelStr + Anna.toAnnaString($e{term}) + '\r\n';
+//      cpp.Lib.print(log);
       Logger.sendLog(log);
     }
   }

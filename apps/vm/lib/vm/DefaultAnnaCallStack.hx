@@ -29,6 +29,7 @@ class DefaultAnnaCallStack implements AnnaCallStack {
 
   public inline function execute(processStack: ProcessStack): Void {
     currentOperation = operations[index++];
+    Logger.log(currentOperation);
     if(currentOperation == null) {
       return;
     }
