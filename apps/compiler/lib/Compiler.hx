@@ -104,7 +104,7 @@ import vm.Function;
   });
 
   @def process_command({String: 'v ' => number}, [String], {
-    //todo: need to infer string pattern matchesß
+    //todo: need to infer string pattern matches
     System.println('');
     index = Str.string_to_int(cast(number, String));
     index = Kernel.subtract(index, 1);
@@ -115,7 +115,8 @@ import vm.Function;
 
   @def process_command({String: 'c ' => file}, [Atom], {
     System.println('');
-    System.println(cast(file, String));
+    filename = cast(file, String);
+    File.get_content(filename);
     @_'ok';
   });
 

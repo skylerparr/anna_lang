@@ -30,7 +30,7 @@ class Kernel {
     }
     Logger.init();
     defineCode();
-    var scheduler: vm.schedulers.CPPMultithreadedScheduler = new vm.schedulers.CPPMultithreadedScheduler();
+    var scheduler: vm.schedulers.GenericScheduler = new vm.schedulers.GenericScheduler();
 
     var objectFactory: ObjectFactory = new ObjectFactory();
     objectFactory.injector = new Injector();
