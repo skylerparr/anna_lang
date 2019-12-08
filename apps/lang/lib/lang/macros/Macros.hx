@@ -329,6 +329,17 @@ class Macros {
           expr = {expr: EArrayDecl(arrayValues), pos: Context.currentPos()};
           expr = callback(expr);
           expr;
+        case EObjectDecl(values):
+          var arrayValues: Array<Expr> = [];
+          var finalArray: Array<Expr> = [];
+          for(value in values) {
+            collectMetaExpr(value.expr, arrayValues);
+            var arrayVal = arrayValues.pop();
+            finalArray.push({expr: EArrayDecl([{expr: EConst(CString(value.field)), pos: Context.currentPos()}, arrayVal]), pos: Context.currentPos()});
+          }
+          expr = {expr: EArrayDecl(finalArray), pos: Context.currentPos()};
+          expr = callback(expr);
+          expr;
         case EConst(CIdent(_)):
           expr;
         case EConst(CString(_)):
@@ -382,6 +393,14 @@ class Macros {
     return findMeta(expr, function(expr: Expr): Expr {
       return macro {
         Atom.create($e{expr});
+      }
+    });
+  }
+
+  public static function _keyword(expr: Expr, _: Expr):Expr {
+    return findMeta(expr, function(expr: Expr): Expr {
+      return macro {
+        Keyword.create($e{expr});
       }
     });
   }
@@ -440,6 +459,10 @@ class Macros {
 
   macro public static function getAtom(expr: Expr): Expr {
     return _atom(expr, null);
+  }
+
+  macro public static function getKeyword(expr:Expr):Expr {
+    return _keyword(expr, null);
   }
 
   macro public static function valuesMatch(lhs: Expr, rhs: Expr): Expr {

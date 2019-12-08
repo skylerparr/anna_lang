@@ -34,7 +34,6 @@ class TupleTest {
 
   public static function shouldCreateTupleWithinTupleInFunction(): Void {
     var t: Tuple = @tuple[1, @tuple[2, 4, 6], @tuple[3, 6, 9]];
-    var expect: Array<Dynamic> = [1, Macros.getTuple([2, 4, 6]), Macros.getTuple([3, 6, 9])];
     Assert.areEqual(t.toAnnaString(), "[1, [2, 4, 6], [3, 6, 9]]");
   }
 

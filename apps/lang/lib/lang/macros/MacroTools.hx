@@ -234,6 +234,15 @@ class MacroTools {
         }
         var strValue: String = '@list[${listValues.join(",")}]';
         {type: "LList", value: '@tuple [@atom "const", ${strValue}]', rawValue: strValue};
+      case EMeta({name: "keyword"}, {expr: EObjectDecl(args)}):
+        var listValues: Array<String> = [];
+        for(arg in args) {
+          var typeAndValue: Dynamic = getTypeAndValue(arg.expr);
+          listValues.push('${arg.field}: ${typeAndValue.rawValue}');
+        }
+        var strValue: String = '@keyword{${listValues.join(",")}}';
+
+        {type: "Keyword", value: '@tuple [@atom "const", ${strValue}]', rawValue: strValue};
       case EMeta({name: "map"}, {expr: EArrayDecl(args)}):
         var listValues: Array<String> = [];
         for(arg in args) {

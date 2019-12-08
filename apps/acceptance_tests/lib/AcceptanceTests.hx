@@ -408,7 +408,8 @@ using lang.AtomSupport;
       @list["apple", "orange"] => "fruit", [@_"always" => "squirreling"] => for_what];}] = get_all();
     @native IO.inspect("What is Ellie always squirreling for?");
     @native IO.inspect(for_what);
-//    @native IO.inspect({ok: "foob"}); //keyword list
+    @native IO.inspect('Expect: {ok: \'foob\'}');
+    @native IO.inspect(@keyword{ok: "foob"});
     @native IO.inspect("Expect: a constant value");
     print(VALUE);
     foo(VSN);

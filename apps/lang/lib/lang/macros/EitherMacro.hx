@@ -101,7 +101,11 @@ class EitherMacro {
     var valueExpressions: Array<Dynamic> = switch(values) {
       case {expr: ECast({expr: EArrayDecl(expr)}, _)}:
         expr;
+      case {expr: EObjectDecl(fields)}:
+        fields;
       case e:
+        MacroLogger.log(e, 'e');
+        MacroLogger.logExpr(e, 'e');
         throw 'Either was unable to match type: Unsupported match';
     }
 
