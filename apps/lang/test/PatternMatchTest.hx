@@ -419,6 +419,48 @@ class PatternMatchTest {
     var matched: Map<String, Dynamic> = PatternMatch.match("foo " => variable, data);
     @assert matched == null;
   }
+
+  public static function shouldMatchOnKeywordList():Void {
+    var k: Keyword = @keyword{foo: 'bar', baz: 'cat'};
+    var matched: Map<String, Dynamic> = PatternMatch.match(variable, k);
+    @refute matched == null;
+  }
+
+  public static function shouldMatchKeysOfKeywordList():Void {
+    var k: Keyword = @keyword{foo: 'bar', baz: 'cat'};
+    var matched: Map<String, Dynamic> = PatternMatch.match({foo: foo, baz: baz}, k);
+    @refute matched == null;
+    @assert matched.get('foo') == 'bar';
+    @assert matched.get('baz') == 'cat';
+  }
+
+  public static function shouldMatchKeysOrValuesOfKeywordList():Void {
+    var k: Keyword = @keyword{foo: 'bar', baz: 'cat'};
+    var matched: Map<String, Dynamic> = PatternMatch.match({foo: foo, baz: 'cat'}, k);
+    @refute matched == null;
+    @assert matched.get('foo') == 'bar';
+    @assert matched.get('baz') == null;
+  }
+
+  public static function shouldMatchOnKeywordsThatHaveDifferentQuantities():Void {
+    var k: Keyword = @keyword{foo: 'bar', baz: 'cat', bird: 'squirrel'};
+    var matched: Map<String, Dynamic> = PatternMatch.match({foo: foo, baz: 'cat'}, k);
+    @refute matched == null;
+    @assert matched.get('foo') == 'bar';
+    @assert matched.get('baz') == null;
+  }
+
+  public static function shouldNotMatchIfKeysAreNotFound():Void {
+    var k: Keyword = @keyword{foo: 'bar', baz: 'cat'};
+    var matched: Map<String, Dynamic> = PatternMatch.match({nope: foo, baz: 'cat'}, k);
+    @assert matched == null;
+  }
+
+  public static function shouldMatchOnEmptyKeyword():Void {
+    var k: Keyword = @keyword{};
+    var matched: Map<String, Dynamic> = PatternMatch.match({}, k);
+    @refute matched == null;
+  }
 }
 
 class TestCustomType implements CustomType {

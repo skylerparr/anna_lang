@@ -165,8 +165,6 @@ class PatternMatch {
           $e{individualMatchesBlock};
         }
       case EBlock([base, suffix]):
-        MacroLogger.log(base, 'base');
-        MacroLogger.log(suffix, 'suffix');
         var valueStr: String = '${printer.printExpr(valueExpr)}.substring(${printer.printExpr(base)}.length)';
         var exprMatch: Expr = generatePatternMatch(suffix, Macros.haxeToExpr(valueStr));
         MacroLogger.logExpr(exprMatch, 'exprMatch');
@@ -183,6 +181,31 @@ class PatternMatch {
           $e{exprMatch};
           break;
         }
+      case EObjectDecl(values):
+        var individualMatches: Array<Expr> = [];
+        for(value in values) {
+          var strExpr: String = '';
+          strExpr = 'Keyword.hasKey(${printer.printExpr(valueExpr)}, Atom.create("${value.field}"))';
+          var expr: Expr = generatePatternMatch(lang.macros.Macros.haxeToExpr('Atom.create("true")'), lang.macros.Macros.haxeToExpr(strExpr));
+          individualMatches.push(expr);
+
+          strExpr = 'Keyword.get(${printer.printExpr(valueExpr)}, Atom.create("${value.field}"))';
+          var expr: Expr = generatePatternMatch(value.expr, lang.macros.Macros.haxeToExpr(strExpr));
+          individualMatches.push(expr);
+        }
+        var individualMatchesBlock: Expr = MacroTools.buildBlock(individualMatches);
+        if(individualMatchesBlock == null) {
+          individualMatchesBlock = macro {};
+        }
+        var expr = macro {
+          if(!Std.is($e{valueExpr}, Keyword)) {
+            scope = null;
+            break;
+          }
+          $e{individualMatchesBlock};
+        }
+        MacroLogger.logExpr(expr, 'expr');
+        expr;
       case e:
         MacroLogger.log(e, 'PatternMatch expr');
         MacroLogger.logExpr(valueExpr, 'PatternMatch expr');

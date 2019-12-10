@@ -72,6 +72,40 @@ class KeywordTest {
     var k: Keyword = @keyword{foo: @keyword{bar: "cat"}, foo: @keyword{baz: "bar"}, cat: "Ellie"};
     Assert.areEqual(Keyword.keys(k).toAnnaString(), '{:foo, :foo, :cat}');
   }
+
+  public static function shouldReturnTrueIfHasKey():Void {
+    var k: Keyword = @keyword{foo: @keyword{bar: "cat"}, foo: @keyword{baz: "bar"}, cat: "Ellie"};
+    Assert.areEqual(Keyword.hasKey(k, @_'cat'), @_'true');
+  }
+
+  public static function shouldReturnFalseIfDoesntHaveKey():Void {
+    var k: Keyword = @keyword{foo: @keyword{bar: "cat"}, foo: @keyword{baz: "bar"}, cat: "Ellie"};
+    Assert.areEqual(Keyword.hasKey(k, @_'benus'), @_'false');
+  }
+
+  public static function shouldReturnFalseIfKeyNoLongerExists():Void {
+    var k: Keyword = @keyword{foo: @keyword{bar: "cat"}, foo: @keyword{baz: "bar"}, cat: "Ellie"};
+    Assert.areEqual(Keyword.hasKey(k, @_'foo'), @_'true');
+    Keyword.remove(k, @_'foo');
+    Assert.areEqual(Keyword.hasKey(k, @_'foo'), @_'true');
+    Keyword.remove(k, @_'foo');
+    Assert.areEqual(Keyword.hasKey(k, @_'foo'), @_'false');
+  }
+
+  public static function shouldReturnFalseIfKeyAreAddedThenRemoved():Void {
+    var k: Keyword = @keyword{};
+    k = Keyword.add(k, @_'foo', @_'bar');
+    k = Keyword.add(k, @_'foo', @_'baz');
+    k = Keyword.add(k, @_'foo', @_'cat');
+    Assert.areEqual(Keyword.hasKey(k, @_'foo'), @_'true');
+    Keyword.remove(k, @_'foo');
+    Assert.areEqual(Keyword.hasKey(k, @_'foo'), @_'true');
+    Keyword.remove(k, @_'foo');
+    Assert.areEqual(Keyword.hasKey(k, @_'foo'), @_'true');
+    Keyword.remove(k, @_'foo');
+    Assert.areEqual(Keyword.hasKey(k, @_'foo'), @_'false');
+  }
+
 }
 class KeywordContainer {
   public var args: Keyword;
