@@ -155,7 +155,7 @@ class AnnaLang {
 
   #if macro
   public static inline function createCustomType(type: Expr, params: Expr): Expr {
-    var typeAndValue: Dynamic = MacroTools.getTypeAndValue(params);
+    var typeAndValue: Dynamic = MacroTools.getCustomTypeAndValue(params);
     typeAndValue.type = printer.printExpr(type);
     var str: String = '${typeAndValue.type}.create(${typeAndValue.rawValue})';
     var expr = Macros.haxeToExpr(str);
@@ -553,6 +553,10 @@ class AnnaLang {
               var left = Macros.haxeToExpr('@__stringMatch ${printer.printExpr(left)} => ${printer.printExpr(match)}');
               var assignOp: Array<Expr> = keywordMap.get("=")(left);
               retExprs.push(assignOp[0]);
+            case EObjectDecl(values):
+              var lineNumber = MacroTools.getLineNumber(blockExpr);
+              var assignOp: Expr = createPutIntoScope(blockExpr, lineNumber);
+              retExprs.push(assignOp);
             case _:
               blockExpr;
           }

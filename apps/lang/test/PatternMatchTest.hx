@@ -428,7 +428,7 @@ class PatternMatchTest {
 
   public static function shouldMatchKeysOfKeywordList():Void {
     var k: Keyword = @keyword{foo: 'bar', baz: 'cat'};
-    var matched: Map<String, Dynamic> = PatternMatch.match({foo: foo, baz: baz}, k);
+    var matched: Map<String, Dynamic> = PatternMatch.match(@keyword{foo: foo, baz: baz}, k);
     @refute matched == null;
     @assert matched.get('foo') == 'bar';
     @assert matched.get('baz') == 'cat';
@@ -436,7 +436,7 @@ class PatternMatchTest {
 
   public static function shouldMatchKeysOrValuesOfKeywordList():Void {
     var k: Keyword = @keyword{foo: 'bar', baz: 'cat'};
-    var matched: Map<String, Dynamic> = PatternMatch.match({foo: foo, baz: 'cat'}, k);
+    var matched: Map<String, Dynamic> = PatternMatch.match(@keyword{foo: foo, baz: 'cat'}, k);
     @refute matched == null;
     @assert matched.get('foo') == 'bar';
     @assert matched.get('baz') == null;
@@ -444,7 +444,7 @@ class PatternMatchTest {
 
   public static function shouldMatchOnKeywordsThatHaveDifferentQuantities():Void {
     var k: Keyword = @keyword{foo: 'bar', baz: 'cat', bird: 'squirrel'};
-    var matched: Map<String, Dynamic> = PatternMatch.match({foo: foo, baz: 'cat'}, k);
+    var matched: Map<String, Dynamic> = PatternMatch.match(@keyword{foo: foo, baz: 'cat'}, k);
     @refute matched == null;
     @assert matched.get('foo') == 'bar';
     @assert matched.get('baz') == null;
@@ -452,13 +452,13 @@ class PatternMatchTest {
 
   public static function shouldNotMatchIfKeysAreNotFound():Void {
     var k: Keyword = @keyword{foo: 'bar', baz: 'cat'};
-    var matched: Map<String, Dynamic> = PatternMatch.match({nope: foo, baz: 'cat'}, k);
+    var matched: Map<String, Dynamic> = PatternMatch.match(@keyword{nope: foo, baz: 'cat'}, k);
     @assert matched == null;
   }
 
   public static function shouldMatchOnEmptyKeyword():Void {
     var k: Keyword = @keyword{};
-    var matched: Map<String, Dynamic> = PatternMatch.match({}, k);
+    var matched: Map<String, Dynamic> = PatternMatch.match(@keyword{}, k);
     @refute matched == null;
   }
 }

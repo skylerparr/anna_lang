@@ -68,6 +68,7 @@ using lang.AtomSupport;
     iterate_list({});
     iterate_list({6; 5; 4; 3; 2; 1;});
     match_map([@_"hello" => "world", @_"foo" => "bar", @_"foocat" => [@_"cat" => "baz"]]);
+    match_keyword({foo: "bar", baz: "cat"});
     @_"ok";
   });
 
@@ -125,6 +126,12 @@ using lang.AtomSupport;
   @def match_string({String: "hello " => variable}, [Atom], {
     @native IO.inspect("expect world");
     @native IO.inspect(variable);
+    @_"ok";
+  });
+
+  @def match_keyword({Keyword: {foo: "bar", baz: cat}}, [Atom], {
+    @native IO.inspect("expect 'cat'");
+    @native IO.inspect(cat);
     @_"ok";
   });
 }))
@@ -409,7 +416,16 @@ using lang.AtomSupport;
     @native IO.inspect("What is Ellie always squirreling for?");
     @native IO.inspect(for_what);
     @native IO.inspect('Expect: {ok: \'foob\'}');
-    @native IO.inspect(@keyword{ok: "foob"});
+    @native IO.inspect({ok: "foob"});
+
+    @native IO.inspect('Expect: 3');
+    [1, 2, three] = [1, 2, 3];
+    @native IO.inspect(three);
+
+    @native IO.inspect("Expect: 'cat'");
+    {foob: "bar", baz: kwd_val} = {foob: "bar", baz: "cat"};
+    @native IO.inspect(kwd_val);
+
     @native IO.inspect("Expect: a constant value");
     print(VALUE);
     foo(VSN);
@@ -418,7 +434,6 @@ using lang.AtomSupport;
     @native IO.inspect(name);
 
     spawn_pid = @native Kernel.spawn(@_'Boot', @_'test_exit', [], {});
-//    @native Kernel.exit(spawn_pid);
     @native Process.registerPid(spawn_pid, @_'spawn_pid');
     @native Process.sleep(1200);
     status = @native Process.isAlive(spawn_pid);
@@ -440,9 +455,6 @@ using lang.AtomSupport;
     @native IO.inspect(child_pid);
     @native Process.registerPid(child_pid, @_'linked_pid');
     status = @native Process.isAlive(child_pid);
-//    @native Kernel.exit(child_pid);
-//    @native IO.inspect("child pid status");
-//    @native IO.inspect(status);
     @native Process.sleep(1000);
     @native Kernel.exit(child_pid);
     @native IO.inspect('should not see this');
@@ -452,12 +464,6 @@ using lang.AtomSupport;
   @def spawn_child([Atom], {
     @native IO.inspect('spawn child pid');
     @native Process.sleep(2000);
-//    spawn_pid = @native Process.getPidByName(@_'spawn_pid');
-//    @native IO.inspect("sending exit signal to");
-//    @native IO.inspect(spawn_pid);
-//    @native Kernel.exit(spawn_pid);
-//
-//    @native Process.sleep(1000);
     @native IO.inspect('child spawn should not see this');
     @_'ok';
   });

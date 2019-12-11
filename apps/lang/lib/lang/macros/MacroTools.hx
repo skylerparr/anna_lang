@@ -297,6 +297,27 @@ class MacroTools {
       case EMeta({name: '__stringMatch'}, expr):
         var value: String = printer.printExpr(expr);
         {type: "String", value: value, rawValue: value};
+      case EObjectDecl(args):
+        var listValues: Array<String> = [];
+        for(arg in args) {
+          var typeAndValue: Dynamic = getTypeAndValue(arg.expr);
+          listValues.push('${arg.field}: ${typeAndValue.rawValue}');
+        }
+        var strValue: String = '@keyword{${listValues.join(",")}}';
+
+        {type: "Keyword", value: '@tuple [@atom "const", ${strValue}]', rawValue: strValue};
+      case ECast(expr, TPath({ name: type })):
+        var typeAndValue = getTypeAndValue(expr);
+        {type: AnnaLang.getAlias(type), value: typeAndValue.rawValue, rawValue: typeAndValue.rawValue};
+      case e:
+        MacroLogger.log(expr, 'expr');
+        MacroLogger.logExpr(expr, 'expr');
+        throw new ParsingException("AnnaLang: Expected type and value or variable name");
+    }
+  }
+
+  public static function getCustomTypeAndValue(expr: Expr):Dynamic {
+    return switch(expr.expr) {
       case EObjectDecl(items):
         var keyValues: Array<String> = [];
         for(item in items) {
@@ -311,13 +332,8 @@ class MacroTools {
         }
         var strValue: String = '{${keyValues.join(', ')}}';
         {type: "CustomType", value: '@tuple [@atom "const", ${strValue}]', rawValue: strValue};
-      case ECast(expr, TPath({ name: type })):
-        var typeAndValue = getTypeAndValue(expr);
-        {type: AnnaLang.getAlias(type), value: typeAndValue.rawValue, rawValue: typeAndValue.rawValue};
-      case e:
-        MacroLogger.log(expr, 'expr');
-        MacroLogger.logExpr(expr, 'expr');
-        throw new ParsingException("AnnaLang: Expected type and value or variable name");
+      case _:
+        throw new ParsingException('AnnaLang: Attempting to create CustomType with incorrect declaration. Expects: YourType%{foo: "bar", baz: "cat"}');
     }
   }
 
@@ -363,7 +379,11 @@ class MacroTools {
                     {name: name, pattern: pattern};
                   case EObjectDecl(values):
                     var name = util.StringUtil.random();
-                    {name: name, pattern: '@list[]'};
+                    var items: Array<String> = [];
+                    for(value in values) {
+                      items.push('${value.field}: ${printer.printExpr(value.expr)}');
+                    }
+                    {name: name, pattern: '@keyword{${items.join(', ')}}'};
                   case EArrayDecl(values):
                     var name = util.StringUtil.random();
                     var items: Array<String> = [];
@@ -463,7 +483,7 @@ class MacroTools {
         body;
       case EConst(_):
         [expr];
-      case EMeta(_, _) | EArrayDecl(_) | EBlock(_) | EBinop(OpArrow, _, _):
+      case EMeta(_, _) | EArrayDecl(_) | EBlock(_) | EBinop(OpArrow, _, _) | EObjectDecl(_):
         [expr];
       case e:
         MacroLogger.log(e, 'e');
@@ -517,7 +537,7 @@ class MacroTools {
       case EConst(CString(value)) | EConst(CInt(value)) | EConst(CFloat(value)):
         acc.push(value);
         acc;
-      case EMeta(_, _) | EArrayDecl(_) | EBlock(_) | EBinop(OpArrow, _, _):
+      case EMeta(_, _) | EArrayDecl(_) | EBlock(_) | EBinop(OpArrow, _, _) | EObjectDecl(_):
         acc.push(printer.printExpr(expr));
         acc;
       case e:

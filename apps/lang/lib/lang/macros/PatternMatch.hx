@@ -105,7 +105,7 @@ class PatternMatch {
           individualMatchesBlock = macro {};
         }
         var listLength: Expr = lang.macros.Macros.haxeToExpr('${values.length}');
-        macro {
+        var expr = macro {
           if(!Std.is($e{valueExpr}, LList)) {
             scope = null;
             break;
@@ -118,6 +118,7 @@ class PatternMatch {
             $e{individualMatchesBlock}
           }
         }
+        return expr;
       case ECall({expr: EField({expr: EConst(CIdent("MMap"))}, _)}, [{expr: ECall(_, [{expr: ECast({expr: EArrayDecl(values)}, _)}])}]):
         var individualMatches: Array<Expr> = [];
         var isKey: Bool = true;
@@ -192,6 +193,45 @@ class PatternMatch {
           strExpr = 'Keyword.get(${printer.printExpr(valueExpr)}, Atom.create("${value.field}"))';
           var expr: Expr = generatePatternMatch(value.expr, lang.macros.Macros.haxeToExpr(strExpr));
           individualMatches.push(expr);
+        }
+        var individualMatchesBlock: Expr = MacroTools.buildBlock(individualMatches);
+        if(individualMatchesBlock == null) {
+          individualMatchesBlock = macro {};
+        }
+        var expr = macro {
+          if(!Std.is($e{valueExpr}, Keyword)) {
+            scope = null;
+            break;
+          }
+          $e{individualMatchesBlock};
+        }
+        expr;
+      case ECall({expr: EField({expr: EConst(CIdent("Keyword"))}, _)}, values):
+        MacroLogger.logExpr(valueExpr, 'valueExpr');
+        var individualMatches: Array<Expr> = [];
+        for(value in values) {
+          switch(value.expr) {
+            case EArrayDecl(exprs):
+              for(expr in exprs) {
+                switch(expr.expr) {
+                  case EArrayDecl([field, assign]):
+                    var strExpr: String = '';
+                    strExpr = 'Keyword.hasKey(${printer.printExpr(valueExpr)}, Atom.create(${printer.printExpr(field)}))';
+                    var expr: Expr = generatePatternMatch(lang.macros.Macros.haxeToExpr('Atom.create("true")'), lang.macros.Macros.haxeToExpr(strExpr));
+                    individualMatches.push(expr);
+
+                    strExpr = 'Keyword.get(${printer.printExpr(valueExpr)}, Atom.create(${printer.printExpr(field)}))';
+                    var expr: Expr = generatePatternMatch(assign, lang.macros.Macros.haxeToExpr(strExpr));
+                    individualMatches.push(expr);
+
+                  case _:
+                    throw new ParsingException("AnnaLang: Unexpected syntax. Expects: @keyword{foo: 'bar', baz: 'cat'}");
+
+                }
+              }
+            case _:
+              throw new ParsingException("AnnaLang: Unexpected syntax. Expects: @keyword{foo: 'bar', baz: 'cat'}");
+          }
         }
         var individualMatchesBlock: Expr = MacroTools.buildBlock(individualMatches);
         if(individualMatchesBlock == null) {
