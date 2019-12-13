@@ -74,6 +74,8 @@ import vm.Function;
 }))
 @:build(lang.macros.AnnaLang.defCls(CommandHandler, {
   @alias vm.Kernel;
+  @const ANNA_LANG_SRC_PATH = 'anna_lang/';
+  @const ANNA_LANG_SUFFIX = '.anna';
 
   @def process_command({String: 'exit'}, [Atom], {
     System.println('');
@@ -114,9 +116,12 @@ import vm.Function;
   });
 
   @def process_command({String: 'c ' => file}, [Atom], {
-    System.println('');
     filename = cast(file, String);
-    File.get_content(filename);
+    filename = Str.concat(ANNA_LANG_SRC_PATH, filename);
+    filename = Str.concat(filename, ANNA_LANG_SUFFIX);
+    content = File.get_content(filename);
+    System.println('');
+    System.println(content);
     @_'ok';
   });
 

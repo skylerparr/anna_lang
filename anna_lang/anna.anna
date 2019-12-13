@@ -1,4 +1,5 @@
 defmodule(Str, {
+/*
   @alias util.StringUtil;
 
   @def concat({String: lhs, String: rhs}, [String], {
@@ -24,4 +25,5 @@ defmodule(Str, {
   @def string_to_int({String: s}, [Int], {
     @native Std.int(s);
   });
-})
+  */
+});

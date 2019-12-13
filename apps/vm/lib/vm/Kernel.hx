@@ -125,6 +125,7 @@ class Kernel {
     Classes.define("Str".atom(), Type.resolveClass("Str"));
     Classes.define("System".atom(), Type.resolveClass("System"));
     Classes.define("CommandHandler".atom(), Type.resolveClass("CommandHandler"));
+    Classes.define("File".atom(), Type.resolveClass("File"));
     return 'ok'.atom();
   }
 
