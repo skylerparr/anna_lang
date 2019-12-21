@@ -62,7 +62,7 @@ class Anna {
     return val;
   }
 
-  public static inline function toAnnaString(val: Any, gettingEnum: Bool = false): String {
+  public static inline function toAnnaString(val: Any, gettingEnum: Bool = false, scopeVariables: Map<String, Dynamic> = null): String {
     return {
       switch(Type.typeof(val)) {
         case TEnum(e):

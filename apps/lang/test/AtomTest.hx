@@ -17,6 +17,7 @@ class AtomTest {
 
     atomArray;
   }
+
   public static function shouldCreateAtomWithStaticInitializer(): Void {
     Assert.areEqual(Anna.toAnnaString(atomArray), "#A[:foo, :bar]");
   }

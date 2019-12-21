@@ -3,9 +3,9 @@ package util;
 class StringUtil {
 
   public static var CAPITALS: EReg = ~/[A-Z]/;
-  private static var CHARS = "abcdefghijklmnopqrstuvwxyz";
+  private static inline var CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-  public static function capitalizePackage(string: String): String {
+  public static inline function capitalizePackage(string: String): String {
     var retVal: Array<String> = [];
 
     var frags: Array<String> = string.split('.');
@@ -38,7 +38,7 @@ class StringUtil {
     return result;
   }
 
-  public static function concat(lhs: String, rhs: String): String {
+  public static inline function concat(lhs: String, rhs: String): String {
     return lhs + rhs;
   }
 
@@ -50,7 +50,7 @@ class StringUtil {
     return string.substring(start, end);
   }
 
-  public static function length(string: String): Int {
+  public static inline function length(string: String): Int {
     return string.length;
   }
 
@@ -58,7 +58,7 @@ class StringUtil {
     return StringTools.rpad(string, c, l);
   }
 
-  public static function split(string: String, delimiter: String): LList {
+  public static inline function split(string: String, delimiter: String): LList {
     var array: Array<String> = string.split(delimiter);
     return LList.create(cast array);
   }

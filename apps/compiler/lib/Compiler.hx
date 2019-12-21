@@ -31,6 +31,9 @@ import vm.Function;
     @native Std.int(s);
   });
 
+  @def random({Int: length}, [String], {
+    @native StringUtil.random(length);
+  });
 }))
 @:build(lang.macros.AnnaLang.defCls(File, {
   @def get_content({String: file_path}, [String], {
@@ -53,6 +56,14 @@ import vm.Function;
   @def send({Pid: pid, Tuple: value}, [Atom], {
     @native Kernel.send(pid, value);
     @_'ok';
+  });
+
+  @def spawn({Atom: module, Atom: func, Tuple: types, LList: args}, [Pid], {
+    @native Kernel.spawn(module, func, types, args);
+  });
+
+  @def spawn_link({Atom: module, Atom: func, Tuple: types, LList: args}, [Pid], {
+    @native Kernel.spawn_link(module, func, types, args);
   });
 
   @def add({Float: a, Float: b}, [Float], {
@@ -78,36 +89,37 @@ import vm.Function;
   @const ANNA_LANG_SUFFIX = '.anna';
 
   @def process_command({String: 'exit'}, [Atom], {
-    System.println('');
     System.println('exiting...');
     @native Kernel.stop();
     @_'nil';
   });
 
   @def process_command({String: 'recompile'}, [Atom], {
-    System.println('');
     @native Kernel.recompile();
     @native Kernel.stop();
     @_'nil';
   });
 
+
   @def process_command({String: 'compile_vm'}, [Atom], {
-    System.println('');
     @native Kernel.compileVM();
     @native Kernel.stop();
     @_'nil';
   });
 
   @def process_command({String: 'haxe'}, [Atom], {
-    System.println('');
     @native Kernel.switchToHaxe();
     @native Kernel.stop();
     @_'nil';
   });
 
+  @def process_command({String: 'tests'}, [Atom], {
+    UnitTests.run_tests();
+    @_'ok';
+  });
+
   @def process_command({String: 'v ' => number}, [String], {
     //todo: need to infer string pattern matches
-    System.println('');
     index = Str.string_to_int(cast(number, String));
     index = Kernel.subtract(index, 1);
     command = History.get(cast(index, Int));
@@ -120,21 +132,40 @@ import vm.Function;
     filename = Str.concat(ANNA_LANG_SRC_PATH, filename);
     filename = Str.concat(filename, ANNA_LANG_SUFFIX);
     content = File.get_content(filename);
-    System.println('');
-    System.println(content);
+    AnnaCompiler.parse(content);
     @_'ok';
   });
 
   @def process_command({String: ''}, [Atom], {
-    System.println('');
     @_'ok';
   });
 
   @def process_command({String: cmd}, [Atom], {
     History.push(cmd);
 
-    System.println('');
     System.println(cmd);
+    @_'ok';
+  });
+}))
+@:build(lang.macros.AnnaLang.defCls(AnnaCompiler, {
+  @alias util.Template;
+  @const TEMPLATE = 'package;
+import vm.Kernel;
+import vm.Pid;
+import IO;
+import vm.Function;
+@:build(lang.macros.AnnaLang.init())
+@:build(lang.macros.AnnaLang.::code::
+@:build(lang.macros.AnnaLang.compile())
+class ::filename:: {
+
+}';
+
+  @def parse({String: code}, [Atom], {
+    filename = Str.random(30);
+    @native IO.inspect([@_'filename' => filename]);
+    result = @native Template.execute(TEMPLATE, [@_'filename' => filename]);
+    @native IO.inspect(result);
     @_'ok';
   });
 }))
@@ -270,6 +301,7 @@ import vm.Function;
 
   @def start({
     status = History.start();
+    UnitTests.start();
 
     welcome = Str.concat('Interacive Anna version ', VSN);
     System.println(welcome);
@@ -303,6 +335,7 @@ import vm.Function;
 
   // enter
   @def handle_input({Int: 13, String: current_string}, [String], {
+    System.println('');
     History.increment_line();
     result = CommandHandler.process_command(current_string);
     handle_result(result);
@@ -380,6 +413,78 @@ import vm.Function;
     collect_user_input(current_string);
   });
 
+}))
+@:build(lang.macros.AnnaLang.defCls(UnitTests, {
+  @alias vm.Process;
+  @alias vm.Kernel;
+
+  @const ALL_TESTS = @_'ALL Tests';
+
+  @def start([Tuple], {
+    all_tests_pid = Kernel.spawn(@_'UnitTests', @_'start_tests_store', cast([], Tuple), {});
+    @native Process.registerPid(all_tests_pid, ALL_TESTS);
+    [@_'ok', all_tests_pid];
+  });
+
+  @def start_tests_store([LList], {
+    tests_store_loop({});
+  });
+
+  @def tests_store_loop({LList: all_tests}, [LList], {
+    received = Kernel.receive(@fn {
+      ([{Tuple: [@_'store', test_module, test_name]}] => {
+        @native LList.add(all_tests, [test_module, test_name]);
+      });
+      ([{Tuple: [@_'get', respond_pid]}] => {
+        @native Kernel.send(respond_pid, all_tests);
+        all_tests;
+      });
+    });
+    tests_store_loop(cast(received, LList));
+  });
+
+  @def add_test({Atom: module, Atom: func}, [Atom], {
+    all_tests_pid = @native Process.getPidByName(ALL_TESTS);
+    Kernel.send(all_tests_pid, [@_'store', module, func]);
+    @_'ok';
+  });
+
+  @def run_tests([Atom], {
+    all_tests_pid = @native Process.getPidByName(ALL_TESTS);
+    self = @native Process.self();
+    Kernel.send(all_tests_pid, [@_'get', self]);
+    all_tests = Kernel.receive(@fn {
+      ([{LList: all_tests}] => {
+        all_tests;
+      });
+    });
+    do_run_tests(cast(all_tests, LList));
+    @_'ok';
+  });
+
+  @def do_run_tests({LList: {}}, [Atom], {
+    @_'ok';
+  });
+
+  @def do_run_tests({LList: {first | rest;}}, [Atom], {
+    run_test(cast(first, Tuple));
+    do_run_tests(cast(rest, LList));
+    @_'ok';
+  });
+
+  @def run_test({Tuple: [module, func]}, [Atom], {
+    @_'ok';
+  });
+}))
+@:build(lang.macros.AnnaLang.defCls(Assert, {
+  @def are_equal({String: lhs, String: rhs}, [Atom], {
+    @_'ok';
+  });
+}))
+@:build(lang.macros.AnnaLang.defCls(ASTTests, {
+  @def should_convert_int_to_ast([Atom], {
+    @_'ok';
+  });
 }))
 @:build(lang.macros.AnnaLang.compile())
 class Compiler {

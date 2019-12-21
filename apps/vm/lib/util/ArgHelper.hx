@@ -9,6 +9,7 @@ class ArgHelper {
   public static inline function extractArgValue(arg: Dynamic, scopeVariables: Map<String, Dynamic>): Dynamic {
     var tuple: Tuple = EitherSupport.getValue(arg);
     var retVal: Dynamic = arg;
+
     if(Std.is(tuple, Tuple)) {
       var argArray = tuple.asArray();
       if(argArray.length == 2) {

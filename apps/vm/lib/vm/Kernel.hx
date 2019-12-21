@@ -126,6 +126,8 @@ class Kernel {
     Classes.define("System".atom(), Type.resolveClass("System"));
     Classes.define("CommandHandler".atom(), Type.resolveClass("CommandHandler"));
     Classes.define("File".atom(), Type.resolveClass("File"));
+    Classes.define("UnitTests".atom(), Type.resolveClass("UnitTests"));
+    Classes.define("AnnaCompiler".atom(), Type.resolveClass("AnnaCompiler"));
     return 'ok'.atom();
   }
 

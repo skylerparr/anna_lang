@@ -117,6 +117,9 @@ class Tuple implements CustomType {
   public var __annaString: String;
 
   public function toAnnaString(): String {
+    if(variables != null) {
+      trace('variables is not null');
+    }
     if(__annaString == null) {
       var stringFrags: Array<String> = [];
       var vars: Array<Any> = asArray();
