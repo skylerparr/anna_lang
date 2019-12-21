@@ -385,6 +385,7 @@ using lang.AtomSupport;
     fun4([@_'ok', 'hello world']);
     fun4([@_'atom']);
 
+    @native IO.inspect("expect nil");
     @native IO.inspect(result3);
     @native IO.inspect("testing assignment matching");
     [@_"ok", msg] = sample();

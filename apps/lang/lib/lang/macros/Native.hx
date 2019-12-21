@@ -67,34 +67,11 @@ class Native {
     var privateArgs: Array<String> = [];
     for(arg in strArgs) {
       var assign: String = '
-          var _arg${counter} = {
-            var paramValue: Atom = lang.EitherSupport.getValue(arg${counter}[0]);
-            switch(paramValue) {
-              case {value: "const"}:
-                lang.EitherSupport.getValue(arg${counter}[1]);
-              case {value: "var"}:
-                scope.get(lang.EitherSupport.getValue(arg${counter}[1]));
-              case _:
-                Kernel.crash(Process.self());
-                return;
-            }
-          };
-          if(Std.is(_arg${counter}, Atom)) {
-            var strAtom: String = Atom.to_s(_arg${counter});
-            var frags = strAtom.split(".");
-            if(frags.length > 1) {
-              var fun = frags.pop();
-              var module = frags.join(".");
-              var fn = Classes.getFunction(lang.AtomSupport.atom(module), lang.AtomSupport.atom(fun));
-              if(fn != null) {
-                _arg${counter} = fn;
-              }
-            }
-          }
+          var _arg${counter} = util.ArgHelper.extractArgValue(arg${counter}, scope);
 ';
       var classVar: String = 'arg${counter}';
       var paramVar = macro class Fake {
-        private var $classVar: Array<EitherEnums.Either2<Atom, Dynamic>>;
+        private var $classVar: Tuple;
       }
       paramVars.push(paramVar.fields[0]);
       assignments.push(assign);
@@ -129,8 +106,7 @@ class Native {
             var counter: Int = 0;
             for(arg in LList.iterator(args)) {
                 var tuple: Tuple = lang.EitherSupport.getValue(arg);
-                var argArray = tuple.asArray();
-                Reflect.setField(this, "arg" + (counter++), argArray);
+                Reflect.setField(this, "arg" + (counter++), tuple);
               }
           }
 
