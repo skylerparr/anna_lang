@@ -66,9 +66,7 @@ class Native {
     var counter: Int = 0;
     var privateArgs: Array<String> = [];
     for(arg in strArgs) {
-      var assign: String = '
-          var _arg${counter} = util.ArgHelper.extractArgValue(arg${counter}, scope);
-';
+      var assign: String = 'var _arg${counter} = util.ArgHelper.extractArgValue(arg${counter}, scope);';
       var classVar: String = 'arg${counter}';
       var paramVar = macro class Fake {
         private var $classVar: Tuple;
@@ -86,18 +84,23 @@ class Native {
     MacroContext.lastFunctionReturnType = MacroTools.resolveType(expr);
 
     if(declaredFunctions.get(className) == null) {
-      var assignReturnVar: Expr = null;
+      var assignReturnVar: Expr = macro {};
       if(MacroContext.lastFunctionReturnType == "Int" || MacroContext.lastFunctionReturnType == "Float") {
+        executeBodyStr = 'var retVal = {${executeBodyStr}}';
         assignReturnVar = macro scope.set("$$$", retVal);
         MacroContext.lastFunctionReturnType = "Number";
       } else {
-        assignReturnVar = macro if(retVal == null) {
-              scope.set("$$$", lang.HashTableAtoms.get("nil"));
-            } else {
-              scope.set("$$$", retVal);
-            }
+        if(MacroContext.lastFunctionReturnType != "Void") {
+          assignReturnVar = macro if(retVal == null) {
+                scope.set("$$$", lang.HashTableAtoms.get("nil"));
+              } else {
+                scope.set("$$$", retVal);
+              }
+          executeBodyStr = 'var retVal = {${executeBodyStr}}';
+        }
       }
 
+      MacroLogger.log(executeBodyStr, 'executeBodyStr');
       var execBody: Expr = lang.macros.Macros.haxeToExpr(executeBodyStr);
       var cls: TypeDefinition = macro class NoClass extends vm.AbstractInvokeFunction {
 
@@ -111,7 +114,7 @@ class Native {
           }
 
           override public function execute(scope: Map<String, Dynamic>, processStack: vm.ProcessStack): Void {
-            var retVal = $e{execBody}
+            $e{execBody}
             $e{assignReturnVar}
           }
       }

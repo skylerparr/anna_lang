@@ -43,6 +43,15 @@ import vm.Function;
     '';
     #end
   });
+
+  @def save_content({String: file_path, String: content}, [Tuple], {
+    #if cpp
+    @native sys.io.File.saveContent(file_path, content);
+    [@_'ok', file_path];
+    #else
+    [@_'error', 'not supported'];
+    #end
+  });
 }))
 @:build(lang.macros.AnnaLang.defCls(Kernel, {
   @alias vm.Pid;
@@ -87,6 +96,7 @@ import vm.Function;
   @alias vm.Kernel;
   @const ANNA_LANG_SRC_PATH = 'anna_lang/';
   @const ANNA_LANG_SUFFIX = '.anna';
+  @const HAXE_SUFFIX = '.hx';
 
   @def process_command({String: 'exit'}, [Atom], {
     System.println('exiting...');
@@ -132,7 +142,13 @@ import vm.Function;
     filename = Str.concat(ANNA_LANG_SRC_PATH, filename);
     filename = Str.concat(filename, ANNA_LANG_SUFFIX);
     content = File.get_content(filename);
-    AnnaCompiler.parse(content);
+    [@_'ok', filename, content] = AnnaCompiler.parse(content);
+
+    filename = cast(filename, String);
+    filename = Str.concat(ANNA_LANG_SRC_PATH, filename);
+    filename = Str.concat(filename, HAXE_SUFFIX);
+
+    File.save_content(filename, cast(content, String));
     @_'ok';
   });
 
@@ -161,12 +177,10 @@ class ::filename:: {
 
 }';
 
-  @def parse({String: code}, [Atom], {
+  @def parse({String: code}, [Tuple], {
     filename = Str.random(30);
-    @native IO.inspect([@_'filename' => filename]);
-    result = @native Template.execute(TEMPLATE, [@_'filename' => filename]);
-    @native IO.inspect(result);
-    @_'ok';
+    result = @native Template.execute(TEMPLATE, [@_'filename' => filename, @_'code' => code]);
+    [@_'ok', filename, result];
   });
 }))
 @:build(lang.macros.AnnaLang.defCls(History, {
