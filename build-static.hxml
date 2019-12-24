@@ -6,6 +6,7 @@
 -cp apps/vm_api/lib
 -D analyzer-optimize
 -D hscriptPos
+-D dev_anna
 -D HXCPP_M64
 -cpp anna_static
 -main Main

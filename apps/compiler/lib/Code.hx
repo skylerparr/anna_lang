@@ -2,7 +2,6 @@ package ;
 import util.StringUtil;
 import lang.AtomSupport;
 import vm.Classes;
-import vm.Kernel;
 import vm.Pid;
 import IO;
 import vm.Function;
@@ -72,6 +71,15 @@ import vm.Function;
   @def rm_rf({String: dir}, [Tuple], {
     #if cpp
     @native util.File.removeAll(dir);
+    [@_'ok', file_path];
+    #else
+    [@_'error', 'not supported'];
+    #end
+  });
+
+  @def cp({String: src, String: dest}, [Tuple], {
+    #if cpp
+    @native sys.io.File.copy(src, dest);
     [@_'ok', file_path];
     #else
     [@_'error', 'not supported'];
@@ -177,44 +185,57 @@ import vm.Function;
 }))
 @:build(lang.macros.AnnaLang.defCls(AnnaCompiler, {
   @alias util.Template;
-  @const ANNA_LANG_SRC_PATH = 'anna_lang/';
+
+  @const PROJECT_SRC_PATH = 'project/';
   @const ANNA_LANG_SUFFIX = '.anna';
   @const HAXE_SUFFIX = '.hx';
-  @const OUTPUT_DIR = '_build/anna_lang/';
-  @const TEMPLATE = 'package;
-import vm.Kernel;
-import vm.Pid;
-import IO;
-import vm.Function;
-@:build(lang.macros.AnnaLang.init())
-@:build(lang.macros.AnnaLang.::code::)
-@:build(lang.macros.AnnaLang.compile())
-class Code {
-  public static function defineCode(): Atom {
-    vm.Classes.define(Atom.create(\'::module_name::\'), Type.resolveClass(\'::module_name::\'));
-    return Atom.create(\'ok\');
-  }
-}';
+  @const BUILD_DIR = '_build/';
+  @const OUTPUT_DIR = '_build/apps/main/';
+  @const RESOURCE_DIR = 'apps/compiler/resource/';
+  @const CONFIG_FILE = 'app_config.json';
+  @const BUILD_FILE = 'build.hxml';
+  @const CLASS_TEMPLATE_FILE = 'ClassTemplate.tpl';
+  @const BUILD_TEMPLATE_FILE = 'build.hxml.tpl';
 
   @def compile_file({String: module_name}, [Tuple], {
+    app_name = module_name;
     filename = module_name;
-    filename = Str.concat(ANNA_LANG_SRC_PATH, filename);
+    filename = Str.concat(PROJECT_SRC_PATH, filename);
     filename = Str.concat(filename, ANNA_LANG_SUFFIX);
     content = File.get_content(filename);
     module_name = Str.nameify(module_name);
-    parse(module_name, content);
+    parse(module_name, app_name, content);
   });
 
-  @def parse({String: module_name, String: code}, [Tuple], {
-    result = @native Template.execute(TEMPLATE, [@_'code' => code, @_'module_name' => module_name]);
+  @def parse({String: module_name, String: app_name, String: code}, [Tuple], {
+    template_file = Str.concat(RESOURCE_DIR, CLASS_TEMPLATE_FILE);
+    template = File.get_content(template_file);
 
-    File.rm_rf(OUTPUT_DIR);
+    params = [@_'code' => code, @_'module_name' => module_name, @_'app_name' => app_name];
+    result = @native Template.execute(template, params);
+
+    File.rm_rf(BUILD_DIR);
     File.mkdir_p(OUTPUT_DIR);
     filename = 'Code';
     filename = Str.concat(OUTPUT_DIR, filename);
     filename = Str.concat(filename, HAXE_SUFFIX);
 
     File.save_content(filename, cast(result, String));
+
+    //copy the app_config
+    app_config_path = Str.concat(PROJECT_SRC_PATH, CONFIG_FILE);
+    app_config_destination = Str.concat(OUTPUT_DIR, CONFIG_FILE);
+    File.cp(app_config_path, app_config_destination);
+
+    //update the haxe build file
+    template_file = Str.concat(RESOURCE_DIR, BUILD_TEMPLATE_FILE);
+    template = File.get_content(template_file);
+
+    result = @native Template.execute(template, params);
+    template_file = Str.concat(BUILD_DIR, 'build.hxml');
+    File.save_content(template_file, cast(result, String));
+
+    @native util.Compiler.compileProject();
 
     [@_'ok', filename, result];
   });
@@ -539,15 +560,15 @@ class Code {
 @:build(lang.macros.AnnaLang.compile())
 class Code {
   public static function defineCode(): Atom {
-    Classes.define(Atom.create("Kernel"), Type.resolveClass("Kernel"));
-    Classes.define(Atom.create("CompilerMain"), Type.resolveClass("CompilerMain"));
-    Classes.define(Atom.create("History"), Type.resolveClass("History"));
-    Classes.define(Atom.create("Str"), Type.resolveClass("Str"));
-    Classes.define(Atom.create("System"), Type.resolveClass("System"));
-    Classes.define(Atom.create("CommandHandler"), Type.resolveClass("CommandHandler"));
-    Classes.define(Atom.create("File"), Type.resolveClass("File"));
-    Classes.define(Atom.create("UnitTests"), Type.resolveClass("UnitTests"));
-    Classes.define(Atom.create("AnnaCompiler"), Type.resolveClass("AnnaCompiler"));
+    Classes.define(Atom.create('Kernel'), Kernel);
+    Classes.define(Atom.create('CompilerMain'), CompilerMain);
+    Classes.define(Atom.create('History'), History);
+    Classes.define(Atom.create('Str'), Str);
+    Classes.define(Atom.create('System'), System);
+    Classes.define(Atom.create('CommandHandler'), CommandHandler);
+    Classes.define(Atom.create('File'), File);
+    Classes.define(Atom.create('UnitTests'), UnitTests);
+    Classes.define(Atom.create('AnnaCompiler'), AnnaCompiler);
 
     return Atom.create('ok');
   }

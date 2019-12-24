@@ -56,8 +56,10 @@ class Kernel {
       if(currentScheduler.hasSomethingToExecute()) {
         for(i in 0...1000) {
           if(currentScheduler.hasSomethingToExecute()) {
+            Logger.log('update');
             currentScheduler.update();
           } else {
+            Logger.log('breaking');
             break;
           }
         }
@@ -105,6 +107,7 @@ class Kernel {
   #end
 
   public static function stop(): Atom {
+    Logger.log('stopping kernel');
     if(currentScheduler != null) {
       started = false;
     }
@@ -113,6 +116,10 @@ class Kernel {
 
   public static function testCompiler(): Pid {
     return testSpawn('CompilerMain', 'start', []);
+  }
+
+  public static function runApplication(appName: String): Pid {
+    return testSpawn(appName, 'start', []);
   }
 
   public static function testSpawn(module: String, func: String, args: Array<Dynamic>): Pid {

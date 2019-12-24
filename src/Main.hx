@@ -1,3 +1,5 @@
+import cpp.NativeProcess;
+import sys.io.File;
 import sys.FileSystem;
 import project.DefaultProjectConfig;
 import project.ProjectConfig;
@@ -39,7 +41,9 @@ class Main {
     EitherEnums;
     HashTableAtoms;
     FileSystem.createDirectory(".tmp");
+    File.copy(".tmp", ".tmp2");
     FileSystem.deleteDirectory(".tmp");
+    FileSystem.deleteFile(".tmp2");
     CallStack.exceptionStack();
     CallStack.callStack();
     var t = new haxe.Template("");
@@ -116,7 +120,11 @@ class Main {
 
     pollChanges();
     #else
+    #if dev_anna
     DevelopmentRunner.start(project);
+    #else
+    StandaloneRunner.start(project);
+    #end
     #end
   }
 

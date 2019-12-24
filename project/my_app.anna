@@ -1,0 +1,7 @@
+defCls(MyApp, {
+  @def start([Atom], {
+    System.println('hello world');
+    @native vm.Kernel.stop();
+    @_'ok';
+  });
+})

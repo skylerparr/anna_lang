@@ -47,10 +47,12 @@ class DefaultProcessStack implements ProcessStack {
       stackToPush = null;
     }
     if(allStacks != null && allStacks.length == 0) {
+      Logger.log(process, 'process complete');
       Process.complete(process);
       return;
     }
     currentStack = allStacks.first();
+    Logger.log(currentStack, 'currentStack');
     currentStack.execute(this);
     if(currentStack == null) {
       return;

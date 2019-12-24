@@ -2,6 +2,7 @@
 -D analyzer-optimize
 -D scriptable
 -D hscriptPos
+-D dev_anna
 -D HXCPP_M64
 -cpp anna
 -main Main

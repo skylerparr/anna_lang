@@ -46,6 +46,9 @@ class SimpleProcess extends AbstractCustomType implements Pid {
   }
 
   public function dispose(): Void {
+    if(mailbox == null) {
+      return;
+    }
     if(processStack != null) {
       processStack.dispose();
       processStack = null;
@@ -66,9 +69,13 @@ class SimpleProcess extends AbstractCustomType implements Pid {
       }
       monitors = null;
     }
+    Logger.log(this, 'exiting children');
+    Logger.log(_children, 'children');
     for(childPid in _children) {
+      Logger.log(childPid, 'exiting child');
       Kernel.exit(childPid, 'kill'.atom());
     }
+    Logger.log(this, 'exiting parent');
     if(parent != null) {
       Kernel.exit(parent, 'kill'.atom());
     }

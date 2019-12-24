@@ -28,6 +28,7 @@ class PushStack implements Operation {
     var fn: Function = Classes.getFunction(module, func);
     var instance: Dynamic = Classes.getInstance(module);
     if(fn == null) {
+      Logger.inspect('Function not found ${module.toAnnaString()} ${func.toAnnaString()}');
       Kernel.crash(Process.self());
       return;
     }

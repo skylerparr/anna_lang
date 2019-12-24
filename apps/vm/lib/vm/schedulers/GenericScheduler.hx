@@ -86,10 +86,13 @@ class GenericScheduler implements Scheduler {
     if(notRunning()) {
       return "not_running".atom();
     }
+    Logger.log(pid, 'setting pid to complete');
     pid.setState(ProcessState.COMPLETE);
     #if !cppia
+    Logger.log(pid, 'disposing pid');
     pid.dispose();
     #end
+    Logger.log(pids, 'removing pid');
     pids.remove(pid);
     _allPids.remove(pid);
     pidMetaMap.remove(pid);
@@ -200,6 +203,7 @@ class GenericScheduler implements Scheduler {
       return;
     }
     scheduleSleeping();
+    Logger.log(pids, 'pids');
     currentPid = pids.pop();
     Logger.log(currentPid, '${id} current pid');
     if(currentPid == null) {
@@ -210,12 +214,14 @@ class GenericScheduler implements Scheduler {
       passMessages(currentPid);
     }
     if(currentPid.state == ProcessState.RUNNING) {
+      Logger.log(currentPid, 'execute');
       currentPid.processStack.execute();
     }
     if(currentPid.state == ProcessState.RUNNING) {
       _allPids.push(currentPid);
       pids.add(currentPid);
     }
+    Logger.log('finish update');
   }
 
   public function hasSomethingToExecute(): Bool {
@@ -276,6 +282,7 @@ class GenericScheduler implements Scheduler {
     if(pid.trapExit == 'true'.atom()) {
       return 'trapped'.atom();
     }
+    Logger.log(pids, 'all pids');
     pids.remove(pid);
     pidMetaMap.remove(pid);
     if(signal == 'kill'.atom()) {

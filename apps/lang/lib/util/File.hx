@@ -4,13 +4,18 @@ class File {
   public static inline function removeAll(path: String): Tuple {
     if(FileSystem.exists(path)) {
       var toDelete: Array<String> = FileSystem.readDirectory(path);
-      for(file in toDelete) {
-        if(FileSystem.isDirectory(file)) {
-          removeAll(file);
-          FileSystem.deleteDirectory(file);
-        } else {
-          FileSystem.deleteFile('${path}${file}');
+      if(toDelete.length > 0) {
+        for(file in toDelete) {
+          var path: String = FileSystem.fullPath(path + file);
+          if(FileSystem.isDirectory(path)) {
+            removeAll(path + '/');
+            FileSystem.deleteDirectory(path);
+          } else {
+            FileSystem.deleteFile(path);
+          }
         }
+      } else {
+        FileSystem.deleteDirectory(path);
       }
     }
     return Tuple.create([Atom.create('ok'), path]);

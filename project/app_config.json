@@ -1,7 +1,7 @@
 {
   "application": "my_app",
   "autoStart": "MyApp",
-  "apps": ["vm_api", "vm", "lang"],
+  "apps": [],
   "libs": [],
   "tests": [],
   "haxelibs": ["minject"]
