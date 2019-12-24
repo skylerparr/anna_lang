@@ -23,6 +23,7 @@ class Application {
     var config: Dynamic = fetchAppConfigByName(appName);
 
     var appNameExpr: Expr = Macros.haxeToExpr('"${appName}".atom()');
+    var autoStart: Expr = Macros.haxeToExpr('"${config.autoStart}"');
     var configApps: Array<String> = cast config.apps;
     var apps: Array<String> = [];
     for(app in configApps) {
@@ -46,7 +47,7 @@ class Application {
     return macro {
       $e{includeExpr}
       var appRoot: String = Native.callStaticField("core.PathSettings", "applicationBasePath");
-      new project.AnnaLangProject(appRoot, $e{appNameExpr}, $e{appsExpr}, [], $e{haxeLibs});
+      new project.AnnaLangProject(appRoot, $e{appNameExpr}, $e{autoStart}, $e{appsExpr}, [], $e{haxeLibs});
     }
   }
 

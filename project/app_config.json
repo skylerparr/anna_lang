@@ -4,5 +4,5 @@
   "apps": [],
   "libs": [],
   "tests": [],
-  "haxelibs": ["minject"]
+  "haxelibs": []
 }

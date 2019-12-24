@@ -8,7 +8,7 @@
 -D analyzer-optimize
 -D hscriptPos
 -D HXCPP_M64
--cpp ::app_name::
+-cpp ../::app_name::
 -main Main
 -lib sepia
 -lib hscript-plus

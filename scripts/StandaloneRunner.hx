@@ -18,7 +18,7 @@ class StandaloneRunner {
     vm.Kernel.setProject(pc);
     main.Code.defineCode();
     vm.Kernel.start();
-    vm.Kernel.runApplication('MyApp');
+    vm.Kernel.runApplication(annaProject.autoStart);
     vm.Kernel.run();
     #end
 

@@ -12,6 +12,8 @@ class AnnaLangProject {
   @:isVar
   private var application(get, null): Atom;
   @:isVar
+  public var autoStart(get, null): String;
+  @:isVar
   private var apps(get, null): Array<String>;
   @:isVar
   private var libs(get, null): Array<Atom>;
@@ -41,6 +43,10 @@ class AnnaLangProject {
     return libs;
   }
 
+  public function get_autoStart(): String {
+    return autoStart;
+  }
+
   public function get_srcDir(): String {
     return '${projectDir}/${LIB_DIR}';
   }
@@ -54,9 +60,10 @@ class AnnaLangProject {
     return '${appRoot}${APPS_DIR}${application.value}';
   }
 
-  public function new(appRoot: String, application: Atom, apps: Array<String>, libs: Array<Atom>, haxeLibs: Array<String>) {
+  public function new(appRoot: String, application: Atom, autoStart: String, apps: Array<String>, libs: Array<Atom>, haxeLibs: Array<String>) {
     this.appRoot = appRoot;
     this.application = application;
+    this.autoStart = autoStart;
     this.apps = apps;
     this.libs = libs;
     this.haxeLibs = haxeLibs;
