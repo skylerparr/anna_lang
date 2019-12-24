@@ -43,7 +43,7 @@ class AnnaLang {
   macro public static function init(): Array<Field> {
     MacroContext.declaredClasses = new Map<String, ModuleDef>();
     MacroContext.declaredInterfaces = new Map<String, ModuleDef>();
-    return [];
+    return persistClassFields();
   }
 
   macro public static function defApi(name:Expr, body:Expr):Array<Field> {
@@ -73,7 +73,7 @@ class AnnaLang {
     }
     MacroContext.declaredInterfaces.set(interfaceName, moduleDef);
 
-    return [];
+    return persistClassFields();
   }
 
   macro public static function defType(name: Expr, body: Expr): Array<Field> {
@@ -150,7 +150,7 @@ class AnnaLang {
     applyBuildMacro(cls);
     Context.defineType(cls);
     MacroLogger.log(printer.printTypeDefinition(cls));
-    return [];
+    return persistClassFields();
   }
 
   #if macro
@@ -351,7 +351,7 @@ class AnnaLang {
       MacroLogger.log("------------------");
 
     }
-    return [];
+    return persistClassFields();
   }
   private static inline function __updateScope(match:Map<String, Dynamic>, scope:Map<String, Dynamic>):Void {
     for (key in match.keys()) {
@@ -377,10 +377,15 @@ class AnnaLang {
     moduleDef.aliases = MacroContext.aliases;
     moduleDef.declaredFunctions = MacroContext.declaredFunctions;
 
-    return [];
+    return persistClassFields();
   }
 
   #if macro
+
+  public static inline function persistClassFields():Array<Field> {
+    var fields: Array<Field> = Context.getBuildFields();
+    return fields;
+  }
 
   public static function validateImplementedInterfaces(moduleDef: ModuleDef):Void {
     for(iface in moduleDef.interfaces) {

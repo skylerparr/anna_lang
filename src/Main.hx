@@ -1,3 +1,4 @@
+import sys.FileSystem;
 import project.DefaultProjectConfig;
 import project.ProjectConfig;
 import core.InjectionSettings;
@@ -35,9 +36,10 @@ class Main {
 
   public static function main() {
     Native;
-    Random;
     EitherEnums;
     HashTableAtoms;
+    FileSystem.createDirectory(".tmp");
+    FileSystem.deleteDirectory(".tmp");
     CallStack.exceptionStack();
     CallStack.callStack();
     var t = new haxe.Template("");
@@ -114,7 +116,7 @@ class Main {
 
     pollChanges();
     #else
-    Runner.start(project);
+    DevelopmentRunner.start(project);
     #end
   }
 
@@ -124,7 +126,7 @@ class Main {
       var files: Array<String> = Thread.readMessage(true);
 
       if(files != null && files.length > 0) {
-        var clazz: Class<Dynamic> = Type.resolveClass("Runner");
+        var clazz: Class<Dynamic> = Type.resolveClass("DevelopmentRunner");
         if(clazz != null) {
           var fields: Array<String> = Type.getClassFields(clazz);
           for(f in fields) {

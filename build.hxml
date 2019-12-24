@@ -6,7 +6,6 @@
 -cpp anna
 -main Main
 -lib sepia
--lib random
 -lib hx-color-trace
 -lib ihx
 -lib hscript-plus

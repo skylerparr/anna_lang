@@ -17,6 +17,23 @@ class StringUtil {
     return retVal.join('.');
   }
 
+  public static inline function nameify(snake_name: String): String {
+    var retVal: String = "";
+    var capitalizeNext: Bool = true;
+    for(i in 0...snake_name.length) {
+      var char: String = snake_name.charAt(i);
+      if(capitalizeNext) {
+        retVal += char.toUpperCase();
+        capitalizeNext = false;
+      } else if(char == '_') {
+        capitalizeNext = true;
+      } else {
+        retVal += char;
+      }
+    }
+    return retVal;
+  }
+
   public static function random(length:Int = 10):String {
     if (length == 0) {
       return "";

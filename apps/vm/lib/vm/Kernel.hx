@@ -29,7 +29,6 @@ class Kernel {
       return 'already_started'.atom();
     }
     Logger.init();
-    defineCode();
     var scheduler: vm.schedulers.GenericScheduler = new vm.schedulers.GenericScheduler();
 
     var objectFactory: ObjectFactory = new ObjectFactory();
@@ -112,25 +111,6 @@ class Kernel {
     return 'ok'.atom();
   }
 
-  public static function defineCode(): Atom {
-    #if cppia
-    Classes.define("Boot".atom(), Type.resolveClass("Boot"));
-    Classes.define("FunctionPatternMatching".atom(), Type.resolveClass("FunctionPatternMatching"));
-    Classes.define("SampleApi".atom(), Type.resolveClass("SampleImpl"));
-    Classes.define("SampleApi2".atom(), Type.resolveClass("SampleImpl"));
-    #end
-    Classes.define("Kernel".atom(), Type.resolveClass("Kernel"));
-    Classes.define("CompilerMain".atom(), Type.resolveClass("CompilerMain"));
-    Classes.define("History".atom(), Type.resolveClass("History"));
-    Classes.define("Str".atom(), Type.resolveClass("Str"));
-    Classes.define("System".atom(), Type.resolveClass("System"));
-    Classes.define("CommandHandler".atom(), Type.resolveClass("CommandHandler"));
-    Classes.define("File".atom(), Type.resolveClass("File"));
-    Classes.define("UnitTests".atom(), Type.resolveClass("UnitTests"));
-    Classes.define("AnnaCompiler".atom(), Type.resolveClass("AnnaCompiler"));
-    return 'ok'.atom();
-  }
-
   public static function testCompiler(): Pid {
     return testSpawn('CompilerMain', 'start', []);
   }
@@ -159,27 +139,6 @@ class Kernel {
     stop();
     Sys.sleep(0.2);
     return start();
-  }
-  
-  public static function switchToMultithreadedScheduler():Void {
-    stop();
-    Sys.sleep(0.2);
-
-    defineCode();
-
-    var scheduler: vm.schedulers.CPPMultithreadedScheduler = new vm.schedulers.CPPMultithreadedScheduler();
-
-    var objectFactory: ObjectFactory = new ObjectFactory();
-    objectFactory.injector = new Injector();
-    objectFactory.injector.mapValue(ObjectCreator, objectFactory);
-    objectFactory.injector.mapClass(Pid, SimpleProcess);
-    scheduler.objectCreator = objectFactory;
-
-    currentScheduler = scheduler;
-    currentScheduler.start();
-    started = true;
-
-    run();
   }
 
   public static function testGenericScheduler(): Pid {
@@ -246,7 +205,7 @@ class Kernel {
 
   public static function recompile(): Atom {
     #if cppia
-    Reflect.callMethod(null, Reflect.field(Type.resolveClass('Runner'), 'compileCompiler'), [function() {
+    Reflect.callMethod(null, Reflect.field(Type.resolveClass('DevelopmentRunner'), 'compileCompiler'), [function() {
       Logger.log('switch to ia');
       switchToIA();
     }]);
@@ -257,7 +216,7 @@ class Kernel {
 
   public static function compileVM(): Atom {
     #if cppia
-    Reflect.callMethod(null, Reflect.field(Type.resolveClass('Runner'), 'compileVMProject'), [function() {
+    Reflect.callMethod(null, Reflect.field(Type.resolveClass('DevelopmentRunner'), 'compileVMProject'), [function() {
       recompile();
     }]);
     return 'ok'.atom();

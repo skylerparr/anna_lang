@@ -6,7 +6,6 @@ import hscript.Interp;
 import hscript.Parser;
 import project.DefaultProjectConfig;
 import project.ProjectConfig;
-import Reflect;
 import String;
 using lang.AtomSupport;
 using StringTools;
@@ -14,7 +13,7 @@ using haxe.EnumTools;
 using haxe.EnumTools.EnumValueTools;
 
 @:build(lang.macros.ValueClassImpl.build())
-class Runner {
+class DevelopmentRunner {
   @field public static var parser: Parser;
   @field public static var interp: Interp;
   @field public static var project: ProjectConfig;
@@ -28,8 +27,10 @@ class Runner {
     interp.variables.set("AnnaUnit", anna_unit.AnnaUnit);
     Reflect.field(anna_unit.AnnaUnit, "main")();
     compileAll(function() {
+      defineCode();
       var cls: Class<Dynamic> = Type.resolveClass('vm.Kernel');
       if(cls == null) {
+        trace('Kernel is missing?');
         return;
       }
       Reflect.callMethod(null, Reflect.field(cls, 'setProject'), [pc]);
@@ -39,13 +40,30 @@ class Runner {
     });
     #else
     var annaProject: AnnaLangProject = Application.getProjectConfig('compiler'.atom());
-    var files = Anna.compileProject(annaProject.getProjectConfig());
     vm.Kernel.setProject(pc);
+    Code.defineCode();
     vm.Kernel.start();
     vm.Kernel.testCompiler();
     vm.Kernel.run();
     #end
 
+    return 'ok'.atom();
+  }
+
+  private static function defineCode(): Atom {
+    // not sure what to do with this yet. Going to save this here for now.
+    #if cppia
+//    Classes.define("Boot".atom(), Type.resolveClass("Boot"));
+//    Classes.define("FunctionPatternMatching".atom(), Type.resolveClass("FunctionPatternMatching"));
+//    Classes.define("SampleApi".atom(), Type.resolveClass("SampleImpl"));
+//    Classes.define("SampleApi2".atom(), Type.resolveClass("SampleImpl"));
+      var cls: Class<Dynamic> = Type.resolveClass('Code');
+      if(cls == null) {
+        trace('Module Code was not found');
+        return 'error'.atom();
+      }
+      Reflect.callMethod(null, Reflect.field(cls, 'defineCode'), []);
+    #end
     return 'ok'.atom();
   }
 
@@ -112,6 +130,7 @@ class Runner {
     trace("Compiling Compiler");
     var annaProject: AnnaLangProject = Application.getProjectConfig('compiler'.atom());
     var files = Anna.compileProject(annaProject.getProjectConfig());
+    defineCode();
     if(onComplete != null) {
       onComplete();
     }
@@ -122,7 +141,7 @@ class Runner {
     compileVMAPIProject();
     compileVMProject();
     compileCompiler();
-    compileAcceptanceTests();
+//    compileAcceptanceTests();
     if(onComplete != null) {
       onComplete();
     }

@@ -1,0 +1,6 @@
+defCls(MyApp, {
+  @def start([Atom], {
+    @native IO.inspect('hello world');
+    @_'ok';
+  });
+})

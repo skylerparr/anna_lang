@@ -54,6 +54,7 @@ class Native {
 
     var haxeString = '${funName}.push(new vm.${invokeClass.name}(${moduleName}.${invokeFunName}, @list[${strArgs.join(', ')}],
       @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${MacroTools.getLineNumber(params)}))';
+      MacroLogger.log(haxeString, 'haxeString');
     retVal.push(lang.macros.Macros.haxeToExpr(haxeString));
     return retVal;
   }

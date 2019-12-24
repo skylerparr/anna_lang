@@ -10,6 +10,5 @@
 -cpp anna_static
 -main Main
 -lib sepia
--lib random
 -lib hscript-plus
 -lib minject
