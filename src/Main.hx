@@ -46,6 +46,8 @@ class Main {
     FileSystem.deleteFile(".tmp2");
     CallStack.exceptionStack();
     CallStack.callStack();
+    Sys.setCwd('.');
+    Sys.getCwd();
     var t = new haxe.Template("");
     t.execute({});
     var m: IMap<String, String> = new Map<String, String>();

@@ -20,4 +20,22 @@ class File {
     }
     return Tuple.create([Atom.create('ok'), path]);
   }
+
+  public static inline function readDirectory(path:String):LList {
+    var files = FileSystem.readDirectory(path);
+    var retVal: LList = LList.create([]);
+    for(file in files) {
+      retVal = LList.add(retVal, file);
+    }
+    return retVal;
+  }
+
+  public static inline function isDirectory(path:String):Atom {
+    var result = FileSystem.isDirectory(path);
+    if(result) {
+      return Atom.create('true');
+    } else {
+      return Atom.create('false');
+    }
+  }
 }

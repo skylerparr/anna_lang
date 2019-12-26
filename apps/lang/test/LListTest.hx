@@ -5,7 +5,7 @@ import lang.EitherSupport;
 import anna_unit.Assert;
 using lang.AtomSupport;
 @:build(lang.macros.Macros.build())
-class AnnaListTest {
+class LListTest {
 
   public static function shouldPushElement(): Void {
     var list: LList = LList.create([]);

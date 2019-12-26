@@ -76,7 +76,7 @@ class Anna {
         case TInt | TFloat:
           val;
         case TClass(String):
-          '"${val}"';
+          '"${StringTools.replace(val, '"', '\\\\"')}"';
         case TClass(Tuple):
           (val : Tuple).toAnnaString();
         case TClass(MMap):

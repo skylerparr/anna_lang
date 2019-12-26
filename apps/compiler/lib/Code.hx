@@ -85,6 +85,33 @@ import vm.Function;
     [@_'error', 'not supported'];
     #end
   });
+
+  @def ls({String: dir}, [Tuple], {
+    #if cpp
+    files = @native util.File.readDirectory(dir);
+    [@_'ok', files];
+    #else
+    [@_'error', 'not supported'];
+    #end
+  });
+
+  @def is_dir({String: dir}, [Tuple], {
+    #if cpp
+    result = @native util.File.isDirectory(dir);
+    [@_'ok', result];
+    #else
+    [@_'error', 'not supported'];
+    #end
+  });
+}))
+@:build(lang.macros.AnnaLang.defCls(JSON, {
+  @def parse({String: data}, [Tuple], {
+    @native util.JSON.parse(data);
+  });
+
+  @def stringify({Tuple: [@_'ok', data]}, [Tuple], {
+    @native util.JSON.stringify(data);
+  });
 }))
 @:build(lang.macros.AnnaLang.defCls(Kernel, {
   @alias vm.Pid;
@@ -124,9 +151,20 @@ import vm.Function;
   @def println({String: str}, [Atom], {
     @native IO.println(str);
   });
+
+  @def set_cwd({String: str}, [Tuple], {
+    @native Sys.setCwd(str);
+    [@_'ok', str];
+  });
+
+  @def get_cwd([Tuple], {
+    cwd = @native Sys.getCwd();
+    [@_'ok', cwd];
+  });
 }))
 @:build(lang.macros.AnnaLang.defCls(CommandHandler, {
   @alias vm.Kernel;
+  @const PROJECT_SRC_PATH = 'project/';
 
   @def process_command({String: 'exit'}, [Atom], {
     System.println('exiting...');
@@ -167,8 +205,13 @@ import vm.Function;
     @_'ok';
   });
 
-  @def process_command({String: 'c ' => file}, [Atom], {
-    AnnaCompiler.compile_file(cast(file, String));
+  @def process_command({String: 'build'}, [Atom], {
+    System.set_cwd(PROJECT_SRC_PATH);
+    System.println('building project');
+    [@_'ok', cwd] = System.get_cwd();
+    System.println(cast(cwd, String));
+    AnnaCompiler.build_project();
+    System.set_cwd('..');
     @_'ok';
   });
 
@@ -190,12 +233,19 @@ import vm.Function;
   @const ANNA_LANG_SUFFIX = '.anna';
   @const HAXE_SUFFIX = '.hx';
   @const BUILD_DIR = '_build/';
+  @const LIB_DIR = 'lib/';
   @const OUTPUT_DIR = '_build/apps/main/';
   @const RESOURCE_DIR = 'apps/compiler/resource/';
   @const CONFIG_FILE = 'app_config.json';
   @const BUILD_FILE = 'build.hxml';
   @const CLASS_TEMPLATE_FILE = 'ClassTemplate.tpl';
   @const BUILD_TEMPLATE_FILE = 'build.hxml.tpl';
+
+  @def build_project([Tuple], {
+    [@_'ok', files] = File.ls('.');
+    @native IO.inspect(files);
+    [@_'ok', 'my_app'];
+  });
 
   @def compile_file({String: module_name}, [Tuple], {
     app_name = module_name;
@@ -569,6 +619,7 @@ class Code {
     Classes.define(Atom.create('File'), File);
     Classes.define(Atom.create('UnitTests'), UnitTests);
     Classes.define(Atom.create('AnnaCompiler'), AnnaCompiler);
+    Classes.define(Atom.create('JSON'), JSON);
 
     return Atom.create('ok');
   }
