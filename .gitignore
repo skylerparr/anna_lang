@@ -10,3 +10,4 @@ projectFilesBackup/
 .ihx_history
 .DS_Store
 _build
+project/my_app/

@@ -1,10 +1,10 @@
 -cp apps
--cp ../src
--cp ../scripts
--cp ../apps/compiler/lib
--cp ../apps/lang/lib
--cp ../apps/vm/lib
--cp ../apps/vm_api/lib
+-cp ../../src
+-cp ../../scripts
+-cp ../../apps/compiler/lib
+-cp ../../apps/lang/lib
+-cp ../../apps/vm/lib
+-cp ../../apps/vm_api/lib
 -D analyzer-optimize
 -D hscriptPos
 -D HXCPP_M64

@@ -226,7 +226,10 @@ class Macros {
 
         retValBlock.push({expr: EBinop(OpBoolAnd, metaA, metaB), pos: Context.currentPos()});
       case EBinop(OpBoolOr, a, b):
-        throw "AnnaLang: Unimplemented case";
+        var metaB = findMetaInBlock(b, rhs);
+        var metaA = findMetaInBlock(a, rhs);
+
+        retValBlock.push({expr: EBinop(OpBoolOr, metaA, metaB), pos: Context.currentPos()});
       case EBinop(OpDiv, a, b):
         throw "AnnaLang: Unimplemented case";
       case EBinop(OpGt, a, b):

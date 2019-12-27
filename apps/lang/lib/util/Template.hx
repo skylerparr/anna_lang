@@ -5,15 +5,14 @@ class Template {
 
   }
 
-  public static function execute(str: String, params: MMap): String {
-    var template: haxe.Template = new haxe.Template(str);
-    var keys: LList = MMap.keys(params);
-    var args: Dynamic = {};
-    for(key in LList.iterator(keys)) {
-      var value: Dynamic = EitherSupport.getValue(MMap.get(params, key));
-      var keyStr: String = Atom.to_s(EitherSupport.getValue(key));
-      Reflect.setField(args, keyStr, value);
+  public static function execute(str: String, params: MMap): Tuple {
+    try {
+      var template: haxe.Template = new haxe.Template(str);
+      var args: Dynamic = DSUtil.mmapToDynamic(params);
+      var output = template.execute(args);
+      return Tuple.create([Atom.create('ok'), output]);
+    } catch(e: Dynamic) {
+      return Tuple.create([Atom.create('error'), '${e}']);
     }
-    return template.execute(args);
   }
 }

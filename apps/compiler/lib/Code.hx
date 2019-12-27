@@ -66,7 +66,7 @@ import vm.Function;
   @def mkdir_p({String: dir}, [Tuple], {
     #if cpp
     @native sys.FileSystem.createDirectory(dir);
-    [@_'ok', file_path];
+    [@_'ok', dir];
     #else
     [@_'error', 'not supported'];
     #end
@@ -75,7 +75,6 @@ import vm.Function;
   @def rm_rf({String: dir}, [Tuple], {
     #if cpp
     @native util.File.removeAll(dir);
-    [@_'ok', file_path];
     #else
     [@_'error', 'not supported'];
     #end
@@ -278,6 +277,7 @@ import vm.Function;
 @:build(lang.macros.AnnaLang.defType(SourceFile, {
   var module_name: String = '';
   var source_code: String = '';
+  var module_type: String = '';
 }))
 @:build(lang.macros.AnnaLang.defType(ProjectConfig, {
   var app_name: String = '';
@@ -292,14 +292,23 @@ import vm.Function;
   @const BUILD_DIR = '_build/';
   @const LIB_DIR = 'lib/';
   @const OUTPUT_DIR = '_build/apps/main/';
-  @const RESOURCE_DIR = 'apps/compiler/resource/';
+  @const RESOURCE_DIR = '../apps/compiler/resource/';
   @const CONFIG_FILE = 'app_config.json';
   @const BUILD_FILE = 'build.hxml';
   @const CLASS_TEMPLATE_FILE = 'ClassTemplate.tpl';
   @const BUILD_TEMPLATE_FILE = 'build.hxml.tpl';
+  @const HAXE_BUILD_MACR0_START = '@:build(lang.macros.AnnaLang.';
+  @const HAXE_BUILD_MACR0_END = ')';
 
   @def build_project([Tuple], {
+    clean();
     handle_config(get_config());
+  });
+
+  @def clean([Atom], {
+    result = File.rm_rf(BUILD_DIR);
+    result = File.mkdir_p(OUTPUT_DIR);
+    @_'ok';
   });
 
   @def get_config([Tuple], {
@@ -309,11 +318,12 @@ import vm.Function;
 
   @def handle_config({Tuple: [@_'ok', @map["application" => app_name]]}, [Tuple], {
     [@_'ok', files] = gather_source_files(LIB_DIR, {});
-    @native IO.inspect(files);
-    [@_'ok', 'success'];
+    generate_template(cast(files, LList));
+    compile_app(cast(app_name, String));
   });
 
   @def handle_config({Tuple: error}, [Tuple], {
+    @native IO.inspect(error);
     error;
   });
 
@@ -326,9 +336,12 @@ import vm.Function;
             filename = Str.concat(cast(dir, String), cast(file, String));
             content = File.get_content(filename);
 
-            [@_'ok', module_name] = @native util.AST.getModuleName(content);
-            src_file = SourceFile%{source_code: content, module_name: module_name};
-            src_map = [source_code => content, module_name => module_name];
+            [@_'ok', module_name, module_type] = @native util.AST.getModuleInfo(content);
+
+            content = Str.concat(HAXE_BUILD_MACR0_START, content);
+            content = Str.concat(content, HAXE_BUILD_MACR0_END);
+
+            src_file = SourceFile%{source_code: content, module_name: module_name, module_type: module_type};
 
             @native LList.add(acc, src_file);
           });
@@ -342,13 +355,37 @@ import vm.Function;
     [@_'ok', result];
   });
 
-  @def compile_app({String: app_name, String: module_name}, [Tuple], {
-    filename = module_name;
-    filename = Str.concat(PROJECT_SRC_PATH, filename);
-    filename = Str.concat(filename, ANNA_LANG_SUFFIX);
-    content = File.get_content(filename);
-    module_name = Str.nameify(module_name);
-    parse(module_name, app_name, content);
+  @def generate_template({LList: source_files}, [Tuple], {
+    template_file = Str.concat(RESOURCE_DIR, CLASS_TEMPLATE_FILE);
+    template = File.get_content(template_file);
+    [@_'ok', result] = @native Template.execute(template, ['source_files' => source_files]);
+
+    filename = 'Code';
+    filename = Str.concat(OUTPUT_DIR, filename);
+    filename = Str.concat(filename, HAXE_SUFFIX);
+
+    File.save_content(filename, cast(result, String));
+
+    [@_'ok', result];
+  });
+
+  @def compile_app({String: app_name}, [Tuple], {
+    //copy the app_config
+    app_config_destination = Str.concat(OUTPUT_DIR, CONFIG_FILE);
+    File.cp(CONFIG_FILE, app_config_destination);
+
+    //update the haxe build file
+    template_file = Str.concat(RESOURCE_DIR, BUILD_TEMPLATE_FILE);
+    template = File.get_content(template_file);
+
+    [@_'ok', result] = @native Template.execute(template, ["app_name" => app_name]);
+    template_file = Str.concat(BUILD_DIR, 'build.hxml');
+    File.save_content(template_file, cast(result, String));
+
+    status = @native util.Compiler.compileProject();
+    @native IO.inspect(status);
+
+    [@_'ok', filename, result];
   });
 
   @def parse({String: module_name, String: app_name, String: code}, [Tuple], {

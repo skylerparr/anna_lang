@@ -13,12 +13,18 @@ import vm.Function;
     @native IO.println(str);
   });
 }))
-@:build(lang.macros.AnnaLang.::code::)
+::foreach source_files::
+::source_code::
+::end::
 @:build(lang.macros.AnnaLang.compile())
 class Code {
   public static function defineCode(): Atom {
     vm.Classes.define(Atom.create('System'), System);
+    ::foreach source_files::
+    ::if (module_type == "module")::
     vm.Classes.define(Atom.create('::module_name::'), ::module_name::);
+    ::end::
+    ::end::
     return Atom.create('ok');
   }
 }
