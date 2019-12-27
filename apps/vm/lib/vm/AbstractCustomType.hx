@@ -22,4 +22,8 @@ class AbstractCustomType implements CustomType {
     }
     return '${name}%{${fieldPairs.join(', ')}}';
   }
+
+  public function clone():AbstractCustomType {
+    return this;
+  }
 }

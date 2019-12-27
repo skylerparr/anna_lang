@@ -88,7 +88,7 @@ class EitherMacro {
           map;
         };
         exprs.push(Macros.extractBlock(newMap)[0]);
-        MacroLogger.logExpr(macro $b{exprs});
+        MacroLogger.logExpr(macro $b{exprs}, "genMap expr");
         return macro $b{exprs};
       case _:
         throw "EitherMacro.getMap(): gen setup return has changed, this shouldn't happen accidentally!";
@@ -170,6 +170,7 @@ class EitherMacro {
             typeAndExprs.push({type: '${type}', expr: vExpr});
           case e:
             MacroLogger.log(e, 'e');
+            MacroLogger.logExpr(e, 'e');
         }
       case {expr: ENew({name: type}, _args)}:
         typeAndExprs.push({type: {expr: EConst(CIdent(type)), pos: Context.currentPos()}, expr: vExpr});
@@ -177,6 +178,8 @@ class EitherMacro {
         for(expr in [e1, e2]) {
           findTypesAndExprs(typeAndExprs, expr);
         }
+      case {expr: expr}:
+        findTypesAndExprs(typeAndExprs, {expr: Reflect.field(expr, 'expr'), pos: Context.currentPos()});
       case e:
         MacroLogger.log(e, 'e');
     }

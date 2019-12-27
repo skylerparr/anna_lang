@@ -1,5 +1,6 @@
 package util;
 
+import vm.AbstractCustomType;
 import lang.CustomType;
 import haxe.ds.EnumValueMap;
 import lang.EitherSupport;
@@ -21,12 +22,14 @@ class ArgHelper {
             var value = EitherSupport.getValue(elem2);
             if(Std.is(value, Tuple)) {
               resolveTupleValues(cast value, scopeVariables);
+            } else if(Std.is(value, Atom)) {
+              value;
             } else if(Std.is(value, LList)) {
               resolveListValues(cast value, scopeVariables);
             } else if(Std.is(value, MMap)) {
               resolveMapValues(cast value, scopeVariables);
-            } else if(Std.is(value, CustomType) && !Std.is(value, Pid)) {
-              resolveCustomTypeValues(cast value, scopeVariables);
+            } else if(Std.is(value, AbstractCustomType)) {
+              resolveAbstractCustomTypeValues(cast value, scopeVariables);
             } else {
               value;
             }
@@ -70,7 +73,7 @@ class ArgHelper {
     return MMap.create(retMap);
   }
 
-  public static inline function resolveCustomTypeValues(value: CustomType, scopeVariables: Map<String, Dynamic>): Dynamic {
+  public static inline function resolveAbstractCustomTypeValues(value: AbstractCustomType, scopeVariables: Map<String, Dynamic>): Dynamic {
     if(value.variables != null) {
       var variables = value.variables;
       for(key in variables.keys()) {
@@ -79,7 +82,7 @@ class ArgHelper {
         Reflect.setField(value, key, fetched);
       }
     }
-    return value;
+    return value.clone();
   }
 
 }

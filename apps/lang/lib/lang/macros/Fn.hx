@@ -30,7 +30,9 @@ class Fn {
             case EParenthesis({expr: EBinop(OpArrow, types, body)}):
               var typesStr: String = printer.printExpr(types);
               [typesStr.substr(1, typesStr.length - 2), body];
-            case _:
+            case e:
+              MacroLogger.log(e, 'e');
+              MacroLogger.logExpr(params, 'params');
               throw new ParsingException("AnnaLang: Expected parenthesis");
           }
           var haxeStr: String = '${anonFunctionName}(${typesAndBody[0]}, ${printer.printExpr(typesAndBody[1])});';

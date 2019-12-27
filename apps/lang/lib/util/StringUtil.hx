@@ -79,4 +79,13 @@ class StringUtil {
     var array: Array<String> = string.split(delimiter);
     return LList.create(cast array);
   }
+
+  public static inline function endsWith(string:String, starts: String):Atom {
+    var result: Bool = StringTools.endsWith(string, starts);
+    if(result) {
+      return Atom.create('true');
+    } else {
+      return Atom.create('false');
+    }
+  }
 }

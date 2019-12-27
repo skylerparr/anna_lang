@@ -1,6 +1,7 @@
 defCls(MyApp, {
   @def start([Atom], {
-    System.println('hello world');
+    System.println('doing a simple test');
+    SimpleTest.test();
     @native vm.Kernel.stop();
     @_'ok';
   });

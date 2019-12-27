@@ -72,6 +72,7 @@ class Main {
       ['${basePath}src/', '${basePath}apps/anna_unit/lib', '${basePath}apps/lang/lib'], ['hscript-plus', 'mockatoo', 'minject', 'sepia']);
 
     #if scriptable
+    Random; // for anna_unit
     parser.allowMetadata = true;
     parser.allowTypes = true;
     interp = HScriptEval.interp;

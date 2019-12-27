@@ -104,6 +104,18 @@ class AnnaLang {
           Reflect.setField(this, field, valueToAssign);
         }
       }
+
+      override public function clone(): vm.AbstractCustomType {
+        var fields: Array<String> = Reflect.fields(this);
+        var obj: Dynamic = {};
+        for(field in fields) {
+          if(field == 'variables') {
+            continue;
+          }
+          Reflect.setField(obj, field, Reflect.field(this, field));
+        }
+        return create(obj);
+      }
     };
     var fields: Array<Field> = [];
     var exprs: Array<Expr> = [];
@@ -397,6 +409,7 @@ class AnnaLang {
       for(internalFunctionName in interfaceDef.declaredFunctions.keys()) {
         var fun = moduleDef.declaredFunctions.get(internalFunctionName);
         if(fun == null) {
+          MacroLogger.log(moduleDef.declaredFunctions, 'moduleDef.declaredFunctions');
           throw 'AnnaLang: ${moduleDef.moduleName} missing interface function ${internalFunctionName} as specified in ${interfaceDef.moduleName}.';
         }
       }
@@ -608,6 +621,7 @@ class AnnaLang {
           var type: String = getTypeForVar(typeAndValue, arg);
           type = StringTools.replace(type, '.', '_');
           types.push(type);
+          MacroLogger.log(typeAndValue, 'typeAndValue');
           funArgs.push(typeAndValue.value);
       }
       argCounter++;
@@ -637,11 +651,15 @@ class AnnaLang {
     var funDef: Dynamic = declaredFunctions.get(fqFunName);
     if(funDef == null) {
       var varTypeInScope: String = MacroContext.varTypesInScope.get(funName);
-      if(varTypeInScope == 'vm_Function') {
+      if(varTypeInScope == 'vm_Function' || varTypeInScope == 'vm.Function') {
         var haxeStr: String = '${currentFunStr}.push(new vm.AnonymousFunction(@atom"${funName}", @list [${funArgs.join(", ")}], @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${lineNumber}))';
         retVal.push(lang.macros.Macros.haxeToExpr(haxeStr));
         return retVal;
       }
+      MacroLogger.log(varTypeInScope, 'varTypeInScope');
+      MacroLogger.log(declaredFunctions, 'declaredFunctions');
+      MacroLogger.log(funArgs, 'funArgs');
+
       throw 'Function ${moduleName}.${fqFunName} at line ${lineNumber} not found';
     } else {
       MacroContext.lastFunctionReturnType = funDef[0].funReturnTypes[0];

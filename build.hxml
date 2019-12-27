@@ -9,6 +9,8 @@
 -lib sepia
 -lib hx-color-trace
 -lib ihx
+-lib random
 -lib hscript-plus
 -lib mockatoo
 -lib minject
+-debug

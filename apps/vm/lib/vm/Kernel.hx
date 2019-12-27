@@ -310,6 +310,10 @@ class Kernel {
     return currentScheduler.monitor(Process.self(), pid);
   }
 
+  public static function demonitor(pid: Pid): Atom {
+    return currentScheduler.demonitor(Process.self(), pid);
+  }
+
   public static function apply(pid: Pid, fn: Function, args: LList, callback: Dynamic->Void = null): Void {
     if(fn == null) {
       //TODO: handle missing function error

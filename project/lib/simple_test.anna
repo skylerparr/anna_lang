@@ -1,0 +1,6 @@
+defCls(SimpleTest, {
+  @def test([Atom], {
+    System.println('test success');
+    @_'ok';
+  });
+})

@@ -1,0 +1,4 @@
+defType(SampleType, {
+  var app_name: String = '';
+  var src_files: LList = {};
+})

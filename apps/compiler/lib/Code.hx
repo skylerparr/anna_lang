@@ -40,6 +40,10 @@ import vm.Function;
   @def nameify({String: str}, [String], {
     @native StringUtil.nameify(str);
   });
+
+  @def ends_with({String: str, String: other_str}, [Atom], {
+    @native StringUtil.endsWith(str, other_str);
+  });
 }))
 @:build(lang.macros.AnnaLang.defCls(File, {
   @def get_content({String: file_path}, [String], {
@@ -118,6 +122,10 @@ import vm.Function;
   @alias vm.Kernel;
   @alias vm.Function;
 
+  @def stop({
+    @native Kernel.stop();
+  });
+
   @def receive({Function: fun}, [Dynamic], {
     @native Kernel.receive(fun);
   });
@@ -125,6 +133,22 @@ import vm.Function;
   @def send({Pid: pid, Tuple: value}, [Atom], {
     @native Kernel.send(pid, value);
     @_'ok';
+  });
+
+  @def self([Pid], {
+    @native vm.Process.self();
+  });
+
+  @def monitor({Pid: pid}, [Atom], {
+    @native Kernel.monitor(pid);
+  });
+
+  @def demonitor({Pid: pid}, [Atom], {
+    @native Kernel.demonitor(pid);
+  });
+
+  @def spawn({Atom: module, Atom: func}, [Pid], {
+    @native Kernel.spawn(module, func, [], {});
   });
 
   @def spawn({Atom: module, Atom: func, Tuple: types, LList: args}, [Pid], {
@@ -141,6 +165,10 @@ import vm.Function;
 
   @def subtract({Float: a, Float: b}, [Float], {
     @native Kernel.subtract(a, b);
+  });
+
+  @def exit({Pid: pid}, [Atom], {
+    @native Kernel.exit(pid);
   });
 }))
 @:build(lang.macros.AnnaLang.defCls(System, {
@@ -205,6 +233,11 @@ import vm.Function;
     @_'ok';
   });
 
+  @def process_command({String: 'self'}, [String], {
+    @native IO.inspect(Kernel.self());
+    @_'ok';
+  });
+
   @def process_command({String: 'build'}, [Atom], {
     System.set_cwd(PROJECT_SRC_PATH);
     System.println('building project');
@@ -226,6 +259,30 @@ import vm.Function;
     @_'ok';
   });
 }))
+@:build(lang.macros.AnnaLang.defApi(EEnum, {
+  @def reduce({LList: list, LList: acc, Function: callback}, [List]);
+}))
+@:build(lang.macros.AnnaLang.defCls(DefaultEnum, {
+  @alias vm.Function;
+  @impl EEnum;
+
+  @def reduce({LList: {}, LList: acc, Function: _}, [LList], {
+    acc;
+  });
+
+  @def reduce({LList: {head | rest;}, LList: acc, Function: callback}, [LList], {
+    result = callback(head, acc);
+    reduce(cast(rest, LList), acc, callback);
+  });
+}))
+@:build(lang.macros.AnnaLang.defType(SourceFile, {
+  var module_name: String = '';
+  var source_code: String = '';
+}))
+@:build(lang.macros.AnnaLang.defType(ProjectConfig, {
+  var app_name: String = '';
+  var src_files: LList = {};
+}))
 @:build(lang.macros.AnnaLang.defCls(AnnaCompiler, {
   @alias util.Template;
 
@@ -242,13 +299,50 @@ import vm.Function;
   @const BUILD_TEMPLATE_FILE = 'build.hxml.tpl';
 
   @def build_project([Tuple], {
-    [@_'ok', files] = File.ls('.');
-    @native IO.inspect(files);
-    [@_'ok', 'my_app'];
+    handle_config(get_config());
   });
 
-  @def compile_file({String: module_name}, [Tuple], {
-    app_name = module_name;
+  @def get_config([Tuple], {
+    content = File.get_content(CONFIG_FILE);
+    JSON.parse(content);
+  });
+
+  @def handle_config({Tuple: [@_'ok', @map["application" => app_name]]}, [Tuple], {
+    [@_'ok', files] = gather_source_files(LIB_DIR, {});
+    @native IO.inspect(files);
+    [@_'ok', 'success'];
+  });
+
+  @def handle_config({Tuple: error}, [Tuple], {
+    error;
+  });
+
+  @def gather_source_files({String: dir, LList: ret_val}, [Tuple], {
+    [@_'ok', files] = File.ls(dir);
+    result = EEnum.reduce(cast(files, LList), {}, @fn {
+      ([{String: file, LList: acc}, [LList]] => {
+        fun = @fn{
+          ([{Atom: @_'true'}, [LList]] => {
+            filename = Str.concat(cast(dir, String), cast(file, String));
+            content = File.get_content(filename);
+
+            [@_'ok', module_name] = @native util.AST.getModuleName(content);
+            src_file = SourceFile%{source_code: content, module_name: module_name};
+            src_map = [source_code => content, module_name => module_name];
+
+            @native LList.add(acc, src_file);
+          });
+          ([{Atom: @_'false'}, [LList]] => {
+            acc;
+          });
+        }
+        fun(Str.ends_with(file, ANNA_LANG_SUFFIX));
+      });
+    });
+    [@_'ok', result];
+  });
+
+  @def compile_app({String: app_name, String: module_name}, [Tuple], {
     filename = module_name;
     filename = Str.concat(PROJECT_SRC_PATH, filename);
     filename = Str.concat(filename, ANNA_LANG_SUFFIX);
@@ -298,7 +392,7 @@ import vm.Function;
   @const PID_HISTORY = @_'history';
 
   @def start([Tuple], {
-    history_pid = @native Kernel.spawn(@_'History', @_'start_history', [], {});
+    history_pid = @native Kernel.spawn_link(@_'History', @_'start_history', [], {});
     @native Process.registerPid(history_pid, PID_HISTORY);
 
     [@_'ok', history_pid];
@@ -415,7 +509,7 @@ import vm.Function;
 }))
 @:build(lang.macros.AnnaLang.defCls(CompilerMain, {
   @alias vm.Process;
-  @alias vm.Kernel;
+  @alias vm.Pid;
 
   @const VSN = '0.0.0';
   @const PREFIX = 'ia(';
@@ -424,6 +518,21 @@ import vm.Function;
     status = History.start();
     UnitTests.start();
 
+    pid = Kernel.spawn(@_'CompilerMain', @_'start_interactive_anna');
+    supervise(cast(pid, Pid));
+  });
+
+  @def supervise({Pid: pid}, [Atom], {
+    Kernel.monitor(pid);
+    Kernel.receive(@fn {
+      ([{Tuple: status}] => {
+        @native IO.inspect(status);
+      });
+    });
+    start();
+  });
+
+  @def start_interactive_anna([Atom], {
     welcome = Str.concat('Interacive Anna version ', VSN);
     System.println(welcome);
     prompt();
@@ -466,7 +575,7 @@ import vm.Function;
   @def handle_input({Int: 4, String: current_string}, [String], {
     System.println('');
     System.println('exiting...');
-    @native Kernel.stop();
+    Kernel.stop();
     @_'nil';
   });
 
@@ -474,7 +583,7 @@ import vm.Function;
   @def handle_input({Int: 127, String: current_string}, [String], {
     clear_prompt(current_string);
     len = Str.length(current_string);
-    len = @native Kernel.subtract(len, 1);
+    len = Kernel.subtract(len, 1);
     current_string = Str.substring(current_string, 0, len);
     print_prompt(current_string);
   });
@@ -542,7 +651,7 @@ import vm.Function;
   @const ALL_TESTS = @_'ALL Tests';
 
   @def start([Tuple], {
-    all_tests_pid = Kernel.spawn(@_'UnitTests', @_'start_tests_store', cast([], Tuple), {});
+    all_tests_pid = Kernel.spawn_link(@_'UnitTests', @_'start_tests_store', cast([], Tuple), {});
     @native Process.registerPid(all_tests_pid, ALL_TESTS);
     [@_'ok', all_tests_pid];
   });
@@ -620,6 +729,8 @@ class Code {
     Classes.define(Atom.create('UnitTests'), UnitTests);
     Classes.define(Atom.create('AnnaCompiler'), AnnaCompiler);
     Classes.define(Atom.create('JSON'), JSON);
+    Classes.define(Atom.create('EEnum'), DefaultEnum);
+    Classes.define(Atom.create('DefaultEnum'), DefaultEnum);
 
     return Atom.create('ok');
   }
