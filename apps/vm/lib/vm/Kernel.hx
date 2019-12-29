@@ -55,7 +55,7 @@ class Kernel {
       Sys.sleep(0.0001);
       if(currentScheduler.hasSomethingToExecute()) {
         for(i in 0...1000) {
-          if(currentScheduler.hasSomethingToExecute()) {
+          if(currentScheduler.hasSomethingToExecute() && started) {
             Logger.log('update');
             currentScheduler.update();
           } else {
