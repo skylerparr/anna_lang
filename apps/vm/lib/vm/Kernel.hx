@@ -115,7 +115,12 @@ class Kernel {
   }
 
   public static function testCompiler(): Pid {
+    #if startHaxe
+    switchToHaxe();
+    return null;
+    #else
     return testSpawn('CompilerMain', 'start', []);
+    #end
   }
 
   public static function runApplication(appName: String): Pid {
@@ -208,6 +213,13 @@ class Kernel {
     statePid = pid;
     return pid;
   }
+
+  public static function defineAcceptanceTests():Void {
+    Classes.define("Boot".atom(), Type.resolveClass("Boot"));
+    Classes.define("FunctionPatternMatching".atom(), Type.resolveClass("FunctionPatternMatching"));
+    Classes.define("SampleApi".atom(), Type.resolveClass("SampleImpl"));
+    Classes.define("SampleApi2".atom(), Type.resolveClass("SampleImpl"));
+  }
   #end
 
   public static function recompile(): Atom {
@@ -238,6 +250,11 @@ class Kernel {
     cpp.vm.Thread.create(function() {
       Reflect.callMethod(null, Reflect.field(Type.resolveClass('Runtime'), 'start'), []);
     });
+
+    Sys.sleep(0.1);
+    start();
+    defineAcceptanceTests();
+    run();
     return 'ok'.atom();
     #end
     return 'not_available'.atom();

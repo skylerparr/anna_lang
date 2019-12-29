@@ -25,13 +25,16 @@ class PushStack implements Operation {
   }
 
   public function execute(scopeVariables: Map<String, Dynamic>, processStack: ProcessStack): Void {
+    Logger.log('get function');
+    Logger.log(module);
+    Logger.log(func);
     var fn: Function = Classes.getFunction(module, func);
-    var instance: Dynamic = Classes.getInstance(module);
     if(fn == null) {
       Logger.inspect('Function not found ${module.toAnnaString()} ${func.toAnnaString()}');
       Kernel.crash(Process.self());
       return;
     }
+    Logger.log("here");
     var counter: Int = 0;
     var callArgs: Array<Dynamic> = [];
     var nextScopeVariables: Map<String, Dynamic> = new Map<String, Dynamic>();
@@ -42,6 +45,7 @@ class PushStack implements Operation {
       nextScopeVariables.set(argName, value);
     }
     callArgs.push(nextScopeVariables);
+    Logger.log(callArgs);
     var operations: Array<Operation> = fn.invoke(callArgs);
     if(operations == null) {
       Kernel.crash(Process.self());

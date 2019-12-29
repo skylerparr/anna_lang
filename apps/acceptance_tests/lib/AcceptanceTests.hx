@@ -63,7 +63,7 @@ using lang.AtomSupport;
     match_tuple([@_"ok", "message"]);
     match_tuple([@_"error", "An error tuple has been handled"]);
     match_string("hello world");
-    match_list({4; "should be 4";});
+    match_list({4; "should match 4";});
     match_list({8; "fire";});
     iterate_list({});
     iterate_list({6; 5; 4; 3; 2; 1;});

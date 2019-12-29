@@ -1,5 +1,8 @@
 package util;
 
+import EitherEnums.Either3;
+import EitherEnums.Either2;
+import EitherEnums.Either1;
 import lang.AbstractCustomType;
 import lang.CustomType;
 import haxe.ds.EnumValueMap;
@@ -68,9 +71,8 @@ class ArgHelper {
     for(key in LList.iterator(MMap.keys(map))) {
       var item = MMap.get(map, key);
       var fetched = extractArgValue(item, scopeVariables);
-      IO.inspect(key);
       var newKey = extractArgValue(key, scopeVariables);
-      retMap.set(key, fetched);
+      retMap.set(Either1.A(newKey), fetched);
     }
     return MMap.create(retMap);
   }

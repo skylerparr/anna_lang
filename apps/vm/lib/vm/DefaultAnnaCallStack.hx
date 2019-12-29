@@ -40,6 +40,7 @@ class DefaultAnnaCallStack implements AnnaCallStack {
       scope.set(key, scopeVariables.get(key));
     }
     scopeVariables = scope;
+    Logger.log(scopeVariables);
     currentOperation.execute(scopeVariables, processStack);
   }
 

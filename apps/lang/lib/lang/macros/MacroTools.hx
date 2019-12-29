@@ -267,7 +267,7 @@ class MacroTools {
             case EBinop(OpArrow, key, value):
               var keyType = getTypeAndValue(key);
               var valueType = getTypeAndValue(value);
-              listValues.push('${keyType.rawValue} => ${valueType.rawValue}');
+              listValues.push('${keyType.value} => ${valueType.rawValue}');
             case _:
               try {
                 var typeAndValue = extractMapValues(arg);

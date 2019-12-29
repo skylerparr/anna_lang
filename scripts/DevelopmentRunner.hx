@@ -53,10 +53,6 @@ class DevelopmentRunner {
   private static function defineCode(): Atom {
     // not sure what to do with this yet. Going to save this here for now.
     #if cppia
-//    Classes.define("Boot".atom(), Type.resolveClass("Boot"));
-//    Classes.define("FunctionPatternMatching".atom(), Type.resolveClass("FunctionPatternMatching"));
-//    Classes.define("SampleApi".atom(), Type.resolveClass("SampleImpl"));
-//    Classes.define("SampleApi2".atom(), Type.resolveClass("SampleImpl"));
       var cls: Class<Dynamic> = Type.resolveClass('Code');
       if(cls == null) {
         trace('Module Code was not found');
@@ -141,7 +137,9 @@ class DevelopmentRunner {
     compileVMAPIProject();
     compileVMProject();
     compileCompiler();
-//    compileAcceptanceTests();
+    #if startHaxe
+    compileAcceptanceTests();
+    #end
     if(onComplete != null) {
       onComplete();
     }

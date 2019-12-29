@@ -342,8 +342,6 @@ import vm.Function;
             content = Str.concat(content, HAXE_BUILD_MACR0_END);
 
             src_file = SourceFile%{source_code: content, module_name: module_name, module_type: module_type};
-            src_map = [module_name => module_name, module_type => module_type];
-            @native IO.inspect(src_map);
 
             @native LList.add(acc, src_file);
           });
