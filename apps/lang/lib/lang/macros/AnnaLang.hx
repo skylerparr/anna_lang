@@ -77,7 +77,7 @@ class AnnaLang {
   }
 
   macro public static function defType(name: Expr, body: Expr): Array<Field> {
-    var cls: TypeDefinition = macro class NoClass extends vm.AbstractCustomType {
+    var cls: TypeDefinition = macro class NoClass extends lang.AbstractCustomType {
       public function new(arg: Dynamic) {
         if(arg == null) {
           return;
@@ -105,7 +105,7 @@ class AnnaLang {
         }
       }
 
-      override public function clone(): vm.AbstractCustomType {
+      override public function clone(): lang.AbstractCustomType {
         var fields: Array<String> = Reflect.fields(this);
         var obj: Dynamic = {};
         for(field in fields) {

@@ -1,7 +1,7 @@
 package vm;
 import util.UniqueList;
 import lang.ParsingException;
-import vm.AbstractCustomType;
+import lang.AbstractCustomType;
 using lang.AtomSupport;
 
 @:build(lang.macros.ValueClassImpl.build())

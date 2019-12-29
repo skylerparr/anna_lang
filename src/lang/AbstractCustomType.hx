@@ -1,4 +1,4 @@
-package vm;
+package lang;
 
 import Type.ValueType;
 import lang.CustomType;

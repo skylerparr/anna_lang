@@ -342,6 +342,8 @@ import vm.Function;
             content = Str.concat(content, HAXE_BUILD_MACR0_END);
 
             src_file = SourceFile%{source_code: content, module_name: module_name, module_type: module_type};
+            src_map = [module_name => module_name, module_type => module_type];
+            @native IO.inspect(src_map);
 
             @native LList.add(acc, src_file);
           });
@@ -379,44 +381,11 @@ import vm.Function;
     template = File.get_content(template_file);
 
     [@_'ok', result] = @native Template.execute(template, ["app_name" => app_name]);
-    template_file = Str.concat(BUILD_DIR, 'build.hxml');
+    template_file = Str.concat(BUILD_DIR, BUILD_FILE);
     File.save_content(template_file, cast(result, String));
 
     status = @native util.Compiler.compileProject();
     @native IO.inspect(status);
-
-    [@_'ok', filename, result];
-  });
-
-  @def parse({String: module_name, String: app_name, String: code}, [Tuple], {
-    template_file = Str.concat(RESOURCE_DIR, CLASS_TEMPLATE_FILE);
-    template = File.get_content(template_file);
-
-    params = [@_'code' => code, @_'module_name' => module_name, @_'app_name' => app_name];
-    result = @native Template.execute(template, params);
-
-    File.rm_rf(BUILD_DIR);
-    File.mkdir_p(OUTPUT_DIR);
-    filename = 'Code';
-    filename = Str.concat(OUTPUT_DIR, filename);
-    filename = Str.concat(filename, HAXE_SUFFIX);
-
-    File.save_content(filename, cast(result, String));
-
-    //copy the app_config
-    app_config_path = Str.concat(PROJECT_SRC_PATH, CONFIG_FILE);
-    app_config_destination = Str.concat(OUTPUT_DIR, CONFIG_FILE);
-    File.cp(app_config_path, app_config_destination);
-
-    //update the haxe build file
-    template_file = Str.concat(RESOURCE_DIR, BUILD_TEMPLATE_FILE);
-    template = File.get_content(template_file);
-
-    result = @native Template.execute(template, params);
-    template_file = Str.concat(BUILD_DIR, 'build.hxml');
-    File.save_content(template_file, cast(result, String));
-
-    @native util.Compiler.compileProject();
 
     [@_'ok', filename, result];
   });

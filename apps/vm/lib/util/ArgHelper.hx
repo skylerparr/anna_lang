@@ -1,6 +1,6 @@
 package util;
 
-import vm.AbstractCustomType;
+import lang.AbstractCustomType;
 import lang.CustomType;
 import haxe.ds.EnumValueMap;
 import lang.EitherSupport;
@@ -68,6 +68,8 @@ class ArgHelper {
     for(key in LList.iterator(MMap.keys(map))) {
       var item = MMap.get(map, key);
       var fetched = extractArgValue(item, scopeVariables);
+      IO.inspect(key);
+      var newKey = extractArgValue(key, scopeVariables);
       retMap.set(key, fetched);
     }
     return MMap.create(retMap);

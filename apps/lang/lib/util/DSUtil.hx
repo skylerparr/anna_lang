@@ -1,6 +1,6 @@
 package util;
 import lang.EitherSupport;
-import vm.AbstractCustomType;
+import lang.AbstractCustomType;
 class DSUtil {
 
   public static inline function dynamicToMap(d: Dynamic):MMap {

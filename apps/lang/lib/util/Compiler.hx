@@ -5,7 +5,7 @@ class Compiler {
   public function new() {
   }
 
-  public static function compileProject(): Tuple {
+  public static inline function compileProject(): Tuple {
     #if !scriptable
     Sys.setCwd('_build');
     var p: Process = new Process("haxe", ['build.hxml']);
