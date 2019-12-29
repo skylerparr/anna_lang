@@ -49,9 +49,6 @@ class Kernel {
     #end
     #if (cpp || scriptable)
     while(started) {
-      if(msg != null) {
-        var pid: Pid = msg();
-      }
       Sys.sleep(0.0001);
       if(currentScheduler.hasSomethingToExecute()) {
         for(i in 0...1000) {
@@ -89,9 +86,6 @@ class Kernel {
       statePid = null;
       Classes.clear();
       return;
-    }
-    if(msg != null) {
-      var pid: Pid = msg();
     }
     if(currentScheduler.hasSomethingToExecute()) {
       for(i in 0...1000) {
