@@ -710,16 +710,6 @@ import vm.Function;
     @_'ok';
   });
 }))
-@:build(lang.macros.AnnaLang.defCls(Assert, {
-  @def are_equal({String: lhs, String: rhs}, [Atom], {
-    @_'ok';
-  });
-}))
-@:build(lang.macros.AnnaLang.defCls(ASTTests, {
-  @def should_convert_int_to_ast([Atom], {
-    @_'ok';
-  });
-}))
 @:build(lang.macros.AnnaLang.compile())
 class Code {
   public static function defineCode(): Atom {
