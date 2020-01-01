@@ -3,6 +3,7 @@
 -D scriptable
 -D hscriptPos
 -D dev_anna
+-D startHaxe
 -D HXCPP_M64
 -cpp anna
 -main Main

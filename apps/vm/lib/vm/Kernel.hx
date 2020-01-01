@@ -109,12 +109,12 @@ class Kernel {
   }
 
   public static function testCompiler(): Pid {
-    #if startHaxe
+//    #if startHaxe
     switchToHaxe();
     return null;
-    #else
-    return testSpawn('CompilerMain', 'start', []);
-    #end
+//    #else
+//    return testSpawn('CompilerMain', 'start', []);
+//    #end
   }
 
   public static function runApplication(appName: String): Pid {
