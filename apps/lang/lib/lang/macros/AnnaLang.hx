@@ -717,11 +717,6 @@ class AnnaLang {
     return lang.macros.Macros.haxeToExpr(haxeStr);
   }
 
-  public static function __(params: Expr):Expr {
-    var haxeStr: String = '@atom"${MacroTools.extractFullFunCall(params)[0]}";';
-    return createPutIntoScope(lang.macros.Macros.haxeToExpr(haxeStr), MacroTools.getLineNumber(params));
-  }
-
   public static function getAlias(str: String):String {
     return switch(MacroContext.aliases.get(str)) {
       case null:

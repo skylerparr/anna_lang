@@ -218,8 +218,8 @@ import vm.Function;
     @_'nil';
   });
 
-  @def process_command({String: 'interp' => text}, [Tuple], {
-    Repl.interp(cast(text, String));
+  @def process_command({String: 'eval' => text}, [Tuple], {
+    Repl.eval(cast(text, String));
     @_'ok';
   });
 
@@ -389,12 +389,11 @@ import vm.Function;
   });
 }))
 @:build(lang.macros.AnnaLang.defCls(Repl, {
-  @alias lang.Lang;
+  @alias vm.Lang;
 
-  @def interp({String: text}, [Atom], {
-//    ast = @native Lang.stringToAst(text);
-//    @native IO.inspect(ast);
-//    @native AnnaRepl.execute(ast);
+  @def eval({String: text}, [Atom], {
+    result = @native Lang.eval(text);
+    @native IO.inspect(result);
     @_'ok';
   });
 }))

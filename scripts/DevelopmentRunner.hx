@@ -137,9 +137,9 @@ class DevelopmentRunner {
     compileVMAPIProject();
     compileVMProject();
     compileCompiler();
-//    #if startHaxe
+    #if startHaxe
     compileAcceptanceTests();
-//    #end
+    #end
     if(onComplete != null) {
       onComplete();
     }
