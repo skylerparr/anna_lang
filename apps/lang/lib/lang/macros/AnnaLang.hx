@@ -25,7 +25,6 @@ class AnnaLang {
 
   private static var uniqueId: Int = 0;
 
-  #if macro
   private static var keywordMap: Map<String, Expr->Array<Expr>> =
   {
     keywordMap = new Map<String, Expr->Array<Expr>>();
@@ -38,7 +37,6 @@ class AnnaLang {
     keywordMap.set("=", lang.macros.Match.gen);
     keywordMap;
   }
-  #end
 
   macro public static function init(): Array<Field> {
     MacroContext.declaredClasses = new Map<String, ModuleDef>();
@@ -133,7 +131,7 @@ class AnnaLang {
                     expr = Macros.haxeToExpr(typeAndValue.rawValue);
                 }
               }
-              var field: Field = {name: name, pos: Context.currentPos(), kind: FVar(type, expr), access: [APublic]};
+              var field: Field = {name: name, pos: MacroContext.currentPos(), kind: FVar(type, expr), access: [APublic]};
               fields.push(field);
               exprs.push(expression);
             case _:
@@ -152,7 +150,7 @@ class AnnaLang {
 
     var createField: Field = {
       name: 'create',
-      pos: Context.currentPos(),
+      pos: MacroContext.currentPos(),
       kind: FFun({args: [{name: 'args', type: MacroTools.buildType('Dynamic')}], expr: createBodyExpr, ret: MacroTools.buildType(className)}),
       access: [APublic, AStatic, AInline]
     };
@@ -165,7 +163,6 @@ class AnnaLang {
     return persistClassFields();
   }
 
-  #if macro
   public static inline function createCustomType(type: Expr, params: Expr): Expr {
     var typeAndValue: Dynamic = MacroTools.getCustomTypeAndValue(params);
     typeAndValue.type = printer.printExpr(type);
@@ -173,7 +170,6 @@ class AnnaLang {
     var expr = Macros.haxeToExpr(str);
     return expr;
   }
-  #end
 
   macro public static function compile(): Array<Field> {
     for(className in MacroContext.declaredClasses.keys()) {
@@ -365,11 +361,7 @@ class AnnaLang {
     }
     return persistClassFields();
   }
-  private static inline function __updateScope(match:Map<String, Dynamic>, scope:Map<String, Dynamic>):Void {
-    for (key in match.keys()) {
-      scope.set(key, match.get(key));
-    };
-  }
+
   macro public static function defCls(name: Expr, body: Expr): Array<Field> {
     MacroLogger.log('==============================');
     var className: String = printer.printExpr(name);
@@ -393,11 +385,15 @@ class AnnaLang {
   }
 
   #if macro
-
   public static inline function persistClassFields():Array<Field> {
     var fields: Array<Field> = Context.getBuildFields();
     return fields;
   }
+  #else
+  public static inline function persistClassFields():Array<Field> {
+    return [];
+  }
+  #end
 
   public static function validateImplementedInterfaces(moduleDef: ModuleDef):Void {
     for(iface in moduleDef.interfaces) {
@@ -489,7 +485,7 @@ class AnnaLang {
                     var varName: String = '${funName}';
                     var exprs = keywordMap.get("=")(Macros.haxeToExpr(varName));
                     retExprs = retExprs.concat(exprs);
-                    pushStackArgs.push({expr: EConst(CIdent(varName)), pos: Context.currentPos()});
+                    pushStackArgs.push({expr: EConst(CIdent(varName)), pos: MacroContext.currentPos()});
                   case _:
                     pushStackArgs.push(arg);
                 }
@@ -512,7 +508,7 @@ class AnnaLang {
                     var varName: String = '__${funName}';
                     var exprs = keywordMap.get("=")(Macros.haxeToExpr(varName));
                     retExprs = retExprs.concat(exprs);
-                    pushStackArgs.push({expr: EConst(CIdent(varName)), pos: Context.currentPos()});
+                    pushStackArgs.push({expr: EConst(CIdent(varName)), pos: MacroContext.currentPos()});
                   case _:
                     pushStackArgs.push(arg);
                 }
@@ -757,6 +753,5 @@ class AnnaLang {
   public static function sanitizeArgTypeNames(types: Array<String>):String {
     return StringTools.replace(types.join("_"), ".", "_");
   }
-  #end
 
 }

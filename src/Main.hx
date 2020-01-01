@@ -48,6 +48,7 @@ class Main {
     CallStack.callStack();
     Sys.setCwd('.');
     Sys.getCwd();
+    haxe.crypto.Sha256.encode('');
     var t = new haxe.Template("");
     t.execute({});
     var m: IMap<String, String> = new Map<String, String>();

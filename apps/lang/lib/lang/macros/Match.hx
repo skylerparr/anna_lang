@@ -14,7 +14,6 @@ class Match {
 
   private static var printer: Printer = new Printer();
 
-  #if macro
   // Ensures that all pattern matches are unique
   private static var _id: Int = 0;
   private static var matchMap: Map<String, String> = new Map<String, String>();
@@ -57,10 +56,9 @@ class Match {
       cls.name = className;
       cls.pack = ["vm"];
 
-      Context.defineType(cls);
+      MacroContext.defineType(cls);
 
       return [Macros.haxeToExpr('ops.push(new vm.${className}(@atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${MacroTools.getLineNumber(params)}));')];
     }
   }
-  #end
 }

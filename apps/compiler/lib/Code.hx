@@ -392,8 +392,8 @@ import vm.Function;
   @alias lang.Lang;
 
   @def interp({String: text}, [Atom], {
-    ast = @native Lang.stringToAst(text);
-    @native IO.inspect(ast);
+//    ast = @native Lang.stringToAst(text);
+//    @native IO.inspect(ast);
 //    @native AnnaRepl.execute(ast);
     @_'ok';
   });

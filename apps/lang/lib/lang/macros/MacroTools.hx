@@ -1,14 +1,12 @@
 package lang.macros;
 import haxe.macro.Printer;
 import hscript.plus.ParserPlus;
-#if macro
 import haxe.macro.Context;
 import haxe.macro.Type;
 import haxe.macro.Type.ClassType;
 import haxe.macro.Expr;
 import haxe.macro.Expr.ComplexType;
 import haxe.macro.Expr.MetadataEntry;
-#end
 class MacroTools {
   private static var parser: ParserPlus = {
     parser = new ParserPlus();
@@ -20,12 +18,11 @@ class MacroTools {
   private static var printer: Printer = new Printer();
 
   macro public static function line(): Expr {
-    var lineStr = Context.currentPos() + '';
+    var lineStr = MacroContext.currentPos() + '';
     var lineNo: Int = Std.parseInt(lineStr.split(':')[1]);
     return Macros.haxeToExpr('${lineNo}');
   }
 
-  #if macro
   public static function createClass(className: String): TypeDefinition {
     return {
       kind: TDClass(null,[],false),
@@ -33,7 +30,7 @@ class MacroTools {
       name: className,
       pack: [],
       params: [],
-      pos: Context.currentPos(),
+      pos: MacroContext.currentPos(),
       fields: [],
       isExtern: false
     };
@@ -62,35 +59,35 @@ class MacroTools {
     return {
       name: name,
       params: params,
-      pos: Context.currentPos()
+      pos: MacroContext.currentPos()
     }
   }
 
   public static function buildConst(value: Constant):Expr {
     return {
       expr: EConst(value),
-      pos: Context.currentPos()
+      pos: MacroContext.currentPos()
     };
   }
   
   public static function buildExprField(ident: Expr, field: String):Expr {
     return {
       expr: EField(ident, field),
-      pos: Context.currentPos()
+      pos: MacroContext.currentPos()
     };
   }
   
   public static function buildCall(field: Expr, params: Array<Expr>):Expr {
     return {
       expr: ECall(field, params),
-      pos: Context.currentPos()
+      pos: MacroContext.currentPos()
     };
   }
 
   public static function buildReturn(ident: Expr):Expr {
     return {
       expr: EReturn(ident),
-      pos: Context.currentPos()
+      pos: MacroContext.currentPos()
     }
   }
 
@@ -111,7 +108,7 @@ class MacroTools {
     } else {
       return {
         expr: EBlock(blk),
-        pos: Context.currentPos(),
+        pos: MacroContext.currentPos(),
       }
     }
   }
@@ -127,7 +124,7 @@ class MacroTools {
         ret: returnType
       }),
       name: name,
-      pos: Context.currentPos()
+      pos: MacroContext.currentPos()
     }
   }
 
@@ -142,7 +139,7 @@ class MacroTools {
         ret: returnType
       }),
       name: name,
-      pos: Context.currentPos()
+      pos: MacroContext.currentPos()
     }
   }
 
@@ -156,7 +153,7 @@ class MacroTools {
     return {
       kind: FVar(varType, buildBlock(varBody)),
       name: funName,
-      pos: Context.currentPos(),
+      pos: MacroContext.currentPos(),
       access: [APublic]
     }
   }
@@ -437,7 +434,7 @@ class MacroTools {
   }
 
   public static function resolveType(expr: Expr):String {
-    var type: Type = Context.typeof(expr);
+    var type: Type = MacroContext.typeof(expr);
     return switch(type) {
       case TInst(t, other):
         switch(t.get().interfaces) {
@@ -504,7 +501,7 @@ class MacroTools {
   }
 
   public static function getLineNumberFromContext():Int {
-    var lineStr: String = '${Context.currentPos()}';
+    var lineStr: String = '${MacroContext.currentPos()}';
     var lineNo: Int = Std.parseInt(lineStr.split(':')[1]);
     return lineNo;
   }
@@ -545,7 +542,5 @@ class MacroTools {
         throw new ParsingException("AnnaLang: Expected package definition");
     }
   }
-
-  #end
 
 }

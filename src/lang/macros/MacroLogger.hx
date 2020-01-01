@@ -1,12 +1,10 @@
 package lang.macros;
-#if macro
 import haxe.io.Output;
 import sys.FileSystem;
 import sys.io.File;
 import haxe.macro.Printer;
 import haxe.macro.Expr.Field;
 import haxe.macro.Expr;
-#end
 class MacroLogger {
 
   #if macro
@@ -41,6 +39,14 @@ class MacroLogger {
     var p: Printer = new Printer();
     MacroLogger.log(p.printExpr(expr), label);
   }
+  #else
+  public static function log(message: Dynamic, label: String = null): Void {
+  }
 
+  public static function printFields(fields: Array<Field>):Void {
+  }
+
+  public static function logExpr(expr: Expr, label: String = null): Void {
+  }
   #end
 }

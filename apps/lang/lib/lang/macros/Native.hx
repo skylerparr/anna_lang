@@ -20,7 +20,6 @@ class Native {
   public function new() {
   }
 
-  #if macro
   public static function gen(params: Expr): Array<Expr> {
     var funName: String = MacroContext.currentVar;
     var moduleName: String = MacroTools.getModuleName(params);
@@ -127,7 +126,7 @@ class Native {
       cls.name = className;
       cls.pack = ["vm"];
 
-      Context.defineType(cls);
+      MacroContext.defineType(cls);
 
       declaredFunctions.set(className, cls);
       return cls;
@@ -135,7 +134,4 @@ class Native {
       return declaredFunctions.get(className);
     }
   }
-
-
-  #end
 }

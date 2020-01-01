@@ -13,7 +13,6 @@ class Def {
 
   private static var printer: Printer = new Printer();
 
-  #if macro
   public static function gen(params: Expr): Array<Expr> {
     defineFunction(params);
     return [];
@@ -54,7 +53,5 @@ class Def {
     MacroContext.declaredFunctions.set(internalFunctionName, funBodies);
     return def;
   }
-
-  #end
 
 }

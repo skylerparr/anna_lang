@@ -13,7 +13,6 @@ class Const {
 
   private static var printer: Printer = new Printer();
 
-  #if macro
   public static function gen(params: Expr): Array<Expr> {
     switch(params.expr) {
       case EBinop(OpAssign, {expr: EConst(CIdent(varName))}, value):
@@ -25,5 +24,4 @@ class Const {
     }
     return [];
   }
-  #end
 }

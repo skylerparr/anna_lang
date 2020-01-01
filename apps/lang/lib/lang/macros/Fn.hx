@@ -14,7 +14,6 @@ class Fn {
 
   private static var printer: Printer = new Printer();
 
-  #if macro
   public static function gen(params: Expr): Array<Expr> {
     MacroLogger.logExpr(params, 'anonymous fn params');
     MacroContext.lastFunctionReturnType = "vm_Function";
@@ -47,5 +46,4 @@ class Fn {
         throw new ParsingException("AnnaLang: Expected block");
     }
   }
-  #end
 }

@@ -13,7 +13,6 @@ class Alias {
 
   private static var printer: Printer = new Printer();
 
-  #if macro
   public static function gen(params: Expr): Array<Expr> {
     var fun = MacroTools.getCallFunName(params);
     var fieldName = MacroTools.getAliasName(params);
@@ -21,5 +20,5 @@ class Alias {
     MacroContext.aliases.set(fieldName, fun);
     return [];
   }
-  #end
+
 }
