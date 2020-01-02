@@ -1,4 +1,5 @@
 package vm;
+import lang.macros.MacroTools;
 import lang.macros.AnnaLang;
 import vm.Operation;
 import haxe.macro.Printer;
@@ -24,6 +25,7 @@ class Lang {
       invokeAst(ast);
       return Tuple.create(['ok'.atom(), ast]);
     } catch(e: Dynamic) {
+      trace(e);
       return Tuple.create(['error'.atom(), '${e}']);
     }
   }
@@ -35,9 +37,10 @@ class Lang {
       // ex: case "defType":
       // etc.
       case _:
-        trace(ast);
-        var exprs: Array<Expr> = AnnaLang.walkBlock(ast);
-        trace(exprs);
+        var expr = MacroTools.buildBlock([ast]);
+        AnnaLang.initCls();
+        var exprs: Array<Expr> = AnnaLang.walkBlock(expr);
+        trace(printer.printExpr(exprs[0]));
     }
     return 'ok'.atom();
   }

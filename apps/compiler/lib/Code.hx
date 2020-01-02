@@ -393,7 +393,7 @@ import vm.Function;
 
   @def eval({String: text}, [Atom], {
     result = @native Lang.eval(text);
-    @native IO.inspect(result);
+//    @native IO.inspect(result);
     @_'ok';
   });
 }))

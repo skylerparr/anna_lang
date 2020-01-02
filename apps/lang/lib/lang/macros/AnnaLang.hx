@@ -1,5 +1,6 @@
 package lang.macros;
 
+import hscript.Macro;
 import haxe.macro.Context;
 import haxe.macro.Expr;
 import haxe.macro.Printer;
@@ -38,9 +39,17 @@ class AnnaLang {
     keywordMap;
   }
 
+  private static function initLang(): Void {
+    if(MacroContext.declaredClasses == null) {
+      MacroContext.declaredClasses = new Map<String, ModuleDef>();
+    }
+    if(MacroContext.declaredInterfaces == null) {
+      MacroContext.declaredInterfaces = new Map<String, ModuleDef>();
+    }
+  }
+
   macro public static function init(): Array<Field> {
-    MacroContext.declaredClasses = new Map<String, ModuleDef>();
-    MacroContext.declaredInterfaces = new Map<String, ModuleDef>();
+    initLang();
     return persistClassFields();
   }
 
@@ -366,9 +375,8 @@ class AnnaLang {
     MacroLogger.log('==============================');
     var className: String = printer.printExpr(name);
     var moduleDef: ModuleDef = new ModuleDef(className);
-    MacroContext.aliases = new Map<String, String>();
+    initCls();
     MacroContext.currentModuleDef = moduleDef;
-    MacroContext.declaredFunctions = new Map<String, Array<Dynamic>>();
     MacroLogger.log(className, 'name');
     MacroLogger.logExpr(body, 'bodyString');
 
@@ -382,6 +390,12 @@ class AnnaLang {
     moduleDef.declaredFunctions = MacroContext.declaredFunctions;
 
     return persistClassFields();
+  }
+
+  public static function initCls(): Void {
+    initLang();
+    MacroContext.aliases = new Map<String, String>();
+    MacroContext.declaredFunctions = new Map<String, Array<Dynamic>>();
   }
 
   #if macro

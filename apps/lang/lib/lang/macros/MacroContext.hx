@@ -3,7 +3,8 @@ import haxe.macro.Expr;
 import haxe.macro.Type;
 
 class MacroContext {
-  public static var currentModule: TypeDefinition;
+  @:isVar
+  public static var currentModule(get, set): TypeDefinition;
   public static var currentFunction: String;
   public static var currentVar: String;
   public static var aliases: Map<String, String>;
@@ -16,13 +17,36 @@ class MacroContext {
   public static var declaredInterfaces: Map<String, ModuleDef>;
   public static var currentModuleDef: ModuleDef;
 
+  private static function get_currentModule(): TypeDefinition {
+    if(currentModule == null) {
+      currentModule = defaultTypeDefinition;
+    }
+    return currentModule;
+  }
+
+  private static function set_currentModule(mod: TypeDefinition): TypeDefinition {
+    currentModule = mod;
+    return currentModule;
+  }
+
+  public static var defaultTypeDefinition: TypeDefinition =
+  {
+    defaultTypeDefinition = {
+      pack: ["dkjf", "skljf", "kopaioe", "odfkpewp"],
+      name: "__DefaultType__",
+      pos: currentPos(),
+      kind: TDStructure,
+      fields: []
+    }
+  }
+
   #if macro
   public static function currentPos():Dynamic {
     return haxe.macro.Context.currentPos();
   }
   #else
   public static function currentPos():Position {
-    return {file: "none:43", min: 0, max: 0};
+    return {file: "none:0", min: 0, max: 0};
   }
   #end
 

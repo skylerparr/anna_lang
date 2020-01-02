@@ -41,6 +41,12 @@ class MacroLogger {
   }
   #else
   public static function log(message: Dynamic, label: String = null): Void {
+    if(label != null) {
+      label = '${label}: ';
+    } else {
+      label = '';
+    }
+    cpp.Lib.println(label + message);
   }
 
   public static function printFields(fields: Array<Field>):Void {
