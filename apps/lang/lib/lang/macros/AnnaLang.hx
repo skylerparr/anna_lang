@@ -569,7 +569,7 @@ class AnnaLang {
               var lineNumber = MacroTools.getLineNumber(blockExpr);
               MacroContext.lastFunctionReturnType = MacroTools.getIdent(type);
               var custom:Expr = createCustomType(type, params);
-              var args: String = '@tuple [@atom "const", ${printer.printExpr(custom)}]';
+              var args: String = MacroTools.getConstant(printer.printExpr(custom));
               var assignOp: Expr = putIntoScope(args, lineNumber);
               retExprs.push(assignOp);
             case EBinop(OpArrow, left, {expr: EBinop(OpAssign, match, right)}):

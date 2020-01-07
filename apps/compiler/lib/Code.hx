@@ -394,9 +394,16 @@ import vm.Function;
 
   @def eval({String: text}, [Atom], {
     foo = 'hello world';
+    fun = @fn{([[String]] => { "foo"; });}
+//    result = fun();
+//    @native IO.inspect(result);
     result = @native Lang.eval(text);
     @native IO.inspect(result);
     @_'ok';
+  });
+
+  @def sample({String: variable}, [String], {
+    variable;
   });
 }))
 @:build(lang.macros.AnnaLang.defCls(History, {

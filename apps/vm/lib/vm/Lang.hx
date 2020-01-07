@@ -58,6 +58,7 @@ class Lang {
         interp.variables.set("Map", ObjectMap);
         interp.variables.set("IO", IO);
         interp.variables.set("EitherEnums", EitherEnums);
+        interp.variables.set("SourceFile", SourceFile);
         interp.variables.set("A", function(v) {
           return v;
         });
