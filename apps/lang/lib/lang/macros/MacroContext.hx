@@ -5,7 +5,8 @@ import haxe.macro.Type;
 class MacroContext {
   @:isVar
   public static var currentModule(get, set): TypeDefinition;
-  public static var currentFunction: String;
+  @:isVar
+  public static var currentFunction(get, set): String;
   public static var currentVar: String;
   public static var aliases: Map<String, String>;
   public static var currentFunctionArgTypes: Array<String>;
@@ -27,6 +28,17 @@ class MacroContext {
   private static function set_currentModule(mod: TypeDefinition): TypeDefinition {
     currentModule = mod;
     return currentModule;
+  }
+
+  static function get_currentFunction(): String {
+    if(currentFunction == null) {
+      currentFunction = "__default__";
+    }
+    return currentFunction;
+  }
+
+  static function set_currentFunction(value: String): String {
+    return currentFunction = value;
   }
 
   public static var defaultTypeDefinition: TypeDefinition =

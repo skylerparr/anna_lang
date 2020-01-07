@@ -393,7 +393,7 @@ import vm.Function;
 
   @def eval({String: text}, [Atom], {
     result = @native Lang.eval(text);
-//    @native IO.inspect(result);
+    @native IO.inspect(result);
     @_'ok';
   });
 }))
@@ -545,7 +545,7 @@ import vm.Function;
   });
 
   @def start_interactive_anna([Atom], {
-    welcome = Str.concat('Interacive Anna version ', VSN);
+    welcome = Str.concat('Interactive Anna version ', VSN);
     System.println(welcome);
     prompt();
   });

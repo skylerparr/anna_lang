@@ -32,8 +32,8 @@ class EitherMacro {
           }
           var typeAndExpr: Dynamic = typeAndExprs[i];
           var uniqueVarType: String = varTypeMap.get(typeAndExpr.type);
-          exprs.push({ expr: EVars([{ expr: { expr: ECall({ expr: EConst(CIdent(uniqueVarType)), pos: Context.currentPos() },[typeAndExpr.expr]), pos: Context.currentPos() }, name: varName, type: TPath({ name: 'EitherEnums', sub: 'Either${numberOfElements}', pack: [], params: allTypes }) }]), pos: Context.currentPos() });
-          eitherArray.push({expr: EConst(CIdent(varName)), pos: Context.currentPos()});
+          exprs.push({ expr: EVars([{ expr: { expr: ECall({ expr: EConst(CIdent(uniqueVarType)), pos: MacroContext.currentPos() },[typeAndExpr.expr]), pos: MacroContext.currentPos() }, name: varName, type: TPath({ name: 'EitherEnums', sub: 'Either${numberOfElements}', pack: [], params: allTypes }) }]), pos: MacroContext.currentPos() });
+          eitherArray.push({expr: EConst(CIdent(varName)), pos: MacroContext.currentPos()});
         }
         exprs.push(macro $a{eitherArray});
         return macro $b{exprs};
@@ -43,8 +43,12 @@ class EitherMacro {
   }
 
   macro public static function genMap(values: Expr): Expr {
+    return doGenMap(values);
+  }
+
+  public static function doGenMap(values: Expr): Expr {
     MacroLogger.log("=====================");
-    MacroLogger.log('EitherMacro.genMap(): ${Context.getLocalClass()}');
+//    MacroLogger.log('EitherMacro.genMap(): ${MacroContext.getLocalClass()}');
 
     switch(setup(values)) {
       case [p, valueExpressions, typeAndExprs, varTypeMap, allTypes, numberOfElements]:
@@ -63,23 +67,23 @@ class EitherMacro {
           var varName: String = varType.toLowerCase();
           var typeAndExpr: Dynamic = typeAndExprs[i];
           var uniqueVarType: String = varTypeMap.get(typeAndExpr.type);
-          exprs.push({ expr: EVars([{ expr: { expr: ECall({ expr: EConst(CIdent(uniqueVarType)), pos: Context.currentPos() },[typeAndExpr.expr]), pos: Context.currentPos() }, name: varName, type: TPath({ name: 'EitherEnums', sub: 'Either${numberOfElements}', pack: [], params: allTypes }) }]), pos: Context.currentPos() });
+          exprs.push({ expr: EVars([{ expr: { expr: ECall({ expr: EConst(CIdent(uniqueVarType)), pos: MacroContext.currentPos() },[typeAndExpr.expr]), pos: MacroContext.currentPos() }, name: varName, type: TPath({ name: 'EitherEnums', sub: 'Either${numberOfElements}', pack: [], params: allTypes }) }]), pos: MacroContext.currentPos() });
 
           if(a == null) {
-            a = {expr: EConst(CIdent(varName)), pos: Context.currentPos()};
+            a = {expr: EConst(CIdent(varName)), pos: MacroContext.currentPos()};
           } else if(b == null) {
-            b = {expr: EConst(CIdent(varName)), pos: Context.currentPos()};
+            b = {expr: EConst(CIdent(varName)), pos: MacroContext.currentPos()};
           }
 
           if(a != null && b != null) {
-            eitherArray.push({ expr: ECall({ expr: EField({ expr: EConst(CIdent('map')), pos: Context.currentPos() },'set'), pos: Context.currentPos() },
-              [a,b]), pos: Context.currentPos() });
+            eitherArray.push({ expr: ECall({ expr: EField({ expr: EConst(CIdent('map')), pos: MacroContext.currentPos() },'set'), pos: MacroContext.currentPos() },
+            [a,b]), pos: MacroContext.currentPos() });
             a = null;
             b = null;
           }
         }
         var eitherType = { name: 'EitherEnums', sub: 'Either${numberOfElements}', pack: [], params: allTypes };
-        var newMap = { expr: EVars([{ expr: { expr: ENew({ name: "Map", pack: [], params: [TPType(TPath(eitherType)),TPType(TPath(eitherType))] },[]), pos: Context.currentPos() }, name: "map", type: TPath({ name: "Map", pack: [], params: [TPType(TPath(eitherType)),TPType(TPath(eitherType))] }) }]), pos: Context.currentPos() }
+        var newMap = { expr: EVars([{ expr: { expr: ENew({ name: "Map", pack: [], params: [TPType(TPath(eitherType)),TPType(TPath(eitherType))] },[]), pos: MacroContext.currentPos() }, name: "map", type: TPath({ name: "Map", pack: [], params: [TPType(TPath(eitherType)),TPType(TPath(eitherType))] }) }]), pos: MacroContext.currentPos() }
         exprs.push(newMap);
         for(either in eitherArray) {
           exprs.push(macro $e{either});
@@ -95,7 +99,6 @@ class EitherMacro {
     }
   }
 
-  #if macro
   private static function setup(values: Expr):Array<Dynamic> {
     var p: Printer = new Printer();
     var valueExpressions: Array<Dynamic> = switch(values) {
@@ -105,7 +108,7 @@ class EitherMacro {
         fields;
       case e:
         MacroLogger.log(e, 'e');
-        MacroLogger.logExpr(e, 'e');
+        MacroLogger.logExpr(values, 'e');
         throw 'Either was unable to match type: Unsupported match';
     }
 
@@ -173,16 +176,15 @@ class EitherMacro {
             MacroLogger.logExpr(e, 'e');
         }
       case {expr: ENew({name: type}, _args)}:
-        typeAndExprs.push({type: {expr: EConst(CIdent(type)), pos: Context.currentPos()}, expr: vExpr});
+        typeAndExprs.push({type: {expr: EConst(CIdent(type)), pos: MacroContext.currentPos()}, expr: vExpr});
       case {expr: EBinop(op, e1, e2)}:
         for(expr in [e1, e2]) {
           findTypesAndExprs(typeAndExprs, expr);
         }
       case {expr: expr}:
-        findTypesAndExprs(typeAndExprs, {expr: Reflect.field(expr, 'expr'), pos: Context.currentPos()});
+        findTypesAndExprs(typeAndExprs, {expr: Reflect.field(expr, 'expr'), pos: MacroContext.currentPos()});
       case e:
         MacroLogger.log(e, 'e');
     }
   }
-  #end
 }

@@ -1,5 +1,7 @@
 package ;
 
+import haxe.ds.ObjectMap;
+import haxe.CallStack;
 import LList;
 import haxe.ds.EnumValueMap;
 import lang.AtomSupport;
@@ -13,9 +15,26 @@ class MMap implements CustomType {
 
   public static function create(vals: EnumValueMap<Dynamic, Dynamic>): MMap {
     var map: AnnaMap<Any, Any> = new AnnaMap<Any, Any>();
+    #if macro
     for(k in vals.keys()) {
       map._put(k, vals.get(k));
     }
+    #else
+    if(Std.is(vals, ObjectMap)) {
+      var values: Array<Dynamic> = [];
+      for(v in vals) {
+        values.push(v);
+      }
+      var i: Int = 0;
+      for(k in vals.keys()) {
+        map._put(values[i++], k);
+      }
+    } else {
+      for(k in vals.keys()) {
+        map._put(k, vals.get(k));
+      }
+    }
+    #end
     return map;
   }
 

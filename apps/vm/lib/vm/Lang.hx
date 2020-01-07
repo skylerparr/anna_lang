@@ -1,4 +1,7 @@
 package vm;
+import haxe.ds.ObjectMap;
+import haxe.CallStack;
+import hscript.Interp;
 import lang.macros.MacroTools;
 import lang.macros.AnnaLang;
 import vm.Operation;
@@ -26,6 +29,7 @@ class Lang {
       return Tuple.create(['ok'.atom(), ast]);
     } catch(e: Dynamic) {
       trace(e);
+      trace(CallStack.exceptionStack().join(', '));
       return Tuple.create(['error'.atom(), '${e}']);
     }
   }
@@ -40,7 +44,28 @@ class Lang {
         var expr = MacroTools.buildBlock([ast]);
         AnnaLang.initCls();
         var exprs: Array<Expr> = AnnaLang.walkBlock(expr);
-        trace(printer.printExpr(exprs[0]));
+        var codeString: String = printer.printExpr(exprs[0]);
+        codeString = StringTools.replace(codeString, 'null.push(', '');
+        codeString = codeString.substr(0, codeString.length - 1);
+        trace(codeString);
+        var ast = parser.parseString(codeString);
+        var interp = new Interp();
+        interp.variables.set("Atom", Atom);
+        interp.variables.set("Tuple", Tuple);
+        interp.variables.set("LList", LList);
+        interp.variables.set("Keyword", Keyword);
+        interp.variables.set("MMap", MMap);
+        interp.variables.set("Map", ObjectMap);
+        interp.variables.set("IO", IO);
+        interp.variables.set("EitherEnums", EitherEnums);
+        interp.variables.set("A", function(v) {
+          return v;
+        });
+        interp.variables.set("B", function(v) {
+          return v;
+        });
+        var op: Operation = interp.execute(ast);
+        Process.apply(Process.self(), [op]);
     }
     return 'ok'.atom();
   }

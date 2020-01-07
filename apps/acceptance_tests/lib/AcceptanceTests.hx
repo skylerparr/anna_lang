@@ -147,10 +147,10 @@ using lang.AtomSupport;
   @def test_receive([Atom], {
     @native IO.inspect("waiting for data");
     received = kernel_receive(@fn {
-      ([{String: value}, [String]] => {
+      ([{String: value1}, [String]] => {
         @native IO.inspect("handling received message");
-        @native IO.inspect(value);
-        value;
+        @native IO.inspect(value1);
+        value1;
       });
     });
     @native IO.inspect("received:");
@@ -190,18 +190,18 @@ using lang.AtomSupport;
     @native Kernel.receive(fun);
   });
 
-  @def kernel_send({Pid: pid, Tuple: value}, [Atom], {
-    @native Kernel.send(pid, value);
+  @def kernel_send({Pid: pid, Tuple: value2}, [Atom], {
+    @native Kernel.send(pid, value2);
     @_'ok';
   });
 
-  @def kernel_send({Pid: pid, String: value}, [Atom], {
-    @native Kernel.send(pid, value);
+  @def kernel_send({Pid: pid, String: value3}, [Atom], {
+    @native Kernel.send(pid, value3);
     @_'ok';
   });
 
-  @def kernel_send({Pid: pid, Int: value}, [Atom], {
-    @native Kernel.send(pid, value);
+  @def kernel_send({Pid: pid, Int: value4}, [Atom], {
+    @native Kernel.send(pid, value4);
     @_'ok';
   });
 
@@ -233,14 +233,14 @@ using lang.AtomSupport;
     state_loop(0);
   });
 
-  @def state_loop({Int: value}, [Int], {
+  @def state_loop({Int: value5}, [Int], {
     received = kernel_receive(@fn {
       ([{Tuple: [@_'inc']}, [Int]] => {
-        @native Kernel.add(1, value);
+        @native Kernel.add(1, value5);
       });
       ([{Tuple: [@_'get', pid]}, [Int]] => {
-        kernel_send(cast(pid, Pid), cast(value, Int));
-        value;
+        kernel_send(cast(pid, Pid), cast(value5, Int));
+        value5;
       });
     });
     received = cast(received, Int);
@@ -256,8 +256,8 @@ using lang.AtomSupport;
     self_pid = self();
     kernel_send(pid, [@_'get', self_pid]);
     received = kernel_receive(@fn {
-      ([{Int: value}, [Int]] => {
-        value;
+      ([{Int: value6}, [Int]] => {
+        value6;
       });
     });
     @native IO.inspect(received);
@@ -286,13 +286,13 @@ using lang.AtomSupport;
     @_'ok';
   });
 
-  @def test_tuple({String: value}, [Tuple], {
-    tup = [@_'ok', value, 2];
+  @def test_tuple({String: value7}, [Tuple], {
+    tup = [@_'ok', value7, 2];
     @native IO.inspect(tup);
   });
 
-  @def test_list({String: value}, [LList], {
-    list = {@_'ok'; value; 4;};
+  @def test_list({String: value8}, [LList], {
+    list = {@_'ok'; value8; 4;};
     @native IO.inspect(list);
   });
 
@@ -515,9 +515,9 @@ using lang.AtomSupport;
     arg4;
   });
 
-  @def print({String: value, Int: count, Int: test}, [Int], {
+  @def print({String: value9, Int: count, Int: test}, [Int], {
     @native IO.inspect('print with 2 args');
-    @native IO.inspect(value);
+    @native IO.inspect(value9);
     @native IO.inspect(count);
     @native IO.inspect(test);
   });
@@ -537,9 +537,9 @@ using lang.AtomSupport;
     @_'ok';
   });
 
-  @def foo({Int: value}, [String], {
+  @def foo({Int: value10}, [String], {
     @native IO.inspect("In foo");
-    @native IO.inspect(value);
+    @native IO.inspect(value10);
   });
 
   @def bar({MMap: map}, [String], {

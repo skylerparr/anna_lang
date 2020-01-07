@@ -37,6 +37,8 @@ class IO {
     trace('gets');
     js.Node.process.stdin.read(1);
     return '';
+    #else
+    return '';
     #end
   }
 
@@ -53,6 +55,8 @@ class IO {
      trace(value);
     });
     return 25;
+    #else
+    return 0;
     #end
   }
 }

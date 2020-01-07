@@ -196,6 +196,61 @@ class MacroTools {
     }
   }
 
+  public static inline function getAtom(value: String):String {
+    #if macro
+    return '@atom "${value}"';
+    #else
+    return 'Atom.create("${value}")';
+    #end
+  }
+
+  public static inline function getTuple(value: Array<String>):String {
+    #if macro
+    return '@tuple [${value.join(', ')}]';
+    #else
+    return 'Tuple.create([${value.join(', ')}])';
+    #end
+  }
+
+  public static inline function getList(values: Array<String>):String {
+    #if macro
+    return '@list [${values.join(', ')}]';
+    #else
+    return 'LList.create([${values.join(', ')}])';
+    #end
+  }
+
+  public static inline function getKeyword(values: Array<String>):String {
+    #if macro
+    return '@keyword {${values.join(', ')}}';
+    #else
+    return 'Keyword.create([${values.join(",")}])';
+    #end
+  }
+
+  public static inline function getMap(values: Array<String>):String {
+    #if macro
+    return '@map[${values.join(",")}]';
+    #else
+    var mapExprs: Array<Expr> = [];
+    for(v in values) {
+      mapExprs.push(Macros.haxeToExpr(v));
+    }
+    var fullMapExpr = EitherMacro.doGenMap({ expr: ECast({expr: EArrayDecl(mapExprs), pos: MacroContext.currentPos()},TPath({ name: 'Array', pack: [], params: [TPType(TPath({ name: 'Dynamic', pack: [], params: [] }))]})), pos: MacroContext.currentPos()});
+    var strValue = printer.printExpr(fullMapExpr);
+    var strValue: String = 'MMap.create(${strValue})';
+    return strValue;
+    #end
+  }
+
+  public static inline function getConstant(value):String {
+    #if macro
+    return '@tuple[${getAtom("const")}, ${value}]';
+    #else
+    return 'Tuple.create([${getAtom("const")}, ${value}])';
+    #end
+  }
+
   public static function getTypeAndValue(expr: Expr):Dynamic {
     // TODO: dry a lot of this up!
     return switch(expr.expr) {
@@ -207,39 +262,39 @@ class MacroTools {
           getTypeAndValue(const);
         }
       case EConst(CString(value)):
-        {type: "String", value: '@tuple [@atom "const", "${value}"]', rawValue: '"${value}"'};
+        {type: "String", value: getConstant('"${value}"'), rawValue: '"${value}"'};
       case EConst(CInt(value)):
-        {type: "Number", value: '@tuple [@atom "const", ${value}]', rawValue: value};
+        {type: "Number", value: getConstant(value), rawValue: value};
       case EConst(CFloat(value)):
-        {type: "Number", value: '@tuple [@atom "const", ${value}]', rawValue: value};
+        {type: "Number", value: getConstant(value), rawValue: value};
       case EMeta({name: "atom" | "_"}, {expr: EConst(CString(value))}):
-        var strValue: String = '@atom "${value}"';
-        {type: "Atom", value: '@tuple [@atom "const", ${strValue}]', rawValue: strValue};
+        var strValue: String = getAtom(value);
+        {type: "Atom", value: getConstant(strValue), rawValue: strValue};
       case EMeta({name: "tuple"}, {expr: EArrayDecl(values)}):
         var finalValues: Array<String> = [];
         for(value in values) {
           var typeAndValue: Dynamic = getTypeAndValue(value);
           finalValues.push(typeAndValue.rawValue);
         }
-        var strValue: String = '@tuple ${finalValues.join(', ')}';
-        {type: "Tuple", value: '@tuple [@atom "const", ${strValue}]', rawValue: strValue};
+        var strValue: String = getTuple(finalValues);
+        {type: "Tuple", value: getConstant(strValue), rawValue: strValue};
       case EMeta({name: "list"}, {expr: EArrayDecl(args)}):
         var listValues: Array<String> = [];
         for(arg in args) {
           var typeAndValue: Dynamic = getTypeAndValue(arg);
           listValues.push(typeAndValue.rawValue);
         }
-        var strValue: String = '@list[${listValues.join(",")}]';
-        {type: "LList", value: '@tuple [@atom "const", ${strValue}]', rawValue: strValue};
+        var strValue: String = getList(listValues);
+        {type: "LList", value: getConstant(strValue), rawValue: strValue};
       case EMeta({name: "keyword"}, {expr: EObjectDecl(args)}):
         var listValues: Array<String> = [];
         for(arg in args) {
           var typeAndValue: Dynamic = getTypeAndValue(arg.expr);
           listValues.push('${arg.field}: ${typeAndValue.rawValue}');
         }
-        var strValue: String = '@keyword{${listValues.join(",")}}';
+        var strValue: String = getKeyword(listValues);
 
-        {type: "Keyword", value: '@tuple [@atom "const", ${strValue}]', rawValue: strValue};
+        {type: "Keyword", value: getConstant(strValue), rawValue: strValue};
       case EMeta({name: "map"}, {expr: EArrayDecl(args)}):
         var listValues: Array<String> = [];
         for(arg in args) {
@@ -254,34 +309,38 @@ class MacroTools {
           var typeAndValue: Dynamic = getTypeAndValue(arg);
           listValues.push(typeAndValue.rawValue);
         }
-        var strValue: String = '@list[${listValues.join(",")}]';
-        {type: "LList", value: '@tuple [@atom "const", ${strValue}]', rawValue: strValue};
+        var strValue: String = getList(listValues);
+        {type: "LList", value: getConstant(strValue), rawValue: strValue};
       case EArrayDecl(args):
         var listValues: Array<String> = [];
-        var isList: Bool = false;
+        var isTuple: Bool = false;
         for(arg in args) {
           switch(arg.expr) {
             case EBinop(OpArrow, key, value):
               var keyType = getTypeAndValue(key);
               var valueType = getTypeAndValue(value);
+              #if macro
               listValues.push('${keyType.value} => ${valueType.rawValue}');
+              #else
+              listValues.push('${keyType.value} => ${valueType.value}');
+              #end
             case _:
               try {
                 var typeAndValue = extractMapValues(arg);
                 listValues.push(typeAndValue.rawValue);
               } catch(e: Dynamic) {
-                isList = true;
+                isTuple = true;
                 var typeAndValue = getTypeAndValue(arg);
                 listValues.push(typeAndValue.rawValue);
               }
           }
         }
-        if(isList) {
-          var strValue: String = '@tuple[${listValues.join(",")}]';
-          {type: "Tuple", value: '@tuple [@atom "const", ${strValue}]', rawValue: strValue};
+        if(isTuple) {
+          var strValue: String = getTuple(listValues);
+          {type: "Tuple", value: getConstant(strValue), rawValue: strValue};
         } else {
-          var strValue: String = '@map[${listValues.join(",")}]';
-          {type: "MMap", value: '@tuple [@atom "const", ${strValue}]', rawValue: strValue};
+          var strValue: String = getMap(listValues);
+          {type: "MMap", value: getConstant(strValue), rawValue: strValue};
         }
       case EBinop(OpArrow, const, {expr: EBinop(OpAssign, pattern, rhs)}):
         var strConst: String = printer.printExpr(pattern);
@@ -298,14 +357,56 @@ class MacroTools {
         var listValues: Array<String> = [];
         for(arg in args) {
           var typeAndValue: Dynamic = getTypeAndValue(arg.expr);
+          #if macro
           listValues.push('${arg.field}: ${typeAndValue.rawValue}');
+          #else
+          listValues.push('["${arg.field}", ${typeAndValue.rawValue}]');
+          #end
         }
-        var strValue: String = '@keyword{${listValues.join(",")}}';
+        var strValue: String = getKeyword(listValues);
 
-        {type: "Keyword", value: '@tuple [@atom "const", ${strValue}]', rawValue: strValue};
+        {type: "Keyword", value: getConstant(strValue), rawValue: strValue};
       case ECast(expr, TPath({ name: type })):
         var typeAndValue = getTypeAndValue(expr);
         {type: AnnaLang.getAlias(type), value: typeAndValue.rawValue, rawValue: typeAndValue.rawValue};
+      case ECall({expr: EField({expr: EConst(CIdent("Atom"))}, "create")}, [{expr: EConst(CString(atom))}]):
+        {type: "Atom", value: 'Tuple.create([Atom.create("const"), ${atom}])', rawValue: atom};
+      case ECall({expr: EField({expr: EConst(CIdent("Tuple"))}, "create")}, [{expr: EArrayDecl(args)}]):
+        var listValues: Array<String> = [];
+        for(arg in args) {
+          var typeAndValue = getTypeAndValue(arg);
+          listValues.push(typeAndValue.rawValue);
+        }
+        var strValue: String = 'Tuple.create([${listValues.join(",")}])';
+        {type: "Tuple", value: 'Tuple.create([Atom.create("const"), ${strValue}])', rawValue: strValue};
+      case ECall({expr: EField({expr: EConst(CIdent("LList"))}, "create")}, [{expr: EArrayDecl(args)}]):
+        var listValues: Array<String> = [];
+        for(arg in args) {
+          var typeAndValue: Dynamic = getTypeAndValue(arg);
+          listValues.push(typeAndValue.value);
+        }
+        var strValue: String = 'LList.create([${listValues.join(",")}])';
+        {type: "LList", value: 'Tuple.create([Atom.create("const"), ${strValue}])', rawValue: strValue};
+      case ECall({expr: EField({expr: EConst(CIdent("Keyword"))}, "create")}, [{expr: EArrayDecl(args)}]):
+        var listValues: Array<String> = [];
+        for(arg in args) {
+          var innerValues: Array<String> = [];
+          switch(arg.expr) {
+            case EArrayDecl(args):
+              for(arg in args) {
+                var typeAndValue: Dynamic = getTypeAndValue(arg);
+                innerValues.push(typeAndValue.rawValue);
+              }
+            case _:
+              throw new ParsingException("AnnaLang: unexpected datatype");
+          }
+          listValues.push('[${innerValues.join(',')}]');
+        }
+        var strValue: String = 'Keyword.create([${listValues.join(",")}])';
+        {type: "Keyword", value: 'Tuple.create([Atom.create("const"), ${strValue}])', rawValue: strValue};
+      case ECall({expr: EField({expr: EConst(CIdent("MMap"))}, "create")}, [{expr: EBlock(args)}]):
+        var strValue: String = printer.printExpr({expr: EBlock(args), pos: MacroContext.currentPos()});
+        {type: "MMap", value: 'Tuple.create([Atom.create("const"), ${strValue}])', rawValue: strValue};
       case e:
         MacroLogger.log(expr, 'expr');
         MacroLogger.logExpr(expr, 'expr');

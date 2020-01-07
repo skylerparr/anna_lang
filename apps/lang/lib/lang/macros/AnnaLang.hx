@@ -727,7 +727,7 @@ class AnnaLang {
     var currentFunction: String = MacroContext.currentFunction;
     var currentFunStr: String = MacroContext.currentVar;
 
-    var haxeStr: String = '${currentFunStr}.push(new vm.PutInScope(${args}, @atom "${currentModuleStr}", @atom "${currentFunction}", ${lineNumber}));';
+    var haxeStr: String = '${currentFunStr}.push(new vm.PutInScope(${args}, Atom.create("${currentModuleStr}"), Atom.create("${currentFunction}"), ${lineNumber}));';
     return lang.macros.Macros.haxeToExpr(haxeStr);
   }
 
@@ -743,6 +743,9 @@ class AnnaLang {
   private static function getAnnaVarConstType(expr):String {
     return switch(expr.expr) {
       case EMeta({name: 'tuple'}, {expr: EArrayDecl([_, e])}):
+        var typeAndValue: Dynamic = MacroTools.getTypeAndValue(e);
+        typeAndValue.type;
+      case ECall({expr: EField({expr: EConst(CIdent("Tuple"))}, "create")}, [{expr: EArrayDecl([_, e])}]):
         var typeAndValue: Dynamic = MacroTools.getTypeAndValue(e);
         typeAndValue.type;
       case e:
