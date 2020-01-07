@@ -16,7 +16,7 @@ class MacroContext {
   public static var lastFunctionReturnType: String;
   public static var declaredClasses: Map<String, ModuleDef>;
   public static var declaredInterfaces: Map<String, ModuleDef>;
-  public static var currentModuleDef: ModuleDef;
+  @:isVar public static var currentModuleDef(get, set):ModuleDef;
 
   private static function get_currentModule(): TypeDefinition {
     if(currentModule == null) {
@@ -41,6 +41,17 @@ class MacroContext {
     return currentFunction = value;
   }
 
+  static function get_currentModuleDef():ModuleDef {
+    if(currentModuleDef == null) {
+      currentModuleDef = defaultModuleDef;
+    }
+    return currentModuleDef;
+  }
+
+  static function set_currentModuleDef(value:ModuleDef):ModuleDef {
+    return currentModuleDef = value;
+  }
+
   public static var defaultTypeDefinition: TypeDefinition =
   {
     defaultTypeDefinition = {
@@ -51,6 +62,8 @@ class MacroContext {
       fields: []
     }
   }
+
+  public static var defaultModuleDef: ModuleDef = new ModuleDef("__DEFAULT_MODULE__");
 
   #if macro
   public static function currentPos():Dynamic {

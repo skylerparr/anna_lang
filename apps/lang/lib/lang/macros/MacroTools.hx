@@ -251,13 +251,20 @@ class MacroTools {
     #end
   }
 
+  public static inline function getVar(value):String {
+    #if macro
+    return '@tuple[${getAtom("var")}, "${value}"]';
+    #else
+    return 'Tuple.create([${getAtom("var")}, "${value}"])';
+    #end
+  }
+
   public static function getTypeAndValue(expr: Expr):Dynamic {
-    // TODO: dry a lot of this up!
     return switch(expr.expr) {
       case EConst(CIdent(varName)):
         var const: Expr = MacroContext.currentModuleDef.constants.get(varName);
         if(const == null) {
-          {type: "Variable", value: '@tuple [@atom "var", "${varName}"]', rawValue: varName};
+          {type: "Variable", value: getVar(varName), rawValue: varName};
         } else {
           getTypeAndValue(const);
         }
@@ -324,6 +331,13 @@ class MacroTools {
               #else
               listValues.push('${keyType.value} => ${valueType.value}');
               #end
+            case EMeta({name: "atom" | "_"}, {expr: EBinop(OpArrow, {expr: EConst(CString(key))}, valExpr)}):
+              var valueType = getTypeAndValue(valExpr);
+              #if macro
+              listValues.push('${getAtom(key)} => ${valueType.rawValue}');
+              #else
+              listValues.push('${getAtom(key)} => ${valueType.value}');
+            #end
             case _:
               try {
                 var typeAndValue = extractMapValues(arg);

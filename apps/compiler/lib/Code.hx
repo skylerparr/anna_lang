@@ -390,8 +390,10 @@ import vm.Function;
 }))
 @:build(lang.macros.AnnaLang.defCls(Repl, {
   @alias vm.Lang;
+  @const bar = @_'bar';
 
   @def eval({String: text}, [Atom], {
+    foo = 'hello world';
     result = @native Lang.eval(text);
     @native IO.inspect(result);
     @_'ok';
