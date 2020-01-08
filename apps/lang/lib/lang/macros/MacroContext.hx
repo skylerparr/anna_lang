@@ -10,13 +10,16 @@ class MacroContext {
   public static var currentVar: String;
   public static var aliases: Map<String, String>;
   public static var currentFunctionArgTypes: Array<String>;
-  public static var returnTypes: Array<String>;
-  public static var declaredFunctions: Map<String, Array<Dynamic>>;
   public static var varTypesInScope: Map<String, String>;
   public static var lastFunctionReturnType: String;
-  public static var declaredClasses: Map<String, ModuleDef>;
+
+  public static var associatedInterfaces: Map<String, String> = new Map<String, String>();
+  @:isVar
+  public static var declaredClasses(get, set): Map<String, ModuleDef>;
   public static var declaredInterfaces: Map<String, ModuleDef>;
-  @:isVar public static var currentModuleDef(get, set):ModuleDef;
+
+  @:isVar
+  public static var currentModuleDef(get, set):ModuleDef;
 
   private static function get_currentModule(): TypeDefinition {
     if(currentModule == null) {
@@ -50,6 +53,17 @@ class MacroContext {
 
   static function set_currentModuleDef(value:ModuleDef):ModuleDef {
     return currentModuleDef = value;
+  }
+
+  static function get_declaredClasses():Map<String, ModuleDef> {
+    if(declaredClasses == null) {
+      declaredClasses = new Map<String, ModuleDef>();
+    }
+    return declaredClasses;
+  }
+
+  static function set_declaredClasses(value:Map<String, ModuleDef>):Map<String, ModuleDef> {
+    return declaredClasses = value;
   }
 
   public static var defaultTypeDefinition: TypeDefinition =

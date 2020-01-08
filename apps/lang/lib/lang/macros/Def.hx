@@ -36,7 +36,7 @@ class Def {
     var internalFunctionName: String = AnnaLang.makeFqFunName(funName, types);
 
     // add the functions to the context for reference later
-    var funBodies: Array<Dynamic> = MacroContext.declaredFunctions.get(internalFunctionName);
+    var funBodies: Array<Dynamic> = MacroContext.currentModuleDef.declaredFunctions.get(internalFunctionName);
     if(funBodies == null) {
       funBodies = [];
     }
@@ -50,7 +50,7 @@ class Def {
       allTypes: allTypes
     };
     funBodies.push(def);
-    MacroContext.declaredFunctions.set(internalFunctionName, funBodies);
+    MacroContext.currentModuleDef.declaredFunctions.set(internalFunctionName, funBodies);
     return def;
   }
 

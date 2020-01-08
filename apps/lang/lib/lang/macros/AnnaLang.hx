@@ -1,5 +1,6 @@
 package lang.macros;
 
+import lang.macros.MacroTools;
 import hscript.Macro;
 import haxe.macro.Context;
 import haxe.macro.Expr;
@@ -40,9 +41,6 @@ class AnnaLang {
   }
 
   private static function initLang(): Void {
-    if(MacroContext.declaredClasses == null) {
-      MacroContext.declaredClasses = new Map<String, ModuleDef>();
-    }
     if(MacroContext.declaredInterfaces == null) {
       MacroContext.declaredInterfaces = new Map<String, ModuleDef>();
     }
@@ -56,7 +54,6 @@ class AnnaLang {
   macro public static function defApi(name:Expr, body:Expr):Array<Field> {
     var interfaceName: String = MacroTools.getIdent(name);
     var moduleDef = new ModuleDef(interfaceName);
-    MacroContext.declaredFunctions = new Map<String, Array<Dynamic>>();
     switch(body.expr) {
       case EBlock(exprs):
         for(blockExpr in exprs) {
@@ -187,7 +184,6 @@ class AnnaLang {
       MacroContext.aliases = moduleDef.aliases;
       var cls = MacroTools.createClass(className);
       MacroContext.currentModule = cls;
-      MacroContext.declaredFunctions = moduleDef.declaredFunctions;
       applyBuildMacro(cls);
 
       var definedFunctions: Map<String, String> = new Map<String, String>();
@@ -366,8 +362,33 @@ class AnnaLang {
       MacroLogger.log('------------------');
       MacroLogger.printFields(cls.fields);
       MacroLogger.log("------------------");
-
     }
+
+    var defineCodeBody: Array<Expr> = [];
+    for(moduleDef in MacroContext.declaredClasses) {
+      var associatedIface = MacroContext.associatedInterfaces.get(moduleDef.moduleName);
+      var expr: Expr = null;
+      if(associatedIface != null) {
+        expr = Macros.haxeToExpr('vm.Classes.define(Atom.create("${associatedIface}"), ${moduleDef.moduleName})');
+        defineCodeBody.push(expr);
+      }
+      expr = Macros.haxeToExpr('vm.Classes.define(Atom.create("${moduleDef.moduleName}"), ${moduleDef.moduleName})');
+      defineCodeBody.push(expr);
+    }
+    defineCodeBody.push(Macros.haxeToExpr('return Atom.create("ok");'));
+    var defineCodeField: Field = MacroTools.buildPublicStaticFunction("defineCode", [], MacroTools.buildType("Atom"));
+    var field: Field = MacroTools.assignFunBody(defineCodeField, MacroTools.buildBlock(defineCodeBody));
+
+    var classFields: Array<Field> = persistClassFields();
+    classFields.push(field);
+    MacroLogger.printFields(classFields);
+    return classFields;
+  }
+
+  macro public static function set_iface(ifaceName: Expr, implName: Expr): Array<Field> {
+    var iface: String = MacroTools.getIdent(ifaceName);
+    var impl: String = MacroTools.getIdent(implName);
+    MacroContext.associatedInterfaces.set(impl, iface);
     return persistClassFields();
   }
 
@@ -387,7 +408,6 @@ class AnnaLang {
     });'));
     MacroContext.declaredClasses.set(className, moduleDef);
     moduleDef.aliases = MacroContext.aliases;
-    moduleDef.declaredFunctions = MacroContext.declaredFunctions;
 
     return persistClassFields();
   }
@@ -395,7 +415,6 @@ class AnnaLang {
   public static function initCls(): Void {
     initLang();
     MacroContext.aliases = new Map<String, String>();
-    MacroContext.declaredFunctions = new Map<String, Array<Dynamic>>();
   }
 
   #if macro
@@ -427,7 +446,7 @@ class AnnaLang {
   }
 
   private static function allFunctionsDefined(definedFunctions: Map<String, String>):Bool {
-    for(key in MacroContext.declaredFunctions.keys()) {
+    for(key in MacroContext.currentModuleDef.declaredFunctions.keys()) {
       if(definedFunctions.get(key) == null) {
         return false;
       }
@@ -437,9 +456,9 @@ class AnnaLang {
 
   private static function getUndefinedFunctions(definedFunctions: Map<String, String>):Map<String, Array<Dynamic>> {
     var retVal = new Map<String, Array<Dynamic>>();
-    for(key in MacroContext.declaredFunctions.keys()) {
+    for(key in MacroContext.currentModuleDef.declaredFunctions.keys()) {
       if(definedFunctions.get(key) == null) {
-        retVal.set(key, MacroContext.declaredFunctions.get(key));
+        retVal.set(key, MacroContext.currentModuleDef.declaredFunctions.get(key));
       }
     }
     return retVal;

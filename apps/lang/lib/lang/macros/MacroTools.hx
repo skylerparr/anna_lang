@@ -128,6 +128,21 @@ class MacroTools {
     }
   }
 
+  public static function buildPublicStaticFunction(name: String, params: Array<FunctionArg>, returnType: ComplexType): Field {
+    var varName: String = '_${name}';
+
+    return {
+      access: [APublic, AStatic],
+      kind: FFun({
+        args: params,
+        expr: null,
+        ret: returnType
+      }),
+      name: name,
+      pos: MacroContext.currentPos()
+    }
+  }
+
   public static function buildPrivateFunction(name: String, params: Array<FunctionArg>, returnType: ComplexType): Field {
     var varName: String = '_${name}';
 
@@ -532,7 +547,6 @@ class MacroTools {
                 retVal.argTypes.push({type: value.field, name: nameAndPattern.name, pattern: nameAndPattern.pattern});
               }
             case EArrayDecl(returnTypes):
-              MacroContext.returnTypes = [];
               for(returnType in returnTypes) {
                 retVal.returnTypes.push(getIdent(returnType));
               }

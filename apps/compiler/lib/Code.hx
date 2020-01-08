@@ -274,6 +274,7 @@ import vm.Function;
     reduce(cast(rest, LList), acc, callback);
   });
 }))
+@:build(lang.macros.AnnaLang.set_iface(EEnum, DefaultEnum))
 @:build(lang.macros.AnnaLang.defType(SourceFile, {
   var module_name: String = '';
   var source_code: String = '';
@@ -729,20 +730,5 @@ import vm.Function;
 //}))
 @:build(lang.macros.AnnaLang.compile())
 class Code {
-  public static function defineCode(): Atom {
-    Classes.define(Atom.create('Kernel'), Kernel);
-    Classes.define(Atom.create('CompilerMain'), CompilerMain);
-    Classes.define(Atom.create('History'), History);
-    Classes.define(Atom.create('Str'), Str);
-    Classes.define(Atom.create('System'), System);
-    Classes.define(Atom.create('CommandHandler'), CommandHandler);
-    Classes.define(Atom.create('File'), File);
-    Classes.define(Atom.create('Repl'), Repl);
-    Classes.define(Atom.create('AnnaCompiler'), AnnaCompiler);
-    Classes.define(Atom.create('JSON'), JSON);
-    Classes.define(Atom.create('EEnum'), DefaultEnum);
-    Classes.define(Atom.create('DefaultEnum'), DefaultEnum);
 
-    return Atom.create('ok');
-  }
 }
