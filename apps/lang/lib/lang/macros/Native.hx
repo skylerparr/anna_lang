@@ -1,4 +1,7 @@
 package lang.macros;
+import lang.macros.MacroTools;
+import lang.macros.MacroTools;
+import lang.macros.MacroTools;
 import haxe.macro.Expr;
 import haxe.macro.Printer;
 import hscript.plus.ParserPlus;
@@ -51,8 +54,8 @@ class Native {
 
     var invokeClass: TypeDefinition = createOperationClass(moduleName, invokeFunName, strArgs);
 
-    var haxeString = '${funName}.push(new vm.${invokeClass.name}(${moduleName}.${invokeFunName}, @list[${strArgs.join(', ')}],
-      @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${MacroTools.getLineNumber(params)}))';
+    var haxeString = '${funName}.push(new vm.${invokeClass.name}(${moduleName}.${invokeFunName}, ${MacroTools.getList(strArgs)},
+      ${MacroTools.getAtom(currentModuleStr)}, ${MacroTools.getAtom(MacroContext.currentFunction)}, ${MacroTools.getLineNumber(params)}))';
     MacroLogger.log(haxeString, 'haxeString');
     retVal.push(lang.macros.Macros.haxeToExpr(haxeString));
     return retVal;

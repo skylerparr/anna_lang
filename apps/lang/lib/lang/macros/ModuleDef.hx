@@ -15,6 +15,4 @@ class ModuleDef {
     constants = new Map<String, Expr>();
     interfaces = [];
   }
-
-
 }
