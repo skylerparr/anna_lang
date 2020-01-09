@@ -374,6 +374,33 @@ class AnnaLang {
       }
       expr = Macros.haxeToExpr('vm.Classes.define(Atom.create("${moduleDef.moduleName}"), ${moduleDef.moduleName})');
       defineCodeBody.push(expr);
+
+      expr = Macros.haxeToExpr('var moduleDef: lang.macros.ModuleDef = new lang.macros.ModuleDef("${moduleDef.moduleName}");');
+      defineCodeBody.push(expr);
+
+      for(aliasKey in moduleDef.aliases.keys()) {
+        var aliasValue: String = moduleDef.aliases.get(aliasKey);
+        expr = Macros.haxeToExpr('moduleDef.aliases.set("${aliasKey}", "${aliasValue}");');
+        defineCodeBody.push(expr);
+      }
+
+      for(declaredFunctionsKey in moduleDef.declaredFunctions.keys()) {
+        var declaredFunctionsValue: Array<Dynamic> = moduleDef.declaredFunctions.get(declaredFunctionsKey);
+        var genFunctionStrs: Array<String> = [];
+        for(declaredFunction in declaredFunctionsValue) {
+          var fields: Array<String> = Reflect.fields(declaredFunction);
+          for(field in fields) {
+            var fieldValue = Reflect.field(declaredFunction, field);
+
+          }
+        }
+//        MacroLogger.log(declaredFunctionsKey, 'declaredFunctionsKey');
+//        MacroLogger.log(declaredFunctionsValue, 'declaredFunctionsValue');
+//        defineCodeBody.push(expr);
+      }
+
+      expr = Macros.haxeToExpr('lang.macros.MacroContext.declaredClasses.set("${moduleDef.moduleName}", moduleDef)');
+      defineCodeBody.push(expr);
     }
     defineCodeBody.push(Macros.haxeToExpr('return Atom.create("ok");'));
     var defineCodeField: Field = MacroTools.buildPublicStaticFunction("defineCode", [], MacroTools.buildType("Atom"));
