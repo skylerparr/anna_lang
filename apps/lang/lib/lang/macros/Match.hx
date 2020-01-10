@@ -1,5 +1,7 @@
 package lang.macros;
 
+import lang.macros.MacroTools;
+import lang.macros.MacroTools;
 import hscript.plus.ParserPlus;
 import haxe.macro.Printer;
 import haxe.macro.Expr;
@@ -29,7 +31,7 @@ class Match {
       var currentFunStr: String = MacroContext.currentVar;
       var varName: String = MacroTools.getIdent(params);
       MacroContext.varTypesInScope.set(varName, MacroContext.lastFunctionReturnType);
-      var haxeStr: String = '${currentFunStr}.push(new vm.Assign(@tuple[@atom "const", "${varName}"], @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${MacroTools.getLineNumber(params)}));';
+      var haxeStr: String = '${currentFunStr}.push(new vm.Assign(${MacroTools.getTuple([MacroTools.getAtom("const"), '"${varName}"'])}, ${MacroTools.getAtom(currentModuleStr)}, ${MacroTools.getAtom(MacroContext.currentFunction)}, ${MacroTools.getLineNumber(params)}));';
       return [lang.macros.Macros.haxeToExpr(haxeStr)];
     } else {
       var currentModule: TypeDefinition = MacroContext.currentModule;

@@ -1,6 +1,5 @@
 package lang.macros;
 import haxe.macro.Expr;
-import haxe.macro.Type;
 
 class MacroContext {
   @:isVar
@@ -8,14 +7,15 @@ class MacroContext {
   @:isVar
   public static var currentFunction(get, set): String;
   public static var currentVar: String;
-  public static var aliases: Map<String, String>;
+  public static var aliases: Map<String, String> = new Map<String, String>();
   public static var currentFunctionArgTypes: Array<String>;
-  public static var varTypesInScope: Map<String, String> = new Map<String, String>();
+  @:isVar
+  public static var varTypesInScope(get, set): Map<String, String> = new Map<String, String>();
   public static var lastFunctionReturnType: String;
 
   public static var associatedInterfaces: Map<String, String> = new Map<String, String>();
   public static var declaredClasses: Map<String, ModuleDef> = new Map<String, ModuleDef>();
-  public static var declaredInterfaces: Map<String, ModuleDef>;
+  public static var declaredInterfaces: Map<String, ModuleDef> = new Map<String, ModuleDef>();
 
   @:isVar
   public static var currentModuleDef(get, set):ModuleDef;
@@ -54,6 +54,27 @@ class MacroContext {
     return currentModuleDef = value;
   }
 
+  #if macro
+  static function get_varTypesInScope(): Map<String, String> {
+    return varTypesInScope;
+  }
+  #else
+  static function get_varTypesInScope(): Map<String, String> {
+    var varsInScope: Map<String, Dynamic> = vm.Process.self().processStack.getVariablesInScope();
+    varTypesInScope = new Map<String, String>();
+    for(varNameInScope in varsInScope.keys()) {
+      var value: Dynamic = varsInScope.get(varNameInScope);
+      var cls: Class<Dynamic> = Type.getClass(value);
+      varTypesInScope.set(varNameInScope, '${cls}');
+    }
+    return varTypesInScope;
+  }
+  #end
+
+  static function set_varTypesInScope(value: Map<String, String>): Map<String, String> {
+    return varTypesInScope = value;
+  }
+
   public static var defaultTypeDefinition: TypeDefinition =
   {
     defaultTypeDefinition = {
@@ -78,11 +99,11 @@ class MacroContext {
   #end
 
   #if macro
-  public static function typeof(expr: Expr):Type {
+  public static function typeof(expr: Expr):haxe.macro.Type {
     return haxe.macro.Context.typeof(expr);
   }
   #else
-  public static function typeof(expr: Expr):Type {
+  public static function typeof(expr: Expr):haxe.macro.Type {
     return TDynamic(null);
   }
   #end

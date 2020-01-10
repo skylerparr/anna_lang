@@ -395,6 +395,7 @@ import vm.Function;
 
   @def eval({String: text}, [Atom], {
     foo = 'hello world';
+
     fun = @fn{([[String]] => { "foo"; });}
 //    result = fun();
 //    @native IO.inspect(result);
@@ -403,7 +404,8 @@ import vm.Function;
     @_'ok';
   });
 
-  @def sample({String: variable}, [String], {
+  @def sample({Pid: variable}, [String], {
+    @native IO.inspect('called function sample');
     variable;
   });
 }))
