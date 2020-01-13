@@ -69,7 +69,7 @@ class Native {
     var counter: Int = 0;
     var privateArgs: Array<String> = [];
     for(arg in strArgs) {
-      var assign: String = 'var _arg${counter} = util.ArgHelper.extractArgValue(arg${counter}, scope);';
+      var assign: String = 'var _arg${counter} = ArgHelper.extractArgValue(arg${counter}, scope);';
       var classVar: String = 'arg${counter}';
       var paramVar = macro class Fake {
         private var $classVar: Tuple;

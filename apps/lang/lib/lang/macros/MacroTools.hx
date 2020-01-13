@@ -360,7 +360,11 @@ class MacroTools {
               } catch(e: Dynamic) {
                 isTuple = true;
                 var typeAndValue = getTypeAndValue(arg);
+                #if macro
                 listValues.push(typeAndValue.rawValue);
+                #else
+                listValues.push(typeAndValue.value);
+                #end
               }
           }
         }
@@ -438,7 +442,7 @@ class MacroTools {
         {type: "MMap", value: 'Tuple.create([Atom.create("const"), ${strValue}])', rawValue: strValue};
       case e:
         MacroLogger.log(expr, 'expr');
-        MacroLogger.logExpr(expr, 'expr');
+        MacroLogger.logExpr(expr, 'expr code');
         throw new ParsingException("AnnaLang: Expected type and value or variable name");
     }
   }

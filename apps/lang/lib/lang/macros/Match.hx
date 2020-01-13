@@ -37,6 +37,7 @@ class Match {
       var currentModule: TypeDefinition = MacroContext.currentModule;
       var currentModuleStr: String = currentModule.name;
 
+      #if macro
       var cls: TypeDefinition = macro class NoClass extends vm.AbstractMatch {
           public function new(hostModule: Atom, hostFunction: Atom, line: Int) {
             super(hostModule, hostFunction, line);
@@ -60,7 +61,10 @@ class Match {
 
       MacroContext.defineType(cls);
 
-      return [Macros.haxeToExpr('ops.push(new vm.${className}(@atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${MacroTools.getLineNumber(params)}));')];
+      return [Macros.haxeToExpr('ops.push(new vm.${className}(${MacroTools.getAtom(currentModuleStr)}, ${MacroTools.getAtom(MacroContext.currentFunction)}, ${MacroTools.getLineNumber(params)}));')];
+      #else
+      return [Macros.haxeToExpr('ops.push(new vm.InterpMatch(${params}, ${MacroTools.getAtom(currentModuleStr)}, ${MacroTools.getAtom(MacroContext.currentFunction)}, ${MacroTools.getLineNumber(params)}));')];
+      #end
     }
   }
 }

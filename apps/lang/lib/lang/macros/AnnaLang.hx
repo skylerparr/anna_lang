@@ -687,7 +687,6 @@ class AnnaLang {
           var type: String = getTypeForVar(typeAndValue, arg);
           type = StringTools.replace(type, '.', '_');
           types.push(type);
-          MacroLogger.log(typeAndValue, 'typeAndValue');
           funArgs.push(typeAndValue.value);
       }
       argCounter++;

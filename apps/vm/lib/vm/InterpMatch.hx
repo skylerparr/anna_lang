@@ -1,27 +1,23 @@
 package vm;
-
-import EitherEnums.Either1;
-import ArgHelper;
-import ArgHelper;
-import EitherEnums.Either2;
-import lang.EitherSupport;
-class PutInScope implements Operation {
-
-  private var value: Tuple;
+import haxe.macro.Expr;
+class InterpMatch implements Operation {
+  public var ast: Expr;
 
   public var hostModule: Atom;
   public var hostFunction: Atom;
   public var lineNumber: Int;
 
-  public function new(value: Tuple, hostModule: Atom, hostFunction: Atom, lineNumber: Int) {
-    this.value = value;
+  public function new(ast: Expr, hostModule: Atom, hostFunction: Atom, lineNumber: Int) {
+    this.ast = ast;
+
     this.hostModule = hostModule;
     this.hostFunction = hostFunction;
     this.lineNumber = lineNumber;
   }
 
   public function execute(scopeVariables: Map<String, Dynamic>, processStack: ProcessStack): Void {
-    scopeVariables.set("$$$", ArgHelper.extractArgValue(A(value), scopeVariables));
+    IO.inspect(ast);
+    IO.inspect(scopeVariables);
   }
 
   public function isRecursive(): Bool {

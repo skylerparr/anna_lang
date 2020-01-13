@@ -3,7 +3,7 @@ package vm;
 import vm.schedulers.CPPMultithreadedMessagePassingScheduler;
 import project.ProjectConfig;
 import vm.Pid;
-import util.ArgHelper;
+import ArgHelper;
 import lang.macros.MacroTools;
 import core.ObjectCreator;
 import core.ObjectFactory;

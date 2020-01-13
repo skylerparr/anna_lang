@@ -53,6 +53,14 @@ class MacroLogger {
   }
 
   public static function logExpr(expr: Expr, label: String = null): Void {
+    if(label != null) {
+      label = '${label}: ';
+    } else {
+      label = '';
+    }
+    var p: Printer = new Printer();
+    cpp.Lib.println(label + p.printExpr(expr));
+
   }
   #end
 }

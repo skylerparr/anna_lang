@@ -1,6 +1,6 @@
 package vm;
 
-import util.ArgHelper;
+import ArgHelper;
 import EitherEnums.Either2;
 import lang.EitherSupport;
 import vm.Function;

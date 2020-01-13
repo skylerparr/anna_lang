@@ -48,7 +48,6 @@ class EitherMacro {
 
   public static function doGenMap(values: Expr): Expr {
     MacroLogger.log("=====================");
-//    MacroLogger.log('EitherMacro.genMap(): ${MacroContext.getLocalClass()}');
 
     switch(setup(values)) {
       case [p, valueExpressions, typeAndExprs, varTypeMap, allTypes, numberOfElements]:
@@ -92,7 +91,6 @@ class EitherMacro {
           map;
         };
         exprs.push(Macros.extractBlock(newMap)[0]);
-        MacroLogger.logExpr(macro $b{exprs}, "genMap expr");
         return macro $b{exprs};
       case _:
         throw "EitherMacro.getMap(): gen setup return has changed, this shouldn't happen accidentally!";

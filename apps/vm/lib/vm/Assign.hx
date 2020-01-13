@@ -1,6 +1,6 @@
 package vm;
 
-import util.ArgHelper;
+import ArgHelper;
 class Assign implements Operation {
   public var arg: Tuple;
   public var hostModule: Atom;

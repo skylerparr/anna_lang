@@ -394,9 +394,11 @@ import vm.Function;
   @const bar = @_'bar';
 
   @def eval({String: text}, [Atom], {
-    foo = 'hello world';
+    foo = [@_'ok', 'bar'];
+    bar = [@_'ok', foo];
+    @native IO.inspect(bar);
 
-    fun = @fn{([[String]] => { "foo"; });}
+//    fun = @fn{([[String]] => { "foo"; });}
 //    result = fun();
 //    @native IO.inspect(result);
     result = @native Lang.eval(text);
@@ -404,8 +406,9 @@ import vm.Function;
     @_'ok';
   });
 
-  @def sample({Pid: variable}, [String], {
+  @def sample({String: variable}, [String], {
     @native IO.inspect('called function sample');
+    @native IO.inspect(variable);
     variable;
   });
 }))

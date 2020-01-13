@@ -1,5 +1,6 @@
-package util;
+package ;
 
+import vm.Process;
 import EitherEnums.Either3;
 import EitherEnums.Either2;
 import EitherEnums.Either1;
@@ -7,7 +8,6 @@ import lang.AbstractCustomType;
 import lang.CustomType;
 import haxe.ds.EnumValueMap;
 import lang.EitherSupport;
-import vm.Pid;
 class ArgHelper {
 
   public static inline function extractArgValue(arg: Dynamic, scopeVariables: Map<String, Dynamic>): Dynamic {
@@ -47,8 +47,12 @@ class ArgHelper {
     return retVal;
   }
 
-  public static inline function resolveTupleValues(tuple: Tuple, scopeVariables: Map<String, Dynamic>): Dynamic {
+  public static inline function resolveTupleValues(tuple: Tuple, scopeVariables: Map<String, Dynamic>): Tuple {
     var items: Array<Any> = tuple.asArray();
+    return buildTuple(items, scopeVariables);
+  }
+
+  public static inline function buildTuple(items: Array<Any>, scopeVariables: Map<String, Dynamic>): Tuple {
     for(i in 0...items.length) {
       var newValue = items[i];
       var fetched = extractArgValue(newValue, scopeVariables);
@@ -57,7 +61,7 @@ class ArgHelper {
     return Tuple.create(items);
   }
 
-  public static inline function resolveListValues(list: LList, scopeVariables: Map<String, Dynamic>): Dynamic {
+  public static inline function resolveListValues(list: LList, scopeVariables: Map<String, Dynamic>): LList {
     var values: Array<Any> = [];
     for(item in LList.iterator(list)) {
       var fetched = extractArgValue(item, scopeVariables);
@@ -66,7 +70,7 @@ class ArgHelper {
     return LList.create(values);
   }
 
-  public static inline function resolveMapValues(map: MMap, scopeVariables: Map<String, Dynamic>): Dynamic {
+  public static inline function resolveMapValues(map: MMap, scopeVariables: Map<String, Dynamic>): MMap {
     var retMap: EnumValueMap<Dynamic, Dynamic> = new EnumValueMap<Dynamic, Dynamic>();
     for(key in LList.iterator(MMap.keys(map))) {
       var item = MMap.get(map, key);
@@ -77,7 +81,7 @@ class ArgHelper {
     return MMap.create(retMap);
   }
 
-  public static inline function resolveAbstractCustomTypeValues(value: AbstractCustomType, scopeVariables: Map<String, Dynamic>): Dynamic {
+  public static inline function resolveAbstractCustomTypeValues(value: AbstractCustomType, scopeVariables: Map<String, Dynamic>): AbstractCustomType {
     if(value.variables != null) {
       var variables = value.variables;
       for(key in variables.keys()) {
