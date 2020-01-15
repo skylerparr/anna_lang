@@ -71,12 +71,13 @@ class ArgHelper {
   }
 
   public static inline function resolveMapValues(map: MMap, scopeVariables: Map<String, Dynamic>): MMap {
-    var retMap: EnumValueMap<Dynamic, Dynamic> = new EnumValueMap<Dynamic, Dynamic>();
+    var retMap: Array<Tuple> = [];
     for(key in LList.iterator(MMap.keys(map))) {
       var item = MMap.get(map, key);
       var fetched = extractArgValue(item, scopeVariables);
       var newKey = extractArgValue(key, scopeVariables);
-      retMap.set(Either1.A(newKey), fetched);
+      retMap.push(newKey);
+      retMap.push(fetched);
     }
     return MMap.create(retMap);
   }

@@ -1,5 +1,8 @@
 package lang.macros;
 
+import lang.macros.MacroTools;
+import lang.macros.MacroTools;
+import lang.macros.MacroTools;
 import haxe.macro.Printer;
 import hscript.plus.ParserPlus;
 import haxe.macro.Expr;
@@ -38,7 +41,7 @@ class Fn {
           var expr = lang.macros.Macros.haxeToExpr(haxeStr);
           defined = Def.defineFunction(expr);
         }
-        var haxeStr: String = 'ops.push(new vm.DeclareAnonFunction(@atom "${currentModuleStr}.${defined.internalFunctionName}", @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${MacroTools.getLineNumber(params)}))';
+        var haxeStr: String = 'ops.push(new vm.DeclareAnonFunction(${MacroTools.getAtom('${currentModuleStr}.${defined.internalFunctionName}')}, ${MacroTools.getAtom(currentModuleStr)}, ${MacroTools.getAtom(MacroContext.currentFunction)}, ${MacroTools.getLineNumber(params)}))';
         return [lang.macros.Macros.haxeToExpr(haxeStr)];
       case _:
         MacroLogger.log(params, 'params');

@@ -37,6 +37,8 @@ class Match {
       var currentModule: TypeDefinition = MacroContext.currentModule;
       var currentModuleStr: String = currentModule.name;
 
+      MacroLogger.log(typeAndValue, 'match typeAndValue');
+      var patternMatch: Expr = PatternMatch.match(Macros.haxeToExpr(typeAndValue.value), Macros.haxeToExpr("scopeVariables.get(\"$$$\")"));
       #if macro
       var cls: TypeDefinition = macro class NoClass extends vm.AbstractMatch {
           public function new(hostModule: Atom, hostFunction: Atom, line: Int) {
@@ -44,9 +46,11 @@ class Match {
           }
 
           override public function execute(scopeVariables: Map<String, Dynamic>, processStack: vm.ProcessStack): Void {
-            var matched: Map<String, Dynamic> = lang.macros.PatternMatch.match($e{Macros.haxeToExpr(typeAndValue.rawValue)}, scopeVariables.get("$$$"));
+            var matched: Map<String, Dynamic> = $e{patternMatch};
             if(Kernel.isNull(matched)) {
-              throw 'BadMatch: ${currentModuleStr}.${MacroContext.currentFunction}():${MacroTools.getLineNumber(params)} => ${printer.printExpr(params)}';
+              Logger.inspect('BadMatch: ${currentModuleStr}.${MacroContext.currentFunction}():${MacroTools.getLineNumber(params)} => ${printer.printExpr(params)}');
+              vm.Kernel.crash(vm.Process.self());
+              return;
             }
             for(key in matched.keys()) {
               scopeVariables.set(key, matched.get(key));
@@ -58,6 +62,7 @@ class Match {
       var className: String = '___${_id++}';
       cls.name = className;
       cls.pack = ["vm"];
+      MacroLogger.printFields(cls.fields);
 
       MacroContext.defineType(cls);
 

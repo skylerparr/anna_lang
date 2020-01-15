@@ -1,4 +1,5 @@
 package lang.macros;
+import lang.macros.MacroTools;
 import haxe.macro.Expr;
 import haxe.macro.Printer;
 import hscript.plus.ParserPlus;
@@ -15,7 +16,7 @@ class PatternMatch {
 
   private static var printer: Printer = new Printer();
 
-  macro public static function match(pattern: Expr, valueExpr: Expr): Expr {
+  public static function match(pattern: Expr, valueExpr: Expr): Expr {
     MacroLogger.log("===============================");
     MacroLogger.log("PatternMatch", 'PatternMatch');
 
@@ -29,28 +30,36 @@ class PatternMatch {
       }
       scope;
     }
+    MacroLogger.logExpr(retVal, 'retVal');
     return retVal;
   }
 
-  #if macro
   public static function generatePatternMatch(pattern: Expr, valueExpr: Expr):Expr {
     return switch(pattern.expr) {
+      case ECall({expr: EField({expr: EConst(CIdent("Tuple"))}, "create")}, [{expr: EArrayDecl([{expr: ECall({ expr: EField({ expr: EConst(CIdent('Atom')) },'create') }, [{ expr: EConst(CString('const')) }]) }, value])}]):
+        MacroLogger.logExpr(value, 'const value');
+        generatePatternMatch(value, valueExpr);
+      case ECall({expr: EField({expr: EConst(CIdent("Tuple"))}, "create")}, [{expr: EArrayDecl([{expr: ECall({ expr: EField({ expr: EConst(CIdent('Atom')) },'create') }, [{ expr: EConst(CString('var')) }]) }, { expr: EConst(CString(varName)) }])}]):
+        MacroLogger.log(varName, 'varName');
+        var value = { expr: EConst(CIdent(varName)), pos: MacroContext.currentPos() }
+        generatePatternMatch(value, valueExpr);
       case EConst(CIdent(v)):
         var varName: Dynamic = v;
         var value: Dynamic = printer.printExpr(valueExpr);
         var haxeStr: String = 'scope.set("${varName}", ${value});';
         var expr: Expr = lang.macros.Macros.haxeToExpr(haxeStr);
-        macro $e{expr};
+        expr;
       case EConst(CString(_)) | EConst(CInt(_)) | EConst(CFloat(_)):
         valuesNotEqual(pattern, valueExpr);
       case ECall({expr: EField({expr: EConst(CIdent("Atom"))}, _)}, [{expr: EConst(CString(_))}]):
         valuesNotEqual(pattern, valueExpr);
-      case ECall({expr: EField({expr: EConst(CIdent("Tuple"))}, _)}, [{expr: ECall(_, [{expr: ECast({expr: EArrayDecl(values)}, _)}])}]):
+      case ECall({expr: EField({expr: EConst(CIdent("Tuple"))}, _)}, [{expr: EArrayDecl(values)}]):
         var individualMatches: Array<Expr> = [];
         var counter: Int = 0;
         for(v in values) {
           var strExpr: String = 'lang.EitherSupport.getValue(arrayTuple[${counter}])';
           var expr: Expr = generatePatternMatch(v, lang.macros.Macros.haxeToExpr(strExpr));
+          MacroLogger.logExpr(expr, 'match expr');
           individualMatches.push(expr);
           counter++;
         }
@@ -74,7 +83,7 @@ class PatternMatch {
             }
           }
         ;
-      case ECall({expr: EField({expr: EConst(CIdent("LList"))}, _)}, [{expr: ECall(_, [{expr: ECast({expr: EArrayDecl([{expr: EBinop(OpOr, head, tail)}])}, _)}])}]):
+      case ECall({expr: EField({expr: EConst(CIdent("LList"))}, _)}, [{expr: EArrayDecl([{expr: EBinop(OpOr, head, tail)}])}]):
         var individualMatches: Array<Expr> = [];
         var strExpr: String = 'lang.EitherSupport.getValue(LList.hd(rhsList))';
         var expr: Expr = generatePatternMatch(head, lang.macros.Macros.haxeToExpr(strExpr));
@@ -88,7 +97,7 @@ class PatternMatch {
           $e{individualMatchesBlock};
           break;
         }
-      case ECall({expr: EField({expr: EConst(CIdent("LList"))}, _)}, [{expr: ECall(_, [{expr: ECast({expr: EArrayDecl(values)}, _)}])}]):
+      case ECall({expr: EField({expr: EConst(CIdent("LList"))}, _)}, [{expr: EArrayDecl(values)}]):
         var individualMatches: Array<Expr> = [];
         var counter: Int = 0;
         for(v in values) {
@@ -119,7 +128,7 @@ class PatternMatch {
           }
         }
         return expr;
-      case ECall({expr: EField({expr: EConst(CIdent("MMap"))}, _)}, [{expr: ECall(_, [{expr: ECast({expr: EArrayDecl(values)}, _)}])}]):
+      case ECall({expr: EField({expr: EConst(CIdent("MMap"))}, _)}, [{expr: EArrayDecl(values)}]):
         var individualMatches: Array<Expr> = [];
         var isKey: Bool = true;
         var key: String = null;
@@ -168,7 +177,6 @@ class PatternMatch {
       case EBlock([base, suffix]):
         var valueStr: String = '${printer.printExpr(valueExpr)}.substring(${printer.printExpr(base)}.length)';
         var exprMatch: Expr = generatePatternMatch(suffix, Macros.haxeToExpr(valueStr));
-        MacroLogger.logExpr(exprMatch, 'exprMatch');
         macro {
           for(i in 0...$e{base}.length) {
             if($e{base}.charAt(i) != $e{valueExpr}.charAt(i)) {
@@ -207,7 +215,6 @@ class PatternMatch {
         }
         expr;
       case ECall({expr: EField({expr: EConst(CIdent("Keyword"))}, _)}, values):
-        MacroLogger.logExpr(valueExpr, 'valueExpr');
         var individualMatches: Array<Expr> = [];
         for(value in values) {
           switch(value.expr) {
@@ -246,8 +253,29 @@ class PatternMatch {
         }
         MacroLogger.logExpr(expr, 'expr');
         expr;
+      case EMeta(_):
+        var typeAndValue = MacroTools.getTypeAndValue(pattern);
+        var expr = Macros.haxeToExpr(typeAndValue.rawValue);
+        generatePatternMatch(expr, valueExpr);
+      case EBinop(OpArrow, base, suffix):
+        var valueStr: String = '${printer.printExpr(valueExpr)}.substring(${printer.printExpr(base)}.length)';
+        var exprMatch: Expr = generatePatternMatch(suffix, Macros.haxeToExpr(valueStr));
+        macro {
+          for(i in 0...$e{base}.length) {
+            if($e{base}.charAt(i) != $e{valueExpr}.charAt(i)) {
+              scope = null;
+              break;
+            }
+          }
+          if(scope == null) {
+            break;
+          }
+          $e{exprMatch};
+          break;
+        }
       case e:
         MacroLogger.log(e, 'PatternMatch expr');
+        MacroLogger.logExpr(pattern, 'PatternMatch expr');
         MacroLogger.logExpr(valueExpr, 'PatternMatch expr');
         macro null;
     }
@@ -262,5 +290,4 @@ class PatternMatch {
     ;
   }
 
-  #end
 }

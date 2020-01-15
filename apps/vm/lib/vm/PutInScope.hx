@@ -21,7 +21,7 @@ class PutInScope implements Operation {
   }
 
   public function execute(scopeVariables: Map<String, Dynamic>, processStack: ProcessStack): Void {
-    scopeVariables.set("$$$", ArgHelper.extractArgValue(A(value), scopeVariables));
+    scopeVariables.set("$$$", ArgHelper.extractArgValue(value, scopeVariables));
   }
 
   public function isRecursive(): Bool {

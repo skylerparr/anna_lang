@@ -4,6 +4,9 @@ import lang.macros.MacroTools;
 import lang.macros.MacroTools;
 import lang.macros.MacroTools;
 import lang.macros.MacroTools;
+import lang.macros.MacroTools;
+import lang.macros.MacroTools;
+import lang.macros.MacroTools;
 import hscript.Macro;
 import haxe.macro.Context;
 import haxe.macro.Expr;
@@ -285,7 +288,9 @@ class AnnaLang {
                     pattern = '"${pattern}"';
                   }
                 }
-                haxeStr = 'var match: Map<String, Dynamic> = lang.macros.PatternMatch.match(${pattern}, ${argName});';
+                var patternExpr = PatternMatch.match(Macros.haxeToExpr(pattern), Macros.haxeToExpr(argName));
+                MacroLogger.logExpr(patternExpr, 'patternExpr');
+                haxeStr = 'var match: Map<String, Dynamic> = ${printer.printExpr(patternExpr)};';
               }
               patternMatches.push(haxeStr);
             }
@@ -684,6 +689,8 @@ class AnnaLang {
           funArgs.push(MacroTools.getTuple([MacroTools.getAtom("var"), '"__${funName}_${argCounter}"']));
         case _:
           var typeAndValue = MacroTools.getTypeAndValue(arg);
+        MacroLogger.log(arg, 'arg');
+          MacroLogger.log(typeAndValue, 'typeAndValue push stack');
           var type: String = getTypeForVar(typeAndValue, arg);
           type = StringTools.replace(type, '.', '_');
           types.push(type);
@@ -717,7 +724,7 @@ class AnnaLang {
     if(funDef == null) {
       var varTypeInScope: String = MacroContext.varTypesInScope.get(funName);
       if(varTypeInScope == 'vm_Function' || varTypeInScope == 'vm.Function') {
-        var haxeStr: String = 'ops.push(new vm.AnonymousFunction(@atom"${funName}", @list [${funArgs.join(", ")}], @atom "${currentModuleStr}", @atom "${MacroContext.currentFunction}", ${lineNumber}))';
+        var haxeStr: String = 'ops.push(new vm.AnonymousFunction(${MacroTools.getAtom(funName)}, ${MacroTools.getList(funArgs)}, ${MacroTools.getAtom(currentModuleStr)}, ${MacroTools.getAtom(MacroContext.currentFunction)}, ${lineNumber}))';
         retVal.push(lang.macros.Macros.haxeToExpr(haxeStr));
         return retVal;
       }
@@ -730,6 +737,7 @@ class AnnaLang {
       MacroContext.lastFunctionReturnType = funDef[0].funReturnTypes[0];
       var haxeStr: String = 'ops.push(new vm.PushStack(${MacroTools.getAtom(module.moduleName)}, ${MacroTools.getAtom(fqFunName)}, ${MacroTools.getList(funArgs)}, ${MacroTools.getAtom(currentModuleStr)}, ${MacroTools.getAtom(MacroContext.currentFunction)}, ${lineNumber}))';
 
+      MacroLogger.log(haxeStr, 'haxeStr');
       retVal.push(lang.macros.Macros.haxeToExpr(haxeStr));
       return retVal;
     }

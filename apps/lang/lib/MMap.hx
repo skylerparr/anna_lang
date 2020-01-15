@@ -13,28 +13,22 @@ using StringTools;
 class MMap implements CustomType {
   public var variables: Map<String,String>;
 
-  public static function create(vals: EnumValueMap<Dynamic, Dynamic>): MMap {
+  public static function create(vals: Array<Tuple>): MMap {
     var map: AnnaMap<Any, Any> = new AnnaMap<Any, Any>();
-    #if macro
-    for(k in vals.keys()) {
-      map._put(k, vals.get(k));
-    }
-    #else
-    if(Std.is(vals, ObjectMap)) {
-      var values: Array<Dynamic> = [];
-      for(v in vals) {
-        values.push(v);
+    var key: Tuple = null;
+    var value: Tuple = null;
+    for(val in vals) {
+      if(key == null) {
+        key = val;
+      } else if(value == null) {
+        value = val;
       }
-      var i: Int = 0;
-      for(k in vals.keys()) {
-        map._put(values[i++], k);
-      }
-    } else {
-      for(k in vals.keys()) {
-        map._put(k, vals.get(k));
+      if(key != null && value != null) {
+        map._put(key, value);
+        key = null;
+        value = null;
       }
     }
-    #end
     return map;
   }
 

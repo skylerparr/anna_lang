@@ -32,7 +32,7 @@ class EitherMacro {
           }
           var typeAndExpr: Dynamic = typeAndExprs[i];
           var uniqueVarType: String = varTypeMap.get(typeAndExpr.type);
-          exprs.push({ expr: EVars([{ expr: { expr: ECall({ expr: EConst(CIdent(uniqueVarType)), pos: MacroContext.currentPos() },[typeAndExpr.expr]), pos: MacroContext.currentPos() }, name: varName, type: TPath({ name: 'EitherEnums', sub: 'Either${numberOfElements}', pack: [], params: allTypes }) }]), pos: MacroContext.currentPos() });
+          exprs.push({ expr: EVars([{ expr: { expr: typeAndExpr.expr, pos: MacroContext.currentPos() }, name: varName, type: TPath({ name: 'Tuple', pack: [], params: allTypes }) }]), pos: MacroContext.currentPos() });
           eitherArray.push({expr: EConst(CIdent(varName)), pos: MacroContext.currentPos()});
         }
         exprs.push(macro $a{eitherArray});
@@ -56,17 +56,22 @@ class EitherMacro {
         var a: Expr = null;
         var b: Expr = null;
         if(typeAndExprs.length % 2 == 1) {
+          for(t in cast(typeAndExprs, Array<Dynamic>)) {
+            MacroLogger.logExpr(t.expr, 't.expr');
+          }
           MacroLogger.log(typeAndExprs, 'typeAndExprs');
           MacroLogger.log(valueExpressions, 'valueExpressions');
           MacroLogger.logExpr(values, 'values');
           throw new ParsingException("AnnaLang: Unmatched map value. All maps must have a value to map to the key");
         }
+        var argVars: Array<String> = [];
         for(i in 0...typeAndExprs.length) {
           var varType: String = alphabet[i];
           var varName: String = varType.toLowerCase();
+          argVars.push(varName);
           var typeAndExpr: Dynamic = typeAndExprs[i];
           var uniqueVarType: String = varTypeMap.get(typeAndExpr.type);
-          exprs.push({ expr: EVars([{ expr: { expr: ECall({ expr: EConst(CIdent(uniqueVarType)), pos: MacroContext.currentPos() },[typeAndExpr.expr]), pos: MacroContext.currentPos() }, name: varName, type: TPath({ name: 'EitherEnums', sub: 'Either${numberOfElements}', pack: [], params: allTypes }) }]), pos: MacroContext.currentPos() });
+          exprs.push({ expr: EVars([{ expr: typeAndExpr.expr, name: varName, type: TPath({ name: 'Tuple', pack: [], params: [] }) }]), pos: MacroContext.currentPos() });
 
           if(a == null) {
             a = {expr: EConst(CIdent(varName)), pos: MacroContext.currentPos()};
@@ -81,16 +86,9 @@ class EitherMacro {
             b = null;
           }
         }
-        var eitherType = { name: 'EitherEnums', sub: 'Either${numberOfElements}', pack: [], params: allTypes };
-        var newMap = { expr: EVars([{ expr: { expr: ENew({ name: "Map", pack: [], params: [TPType(TPath(eitherType)),TPType(TPath(eitherType))] },[]), pos: MacroContext.currentPos() }, name: "map", type: TPath({ name: "Map", pack: [], params: [TPType(TPath(eitherType)),TPType(TPath(eitherType))] }) }]), pos: MacroContext.currentPos() }
+        var eitherType = { name: 'Array', pack: [], params: allTypes };
+        var newMap = Macros.haxeToExpr('[${argVars.join(', ')}]');
         exprs.push(newMap);
-        for(either in eitherArray) {
-          exprs.push(macro $e{either});
-        }
-        var newMap = macro {
-          map;
-        };
-        exprs.push(Macros.extractBlock(newMap)[0]);
         return macro $b{exprs};
       case _:
         throw "EitherMacro.getMap(): gen setup return has changed, this shouldn't happen accidentally!";
@@ -179,7 +177,13 @@ class EitherMacro {
         for(expr in [e1, e2]) {
           findTypesAndExprs(typeAndExprs, expr);
         }
+      case {expr: EMeta(_)}:
+        var typesAndValues = MacroTools.getTypeAndValue(vExpr);
+        var expr = Macros.haxeToExpr(typesAndValues.value);
+        findTypesAndExprs(typeAndExprs, expr);
       case {expr: expr}:
+        MacroLogger.log(vExpr, 'vExpr');
+        MacroLogger.logExpr(vExpr, 'vExpr');
         findTypesAndExprs(typeAndExprs, {expr: Reflect.field(expr, 'expr'), pos: MacroContext.currentPos()});
       case e:
         MacroLogger.log(e, 'e');

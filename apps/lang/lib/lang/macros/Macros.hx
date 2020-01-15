@@ -370,7 +370,7 @@ class Macros {
   private static function _tuple(expr: Expr, _: Expr):Expr {
     return findMeta(expr, function(expr: Expr): Expr {
       return macro {
-        Tuple.create(lang.macros.EitherMacro.gen(cast($e{expr}, Array<Dynamic>)));
+        Tuple.create($e{expr});
       }
     });
   }
@@ -378,7 +378,7 @@ class Macros {
   private static function _map(expr: Expr, _: Expr):Expr {
     return findMeta(expr, function(expr: Expr): Expr {
       return macro {
-        MMap.create(lang.macros.EitherMacro.genMap(cast($e{expr}, Array<Dynamic>)));
+        MMap.create($e{expr});
       }
     });
   }
@@ -386,7 +386,7 @@ class Macros {
   public static function _list(expr: Expr, _: Expr):Expr {
     return findMeta(expr, function(expr: Expr): Expr {
       return macro {
-        LList.create(lang.macros.EitherMacro.gen(cast($e{expr}, Array<Dynamic>)));
+        LList.create($e{expr});
       }
     });
   }

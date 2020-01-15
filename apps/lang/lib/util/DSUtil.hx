@@ -4,7 +4,7 @@ import lang.AbstractCustomType;
 class DSUtil {
 
   public static inline function dynamicToMap(d: Dynamic):MMap {
-    return parseToMap(d, MMap.create(new haxe.ds.EnumValueMap<Dynamic, Dynamic>()));
+    return parseToMap(d, MMap.create([]));
   }
 
   private static inline function parseToMap(d:Dynamic, retVal:MMap):MMap {

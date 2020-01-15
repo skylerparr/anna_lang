@@ -218,7 +218,12 @@ import vm.Function;
     @_'nil';
   });
 
-  @def process_command({String: 'eval' => text}, [Tuple], {
+  @def process_command({String: 'self'}, [String], {
+    @native IO.inspect(Kernel.self());
+    @_'ok';
+  });
+
+  @def process_command({String: 'eval ' => text}, [Tuple], {
     Repl.eval(cast(text, String));
     @_'ok';
   });
@@ -229,11 +234,6 @@ import vm.Function;
     index = Kernel.subtract(index, 1);
     command = History.get(cast(index, Int));
     System.println(command);
-    @_'ok';
-  });
-
-  @def process_command({String: 'self'}, [String], {
-    @native IO.inspect(Kernel.self());
     @_'ok';
   });
 
@@ -394,10 +394,6 @@ import vm.Function;
   @const bar = @_'bar';
 
   @def eval({String: text}, [Atom], {
-    foo = [@_'ok', 'bar'];
-    bar = [@_'ok', foo];
-    @native IO.inspect(bar);
-
 //    fun = @fn{([[String]] => { "foo"; });}
 //    result = fun();
 //    @native IO.inspect(result);

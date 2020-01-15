@@ -2,6 +2,7 @@ package lang.macros;
 import lang.macros.MacroTools;
 import lang.macros.MacroTools;
 import lang.macros.MacroTools;
+import lang.macros.MacroTools;
 import haxe.macro.Expr;
 import haxe.macro.Printer;
 import hscript.plus.ParserPlus;
@@ -42,7 +43,7 @@ class Native {
             retVal.push(expr);
           }
 
-          strArgs.push('@tuple[@atom"var", "__${invokeFunName}_${argCounter}"]');
+          strArgs.push(MacroTools.getTuple([MacroTools.getAtom('var'), '"__${invokeFunName}_${argCounter}"']));
         case _:
           var typeAndValue = MacroTools.getTypeAndValue(arg);
           strArgs.push(typeAndValue.value);
@@ -103,7 +104,6 @@ class Native {
         }
       }
 
-      MacroLogger.log(executeBodyStr, 'executeBodyStr');
       var execBody: Expr = lang.macros.Macros.haxeToExpr(executeBodyStr);
       var cls: TypeDefinition = macro class NoClass extends vm.AbstractInvokeFunction {
 
