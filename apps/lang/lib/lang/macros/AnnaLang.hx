@@ -1,5 +1,6 @@
 package lang.macros;
 
+import util.StringUtil;
 import lang.macros.MacroTools;
 import lang.macros.MacroTools;
 import lang.macros.MacroTools;
@@ -400,10 +401,15 @@ class AnnaLang {
           for(field in fields) {
             if(field == 'funBody' || field == 'allTypes' || field == 'funArgsTypes') {
               continue;
+            } else if(field == 'funReturnTypes') {
+              var fieldValue = Reflect.field(declaredFunction, field);
+              expr = Macros.haxeToExpr('decFun.${field} = ${fieldValue};');
+              defineCodeBody.push(expr);
+            } else {
+              var fieldValue = Reflect.field(declaredFunction, field);
+              expr = Macros.haxeToExpr('decFun.${field} = "${fieldValue}";');
+              defineCodeBody.push(expr);
             }
-            var fieldValue = Reflect.field(declaredFunction, field);
-            expr = Macros.haxeToExpr('decFun.${field} = "${fieldValue}";');
-            defineCodeBody.push(expr);
           }
 
           expr = Macros.haxeToExpr('decFuns.push(decFun);');
@@ -680,17 +686,11 @@ class AnnaLang {
           for(expr in exprs) {
             retVal.push(expr);
           }
-          #if !macro
-          IO.inspect(arg, 'arg');
-          MacroContext.lastFunctionReturnType = "vm.Pid";
-          #end
 
           types.push(getType(StringTools.replace(MacroContext.lastFunctionReturnType, '.', '_')));
           funArgs.push(MacroTools.getTuple([MacroTools.getAtom("var"), '"__${funName}_${argCounter}"']));
         case _:
           var typeAndValue = MacroTools.getTypeAndValue(arg);
-        MacroLogger.log(arg, 'arg');
-          MacroLogger.log(typeAndValue, 'typeAndValue push stack');
           var type: String = getTypeForVar(typeAndValue, arg);
           type = StringTools.replace(type, '.', '_');
           types.push(type);
@@ -734,10 +734,15 @@ class AnnaLang {
 
       throw 'Function ${moduleName}.${fqFunName} at line ${lineNumber} not found';
     } else {
+      var returnTypes: Array<String> = funDef[0].funReturnTypes;
+      #if macro
       MacroContext.lastFunctionReturnType = funDef[0].funReturnTypes[0];
+      #else
+      var returnTypes: String = funDef[0].funReturnTypes;
+      MacroContext.lastFunctionReturnType = returnTypes.substr(1, returnTypes.length - 2);
+      #end
       var haxeStr: String = 'ops.push(new vm.PushStack(${MacroTools.getAtom(module.moduleName)}, ${MacroTools.getAtom(fqFunName)}, ${MacroTools.getList(funArgs)}, ${MacroTools.getAtom(currentModuleStr)}, ${MacroTools.getAtom(MacroContext.currentFunction)}, ${lineNumber}))';
 
-      MacroLogger.log(haxeStr, 'haxeStr');
       retVal.push(lang.macros.Macros.haxeToExpr(haxeStr));
       return retVal;
     }

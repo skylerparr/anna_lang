@@ -268,7 +268,7 @@ class MacroTools {
         var finalValues: Array<String> = [];
         for(value in values) {
           var typeAndValue: Dynamic = getTypeAndValue(value);
-          finalValues.push(typeAndValue.rawValue);
+          finalValues.push(typeAndValue.value);
         }
         var strValue: String = getTuple(finalValues);
         {type: "Tuple", value: getConstant(strValue), rawValue: strValue};
@@ -276,7 +276,7 @@ class MacroTools {
         var listValues: Array<String> = [];
         for(arg in args) {
           var typeAndValue: Dynamic = getTypeAndValue(arg);
-          listValues.push(typeAndValue.rawValue);
+          listValues.push(typeAndValue.value);
         }
         var strValue: String = getList(listValues);
         {type: "LList", value: getConstant(strValue), rawValue: strValue};
@@ -284,7 +284,7 @@ class MacroTools {
         var listValues: Array<String> = [];
         for(arg in args) {
           var typeAndValue: Dynamic = getTypeAndValue(arg.expr);
-          listValues.push('${arg.field}: ${typeAndValue.rawValue}');
+          listValues.push('${arg.field}: ${typeAndValue.value}');
         }
         var strValue: String = getKeyword(listValues);
 
@@ -326,7 +326,7 @@ class MacroTools {
             case _:
               try {
                 var typeAndValue = extractMapValues(arg);
-                listValues.push(typeAndValue.rawValue);
+                listValues.push(typeAndValue.value);
               } catch(e: Dynamic) {
                 isTuple = true;
                 var typeAndValue = getTypeAndValue(arg);
@@ -367,7 +367,7 @@ class MacroTools {
         {type: "Keyword", value: getConstant(strValue), rawValue: strValue};
       case ECast(expr, TPath({ name: type })):
         var typeAndValue = getTypeAndValue(expr);
-        {type: AnnaLang.getAlias(type), value: typeAndValue.value, rawValue: typeAndValue.rawValue};
+        {type: AnnaLang.getAlias(type), value: typeAndValue.value, rawValue: typeAndValue.value};
       case ECall({expr: EField({expr: EConst(CIdent("Atom"))}, "create")}, [{expr: EConst(CString(atom))}]):
         {type: "Atom", value: 'Tuple.create([Atom.create("const"), ${atom}])', rawValue: atom};
       case ECall({expr: EField({expr: EConst(CIdent("Tuple"))}, "create")}, [{expr: EArrayDecl(args)}]):
@@ -394,7 +394,7 @@ class MacroTools {
             case EArrayDecl(args):
               for(arg in args) {
                 var typeAndValue: Dynamic = getTypeAndValue(arg);
-                innerValues.push(typeAndValue.rawValue);
+                innerValues.push(typeAndValue.value);
               }
             case _:
               throw new ParsingException("AnnaLang: unexpected datatype");
@@ -423,7 +423,7 @@ class MacroTools {
             case EConst(CIdent(_)):
               typeAndValue.value;
             case _:
-              typeAndValue.rawValue;
+              typeAndValue.value;
           }
           keyValues.push('${item.field}: ${rawValue}');
         }
@@ -444,7 +444,7 @@ class MacroTools {
       case EMeta({name: "atom"}, e) | EMeta({name: "tuple"}, e) | EMeta({name: "list"}, e):
         // special case for when map has atom, tuple, or list keys
         var typeAndValue: Dynamic = getTypeAndValue(e);
-        listValues.push(typeAndValue.rawValue);
+        listValues.push(typeAndValue.value);
       case EMeta({name: "map"}, {expr: EBinop(OpArrow, key, value)}):
         // special case for when map has map keys
         var keyType = getTypeAndValue(key);
@@ -525,7 +525,7 @@ class MacroTools {
               }
             case EArrayDecl(returnTypes):
               for(returnType in returnTypes) {
-                retVal.returnTypes.push(getIdent(returnType));
+                retVal.returnTypes.push(AnnaLang.getAlias(getIdent(returnType)));
               }
             case e:
               MacroLogger.log(e, 'e');

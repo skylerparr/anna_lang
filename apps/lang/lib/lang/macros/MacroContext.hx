@@ -11,8 +11,8 @@ class MacroContext {
   public static var currentFunctionArgTypes: Array<String>;
   @:isVar
   public static var varTypesInScope(get, set): Map<String, String> = new Map<String, String>();
-  public static var lastFunctionReturnType: String;
 
+  public static var lastFunctionReturnType: String;
   public static var associatedInterfaces: Map<String, String> = new Map<String, String>();
   public static var declaredClasses: Map<String, ModuleDef> = new Map<String, ModuleDef>();
   public static var declaredInterfaces: Map<String, ModuleDef> = new Map<String, ModuleDef>();

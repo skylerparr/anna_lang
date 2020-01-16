@@ -391,22 +391,21 @@ import vm.Function;
 }))
 @:build(lang.macros.AnnaLang.defCls(Repl, {
   @alias vm.Lang;
+  @alias vm.Pid;
   @const bar = @_'bar';
 
   @def eval({String: text}, [Atom], {
-//    fun = @fn{([[String]] => { "foo"; });}
-//    result = fun();
-//    @native IO.inspect(result);
     result = @native Lang.eval(text);
     @native IO.inspect(result);
     @_'ok';
   });
 
-  @def sample({String: variable}, [String], {
-    @native IO.inspect('called function sample');
-    @native IO.inspect(variable);
-    variable;
+  @def sample({String: label, Pid: pid}, [String], {
+    @native IO.inspect(label);
+    @native IO.inspect(pid);
+    label;
   });
+
 }))
 @:build(lang.macros.AnnaLang.defCls(History, {
   @alias vm.Process;
