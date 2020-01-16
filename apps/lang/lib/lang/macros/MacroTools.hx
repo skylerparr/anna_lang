@@ -249,13 +249,14 @@ class MacroTools {
   public static function getTypeAndValue(expr: Expr):Dynamic {
     return switch(expr.expr) {
       case EConst(CIdent(varName)):
-        var const: Expr = MacroContext.currentModuleDef.constants.get(varName);
+        var const: String = MacroContext.currentModuleDef.constants.get(varName);
         if(const == null) {
           {type: "Variable", value: getVar(varName), rawValue: varName};
         } else {
-          getTypeAndValue(const);
+          getTypeAndValue(Macros.haxeToExpr(const));
         }
       case EConst(CString(value)):
+        value = StringTools.replace(value, '"', '\\"');
         {type: "String", value: getConstant('"${value}"'), rawValue: '"${value}"'};
       case EConst(CInt(value)):
         {type: "Number", value: getConstant(value), rawValue: value};
@@ -458,7 +459,7 @@ class MacroTools {
         }
       case e:
         MacroLogger.log(e, 'e');
-        throw 'AnnaLang: Unexpected key ${printer.printExpr(arg)}';
+        throw new ParsingException('AnnaLang: Unexpected key ${printer.printExpr(arg)}');
     }
     var strValue: String = getMap([listValues.join(",")]);
     return {type: "MMap", value: getTuple([getAtom("const"), '${strValue}']), rawValue: strValue};

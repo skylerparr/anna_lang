@@ -133,9 +133,9 @@ class DevelopmentRunner {
   }
 
   public static function compileAll(onComplete: Void->Void = null): Void {
-    compileLangProject();
-    compileVMAPIProject();
-    compileVMProject();
+//    compileLangProject();
+//    compileVMAPIProject();
+//    compileVMProject();
     compileCompiler();
     #if startHaxe
     compileAcceptanceTests();

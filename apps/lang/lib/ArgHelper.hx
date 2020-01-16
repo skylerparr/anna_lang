@@ -1,5 +1,6 @@
 package ;
 
+import lang.macros.MacroContext;
 import vm.Process;
 import EitherEnums.Either3;
 import EitherEnums.Either2;
@@ -38,7 +39,11 @@ class ArgHelper {
             }
           case {value: 'var'}:
             var varName: String = EitherSupport.getValue(elem2);
-            scopeVariables.get(varName);
+            var value: Dynamic = scopeVariables.get(varName);
+            if(value == null) {
+              value = MacroContext.currentModuleDef.constants.get(varName);
+            }
+            value;
           case e:
             arg;
         }

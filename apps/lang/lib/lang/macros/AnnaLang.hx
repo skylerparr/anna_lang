@@ -386,6 +386,12 @@ class AnnaLang {
         defineCodeBody.push(expr);
       }
 
+      for(constantsKey in moduleDef.constants.keys()) {
+        var constValue: String = moduleDef.constants.get(constantsKey);
+        expr = Macros.haxeToExpr('moduleDef.constants.set("${constantsKey}", "${constValue}");');
+        defineCodeBody.push(expr);
+      }
+
       for(declaredFunctionsKey in moduleDef.declaredFunctions.keys()) {
         var declaredFunctionsValue: Array<Dynamic> = moduleDef.declaredFunctions.get(declaredFunctionsKey);
         var genFunctionStrs: Array<String> = [];

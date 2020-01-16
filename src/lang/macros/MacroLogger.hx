@@ -41,6 +41,7 @@ class MacroLogger {
   }
   #else
   public static function log(message: Dynamic, label: String = null): Void {
+    return;
     if(label != null) {
       label = '${label}: ';
     } else {
@@ -53,6 +54,7 @@ class MacroLogger {
   }
 
   public static function logExpr(expr: Expr, label: String = null): Void {
+    return;
     if(label != null) {
       label = '${label}: ';
     } else {

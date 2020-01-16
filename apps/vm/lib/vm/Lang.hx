@@ -55,7 +55,7 @@ class Lang {
     var operations: Array<Operation> = [];
     for(expr in exprs) {
       var codeString = printer.printExpr(expr);
-      trace(codeString);
+//      trace(codeString);
       codeString = StringTools.replace(codeString, 'null.push(', '');
       codeString = StringTools.replace(codeString, 'ops.push(', '');
       codeString = codeString.substr(0, codeString.length - 1);

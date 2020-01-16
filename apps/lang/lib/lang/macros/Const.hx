@@ -16,7 +16,7 @@ class Const {
   public static function gen(params: Expr): Array<Expr> {
     switch(params.expr) {
       case EBinop(OpAssign, {expr: EConst(CIdent(varName))}, value):
-        MacroContext.currentModuleDef.constants.set(varName, value);
+        MacroContext.currentModuleDef.constants.set(varName, printer.printExpr(value));
       case _:
         MacroLogger.log(params, 'params');
         MacroLogger.logExpr(params, 'params');
