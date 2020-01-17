@@ -37,10 +37,8 @@ class PatternMatch {
   public static function generatePatternMatch(pattern: Expr, valueExpr: Expr):Expr {
     return switch(pattern.expr) {
       case ECall({expr: EField({expr: EConst(CIdent("Tuple"))}, "create")}, [{expr: EArrayDecl([{expr: ECall({ expr: EField({ expr: EConst(CIdent('Atom')) },'create') }, [{ expr: EConst(CString('const')) }]) }, value])}]):
-        MacroLogger.logExpr(value, 'const value');
         generatePatternMatch(value, valueExpr);
       case ECall({expr: EField({expr: EConst(CIdent("Tuple"))}, "create")}, [{expr: EArrayDecl([{expr: ECall({ expr: EField({ expr: EConst(CIdent('Atom')) },'create') }, [{ expr: EConst(CString('var')) }]) }, { expr: EConst(CString(varName)) }])}]):
-        MacroLogger.log(varName, 'varName');
         var value = { expr: EConst(CIdent(varName)), pos: MacroContext.currentPos() }
         generatePatternMatch(value, valueExpr);
       case EConst(CIdent(v)):
@@ -53,13 +51,15 @@ class PatternMatch {
         valuesNotEqual(pattern, valueExpr);
       case ECall({expr: EField({expr: EConst(CIdent("Atom"))}, _)}, [{expr: EConst(CString(_))}]):
         valuesNotEqual(pattern, valueExpr);
+      case ECall({ expr: EField({ expr: EField({ expr: EConst(CIdent('lang')) },'EitherSupport') },'getValue') },params):
+        MacroLogger.log(params, 'params');
+        macro null;
       case ECall({expr: EField({expr: EConst(CIdent("Tuple"))}, _)}, [{expr: EArrayDecl(values)}]):
         var individualMatches: Array<Expr> = [];
         var counter: Int = 0;
         for(v in values) {
           var strExpr: String = 'lang.EitherSupport.getValue(arrayTuple[${counter}])';
           var expr: Expr = generatePatternMatch(v, lang.macros.Macros.haxeToExpr(strExpr));
-          MacroLogger.logExpr(expr, 'match expr');
           individualMatches.push(expr);
           counter++;
         }
@@ -128,22 +128,34 @@ class PatternMatch {
           }
         }
         return expr;
-      case ECall({expr: EField({expr: EConst(CIdent("MMap"))}, _)}, [{expr: EArrayDecl(values)}]):
+      case ECall({expr: EField({expr: EConst(CIdent("MMap"))}, _)}, [{expr: EBlock(values)}]):
+        // map key
         var individualMatches: Array<Expr> = [];
         var isKey: Bool = true;
         var key: String = null;
         for(value in values) {
-          if(isKey) {
-            key = printer.printExpr(value);
-            var strExpr: String = 'MMap.hasKey(${printer.printExpr(valueExpr)}, ${key})';
-            var expr: Expr = generatePatternMatch(lang.macros.Macros.haxeToExpr('Atom.create("true")'), lang.macros.Macros.haxeToExpr(strExpr));
-            individualMatches.push(expr);
-          } else {
-            var strExpr: String = 'lang.EitherSupport.getValue(MMap.get(${printer.printExpr(valueExpr)}, ${key}))';
-            var expr: Expr = generatePatternMatch(value, lang.macros.Macros.haxeToExpr(strExpr));
-            individualMatches.push(expr);
+          switch(value.expr) {
+            case EVars([v]):
+              MacroLogger.logExpr(v.expr, 'v');
+              if(isKey) {
+                key = printer.printExpr(v.expr);
+                var strExpr: String = 'MMap.hasKey(${printer.printExpr(valueExpr)}, ArgHelper.extractArgValue(${key}, ____scopeVariables))';
+                var expr: Expr = generatePatternMatch(lang.macros.Macros.haxeToExpr('Atom.create("true")'), lang.macros.Macros.haxeToExpr(strExpr));
+                individualMatches.push(expr);
+              } else {
+                var value = printer.printExpr(v.expr);
+                MacroLogger.log(value, 'value');
+                MacroLogger.log(key, 'key');
+                var strExpr: String = 'lang.EitherSupport.getValue(MMap.get(${printer.printExpr(valueExpr)}, ArgHelper.extractArgValue(${key}, ____scopeVariables)))';
+                var expr: Expr = generatePatternMatch(v.expr, lang.macros.Macros.haxeToExpr(strExpr));
+                individualMatches.push(expr);
+              }
+              isKey = !isKey;
+            case EArrayDecl(_):
+            case e:
+              MacroLogger.logExpr(value, 'value');
+              throw new ParsingException('AnnaLang: Expected EVar, got ${e}');
           }
-          isKey = !isKey;
         }
         var individualMatchesBlock: Expr = MacroTools.buildBlock(individualMatches);
         if(individualMatchesBlock == null) {
@@ -254,6 +266,7 @@ class PatternMatch {
         MacroLogger.logExpr(expr, 'expr');
         expr;
       case EMeta(_):
+        MacroLogger.logExpr(pattern, 'pattern');
         var typeAndValue = MacroTools.getTypeAndValue(pattern);
         var expr = Macros.haxeToExpr(typeAndValue.rawValue);
         generatePatternMatch(expr, valueExpr);
@@ -276,6 +289,7 @@ class PatternMatch {
       case e:
         MacroLogger.log(e, 'PatternMatch expr');
         MacroLogger.logExpr(pattern, 'PatternMatch expr');
+        MacroLogger.log(valueExpr, 'PatternMatch expr');
         MacroLogger.logExpr(valueExpr, 'PatternMatch expr');
         macro null;
     }

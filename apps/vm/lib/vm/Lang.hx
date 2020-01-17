@@ -40,8 +40,6 @@ class Lang {
       // ex: case "defCls":
       // ex: case "defType":
       // etc.
-      case EBlock(_):
-        invokeBlock(ast);
       case _:
         var expr = MacroTools.buildBlock([ast]);
         invokeBlock(expr);
@@ -55,7 +53,6 @@ class Lang {
     var operations: Array<Operation> = [];
     for(expr in exprs) {
       var codeString = printer.printExpr(expr);
-//      trace(codeString);
       codeString = StringTools.replace(codeString, 'null.push(', '');
       codeString = StringTools.replace(codeString, 'ops.push(', '');
       codeString = codeString.substr(0, codeString.length - 1);

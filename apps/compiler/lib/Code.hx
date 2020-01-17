@@ -338,7 +338,7 @@ import vm.Function;
 //    JSON.parse(content);
 //  });
 //
-//  @def handle_config({Tuple: [@_'ok', @map["application" => app_name]]}, [Tuple], {
+//  @def handle_config({Tuple: [@_'ok', ["application" => app_name]]}, [Tuple], {
 //    [@_'ok', files] = gather_source_files(LIB_DIR, {});
 //    generate_template(cast(files, LList));
 //    compile_app(cast(app_name, String));
@@ -484,6 +484,20 @@ import vm.Function;
     result = @native Lang.eval('[status, "message"]');
     assert([status, 'message'], cast(result, Tuple), test_name);
 
+    test_name = 'should match on tuple within a tuple';
+    assert([status, [@_'error', 'complete']], [status, [@_'error', 'complete']], test_name);
+
+    test_name = 'should match on tuple within a tuple (interp)';
+    result = @native Lang.eval('[status, [@_"error", "complete"]]');
+    assert([status, [@_'error', 'complete']], cast(result, Tuple), test_name);
+
+    test_name = 'should match on single list item';
+    assert({'nice';}, {'nice';}, test_name);
+
+    test_name = 'should match on single list item (interp)';
+    result = @native Lang.eval('{"nice";}');
+    assert({'nice';}, cast(result, LList), test_name);
+
     test_name = 'should match on constant list items';
     assert({'nice'; @_'little'; ['list'];}, {'nice'; @_'little'; ['list'];}, test_name);
 
@@ -497,7 +511,44 @@ import vm.Function;
 
     test_name = 'should match on variable list items (interp)';
     result = @native Lang.eval('{"nice"; little; ["list"];}');
-    assert({'nice'; listle; ['list'];}, cast(result, LList), test_name);
+    assert({'nice'; little; ['list'];}, cast(result, LList), test_name);
+
+    test_name = 'should match on single map item';
+    assert(['foo' => 'bar'], ['foo' => 'bar'], test_name);
+
+    test_name = 'should match on single map item (interp)';
+    result = @native Lang.eval('["foo" => "bar"]');
+    assert(['foo' => 'bar'], cast(result, MMap), test_name);
+
+    test_name = 'should match on single map item with variable value';
+    bar = 'bar';
+    assert(['foo' => bar], ['foo' => bar], test_name);
+
+    test_name = 'should match on single map item with variable value (interp)';
+    result = @native Lang.eval('["foo" => bar]');
+    assert(['foo' => bar], cast(result, MMap), test_name);
+
+    test_name = 'should match on single map item with variable key';
+    foo = 'foo';
+    assert([foo => bar], [foo => bar], test_name);
+
+    test_name = 'should match on single map item with variable value (interp)';
+    result = @native Lang.eval('[foo => bar]');
+    assert([foo => bar], cast(result, MMap), test_name);
+
+    test_name = 'should match on map with multiple values';
+    assert(['baz' => {foo;}, 'cat' => [bar]], ['baz' => {foo;}, 'cat' => [bar]], test_name);
+
+    test_name = 'should match on single map item with variable value (interp)';
+    result = @native Lang.eval('["baz" => {foo;}, "cat" => [bar]]');
+    assert(['baz' => {foo;}, 'cat' => [bar]], cast(result, MMap), test_name);
+
+    test_name = 'should match on map with unmatched number of keys';
+    assert(['barrel' => {foo;}, 'cartoon' => [bar]], ['barrel' => {foo;}, 'cartoons' => [bar]], test_name);
+
+    test_name = 'should match on map with unmatched number of keys (interp)';
+    result = @native Lang.eval('["barrel" => {foo;}, "cartoons" => [bar]]');
+    assert(['barrel' => {foo;}, 'cartoon' => [bar]], cast(result, MMap), test_name);
 
     System.println('');
     @_'ok';
@@ -508,12 +559,12 @@ import vm.Function;
     @_'ok';
   });
 
-  @def assert({Int: 432, Int: 432, String: test_name}, [Atom], {
+  @def assert({Float: 4.32, Float: 4.32, String: test_name}, [Atom], {
     System.print('.');
     @_'ok';
   });
 
-  @def assert({Float: 4.32, Float: 4.32, String: test_name}, [Atom], {
+  @def assert({Int: 432, Int: 432, String: test_name}, [Atom], {
     System.print('.');
     @_'ok';
   });
@@ -528,7 +579,32 @@ import vm.Function;
     @_'ok';
   });
 
+  @def assert({Tuple: [status, [@_'error', 'complete']], Tuple: [status, [@_'error', 'complete']], String: test_name}, [Atom], {
+    System.print('.');
+    @_'ok';
+  });
+
+  @def assert({LList: {'nice';}, LList: {'nice';}, String: test_name}, [Atom], {
+    System.print('.');
+    @_'ok';
+  });
+
   @def assert({LList: {'nice'; @_'little'; ['list'];}, LList: {'nice'; @_'little'; ['list'];}, String: test_name}, [Atom], {
+    System.print('.');
+    @_'ok';
+  });
+
+  @def assert({MMap: ['foo' => 'bar'], MMap: ['foo' => 'bar'], String: test_name}, [Atom], {
+    System.print('.');
+    @_'ok';
+  });
+
+  @def assert({MMap: ['baz' => {foo;}, 'cat' => [bar]], MMap: ['baz' => {foo;}, 'cat' => [bar]], String: test_name}, [Atom], {
+    System.print('.');
+    @_'ok';
+  });
+
+  @def assert({MMap: ['barrel' => {foo;}], MMap: ['barrel' => {foo;}], String: test_name}, [Atom], {
     System.print('.');
     @_'ok';
   });
@@ -570,6 +646,15 @@ import vm.Function;
   });
 
   @def assert({LList: expectation, LList: actual, String: test_name}, [Atom], {
+    System.println('');
+    System.println(test_name);
+    System.print('expected: ');
+    @native IO.inspect(expectation);
+    System.print('     got: ');
+    @native IO.inspect(actual);
+  });
+
+  @def assert({MMap: expectation, MMap: actual, String: test_name}, [Atom], {
     System.println('');
     System.println(test_name);
     System.print('expected: ');

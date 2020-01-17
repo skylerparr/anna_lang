@@ -497,13 +497,20 @@ class MacroTools {
                       switch(value.expr) {
                         case EBinop(OpArrow, key, value):
                           type = 'map';
-                          items.push('${printer.printExpr(key)} => ${printer.printExpr(value)}');
+                          var lhsType = getTypeAndValue(key);
+                          var rhsType = getTypeAndValue(value);
+                          items.push('${lhsType.value} => ${rhsType.value}');
                         case _:
                           items.push(printer.printExpr(value));
                       }
                     }
-                    var haxeStr: String = '@${type}[${items.join(',')}]';
-                    {name: name, pattern: haxeStr};
+                    if(type == 'tuple') {
+                      var haxeStr: String = getTuple(items);
+                      {name: name, pattern: haxeStr};
+                    } else {
+                      var haxeStr: String = getMap(items);
+                      {name: name, pattern: haxeStr};
+                    }
                   case EBlock(values):
                     var name = util.StringUtil.random();
                     var items: Array<String> = [];

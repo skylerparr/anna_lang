@@ -740,7 +740,6 @@ class AnnaLang {
 
       throw 'Function ${moduleName}.${fqFunName} at line ${lineNumber} not found';
     } else {
-      var returnTypes: Array<String> = funDef[0].funReturnTypes;
       #if macro
       MacroContext.lastFunctionReturnType = funDef[0].funReturnTypes[0];
       #else

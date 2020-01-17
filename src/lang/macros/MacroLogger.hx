@@ -54,7 +54,6 @@ class MacroLogger {
   }
 
   public static function logExpr(expr: Expr, label: String = null): Void {
-    return;
     if(label != null) {
       label = '${label}: ';
     } else {
