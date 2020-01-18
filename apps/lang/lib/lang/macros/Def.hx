@@ -30,6 +30,14 @@ class Def {
       strType = r.replace(strType, '');
       types.push(AnnaLang.getType(strType));
       argType.type = strType;
+
+      //resolve type from pattern
+      MacroLogger.log(argType.pattern, 'argType');
+      var strType: String = MacroTools.resolveType(lang.macros.Macros.haxeToExpr(argType.type));
+      var r = ~/[A-Za-z]*<|>/g;
+      strType = r.replace(strType, '');
+      types.push(AnnaLang.getType(strType));
+      argType.type = strType;
     }
     var argTypes: String = AnnaLang.sanitizeArgTypeNames(types);
     var funBody: Array<Expr> = MacroTools.getFunBody(params);

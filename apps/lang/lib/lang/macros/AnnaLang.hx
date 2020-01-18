@@ -204,6 +204,7 @@ class AnnaLang {
             MacroContext.lastFunctionReturnType = "";
 
             for(argType in cast(funDef.funArgsTypes, Array<Dynamic>)) {
+              MacroLogger.log(funDef.funArgsTypes, 'funDef.funArgsTypes');
               MacroContext.varTypesInScope.set(argType.name, argType.type);
             }
 
@@ -574,6 +575,7 @@ class AnnaLang {
                     pushStackArgs.push(arg);
                 }
               }
+              MacroLogger.log(moduleName, 'moduleName');
               var exprs: Array<Expr> = createPushStack(moduleName, funName, pushStackArgs, lineNumber);
               for(expr in exprs) {
                 retExprs.push(expr);
@@ -600,6 +602,7 @@ class AnnaLang {
               var currentModule: TypeDefinition = MacroContext.currentModule;
               var currentModuleStr: String = currentModule.name;
 
+              MacroLogger.log(currentModuleStr, 'currentModuleStr');
               var exprs: Array<Expr> = createPushStack(currentModuleStr, funName, pushStackArgs, lineNumber);
               for(expr in exprs) {
                 retExprs.push(expr);
@@ -696,6 +699,7 @@ class AnnaLang {
           types.push(getType(StringTools.replace(MacroContext.lastFunctionReturnType, '.', '_')));
           funArgs.push(MacroTools.getTuple([MacroTools.getAtom("var"), '"__${funName}_${argCounter}"']));
         case _:
+          MacroLogger.log(MacroContext.varTypesInScope, 'MacroContext.varTypesInScope');
           var typeAndValue = MacroTools.getTypeAndValue(arg);
           var type: String = getTypeForVar(typeAndValue, arg);
           type = StringTools.replace(type, '.', '_');

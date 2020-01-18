@@ -547,6 +547,10 @@ class MacroTools {
     }
   }
 
+  public static function resolveTypeFromPattern(expr: Expr):String {
+    return resolveType(expr);
+  }
+
   public static function resolveType(expr: Expr):String {
     var type: Type = MacroContext.typeof(expr);
     return switch(type) {

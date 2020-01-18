@@ -426,185 +426,214 @@ import vm.Function;
 @:build(lang.macros.AnnaLang.defCls(ReplTests, {
 
   @def start([Atom], {
-    test_name = "should match strings";
-    assert("foo", "foo", test_name);
+//    test_name = "should match strings";
+//    assert("foo", "foo", test_name);
+//
+//    test_name = "should match strings (interp)";
+//    result = @native Lang.eval('"foo"');
+//    assert("foo", cast(result, String), test_name);
+//
+//    test_name = 'should match on ints';
+//    assert(432, 432, test_name);
+//
+//    test_name = 'should match on ints (interp)';
+//    result = @native Lang.eval('432');
+//    assert(432, cast(result, Int), test_name);
+//
+//    test_name = 'should match on floats';
+//    assert(4.32, 4.32, test_name);
+//
+//    test_name = 'should match on floats (interp)';
+//    result = @native Lang.eval('4.32');
+//    assert(4.32, cast(result, Float), test_name);
+//
+//    test_name = 'should match on constant atoms';
+//    assert(@_'ok', @_'ok', test_name);
+//
+//    test_name = 'should match on constant atoms (interp)';
+//    result = @native Lang.eval('@_"ok"');
+//    assert(@_'ok', cast(result, Atom), test_name);
+//
+//    test_name = 'should match on tuple with all constant elements';
+//    assert([@_'ok', 'message'], [@_'ok', 'message'], test_name);
+//
+//    test_name = 'should match on tuple with all constant elements (interp)';
+//    result = @native Lang.eval('[@_"ok", "message"]');
+//    assert([@_'ok', 'message'], cast(result, Tuple), test_name);
+//
+//    test_name = 'should match on tuple with message variable';
+//    message = 'message';
+//    assert([@_'ok', message], [@_'ok', message], test_name);
+//
+//    test_name = 'should match on tuple with message variable (interp)';
+//    result = @native Lang.eval('[@_"ok", message]');
+//    assert([@_'ok', message], cast(result, Tuple), test_name);
+//
+//    test_name = 'should match on tuple with all elements variables';
+//    status = @_'ok';
+//    assert([status, message], [status, message], test_name);
+//
+//    test_name = 'should match on tuple with all elements variables (interp)';
+//    result = @native Lang.eval('[status, message]');
+//    assert([status, message], cast(result, Tuple), test_name);
+//
+//    test_name = 'should match on variable status tuples';
+//    assert([status, 'message'], [status, 'message'], test_name);
+//
+//    test_name = 'should match on variable status tuples (interp)';
+//    result = @native Lang.eval('[status, "message"]');
+//    assert([status, 'message'], cast(result, Tuple), test_name);
+//
+//    test_name = 'should match on tuple within a tuple';
+//    assert([status, [@_'error', 'complete']], [status, [@_'error', 'complete']], test_name);
+//
+//    test_name = 'should match on tuple within a tuple (interp)';
+//    result = @native Lang.eval('[status, [@_"error", "complete"]]');
+//    assert([status, [@_'error', 'complete']], cast(result, Tuple), test_name);
+//
+//    test_name = 'should match on single list item';
+//    assert({'nice';}, {'nice';}, test_name);
+//
+//    test_name = 'should match on single list item (interp)';
+//    result = @native Lang.eval('{"nice";}');
+//    assert({'nice';}, cast(result, LList), test_name);
+//
+//    test_name = 'should match on constant list items';
+//    assert({'nice'; @_'little'; ['list'];}, {'nice'; @_'little'; ['list'];}, test_name);
+//
+//    test_name = 'should match on constant list items (interp)';
+//    result = @native Lang.eval('{"nice"; @_"little"; ["list"];}');
+//    assert({'nice'; @_'little'; ['list'];}, cast(result, LList), test_name);
+//
+//    test_name = 'should match on variable list items';
+//    little = @_'little';
+//    assert({'nice'; little; ['list'];}, {'nice'; little; ['list'];}, test_name);
+//
+//    test_name = 'should match on variable list items (interp)';
+//    result = @native Lang.eval('{"nice"; little; ["list"];}');
+//    assert({'nice'; little; ['list'];}, cast(result, LList), test_name);
+//
+//    test_name = 'should match on single map item';
+//    assert(['foo' => 'bar'], ['foo' => 'bar'], test_name);
+//
+//    test_name = 'should match on single map item (interp)';
+//    result = @native Lang.eval('["foo" => "bar"]');
+//    assert(['foo' => 'bar'], cast(result, MMap), test_name);
+//
+//    test_name = 'should match on single map item with variable value';
+//    bar = 'bar';
+//    assert(['foo' => bar], ['foo' => bar], test_name);
+//
+//    test_name = 'should match on single map item with variable value (interp)';
+//    result = @native Lang.eval('["foo" => bar]');
+//    assert(['foo' => bar], cast(result, MMap), test_name);
+//
+//    test_name = 'should match on single map item with variable key';
+//    foo = 'foo';
+//    assert([foo => bar], [foo => bar], test_name);
+//
+//    test_name = 'should match on single map item with variable value (interp)';
+//    result = @native Lang.eval('[foo => bar]');
+//    assert([foo => bar], cast(result, MMap), test_name);
+//
+//    test_name = 'should match on map with multiple values';
+//    assert(['baz' => {foo;}, 'cat' => [bar]], ['baz' => {foo;}, 'cat' => [bar]], test_name);
+//
+//    test_name = 'should match on single map item with variable value (interp)';
+//    result = @native Lang.eval('["baz" => {foo;}, "cat" => [bar]]');
+//    assert(['baz' => {foo;}, 'cat' => [bar]], cast(result, MMap), test_name);
+//
+//    test_name = 'should match on map with unmatched number of keys';
+//    assert(['barrel' => {foo;}, 'cartoon' => [bar]], ['barrel' => {foo;}, 'cartoons' => [bar]], test_name);
+//
+//    test_name = 'should match on map with unmatched number of keys (interp)';
+//    result = @native Lang.eval('["barrel" => {foo;}, "cartoons" => [bar]]');
+//    assert(['barrel' => {foo;}, 'cartoon' => [bar]], cast(result, MMap), test_name);
+//
+//    test_name = 'should match on map with atom keys';
+//    assert([@_'success' => foo, @_'fail' => bar], [@_'success' => foo, @_'fail' => bar], test_name);
+//
+//    test_name = 'should match on map with atom keys (interp)';
+//    result = @native Lang.eval('[@_"success" => foo, @_"fail" => bar]');
+//    assert([@_'success' => foo, @_'fail' => bar], cast(result, MMap), test_name);
+//
+//    test_name = 'should match on string suffix';
+//    assert('ellie bear', 'ellie bear', test_name);
 
-    test_name = "should match strings (interp)";
-    result = @native Lang.eval('"foo"');
-    assert("foo", cast(result, String), test_name);
-
-    test_name = 'should match on ints';
-    assert(432, 432, test_name);
-
-    test_name = 'should match on ints (interp)';
-    result = @native Lang.eval('432');
-    assert(432, cast(result, Int), test_name);
-
-    test_name = 'should match on floats';
-    assert(4.32, 4.32, test_name);
-
-    test_name = 'should match on floats (interp)';
-    result = @native Lang.eval('4.32');
-    assert(4.32, cast(result, Float), test_name);
-
-    test_name = 'should match on constant atoms';
-    assert(@_'ok', @_'ok', test_name);
-
-    test_name = 'should match on constant atoms (interp)';
-    result = @native Lang.eval('@_"ok"');
-    assert(@_'ok', cast(result, Atom), test_name);
-
-    test_name = 'should match on tuple with all constant elements';
-    assert([@_'ok', 'message'], [@_'ok', 'message'], test_name);
-
-    test_name = 'should match on tuple with all constant elements (interp)';
-    result = @native Lang.eval('[@_"ok", "message"]');
-    assert([@_'ok', 'message'], cast(result, Tuple), test_name);
-
-    test_name = 'should match on tuple with message variable';
-    message = 'message';
-    assert([@_'ok', message], [@_'ok', message], test_name);
-
-    test_name = 'should match on tuple with message variable (interp)';
-    result = @native Lang.eval('[@_"ok", message]');
-    assert([@_'ok', message], cast(result, Tuple), test_name);
-
-    test_name = 'should match on tuple with all elements variables';
-    status = @_'ok';
-    assert([status, message], [status, message], test_name);
-
-    test_name = 'should match on tuple with all elements variables (interp)';
-    result = @native Lang.eval('[status, message]');
-    assert([status, message], cast(result, Tuple), test_name);
-
-    test_name = 'should match on variable status tuples';
-    assert([status, 'message'], [status, 'message'], test_name);
-
-    test_name = 'should match on variable status tuples (interp)';
-    result = @native Lang.eval('[status, "message"]');
-    assert([status, 'message'], cast(result, Tuple), test_name);
-
-    test_name = 'should match on tuple within a tuple';
-    assert([status, [@_'error', 'complete']], [status, [@_'error', 'complete']], test_name);
-
-    test_name = 'should match on tuple within a tuple (interp)';
-    result = @native Lang.eval('[status, [@_"error", "complete"]]');
-    assert([status, [@_'error', 'complete']], cast(result, Tuple), test_name);
-
-    test_name = 'should match on single list item';
-    assert({'nice';}, {'nice';}, test_name);
-
-    test_name = 'should match on single list item (interp)';
-    result = @native Lang.eval('{"nice";}');
-    assert({'nice';}, cast(result, LList), test_name);
-
-    test_name = 'should match on constant list items';
-    assert({'nice'; @_'little'; ['list'];}, {'nice'; @_'little'; ['list'];}, test_name);
-
-    test_name = 'should match on constant list items (interp)';
-    result = @native Lang.eval('{"nice"; @_"little"; ["list"];}');
-    assert({'nice'; @_'little'; ['list'];}, cast(result, LList), test_name);
-
-    test_name = 'should match on variable list items';
-    little = @_'little';
-    assert({'nice'; little; ['list'];}, {'nice'; little; ['list'];}, test_name);
-
-    test_name = 'should match on variable list items (interp)';
-    result = @native Lang.eval('{"nice"; little; ["list"];}');
-    assert({'nice'; little; ['list'];}, cast(result, LList), test_name);
-
-    test_name = 'should match on single map item';
-    assert(['foo' => 'bar'], ['foo' => 'bar'], test_name);
-
-    test_name = 'should match on single map item (interp)';
-    result = @native Lang.eval('["foo" => "bar"]');
-    assert(['foo' => 'bar'], cast(result, MMap), test_name);
-
-    test_name = 'should match on single map item with variable value';
-    bar = 'bar';
-    assert(['foo' => bar], ['foo' => bar], test_name);
-
-    test_name = 'should match on single map item with variable value (interp)';
-    result = @native Lang.eval('["foo" => bar]');
-    assert(['foo' => bar], cast(result, MMap), test_name);
-
-    test_name = 'should match on single map item with variable key';
-    foo = 'foo';
-    assert([foo => bar], [foo => bar], test_name);
-
-    test_name = 'should match on single map item with variable value (interp)';
-    result = @native Lang.eval('[foo => bar]');
-    assert([foo => bar], cast(result, MMap), test_name);
-
-    test_name = 'should match on map with multiple values';
-    assert(['baz' => {foo;}, 'cat' => [bar]], ['baz' => {foo;}, 'cat' => [bar]], test_name);
-
-    test_name = 'should match on single map item with variable value (interp)';
-    result = @native Lang.eval('["baz" => {foo;}, "cat" => [bar]]');
-    assert(['baz' => {foo;}, 'cat' => [bar]], cast(result, MMap), test_name);
-
-    test_name = 'should match on map with unmatched number of keys';
-    assert(['barrel' => {foo;}, 'cartoon' => [bar]], ['barrel' => {foo;}, 'cartoons' => [bar]], test_name);
-
-    test_name = 'should match on map with unmatched number of keys (interp)';
-    result = @native Lang.eval('["barrel" => {foo;}, "cartoons" => [bar]]');
-    assert(['barrel' => {foo;}, 'cartoon' => [bar]], cast(result, MMap), test_name);
+    test_name = 'should match on string suffix (interp)';
+    result = @native Lang.eval('"ellie bear"');
+    assert('ellie bear', cast(result, String), test_name);
 
     System.println('');
     @_'ok';
   });
 
-  @def assert({String: 'foo', String: 'foo', String: test_name}, [Atom], {
-    System.print('.');
-    @_'ok';
+//  @def assert({String: 'foo', String: 'foo', String: test_name}, [Atom], {
+//    System.print('.');
+//    @_'ok';
+//  });
+//
+//  @def assert({Float: 4.32, Float: 4.32, String: test_name}, [Atom], {
+//    System.print('.');
+//    @_'ok';
+//  });
+//
+//  @def assert({Int: 432, Int: 432, String: test_name}, [Atom], {
+//    System.print('.');
+//    @_'ok';
+//  });
+//
+//  @def assert({Atom: @_'ok', Atom: @_'ok', String: test_name}, [Atom], {
+//    System.print('.');
+//    @_'ok';
+//  });
+//
+//  @def assert({Tuple: [@_'ok', 'message'], Tuple: [@_'ok', 'message'], String: test_name}, [Atom], {
+//    System.print('.');
+//    @_'ok';
+//  });
+//
+//  @def assert({Tuple: [status, [@_'error', 'complete']], Tuple: [status, [@_'error', 'complete']], String: test_name}, [Atom], {
+//    System.print('.');
+//    @_'ok';
+//  });
+//
+//  @def assert({LList: {'nice';}, LList: {'nice';}, String: test_name}, [Atom], {
+//    System.print('.');
+//    @_'ok';
+//  });
+//
+//  @def assert({LList: {'nice'; @_'little'; ['list'];}, LList: {'nice'; @_'little'; ['list'];}, String: test_name}, [Atom], {
+//    System.print('.');
+//    @_'ok';
+//  });
+//
+//  @def assert({MMap: ['foo' => 'bar'], MMap: ['foo' => 'bar'], String: test_name}, [Atom], {
+//    System.print('.');
+//    @_'ok';
+//  });
+//
+//  @def assert({MMap: ['baz' => {foo;}, 'cat' => [bar]], MMap: ['baz' => {foo;}, 'cat' => [bar]], String: test_name}, [Atom], {
+//    System.print('.');
+//    @_'ok';
+//  });
+//
+//  @def assert({MMap: ['barrel' => {foo;}], MMap: ['barrel' => {foo;}], String: test_name}, [Atom], {
+//    System.print('.');
+//    @_'ok';
+//  });
+//
+//  @def assert({MMap: [@_'success' => foo, @_'fail' => bar], MMap: [@_'success' => foo, @_'fail' => bar], String: test_name}, [Atom], {
+//    System.print('.');
+//    @_'ok';
+//  });
+
+  @def assert({String: 'ellie ' => bear, String: 'ellie ' => bear2, String: test_name}, [Atom], {
+    assert(bear);
+    assert(bear2);
   });
 
-  @def assert({Float: 4.32, Float: 4.32, String: test_name}, [Atom], {
-    System.print('.');
-    @_'ok';
-  });
-
-  @def assert({Int: 432, Int: 432, String: test_name}, [Atom], {
-    System.print('.');
-    @_'ok';
-  });
-
-  @def assert({Atom: @_'ok', Atom: @_'ok', String: test_name}, [Atom], {
-    System.print('.');
-    @_'ok';
-  });
-
-  @def assert({Tuple: [@_'ok', 'message'], Tuple: [@_'ok', 'message'], String: test_name}, [Atom], {
-    System.print('.');
-    @_'ok';
-  });
-
-  @def assert({Tuple: [status, [@_'error', 'complete']], Tuple: [status, [@_'error', 'complete']], String: test_name}, [Atom], {
-    System.print('.');
-    @_'ok';
-  });
-
-  @def assert({LList: {'nice';}, LList: {'nice';}, String: test_name}, [Atom], {
-    System.print('.');
-    @_'ok';
-  });
-
-  @def assert({LList: {'nice'; @_'little'; ['list'];}, LList: {'nice'; @_'little'; ['list'];}, String: test_name}, [Atom], {
-    System.print('.');
-    @_'ok';
-  });
-
-  @def assert({MMap: ['foo' => 'bar'], MMap: ['foo' => 'bar'], String: test_name}, [Atom], {
-    System.print('.');
-    @_'ok';
-  });
-
-  @def assert({MMap: ['baz' => {foo;}, 'cat' => [bar]], MMap: ['baz' => {foo;}, 'cat' => [bar]], String: test_name}, [Atom], {
-    System.print('.');
-    @_'ok';
-  });
-
-  @def assert({MMap: ['barrel' => {foo;}], MMap: ['barrel' => {foo;}], String: test_name}, [Atom], {
+  @def assert({String: 'bear'}, [Atom], {
     System.print('.');
     @_'ok';
   });
@@ -684,7 +713,7 @@ import vm.Function;
     [@_'ok', history_pid];
   });
 
-  @def start_history([String], {
+  @def start_history([Tuple], {
     history_loop([1, {}, 0]);
   });
 
