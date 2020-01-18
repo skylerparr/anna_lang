@@ -240,13 +240,13 @@ import vm.Function;
   });
 
   @def process_command({String: 'eval ' => text}, [Tuple], {
-    Repl.eval(cast(text, String));
+    Repl.eval(text);
     @_'ok';
   });
 
   @def process_command({String: 'v ' => number}, [String], {
     //todo: need to infer string pattern matches
-    index = Str.string_to_int(cast(number, String));
+    index = Str.string_to_int(number);
     index = Kernel.subtract(index, 1);
     command = History.get(cast(index, Int));
     System.println(command);
