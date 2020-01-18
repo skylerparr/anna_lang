@@ -478,17 +478,17 @@ class MacroTools {
                 var expr: Expr = cast value.expr;
                 var nameAndPattern: Dynamic = switch(expr.expr) {
                   case EConst(CIdent(name)):
-                    {name: name, pattern: name}
+                    {name: name, pattern: name, isPatternVar: false}
                   case EConst(CInt(pattern)) | EConst(CString(pattern)) | EConst(CFloat(pattern)):
                     var name = util.StringUtil.random();
-                    {name: name, pattern: pattern};
+                    {name: name, pattern: pattern, isPatternVar: false};
                   case EObjectDecl(values):
                     var name = util.StringUtil.random();
                     var items: Array<String> = [];
                     for(value in values) {
                       items.push('${value.field}: ${printer.printExpr(value.expr)}');
                     }
-                    {name: name, pattern: '@keyword{${items.join(', ')}}'};
+                    {name: name, pattern: '@keyword{${items.join(', ')}}', isPatternVar: false};
                   case EArrayDecl(values):
                     var name = util.StringUtil.random();
                     var items: Array<String> = [];
@@ -506,10 +506,10 @@ class MacroTools {
                     }
                     if(type == 'tuple') {
                       var haxeStr: String = getTuple(items);
-                      {name: name, pattern: haxeStr};
+                      {name: name, pattern: haxeStr, isPatternVar: false};
                     } else {
                       var haxeStr: String = getMap(items);
-                      {name: name, pattern: haxeStr};
+                      {name: name, pattern: haxeStr, isPatternVar: false};
                     }
                   case EBlock(values):
                     var name = util.StringUtil.random();
@@ -518,18 +518,20 @@ class MacroTools {
                       items.push(printer.printExpr(value));
                     }
                     var haxeStr: String = getList(items);
-                    {name: name, pattern: haxeStr};
+                    {name: name, pattern: haxeStr, isPatternVar: false};
                   case EBinop(OpArrow, {expr: EConst(CString(name))}, {expr: EConst(CIdent(pattern))}):
                     var patternStr = printer.printExpr(expr);
-                    {name: name, pattern: patternStr}
+                    retVal.argTypes.push({type: 'String', name: pattern, pattern: pattern, isPatternVar: true});
+
+                    {name: name, pattern: patternStr, isPatternVar: false}
                   case EMeta({name: name}, expr):
                     var patternStr = printer.printExpr(expr);
-                    {name: name, pattern: '@_${patternStr}'}
+                    {name: name, pattern: '@_${patternStr}', isPatternVar: false}
                   case e:
                     MacroLogger.log(e, 'e');
                     throw new ParsingException("AnnaLang: expected variable or pattern");
                 }
-                retVal.argTypes.push({type: value.field, name: nameAndPattern.name, pattern: nameAndPattern.pattern});
+                retVal.argTypes.push({type: value.field, name: nameAndPattern.name, pattern: nameAndPattern.pattern, isPatternVar: nameAndPattern.isPatternVar});
               }
             case EArrayDecl(returnTypes):
               for(returnType in returnTypes) {
@@ -545,10 +547,6 @@ class MacroTools {
         MacroLogger.log(e, 'e');
         throw new ParsingException("AnnaLang: Expected value types");
     }
-  }
-
-  public static function resolveTypeFromPattern(expr: Expr):String {
-    return resolveType(expr);
   }
 
   public static function resolveType(expr: Expr):String {

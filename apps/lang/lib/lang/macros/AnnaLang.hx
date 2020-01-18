@@ -203,8 +203,8 @@ class AnnaLang {
             MacroContext.varTypesInScope = new Map<String, String>();
             MacroContext.lastFunctionReturnType = "";
 
+            MacroLogger.log(funDef.funArgsTypes, 'funDef.funArgsTypes');
             for(argType in cast(funDef.funArgsTypes, Array<Dynamic>)) {
-              MacroLogger.log(funDef.funArgsTypes, 'funDef.funArgsTypes');
               MacroContext.varTypesInScope.set(argType.name, argType.type);
             }
 
@@ -252,6 +252,9 @@ class AnnaLang {
             var varType: ComplexType = MacroTools.buildType('Array<String>');
             exprs.push(Macros.haxeToExpr('var args: Array<String> = [];'));
             for(funArgs in funArgsTypes) {
+              if(funArgs.isPatternVar) {
+                continue;
+              }
               var haxeExpr = Macros.haxeToExpr('args.push("${funArgs.name}");');
               exprs.push(haxeExpr);
             }
@@ -278,7 +281,12 @@ class AnnaLang {
             var funArgs: Array<FunctionArg> = [];
             var patternMatches: Array<String> = [];
             var argNameCounter: Int = 0;
+            var matchCount: Int = 0;
+
             for(funArgsType in funArgsTypes) {
+              if(funArgsType.isPatternVar) {
+                continue;
+              }
               var argName: String = '_${argNameCounter++}';
               funArgs.push({name: argName, type: MacroTools.buildType(funArgsType.type)});
               var haxeStr: String = '';
@@ -292,7 +300,8 @@ class AnnaLang {
                 }
                 var patternExpr = PatternMatch.match(Macros.haxeToExpr(pattern), Macros.haxeToExpr(argName));
                 MacroLogger.logExpr(patternExpr, 'patternExpr');
-                haxeStr = 'var match: Map<String, Dynamic> = ${printer.printExpr(patternExpr)};';
+                haxeStr = 'var match${matchCount}: Map<String, Dynamic> = ${printer.printExpr(patternExpr)};';
+                matchCount++;
               }
               patternMatches.push(haxeStr);
             }
@@ -303,15 +312,18 @@ class AnnaLang {
             var makeIfBlock: Bool = false;
             if(patternMatches.length > 0) {
               var matchStatements: Array<String> = [];
+              var matchCount: Int = 0;
               for(pattenMatch in patternMatches) {
                 if(pattenMatch != "") {
-                  matchStatements.push('match != null');
+                  matchStatements.push('match${matchCount++} != null');
                 }
               }
               patternTest += patternMatches.join("\n");
               if(matchStatements.length > 0) {
                 patternTest += 'if(${matchStatements.join(" && ")}) {';
-                patternTest += '__updateScope(match, ____scopeVariables);';
+                for(i in 0...matchStatements.length) {
+                  patternTest += '__updateScope(match${i}, ____scopeVariables);';
+                }
                 makeIfBlock = true;
               }
             }

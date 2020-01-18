@@ -30,7 +30,8 @@ class PushStack implements Operation {
     Logger.log(func);
     var fn: Function = Classes.getFunction(module, func);
     if(fn == null) {
-      Logger.inspect('Function not found ${module.toAnnaString()} ${func.toAnnaString()}');
+      Logger.inspect('Function not found ${module.toAnnaString()} ${func.toAnnaString()}:${lineNumber}');
+      IO.inspect('Function not found ${module.toAnnaString()} ${func.toAnnaString()}:${lineNumber}');
       Kernel.crash(Process.self());
       return;
     }
@@ -48,6 +49,7 @@ class PushStack implements Operation {
     Logger.log(callArgs);
     var operations: Array<Operation> = fn.invoke(callArgs);
     if(operations == null) {
+      IO.inspect('Function ${module.toAnnaString()} ${func.toAnnaString()}:${lineNumber} has no body.');
       Kernel.crash(Process.self());
       return;
     }

@@ -49,6 +49,7 @@ class Match {
             var matched: Map<String, Dynamic> = $e{patternMatch};
             if(Kernel.isNull(matched)) {
               Logger.inspect('BadMatch: ${currentModuleStr}.${MacroContext.currentFunction}():${MacroTools.getLineNumber(params)} => ${printer.printExpr(params)}');
+              IO.inspect('BadMatch: ${currentModuleStr}.${MacroContext.currentFunction}():${MacroTools.getLineNumber(params)} => ${printer.printExpr(params)}');
               vm.Kernel.crash(vm.Process.self());
               return;
             }

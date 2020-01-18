@@ -20,24 +20,18 @@ class Def {
   }
 
   public static function defineFunction(params: Expr):Dynamic {
+    var r = ~/[A-Za-z]*<|>/g;
     var funName: String = MacroTools.getCallFunName(params);
     var allTypes: Dynamic = MacroTools.getArgTypesAndReturnTypes(params);
     var funArgsTypes: Array<Dynamic> = allTypes.argTypes;
     var types: Array<String> = [];
     for(argType in funArgsTypes) {
-      var strType: String = MacroTools.resolveType(lang.macros.Macros.haxeToExpr(argType.type));
-      var r = ~/[A-Za-z]*<|>/g;
-      strType = r.replace(strType, '');
-      types.push(AnnaLang.getType(strType));
-      argType.type = strType;
-
-      //resolve type from pattern
-      MacroLogger.log(argType.pattern, 'argType');
-      var strType: String = MacroTools.resolveType(lang.macros.Macros.haxeToExpr(argType.type));
-      var r = ~/[A-Za-z]*<|>/g;
-      strType = r.replace(strType, '');
-      types.push(AnnaLang.getType(strType));
-      argType.type = strType;
+      if(!argType.isPatternVar) {
+        var strType: String = MacroTools.resolveType(lang.macros.Macros.haxeToExpr(argType.type));
+        strType = r.replace(strType, '');
+        types.push(AnnaLang.getType(strType));
+        argType.type = strType;
+      }
     }
     var argTypes: String = AnnaLang.sanitizeArgTypeNames(types);
     var funBody: Array<Expr> = MacroTools.getFunBody(params);
