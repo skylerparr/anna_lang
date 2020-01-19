@@ -564,6 +564,29 @@ import vm.Function;
     result = @native Lang.eval('"ellie bear"');
     assert('ellie bear', cast(result, String), test_name);
 
+    test_name = 'should match on static keyword with single key/value';
+    assert({ellie: 'bear'}, {ellie: 'bear'}, test_name);
+
+    test_name = 'should match on static keyword with single key/value (interp)';
+    result = @native Lang.eval('{ellie: "bear"}');
+    assert({ellie: 'bear'}, cast(result, Keyword), test_name);
+
+    test_name = 'should match on static keyword with single value with variable';
+    bear = 'bear';
+    assert({ellie: bear}, {ellie: bear}, test_name);
+
+    test_name = 'should match on static keyword with single value with variable (interp)';
+    result = @native Lang.eval('{ellie: bear}');
+    assert({ellie: bear}, cast(result, Keyword), test_name);
+
+    test_name = 'should match on static keyword with multiple keys and variables';
+    benus = 'benus';
+    assert({ellie: benus, benus: {@_'cat'; 'strange';}}, {ellie: benus, benus: {@_'cat'; 'strange';}}, test_name);
+
+    test_name = 'should match on static keyword with multiple keys and variables(interp)';
+    result = @native Lang.eval('{ellie: benus, benus: {@_"cat"; "strange";}}');
+    assert({ellie: benus, benus: {@_'cat'; 'strange';}}, cast(result, Keyword), test_name);
+
     System.println('');
     @_'ok';
   });
@@ -643,6 +666,16 @@ import vm.Function;
     @_'error';
   });
 
+  @def assert({Keyword: {ellie: 'bear'}, Keyword: {ellie: 'bear'}, String: test_name}, [Atom], {
+    System.print('.');
+    @_'ok';
+  });
+
+  @def assert({Keyword: {ellie: 'benus', benus: {@_'cat'; 'strange';}}, Keyword: {ellie: 'benus', benus: {@_'cat'; 'strange';}}, String: test_name}, [Atom], {
+    System.print('.');
+    @_'ok';
+  });
+
   @def assert({String: expectation, String: actual, String: test_name}, [Atom], {
     System.println('');
     System.println(test_name);
@@ -689,6 +722,15 @@ import vm.Function;
   });
 
   @def assert({MMap: expectation, MMap: actual, String: test_name}, [Atom], {
+    System.println('');
+    System.println(test_name);
+    System.print('expected: ');
+    @native IO.inspect(expectation);
+    System.print('     got: ');
+    @native IO.inspect(actual);
+  });
+
+  @def assert({Keyword: expectation, Keyword: actual, String: test_name}, [Atom], {
     System.println('');
     System.println(test_name);
     System.print('expected: ');

@@ -764,6 +764,7 @@ class AnnaLang {
       #end
       var haxeStr: String = 'ops.push(new vm.PushStack(${MacroTools.getAtom(module.moduleName)}, ${MacroTools.getAtom(fqFunName)}, ${MacroTools.getList(funArgs)}, ${MacroTools.getAtom(currentModuleStr)}, ${MacroTools.getAtom(MacroContext.currentFunction)}, ${lineNumber}))';
 
+      MacroLogger.log(haxeStr, 'haxeStr');
       retVal.push(lang.macros.Macros.haxeToExpr(haxeStr));
       return retVal;
     }

@@ -25,6 +25,10 @@ class Keyword implements CustomType {
     }
   }
 
+  public function asArray(): Array<Tuple> {
+    return data;
+  }
+
   public static function get(keyword:Keyword, field:Atom):Dynamic {
     for(value in keyword.data) {
       if(Tuple.elem(value, 0) == field) {

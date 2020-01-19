@@ -205,12 +205,13 @@ class PatternMatch {
       case EObjectDecl(values):
         var individualMatches: Array<Expr> = [];
         for(value in values) {
+          MacroLogger.log(values, 'values');
           var strExpr: String = '';
-          strExpr = 'Keyword.hasKey(${printer.printExpr(valueExpr)}, Atom.create("${value.field}"))';
+          strExpr = 'Keyword.hasKey(${printer.printExpr(valueExpr)}, ${value.field})';
           var expr: Expr = generatePatternMatch(lang.macros.Macros.haxeToExpr('Atom.create("true")'), lang.macros.Macros.haxeToExpr(strExpr));
           individualMatches.push(expr);
 
-          strExpr = 'Keyword.get(${printer.printExpr(valueExpr)}, Atom.create("${value.field}"))';
+          strExpr = 'Keyword.get(${printer.printExpr(valueExpr)}, ${value.field})';
           var expr: Expr = generatePatternMatch(value.expr, lang.macros.Macros.haxeToExpr(strExpr));
           individualMatches.push(expr);
         }
@@ -235,11 +236,11 @@ class PatternMatch {
                 switch(expr.expr) {
                   case EArrayDecl([field, assign]):
                     var strExpr: String = '';
-                    strExpr = 'Keyword.hasKey(${printer.printExpr(valueExpr)}, Atom.create(${printer.printExpr(field)}))';
+                    strExpr = 'Keyword.hasKey(${printer.printExpr(valueExpr)}, ${printer.printExpr(field)})';
                     var expr: Expr = generatePatternMatch(lang.macros.Macros.haxeToExpr('Atom.create("true")'), lang.macros.Macros.haxeToExpr(strExpr));
                     individualMatches.push(expr);
 
-                    strExpr = 'Keyword.get(${printer.printExpr(valueExpr)}, Atom.create(${printer.printExpr(field)}))';
+                    strExpr = 'Keyword.get(${printer.printExpr(valueExpr)}, ${printer.printExpr(field)})';
                     var expr: Expr = generatePatternMatch(assign, lang.macros.Macros.haxeToExpr(strExpr));
                     individualMatches.push(expr);
 
@@ -268,7 +269,8 @@ class PatternMatch {
       case EMeta(_):
         MacroLogger.logExpr(pattern, 'pattern');
         var typeAndValue = MacroTools.getTypeAndValue(pattern);
-        var expr = Macros.haxeToExpr(typeAndValue.rawValue);
+        MacroLogger.log(typeAndValue, 'PatternMatch typeAndValue');
+        var expr = Macros.haxeToExpr(typeAndValue.value);
         generatePatternMatch(expr, valueExpr);
       case EBinop(OpArrow, base, suffix):
         var valueStr: String = '${printer.printExpr(valueExpr)}.substring(${printer.printExpr(base)}.length)';

@@ -26,12 +26,12 @@ class ArgHelper {
             var value = EitherSupport.getValue(elem2);
             if(Std.is(value, Tuple)) {
               resolveTupleValues(cast value, scopeVariables);
-            } else if(Std.is(value, Atom)) {
-              value;
             } else if(Std.is(value, LList)) {
               resolveListValues(cast value, scopeVariables);
             } else if(Std.is(value, MMap)) {
               resolveMapValues(cast value, scopeVariables);
+            } else if(Std.is(value, Keyword)) {
+              resolveKeywordValues(cast value, scopeVariables);
             } else if(Std.is(value, AbstractCustomType)) {
               resolveAbstractCustomTypeValues(cast value, scopeVariables);
             } else {
@@ -85,6 +85,16 @@ class ArgHelper {
       retMap.push(fetched);
     }
     return MMap.create(retMap);
+  }
+
+  public static function resolveKeywordValues(keyword: Keyword, scopeVariables: Map<String, Dynamic>): Keyword {
+    var values: Array<Array<Any>> = [];
+    for(kvPair in keyword.asArray()) {
+      var key: Atom = cast Tuple.elem(kvPair, 0);
+      var value = extractArgValue(Tuple.elem(kvPair, 1), scopeVariables);
+      values.push([key.value, value]);
+    }
+    return Keyword.create(values);
   }
 
   public static inline function resolveAbstractCustomTypeValues(value: AbstractCustomType, scopeVariables: Map<String, Dynamic>): AbstractCustomType {

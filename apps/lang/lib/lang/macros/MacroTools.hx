@@ -285,7 +285,7 @@ class MacroTools {
         var listValues: Array<String> = [];
         for(arg in args) {
           var typeAndValue: Dynamic = getTypeAndValue(arg.expr);
-          listValues.push('${arg.field}: ${typeAndValue.value}');
+          listValues.push('${getAtom(arg.field)}, ${typeAndValue.value}');
         }
         var strValue: String = getKeyword(listValues);
 
@@ -357,11 +357,7 @@ class MacroTools {
         var listValues: Array<String> = [];
         for(arg in args) {
           var typeAndValue: Dynamic = getTypeAndValue(arg.expr);
-          #if macro
-          listValues.push('${arg.field}: ${typeAndValue.value}');
-          #else
           listValues.push('["${arg.field}", ${typeAndValue.value}]');
-          #end
         }
         var strValue: String = getKeyword(listValues);
 
@@ -402,11 +398,11 @@ class MacroTools {
           }
           listValues.push('[${innerValues.join(',')}]');
         }
-        var strValue: String = 'Keyword.create([${listValues.join(",")}])';
+        var strValue: String = getKeyword(listValues);
         {type: "Keyword", value: 'Tuple.create([Atom.create("const"), ${strValue}])', rawValue: strValue};
       case ECall({expr: EField({expr: EConst(CIdent("MMap"))}, "create")}, [{expr: EBlock(args)}]):
         var strValue: String = printer.printExpr({expr: EBlock(args), pos: MacroContext.currentPos()});
-        {type: "MMap", value: 'Tuple.create([Atom.create("const"), ${strValue}])', rawValue: strValue};
+        {type: "MMap", value: 'Tuple.create([${getAtom("const")}, ${strValue}])', rawValue: strValue};
       case e:
         MacroLogger.log(expr, 'expr');
         MacroLogger.logExpr(expr, 'expr code');
@@ -486,9 +482,10 @@ class MacroTools {
                     var name = util.StringUtil.random();
                     var items: Array<String> = [];
                     for(value in values) {
-                      items.push('${value.field}: ${printer.printExpr(value.expr)}');
+                      var typeAndValue = getTypeAndValue(value.expr);
+                      items.push('[${getAtom(value.field)}, ${getConstant(typeAndValue.value)}]');
                     }
-                    {name: name, pattern: '@keyword{${items.join(', ')}}', isPatternVar: false};
+                    {name: name, pattern: getKeyword(items), isPatternVar: false};
                   case EArrayDecl(values):
                     var name = util.StringUtil.random();
                     var items: Array<String> = [];
