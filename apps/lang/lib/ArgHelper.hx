@@ -79,8 +79,8 @@ class ArgHelper {
     var retMap: Array<Tuple> = [];
     for(key in LList.iterator(MMap.keys(map))) {
       var item = MMap.get(map, key);
-      var fetched = extractArgValue(item, scopeVariables);
-      var newKey = extractArgValue(key, scopeVariables);
+      var fetched: Dynamic = extractArgValue(item, scopeVariables);
+      var newKey: Dynamic = extractArgValue(key, scopeVariables);
       retMap.push(newKey);
       retMap.push(fetched);
     }
