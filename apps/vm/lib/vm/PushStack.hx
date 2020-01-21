@@ -1,11 +1,16 @@
 package vm;
 
+import hscript.Macro;
+import haxe.macro.Expr.TypeDefinition;
+import lang.macros.MacroContext;
 import ArgHelper;
 import EitherEnums.Either2;
 import lang.EitherSupport;
 import vm.Function;
 import vm.Operation;
 class PushStack implements Operation {
+
+  public static var typeDef: TypeDefinition = {kind: TDStructure, pos: MacroContext.currentPos(), fields: [], pack: [], name: ''};
 
   public var module: Atom;
   public var func: Atom;
@@ -35,6 +40,9 @@ class PushStack implements Operation {
       Kernel.crash(Process.self());
       return;
     }
+//    typeDef.name = hostModule.value;
+//    lang.macros.MacroContext.currentModule = typeDef;
+//    lang.macros.MacroContext.currentFunction = func.value;
     Logger.log("here");
     var counter: Int = 0;
     var callArgs: Array<Dynamic> = [];

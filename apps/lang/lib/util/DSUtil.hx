@@ -106,9 +106,6 @@ class DSUtil {
   private static inline function parseAbstractTypeToDynamic(value: AbstractCustomType, retVal: Dynamic): Dynamic {
     var fields: Array<String> = Reflect.fields(value);
     for(field in fields) {
-      if(field == 'variables') {
-        continue;
-      }
       var value = Reflect.field(value, field);
       field = EitherSupport.getValue(field);
       retVal = parseObj(field, value, retVal);

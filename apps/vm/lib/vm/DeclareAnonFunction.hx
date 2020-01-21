@@ -25,6 +25,7 @@ class DeclareAnonFunction implements Operation {
     var module = frags.join('.');
     var fn: Function = Classes.getFunction(module.atom(), fun.atom());
     if(fn == null) {
+      IO.inspect('Anonymous function ${module} ${fun} not found.');
       Kernel.crash(Process.self());
       return;
     }

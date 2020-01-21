@@ -3,7 +3,10 @@ package lang;
 import Type.ValueType;
 import lang.CustomType;
 class AbstractCustomType implements CustomType {
-  public var variables: Map<String, String>;
+
+  public static function create(type: Class<Dynamic>, args: Dynamic): AbstractCustomType {
+    return Type.createInstance(type, [args]);
+  }
 
   public function toAnnaString(): String {
     var fieldPairs: Array<String> = [];

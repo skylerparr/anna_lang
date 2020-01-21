@@ -327,8 +327,8 @@ class Kernel {
 
   public static function apply(pid: Pid, fn: Function, args: LList, callback: Dynamic->Void = null): Void {
     if(fn == null) {
-      //TODO: handle missing function error
-      Logger.inspect('throw a crazy error and kill the process!');
+      IO.inspect('Function not found ${fn.apiFunc}');
+      Kernel.crash(Process.self());
       return;
     }
     if(pid.state == ProcessState.KILLED || pid.state == ProcessState.COMPLETE) {

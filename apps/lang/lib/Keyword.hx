@@ -2,7 +2,6 @@ package ;
 import lang.CustomType;
 using lang.AtomSupport;
 class Keyword implements CustomType {
-  public var variables: Map<String,String>;
   private var __annaString: String;
   private var data: Array<Tuple>;
   private var uniqueKeys: Map<Atom, Int>;

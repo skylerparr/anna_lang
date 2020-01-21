@@ -312,6 +312,7 @@ class GenericScheduler implements Scheduler {
     args.push(scopeVariables);
     var operations: Array<Operation> = fn.invoke(args);
     if(operations == null) {
+      IO.inspect('Empty function body for ${Anna.toAnnaString(fn)}');
       Kernel.crash(Process.self());
       return;
     }

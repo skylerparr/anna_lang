@@ -22,6 +22,7 @@ class AnonymousFunction implements Operation {
     var varName: String = Atom.to_s(func);
     var fn: Function = scopeVariables.get(varName);
     if(fn == null) {
+      IO.inspect('Function not found ${func.toAnnaString()} ${Anna.toAnnaString(args)}:${lineNumber}');
       Kernel.crash(Process.self());
       return;
     }

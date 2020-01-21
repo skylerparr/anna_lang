@@ -227,6 +227,10 @@ class MacroTools {
     return 'Keyword.create([${values.join(",")}])';
   }
 
+  public static function getCustomType(type: String, values: Array<String>): String {
+    return 'lang.AbstractCustomType.create(${type}, {${values.join(",")}})';
+  }
+
   public static inline function getMap(values: Array<String>):String {
     var mapExprs: Array<Expr> = [];
     for(v in values) {
@@ -403,6 +407,14 @@ class MacroTools {
       case ECall({expr: EField({expr: EConst(CIdent("MMap"))}, "create")}, [{expr: EBlock(args)}]):
         var strValue: String = printer.printExpr({expr: EBlock(args), pos: MacroContext.currentPos()});
         {type: "MMap", value: 'Tuple.create([${getAtom("const")}, ${strValue}])', rawValue: strValue};
+      case EBinop(OpMod, {expr: EConst(CIdent(type))}, {expr: EObjectDecl(fields)}):
+        var listValues: Array<String> = [];
+        for(field in fields) {
+          var typeAndValue: Dynamic = getTypeAndValue(field.expr);
+          listValues.push('${field.field}: ${typeAndValue.value}');
+        }
+        var strValue: String = getCustomType(type, listValues);
+        {type: type, value: 'Tuple.create([${getAtom("const")}, ${strValue}])', rawValue: strValue};
       case e:
         MacroLogger.log(expr, 'expr');
         MacroLogger.logExpr(expr, 'expr code');
@@ -524,6 +536,13 @@ class MacroTools {
                   case EMeta({name: name}, expr):
                     var patternStr = printer.printExpr(expr);
                     {name: name, pattern: '@_${patternStr}', isPatternVar: false}
+                  case EBinop(OpMod, {expr: EConst(CIdent(name))}, {expr: EObjectDecl(customValueTypes)}):
+                    var items: Array<String> = [];
+                    for(value in customValueTypes) {
+                      var typeAndValue = getTypeAndValue(value.expr);
+                      items.push('${value.field}: ${typeAndValue.value}');
+                    }
+                    {name: name, pattern: getCustomType(name, items), isPatternVar: false};
                   case e:
                     MacroLogger.log(e, 'e');
                     throw new ParsingException("AnnaLang: expected variable or pattern");

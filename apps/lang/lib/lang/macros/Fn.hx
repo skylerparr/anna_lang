@@ -1,8 +1,6 @@
 package lang.macros;
 
 import lang.macros.MacroTools;
-import lang.macros.MacroTools;
-import lang.macros.MacroTools;
 import haxe.macro.Printer;
 import hscript.plus.ParserPlus;
 import haxe.macro.Expr;
@@ -18,7 +16,6 @@ class Fn {
   private static var printer: Printer = new Printer();
 
   public static function gen(params: Expr): Array<Expr> {
-    MacroLogger.logExpr(params, 'anonymous fn params');
     MacroContext.lastFunctionReturnType = "vm_Function";
     var currentModule: TypeDefinition = MacroContext.currentModule;
     var currentModuleStr: String = currentModule.name;
@@ -41,7 +38,27 @@ class Fn {
           var expr = lang.macros.Macros.haxeToExpr(haxeStr);
           defined = Def.defineFunction(expr);
         }
-        var haxeStr: String = 'ops.push(new vm.DeclareAnonFunction(${MacroTools.getAtom('${currentModuleStr}.${defined.internalFunctionName}')}, ${MacroTools.getAtom(currentModuleStr)}, ${MacroTools.getAtom(MacroContext.currentFunction)}, ${MacroTools.getLineNumber(params)}))';
+        #if !macro
+        var terms: Array<Dynamic> = cast(defined.funBody, Array<Dynamic>);
+        var allOps: Array<vm.Operation> = [];
+        for(term in terms) {
+          var operations = vm.Lang.resolveOperations(cast term);
+          allOps = allOps.concat(operations);
+        }
+        var anonFn: vm.Function = new vm.SimpleFunction();
+        anonFn.fn = function(args, scope) {
+          return allOps;
+        }
+        anonFn.args = [];
+        anonFn.scope = vm.Process.self().processStack.getVariablesInScope();
+        anonFn.apiFunc = Atom.create(MacroContext.currentFunction);
+        vm.Classes.defineFunction(Atom.create(currentModuleStr), Atom.create(anonFunctionName + '_Dynamic'), anonFn);
+        #end
+        var haxeStr: String = 'ops.push(new vm.DeclareAnonFunction(
+              ${MacroTools.getAtom('${currentModuleStr}.${defined.internalFunctionName}')},
+              ${MacroTools.getAtom(currentModuleStr)},
+              ${MacroTools.getAtom(MacroContext.currentFunction)},
+              ${MacroTools.getLineNumber(params)}))';
         return [lang.macros.Macros.haxeToExpr(haxeStr)];
       case _:
         MacroLogger.log(params, 'params');

@@ -117,6 +117,9 @@ class Native {
           }
 
           override public function execute(scope: Map<String, Dynamic>, processStack: vm.ProcessStack): Void {
+//            AbstractInvokeFunction.typeDef.name = hostModule.value;
+//            lang.macros.MacroContext.currentModule = AbstractInvokeFunction.typeDef;
+//            lang.macros.MacroContext.currentFunction = hostFunction.value;
             $e{execBody}
             $e{assignReturnVar}
           }

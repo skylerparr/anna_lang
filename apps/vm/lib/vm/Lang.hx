@@ -47,7 +47,7 @@ class Lang {
     return 'ok'.atom();
   }
 
-  private static inline function invokeBlock(expr: Expr): Void {
+  public static inline function resolveOperations(expr: Expr): Array<Operation> {
     AnnaLang.initCls();
     var exprs: Array<Expr> = AnnaLang.walkBlock(expr);
     var operations: Array<Operation> = [];
@@ -70,6 +70,7 @@ class Lang {
       interp.variables.set("AnnaCompiler", {});
       interp.variables.set("EitherEnums", EitherEnums);
       interp.variables.set("SourceFile", SourceFile);
+      interp.variables.set("Kernel", Kernel);
       interp.variables.set("ArgHelper", ArgHelper);
       interp.variables.set("A", function(v) {
         return v;
@@ -80,7 +81,11 @@ class Lang {
       var op: Operation = interp.execute(ast);
       operations.push(op);
     }
+    return operations;
+  }
 
+  private static inline function invokeBlock(expr: Expr): Void {
+    var operations = resolveOperations(expr);
     Process.apply(Process.self(), operations);
   }
 }

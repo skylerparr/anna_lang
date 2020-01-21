@@ -11,7 +11,6 @@ import lang.EitherSupport;
 using StringTools;
 
 class MMap implements CustomType {
-  public var variables: Map<String,String>;
 
   public static function create(vals: Array<Tuple>): MMap {
     var map: AnnaMap<Any, Any> = new AnnaMap<Any, Any>();

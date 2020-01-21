@@ -11,6 +11,6 @@ class SimpleFunction implements Function {
   }
 
   public function invoke(callArgs: Array<Dynamic>): Array<Operation> {
-    return Reflect.callMethod(cls, fn, callArgs);
+    return Reflect.callMethod(null, fn, callArgs);
   }
 }

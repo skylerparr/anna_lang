@@ -6,7 +6,6 @@ import lang.EitherSupport;
 using StringTools;
 
 class LList implements CustomType {
-  public var variables: Map<String,String>;
 
   public static function create(vals: Array<Any>): LList {
     var retVal = new AnnaList<Any>();

@@ -86,7 +86,8 @@ class AnnaLang {
         if(arg == null) {
           return;
         }
-        variables = new Map<String, String>();
+
+        var variablesInScope = vm.Process.self().processStack.getVariablesInScope();
         for(field in Reflect.fields(arg)) {
           var valueToAssign = Reflect.field(arg, field);
           var tuple: Tuple = lang.EitherSupport.getValue(valueToAssign);
@@ -98,7 +99,6 @@ class AnnaLang {
               var elem2 = argArray[1];
               retVal = switch(cast(lang.EitherSupport.getValue(elem1), Atom)) {
                 case {value: 'var'}:
-                  variables.set(field, lang.EitherSupport.getValue(elem2));
                   null;
                 case _:
                   elem2;
@@ -724,6 +724,7 @@ class AnnaLang {
     if(types.length == 0) {
      spacer = '';
     }
+
     var fqFunName = makeFqFunName(funName, types);
 
     var frags: Array<String> = fqFunName.split('.');
@@ -737,7 +738,7 @@ class AnnaLang {
     if(module == null) {
       module = MacroContext.declaredInterfaces.get(moduleName);
       if(module == null) {
-        throw new FunctionClauseNotFound('AnnaLang: Function ${funName}() not found on module ${moduleName}.');
+        throw new FunctionClauseNotFound('AnnaLang: Function ${fqFunName}() not found on module ${moduleName}.');
       }
     }
     var declaredFunctions = module.declaredFunctions;
@@ -754,7 +755,7 @@ class AnnaLang {
       MacroLogger.log(declaredFunctions, 'declaredFunctions');
       MacroLogger.log(funArgs, 'funArgs');
 
-      throw 'Function ${moduleName}.${fqFunName} at line ${lineNumber} not found';
+      throw new FunctionClauseNotFound('Function ${moduleName}.${fqFunName} at line ${lineNumber} not found');
     } else {
       #if macro
       MacroContext.lastFunctionReturnType = funDef[0].funReturnTypes[0];

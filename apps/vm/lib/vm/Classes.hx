@@ -101,6 +101,11 @@ class Classes {
     }
   }
 
+  public static function defineFunction(className: Atom, funName: Atom, fun: Function): Void {
+    var funMap: Map<Atom, Dynamic> = functions.get(className);
+    funMap.set(funName, fun);
+  }
+
   public static inline function getClass(name: Atom): Class<Dynamic> {
     return classes.get(name);
   }

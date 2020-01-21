@@ -412,7 +412,6 @@ import vm.Function;
 //}))
 @:build(lang.macros.AnnaLang.defCls(Repl, {
   @alias vm.Lang;
-  @alias vm.Pid;
   @const bar = @_'bar';
 
   @def eval({String: text}, [Atom], {
@@ -424,6 +423,7 @@ import vm.Function;
 
 }))
 @:build(lang.macros.AnnaLang.defCls(ReplTests, {
+  @alias vm.Pid;
 
   @def start([Atom], {
     test_name = "should match strings";
@@ -583,9 +583,31 @@ import vm.Function;
     benus = 'benus';
     assert({ellie: benus, benus: {@_'cat'; 'strange';}}, {ellie: benus, benus: {@_'cat'; 'strange';}}, test_name);
 
-    test_name = 'should match on static keyword with multiple keys and variables(interp)';
+    test_name = 'should match on static keyword with multiple keys and variables (interp)';
     result = @native Lang.eval('{ellie: benus, benus: {@_"cat"; "strange";}}');
     assert({ellie: benus, benus: {@_'cat'; 'strange';}}, cast(result, Keyword), test_name);
+
+    test_name = 'should invoke public functions (interp)';
+    result = cast(@native Lang.eval('ReplTests.sample("sample function", Kernel.self());'), Tuple);
+    pid = Kernel.self();
+    assert(['sample_function', pid], result, test_name);
+
+//    test_name = 'should create anonymous function';
+//    fun = @fn {
+//      ([{Atom: arg}] => {
+//        assert(arg);
+//      });
+//    };
+//    assert(fun, test_name);
+//
+//    test_name = 'should create anonymous function (interp)';
+//    result = @native Lang.eval('@fn {
+//      ([{Atom: arg}] => {
+//        assert(arg);
+//      });
+//    };');
+//    fun = cast(result, Function);
+//    assert(fun, test_name);
 
     System.println('');
     @_'ok';
@@ -607,6 +629,11 @@ import vm.Function;
   });
 
   @def assert({Atom: @_'ok', Atom: @_'ok', String: test_name}, [Atom], {
+    System.print('.');
+    @_'ok';
+  });
+
+  @def assert({Atom: @_'success', Atom: @_'success', String: test_name}, [Atom], {
     System.print('.');
     @_'ok';
   });
@@ -676,6 +703,15 @@ import vm.Function;
     @_'ok';
   });
 
+  @def assert({Atom: @_'success'}, [Atom], {
+    System.print('.');
+    @_'ok';
+  });
+
+  @def assert({Function: fun, String: test_name}, [Atom], {
+    fun(@_'success');
+  });
+
   @def assert({String: expectation, String: actual, String: test_name}, [Atom], {
     System.println('');
     System.println(test_name);
@@ -739,10 +775,8 @@ import vm.Function;
     @native IO.inspect(actual);
   });
 
-  @def sample({String: label, Pid: pid}, [String], {
-    @native IO.inspect(label);
-    @native IO.inspect(pid);
-    label;
+  @def sample({String: label, Pid: pid}, [Tuple], {
+    [label, pid];
   });
 
 }))

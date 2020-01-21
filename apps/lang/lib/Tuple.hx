@@ -5,7 +5,6 @@ import lang.CustomType;
 import lang.EitherSupport;
 using lang.AtomSupport;
 class Tuple implements CustomType {
-  public var variables: Map<String,String>;
 
   public static function elem(t: Tuple, index: Int): Any {
     var retVal = Reflect.field(t, 'var${index + 1}');
@@ -117,9 +116,6 @@ class Tuple implements CustomType {
   public var __annaString: String;
 
   public function toAnnaString(): String {
-    if(variables != null) {
-      trace('variables is not null');
-    }
     if(__annaString == null) {
       var stringFrags: Array<String> = [];
       var vars: Array<Any> = asArray();
