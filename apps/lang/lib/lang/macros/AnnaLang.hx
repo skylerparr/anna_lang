@@ -714,6 +714,9 @@ class AnnaLang {
           MacroLogger.log(MacroContext.varTypesInScope, 'MacroContext.varTypesInScope');
           var typeAndValue = MacroTools.getTypeAndValue(arg);
           var type: String = getTypeForVar(typeAndValue, arg);
+          #if !macro
+          IO.inspect(type);
+          #end
           type = StringTools.replace(type, '.', '_');
           types.push(type);
           funArgs.push(typeAndValue.value);
@@ -778,7 +781,9 @@ class AnnaLang {
           return "vm_Function";
         }
         if(MacroContext.currentModuleDef.constants.get(varName) == null) {
+          trace(varName);
           var type = MacroContext.varTypesInScope.get(varName);
+          trace(type);
           getType(type);
         } else {
           typeAndValue.type;
@@ -795,6 +800,9 @@ class AnnaLang {
       case null:
         getAlias(MacroContext.lastFunctionReturnType);
       case _:
+        #if !macro
+
+        #end
         type;
     }
   }

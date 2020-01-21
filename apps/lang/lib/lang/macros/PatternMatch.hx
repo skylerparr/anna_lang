@@ -57,9 +57,12 @@ class PatternMatch {
       case ECall({expr: EField({expr: EConst(CIdent("Tuple"))}, _)}, [{expr: EArrayDecl(values)}]):
         var individualMatches: Array<Expr> = [];
         var counter: Int = 0;
-        for(v in values) {
+        for(patternExpr in values) {
           var strExpr: String = 'lang.EitherSupport.getValue(arrayTuple[${counter}])';
-          var expr: Expr = generatePatternMatch(v, lang.macros.Macros.haxeToExpr(strExpr));
+          MacroLogger.logExpr(patternExpr, 'v');
+          MacroLogger.log(patternExpr, 'PatternMatch valueExpr');
+          var expr: Expr = generatePatternMatch(patternExpr, lang.macros.Macros.haxeToExpr(strExpr));
+          MacroLogger.logExpr(expr, 'tuple match expr');
           individualMatches.push(expr);
           counter++;
         }
@@ -289,10 +292,10 @@ class PatternMatch {
           break;
         }
       case e:
-        MacroLogger.log(e, 'PatternMatch expr');
-        MacroLogger.logExpr(pattern, 'PatternMatch expr');
-        MacroLogger.log(valueExpr, 'PatternMatch expr');
-        MacroLogger.logExpr(valueExpr, 'PatternMatch expr');
+        MacroLogger.log(e, 'PatternMatch e');
+        MacroLogger.logExpr(pattern, 'PatternMatch pattern');
+        MacroLogger.log(valueExpr, 'PatternMatch valueExpr');
+        MacroLogger.logExpr(valueExpr, 'PatternMatch valueExpr');
         macro null;
     }
   }
