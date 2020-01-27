@@ -632,19 +632,28 @@ import vm.Function;
 
     test_name = 'should create anonymous function';
     fun = @fn {
-      ([{Atom: arg}] => {
-        assert(arg);
+      ([{Atom: arg, String: name}] => {
+        assert(@_'success', arg, name);
       });
     };
     assert(fun, test_name);
 
     test_name = 'should create anonymous function (interp)';
     result = @native Lang.eval('@fn {
-      ([{Atom: arg}] => {
-        ReplTests.assert(arg);
+      ([{Atom: arg, String: name}] => {
+        ReplTests.assert(@_"success", arg, name);
       });
     };');
     fun = cast(result, Function);
+    assert(fun, test_name);
+
+    test_name = 'should create anonymous function with members in scope variables';
+    status = @_'success';
+    fun = @fn {
+      ([{Atom: pass, String: name}] => {
+        assert(status, pass, name);
+      });
+    };
     assert(fun, test_name);
 
     System.println('');
@@ -772,13 +781,8 @@ import vm.Function;
     @_'ok';
   });
 
-  @def assert({Atom: @_'success'}, [Atom], {
-    System.print('.');
-    @_'ok';
-  });
-
   @def assert({Function: fun, String: test_name}, [Atom], {
-    fun(@_'success');
+    fun(@_'success', test_name);
   });
 
   @def assert({String: expectation, String: actual, String: test_name}, [Atom], {

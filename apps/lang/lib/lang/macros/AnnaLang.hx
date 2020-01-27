@@ -219,6 +219,9 @@ class AnnaLang {
 
             var funBodies: Array<Dynamic> = cast(funDef.funBody, Array<Dynamic>);
             for(bodyExpr in funBodies) {
+              if(funDef.varTypesInScope != null) {
+                MacroContext.varTypesInScope.join(funDef.varTypesInScope);
+              }
               var walkBody = walkBlock(bodyExpr);
               for(expr in walkBody) {
                 body.push(expr);
@@ -419,7 +422,7 @@ class AnnaLang {
 
           var fields: Array<String> = Reflect.fields(declaredFunction);
           for(field in fields) {
-            if(field == 'funBody' || field == 'allTypes' || field == 'funArgsTypes') {
+            if(field == 'funBody' || field == 'allTypes' || field == 'funArgsTypes' || field == 'varTypesInScope') {
               continue;
             } else if(field == 'funReturnTypes') {
               var fieldValue = Reflect.field(declaredFunction, field);
@@ -611,7 +614,6 @@ class AnnaLang {
               var currentModule: TypeDefinition = MacroContext.currentModule;
               var currentModuleStr: String = currentModule.name;
 
-              MacroLogger.log(currentModuleStr, 'currentModuleStr');
               var exprs: Array<Expr> = createPushStack(currentModuleStr, funName, pushStackArgs, lineNumber);
               for(expr in exprs) {
                 retExprs.push(expr);
@@ -734,7 +736,7 @@ class AnnaLang {
             var typeAndValue = MacroTools.getTypeAndValue(arg);
             var typesForVar: Array<String> = getTypesForVar(typeAndValue, arg);
             if(typeIndex >= typesForVar.length) {
-              throw new FunctionClauseNotFound('Function ${moduleName}.${fqFunName} with args ${argStrings.join(', ')} at line ${lineNumber} not found');
+              throw new FunctionClauseNotFound('Function ${moduleName}.${fqFunName} with args [${argStrings.join(', ')}] at line ${lineNumber} not found');
             }
             var type: String = getType(typesForVar[typeIndex]);
             type = StringTools.replace(type, '.', '_');

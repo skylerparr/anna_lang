@@ -2,7 +2,7 @@ package lang.macros;
 import haxe.CallStack;
 import haxe.rtti.CType.Classdef;
 class VarTypesInScope {
-  private var varTypesInScope: Map<String, Array<String>>;
+  public var varTypesInScope: Map<String, Array<String>>;
 
   public function new() {
     varTypesInScope = new Map();
@@ -45,6 +45,27 @@ class VarTypesInScope {
     var types: Array<String> = getVarsInScopeInstance(name);
     types.push(value);
     varTypesInScope.set(name, types);
+  }
+
+  public function join(scope: VarTypesInScope): VarTypesInScope {
+    for(key in scope.varTypesInScope.keys()) {
+      var types: Array<String> = scope.getTypes(key);
+      for(type in types) {
+        set(key, type);
+      }
+    }
+    return this;
+  }
+
+  public function clone(): VarTypesInScope {
+    var retVal = new VarTypesInScope();
+    for(key in varTypesInScope.keys()) {
+      var types: Array<String> = retVal.getTypes(key);
+      for(type in types) {
+        retVal.set(key, type);
+      }
+    }
+    return retVal;
   }
 
   private inline function getVarsInScopeInstance(name: String): Array<String> {

@@ -54,6 +54,7 @@ class Fn {
           var haxeStr: String = '${anonFunctionName}(${typesAndBody[0]}, ${printer.printExpr(typesAndBody[1])});';
           var expr = lang.macros.Macros.haxeToExpr(haxeStr);
           defined = Def.defineFunction(expr);
+          defined.varTypesInScope = MacroContext.varTypesInScope;
         }
         #if !macro
         var terms: Array<Dynamic> = cast(defined.funBody, Array<Dynamic>);
@@ -63,9 +64,13 @@ class Fn {
           allOps = allOps.concat(operations);
         }
         var anonFn: vm.Function = new vm.SimpleFunction();
-        anonFn.fn = function(args, scope) {
+        var anonFnString: String = 'function(${paramNameStrings.join(', ')}, scope) {
           return allOps;
-        }
+        }';
+        var ast = new hscript.Parser().parseString(anonFnString);
+        var interp = new hscript.Interp();
+        interp.variables.set('allOps', allOps);
+        anonFn.fn = interp.execute(ast);
         anonFn.args = paramNameStrings;
         anonFn.scope = vm.Process.self().processStack.getVariablesInScope();
         anonFn.apiFunc = Atom.create(MacroContext.currentFunction);
