@@ -40,10 +40,6 @@ class PushStack implements Operation {
       Kernel.crash(Process.self());
       return;
     }
-//    typeDef.name = hostModule.value;
-//    lang.macros.MacroContext.currentModule = typeDef;
-//    lang.macros.MacroContext.currentFunction = func.value;
-    Logger.log("here");
     var counter: Int = 0;
     var callArgs: Array<Dynamic> = [];
     var nextScopeVariables: Map<String, Dynamic> = new Map<String, Dynamic>();

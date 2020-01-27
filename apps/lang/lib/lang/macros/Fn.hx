@@ -19,6 +19,10 @@ class Fn {
     MacroContext.lastFunctionReturnType = "vm_Function";
     var currentModule: TypeDefinition = MacroContext.currentModule;
     var currentModuleStr: String = currentModule.name;
+    #if !macro
+    var paramTypeStrings: Array<String> = [];
+    var paramNameStrings: Array<String> = [];
+    #end
     switch(params.expr) {
       case EBlock(exprs):
         var counter: Int = 0;
@@ -34,6 +38,19 @@ class Fn {
               MacroLogger.logExpr(params, 'params');
               throw new ParsingException("AnnaLang: Expected parenthesis");
           }
+          #if !macro
+          var paramsStr: String = typesAndBody[0];
+          paramsStr = paramsStr.substr(1, paramsStr.length - 2);
+          var paramsStrs = paramsStr.split(',');
+          for(pStr in paramsStrs) {
+            var typeAndName = pStr.split(':');
+            var typeString: String = StringTools.trim(typeAndName[0]);
+            paramTypeStrings.push(typeString);
+            var paramName: String = StringTools.trim(typeAndName[1]);
+            paramNameStrings.push(paramName);
+            MacroContext.varTypesInScope.set(paramName, typeString);
+          }
+          #end
           var haxeStr: String = '${anonFunctionName}(${typesAndBody[0]}, ${printer.printExpr(typesAndBody[1])});';
           var expr = lang.macros.Macros.haxeToExpr(haxeStr);
           defined = Def.defineFunction(expr);
@@ -49,10 +66,10 @@ class Fn {
         anonFn.fn = function(args, scope) {
           return allOps;
         }
-        anonFn.args = [];
+        anonFn.args = paramNameStrings;
         anonFn.scope = vm.Process.self().processStack.getVariablesInScope();
         anonFn.apiFunc = Atom.create(MacroContext.currentFunction);
-        vm.Classes.defineFunction(Atom.create(currentModuleStr), Atom.create(anonFunctionName + '_Dynamic'), anonFn);
+        vm.Classes.defineFunction(Atom.create(currentModuleStr), Atom.create(anonFunctionName + '_${paramTypeStrings.join('_')}'), anonFn);
         #end
         var haxeStr: String = 'ops.push(new vm.DeclareAnonFunction(
               ${MacroTools.getAtom('${currentModuleStr}.${defined.internalFunctionName}')},

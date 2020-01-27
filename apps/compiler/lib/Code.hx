@@ -199,6 +199,10 @@ import vm.Function;
     @native IO.println(str);
   });
 
+  @def println({Atom: str}, [Atom], {
+    @native IO.println(str);
+  });
+
   @def set_cwd({String: str}, [Tuple], {
     @native Sys.setCwd(str);
     [@_'ok', str];
@@ -225,6 +229,11 @@ import vm.Function;
     @_'nil';
   });
 
+  @def process_command({String: 'r'}, [Atom], {
+    @native Kernel.recompile();
+    @native Kernel.stop();
+    @_'nil';
+  });
 
   @def process_command({String: 'compile_vm'}, [Atom], {
     @native Kernel.compileVM();
@@ -268,6 +277,11 @@ import vm.Function;
 //  });
 
   @def process_command({String: 'test'}, [Atom], {
+    ReplTests.start();
+    @_'ok';
+  });
+
+  @def process_command({String: 't'}, [Atom], {
     ReplTests.start();
     @_'ok';
   });
@@ -615,23 +629,23 @@ import vm.Function;
     label = 'sample2 function';
     result = cast(@native Lang.eval('ReplTests.sample(label, pid);'), Tuple);
     assert(['sample2 function', pid], result, test_name);
-//
-//    test_name = 'should create anonymous function';
-//    fun = @fn {
-//      ([{Atom: arg}] => {
-//        assert(arg);
-//      });
-//    };
-//    assert(fun, test_name);
-//
-//    test_name = 'should create anonymous function (interp)';
-//    result = @native Lang.eval('@fn {
-//      ([{Atom: arg}] => {
-//        assert(arg);
-//      });
-//    };');
-//    fun = cast(result, Function);
-//    assert(fun, test_name);
+
+    test_name = 'should create anonymous function';
+    fun = @fn {
+      ([{Atom: arg}] => {
+        assert(arg);
+      });
+    };
+    assert(fun, test_name);
+
+    test_name = 'should create anonymous function (interp)';
+    result = @native Lang.eval('@fn {
+      ([{Atom: arg}] => {
+        ReplTests.assert(arg);
+      });
+    };');
+    fun = cast(result, Function);
+    assert(fun, test_name);
 
     System.println('');
     @_'ok';

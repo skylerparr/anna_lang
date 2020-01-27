@@ -34,6 +34,10 @@ class Atom implements CustomType {
     return retVal;
   }
 
+  public function toString(): String {
+    return toAnnaString();
+  }
+
   public static function to_s(atom: Atom): String {
     return atom.value;
   }

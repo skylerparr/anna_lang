@@ -566,7 +566,6 @@ class MacroTools {
   }
 
   public static function resolveType(expr: Expr):String {
-    MacroLogger.logExpr(expr, 'expr resolveType');
     var type: Type = MacroContext.typeof(expr);
     MacroLogger.log(type, 'type');
     return switch(type) {
@@ -581,6 +580,8 @@ class MacroTools {
         "Dynamic";
       case TType(t, _):
         t.toString();
+      case TLazy(_):
+        getIdent(expr);
       case t:
         MacroLogger.log(t, 't');
         throw "AnnaLang: Unhandled return type";

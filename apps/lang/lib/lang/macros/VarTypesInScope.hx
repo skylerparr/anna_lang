@@ -10,11 +10,7 @@ class VarTypesInScope {
 
   #if macro
   public function getTypes(name: String): Array<String> {
-    var retVal: Array<String> = varTypesInScope.get(name);
-    if(retVal == null) {
-      retVal = [];
-    }
-    return retVal;
+    return getVarsInScopeInstance(name);
   }
   #else
   public function getTypes(name: String): Array<String> {
@@ -24,7 +20,12 @@ class VarTypesInScope {
     var value: Dynamic = varsInScope.get(name);
     var varType: String = '';
     var cls: Class<Dynamic> = Type.getClass(value);
-    if(haxe.rtti.Rtti.hasRtti(cls)) {
+    if(cls == null) {
+      var types = varTypesInScope.get(name);
+      for(type in types) {
+        retVal.push(type);
+      }
+    } else if(haxe.rtti.Rtti.hasRtti(cls)) {
       var clsDef: Classdef = haxe.rtti.Rtti.getRtti(cls);
       for(iface in clsDef.interfaces) {
         retVal.push(iface.path);
@@ -41,8 +42,20 @@ class VarTypesInScope {
   #end
 
   public function set(name: String, value: String): Void {
-    var types: Array<String> = getTypes(name);
+    var types: Array<String> = getVarsInScopeInstance(name);
     types.push(value);
     varTypesInScope.set(name, types);
+  }
+
+  private inline function getVarsInScopeInstance(name: String): Array<String> {
+    var retVal: Array<String> = varTypesInScope.get(name);
+    if(retVal == null) {
+      retVal = [];
+    }
+    return retVal;
+  }
+
+  public function toString(): String {
+    return Anna.inspect(varTypesInScope);
   }
 }
