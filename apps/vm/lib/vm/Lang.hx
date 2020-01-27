@@ -1,4 +1,5 @@
 package vm;
+import lang.macros.MacroTools;
 import haxe.ds.ObjectMap;
 import haxe.CallStack;
 import hscript.Interp;
@@ -21,11 +22,16 @@ class Lang {
   }
 
   public inline static function eval(string:String):Tuple {
+    string = StringTools.trim(string);
+    var isList: Bool = false;
     try {
+      if(StringTools.startsWith(string, '{') && StringTools.endsWith(string, '}')) {
+        isList = true;
+      }
       var ast = parser.parseString(string);
       var pos = { max: 12, min: 0, file: null };
       var ast: Expr = new Macro(pos).convert(ast);
-      invokeAst(ast);
+      invokeAst(ast, isList);
       return Tuple.create(['ok'.atom(), ast]);
     } catch(e: Dynamic) {
       trace(e);
@@ -34,12 +40,15 @@ class Lang {
     }
   }
 
-  public inline static function invokeAst(ast: Expr): Atom {
+  public inline static function invokeAst(ast: Expr, isList: Bool): Atom {
     switch(ast.expr) {
       // handle defines here
       // ex: case "defCls":
       // ex: case "defType":
       // etc.
+      case EBlock(exprs) if(!isList):
+        var expr = MacroTools.buildBlock(exprs);
+        invokeBlock(expr);
       case _:
         var expr = MacroTools.buildBlock([ast]);
         invokeBlock(expr);
