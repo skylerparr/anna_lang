@@ -562,10 +562,7 @@ class AnnaLang {
               var assignOp: Expr = createPutIntoScope(blockExpr, lineNumber);
               retExprs.push(assignOp);
             case EMeta({name: name}, params):
-              var fun = Reflect.field(AnnaLang, '_${name}');
-              if(fun == null) {
-                fun = keywordMap.get(name);
-              }
+              var fun = keywordMap.get(name);
               var exprs: Array<Expr> = fun(params);
               for(expr in exprs) {
                 retExprs.push(expr);
