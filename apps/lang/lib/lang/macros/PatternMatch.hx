@@ -51,18 +51,12 @@ class PatternMatch {
         valuesNotEqual(pattern, valueExpr);
       case ECall({expr: EField({expr: EConst(CIdent("Atom"))}, _)}, [{expr: EConst(CString(_))}]):
         valuesNotEqual(pattern, valueExpr);
-      case ECall({ expr: EField({ expr: EField({ expr: EConst(CIdent('lang')) },'EitherSupport') },'getValue') },params):
-        MacroLogger.log(params, 'params');
-        macro null;
-      case ECall({expr: EField({expr: EConst(CIdent("Tuple"))}, _)}, [{expr: EArrayDecl(values)}]):
+      case ECall({expr: EField({expr: EConst(CIdent("Tuple"))}, _)}, [{expr: EArrayDecl(values)}]) | EArrayDecl(values):
         var individualMatches: Array<Expr> = [];
         var counter: Int = 0;
         for(patternExpr in values) {
           var strExpr: String = 'lang.EitherSupport.getValue(arrayTuple[${counter}])';
-          MacroLogger.logExpr(patternExpr, 'v');
-          MacroLogger.log(patternExpr, 'PatternMatch valueExpr');
           var expr: Expr = generatePatternMatch(patternExpr, lang.macros.Macros.haxeToExpr(strExpr));
-          MacroLogger.logExpr(expr, 'tuple match expr');
           individualMatches.push(expr);
           counter++;
         }
@@ -296,6 +290,7 @@ class PatternMatch {
         MacroLogger.logExpr(pattern, 'PatternMatch pattern');
         MacroLogger.log(valueExpr, 'PatternMatch valueExpr');
         MacroLogger.logExpr(valueExpr, 'PatternMatch valueExpr');
+        throw new ParsingException("AnnaLang: Unexpected expression");
         macro null;
     }
   }

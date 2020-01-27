@@ -255,7 +255,7 @@ class MacroTools {
       case EConst(CIdent(varName)):
         var const: String = MacroContext.currentModuleDef.constants.get(varName);
         if(const == null) {
-          {type: "Variable", value: getVar(varName), rawValue: varName};
+          {type: 'Variable', value: getVar(varName), rawValue: varName};
         } else {
           getTypeAndValue(Macros.haxeToExpr(const));
         }
@@ -566,12 +566,12 @@ class MacroTools {
   }
 
   public static function resolveType(expr: Expr):String {
+    MacroLogger.logExpr(expr, 'expr resolveType');
     var type: Type = MacroContext.typeof(expr);
+    MacroLogger.log(type, 'type');
     return switch(type) {
       case TInst(t, other):
         switch(t.get().interfaces) {
-          case [{t: type}] if(!t.get().isInterface):
-            type.toString();
           case _:
             t.toString();
         }

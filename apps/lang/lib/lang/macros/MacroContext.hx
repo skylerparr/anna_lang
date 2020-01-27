@@ -1,4 +1,5 @@
 package lang.macros;
+import haxe.rtti.Rtti;
 import haxe.macro.Expr;
 
 class MacroContext {
@@ -9,10 +10,12 @@ class MacroContext {
   public static var currentVar: String;
   public static var aliases: Map<String, String> = new Map<String, String>();
   public static var currentFunctionArgTypes: Array<String>;
-  @:isVar
-  public static var varTypesInScope(get, set): Map<String, String> = new Map<String, String>();
 
-  public static var lastFunctionReturnType: String;
+  @:isVar
+  public static var varTypesInScope(get, set): VarTypesInScope;
+
+  @:isVar
+  public static var lastFunctionReturnType(get, set): String;
   public static var associatedInterfaces: Map<String, String> = new Map<String, String>();
   public static var declaredClasses: Map<String, ModuleDef> = new Map<String, ModuleDef>();
   public static var declaredInterfaces: Map<String, ModuleDef> = new Map<String, ModuleDef>();
@@ -54,25 +57,23 @@ class MacroContext {
     return currentModuleDef = value;
   }
 
-  #if macro
-  static function get_varTypesInScope(): Map<String, String> {
-    return varTypesInScope;
-  }
-  #else
-  static function get_varTypesInScope(): Map<String, String> {
-    var varsInScope: Map<String, Dynamic> = vm.Process.self().processStack.getVariablesInScope();
-    varTypesInScope = new Map<String, String>();
-    for(varNameInScope in varsInScope.keys()) {
-      var value: Dynamic = varsInScope.get(varNameInScope);
-      var cls: Class<Dynamic> = Type.getClass(value);
-      varTypesInScope.set(varNameInScope, '${cls}');
+  static function get_varTypesInScope(): VarTypesInScope {
+    if(varTypesInScope == null) {
+      varTypesInScope = new VarTypesInScope();
     }
     return varTypesInScope;
   }
-  #end
 
-  static function set_varTypesInScope(value: Map<String, String>): Map<String, String> {
+  static function set_varTypesInScope(value: VarTypesInScope): VarTypesInScope {
     return varTypesInScope = value;
+  }
+
+  static function get_lastFunctionReturnType(): String {
+    return lastFunctionReturnType;
+  }
+
+  static function set_lastFunctionReturnType(value: String): String {
+    return lastFunctionReturnType = value;
   }
 
   public static var defaultTypeDefinition: TypeDefinition =
@@ -104,7 +105,10 @@ class MacroContext {
   }
   #else
   public static function typeof(expr: Expr):haxe.macro.Type {
-    return TDynamic(null);
+    return TLazy(function() {
+      trace("here");
+      return TDynamic(null);
+    });
   }
   #end
 

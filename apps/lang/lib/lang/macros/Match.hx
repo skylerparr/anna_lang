@@ -5,7 +5,6 @@ import lang.macros.MacroTools;
 import hscript.plus.ParserPlus;
 import haxe.macro.Printer;
 import haxe.macro.Expr;
-import haxe.macro.Context;
 class Match {
   private static var parser: ParserPlus = {
     parser = new ParserPlus();

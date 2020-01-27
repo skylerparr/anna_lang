@@ -2,6 +2,7 @@ package lang;
 
 import Type.ValueType;
 import lang.CustomType;
+@:rtti
 class AbstractCustomType implements CustomType {
 
   public static function create(type: Class<Dynamic>, args: Dynamic): AbstractCustomType {

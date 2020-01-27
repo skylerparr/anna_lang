@@ -374,6 +374,13 @@ class Kernel {
     return left % right;
   }
 
+  public static function same(left: Dynamic, right: Dynamic): Atom {
+    if(left == right) {
+      return Atom.create('true');
+    }
+    return Atom.create('false');
+  }
+
   public static function concat(lhs: String, rhs: String): String {
     return lhs + rhs;
   }

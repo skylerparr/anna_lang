@@ -1,3 +1,4 @@
+import haxe.rtti.Rtti;
 import cpp.NativeProcess;
 import sys.io.File;
 import sys.FileSystem;
@@ -23,6 +24,7 @@ using mockatoo.Mockatoo;
 #end
 
 using lang.AtomSupport;
+@:rtti
 class Main {
   public static var parser: Parser = new ParserPlus();
   public static var interp: Interp;         
@@ -40,6 +42,8 @@ class Main {
     Native;
     EitherEnums;
     HashTableAtoms;
+    Rtti.hasRtti(Main);
+    Rtti.getRtti(Main);
     FileSystem.createDirectory(".tmp");
     File.copy(".tmp", ".tmp2");
     FileSystem.deleteDirectory(".tmp");
