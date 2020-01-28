@@ -630,6 +630,18 @@ import vm.Function;
     result = cast(@native Lang.eval('ReplTests.sample(label, pid);'), Tuple);
     assert(['sample2 function', pid], result, test_name);
 
+    test_name = 'should be able to cast to type';
+    pid1 = Kernel.self();
+    pid2 = Kernel.self();
+    result = Kernel.same(cast(pid1, Dynamic), cast(pid2, Dynamic));
+    assert(result, test_name);
+
+    test_name = 'should be able to cast to type (interp)';
+    pid1 = Kernel.self();
+    pid2 = Kernel.self();
+    result = @native Lang.eval("Kernel.same(cast(pid1, Dynamic), cast(pid2, Dynamic))");
+    assert(cast(result, Atom), test_name);
+
     test_name = 'should create anonymous function';
     fun = @fn {
       ([{Atom: arg, String: name}] => {
@@ -680,17 +692,19 @@ import vm.Function;
     test_name = 'should assign to string pattern (interp)';
     @native Lang.eval("'bar ' => vari = 'bar foo'; ReplTests.assert('foo', cast(vari, String), test_name);");
 
-    test_name = 'should be able to cast to type';
-    pid1 = Kernel.self();
-    pid2 = Kernel.self();
-    result = Kernel.same(cast(pid1, Dynamic), cast(pid2, Dynamic));
-    assert(result, test_name);
+    test_name = 'should assign to tuple pattern';
+    [@_'ok', foo] = [@_'ok', 'foo'];
+    assert("foo", cast(foo, String), test_name);
 
-    test_name = 'should be able to cast to type (interp)';
-    pid1 = Kernel.self();
-    pid2 = Kernel.self();
-    result = @native Lang.eval("Kernel.same(cast(pid1, Dynamic), cast(pid2, Dynamic))");
-    assert(cast(result, Atom), test_name);
+    test_name = 'should assign to tuple pattern (interp)';
+    @native Lang.eval("[@_'ok', bert] = [@_'ok', 'foo']; ReplTests.assert('foo', cast(bert, String), test_name);");
+
+//    test_name = 'should assign to list pattern';
+//    ({@_'ok'; foo2;}) = {@_'ok'; 'foo';};
+//    assert("foo", cast(foo, String), test_name);
+//
+//    test_name = 'should assign to tuple pattern (interp)';
+//    @native Lang.eval("({@_'ok'; foo3;}) = {@_'ok'; 'foo';}; ReplTests.assert('foo', cast(bert, String), test_name);");
 
     System.println('');
     @_'ok';

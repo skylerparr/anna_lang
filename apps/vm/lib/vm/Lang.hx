@@ -1,4 +1,5 @@
 package vm;
+import lang.EitherSupport;
 import lang.macros.MacroTools;
 import haxe.ds.ObjectMap;
 import haxe.CallStack;
@@ -56,6 +57,34 @@ class Lang {
     return 'ok'.atom();
   }
 
+  public static function getHaxeInterp(): Interp {
+    var interp = new Interp();
+    interp.variables.set("Anna", Anna);
+    interp.variables.set("Atom", Atom);
+    interp.variables.set("Tuple", Tuple);
+    interp.variables.set("LList", LList);
+    interp.variables.set("Keyword", Keyword);
+    interp.variables.set("MMap", MMap);
+    interp.variables.set("Map", ObjectMap);
+    interp.variables.set("IO", IO);
+    interp.variables.set("Repl", {});
+    interp.variables.set("AnnaCompiler", {});
+    interp.variables.set("EitherEnums", EitherEnums);
+    interp.variables.set("SourceFile", SourceFile);
+    interp.variables.set("Kernel", Kernel);
+    interp.variables.set("Std", Std);
+    interp.variables.set("ArgHelper", ArgHelper);
+    interp.variables.set("InterpMatch", vm.InterpMatch);
+    interp.variables.set("lang", {EitherSupport: EitherSupport});
+    interp.variables.set("A", function(v) {
+      return v;
+    });
+    interp.variables.set("B", function(v) {
+      return v;
+    });
+    return interp;
+  }
+
   public static inline function resolveOperations(expr: Expr): Array<Operation> {
     AnnaLang.initCls();
     var exprs: Array<Expr> = AnnaLang.walkBlock(expr);
@@ -67,28 +96,7 @@ class Lang {
       codeString = codeString.substr(0, codeString.length - 1);
 
       var ast = parser.parseString(codeString);
-      var interp = new Interp();
-      interp.variables.set("Atom", Atom);
-      interp.variables.set("Tuple", Tuple);
-      interp.variables.set("LList", LList);
-      interp.variables.set("Keyword", Keyword);
-      interp.variables.set("MMap", MMap);
-      interp.variables.set("Map", ObjectMap);
-      interp.variables.set("IO", IO);
-      interp.variables.set("Repl", {});
-      interp.variables.set("AnnaCompiler", {});
-      interp.variables.set("EitherEnums", EitherEnums);
-      interp.variables.set("SourceFile", SourceFile);
-      interp.variables.set("Kernel", Kernel);
-      interp.variables.set("ArgHelper", ArgHelper);
-      interp.variables.set("InterpMatch", vm.InterpMatch);
-      interp.variables.set("A", function(v) {
-        return v;
-      });
-      interp.variables.set("B", function(v) {
-        return v;
-      });
-      var op: Operation = interp.execute(ast);
+      var op: Operation = getHaxeInterp().execute(ast);
       operations.push(op);
     }
     return operations;

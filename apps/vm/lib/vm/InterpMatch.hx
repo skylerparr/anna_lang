@@ -27,10 +27,8 @@ class InterpMatch implements Operation {
   public function execute(scopeVariables: Map<String, Dynamic>, processStack: ProcessStack): Void {
     try {
       var ast = parser.parseString(code);
-      var interp = new Interp();
+      var interp = Lang.getHaxeInterp();
       interp.variables.set("scopeVariables", scopeVariables);
-      interp.variables.set("Map", Map);
-      interp.variables.set("Anna", Anna);
       var matched: Map<String, Dynamic> = interp.execute(ast);
       if(Kernel.isNull(matched)) {
         IO.inspect('BadMatch: ${MacroContext.currentModule.name}.eval()');
@@ -41,7 +39,7 @@ class InterpMatch implements Operation {
         scopeVariables.set(key, matched.get(key));
       }
     } catch(e: Dynamic) {
-      IO.inspect('BadMatch: ${MacroContext.currentModule.name}.eval()');
+      IO.inspect('BadMatch: ${MacroContext.currentModule.name}.eval() with error ${e}');
       vm.Kernel.crash(vm.Process.self());
     }
   }

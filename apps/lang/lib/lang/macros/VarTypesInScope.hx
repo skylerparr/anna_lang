@@ -1,5 +1,4 @@
 package lang.macros;
-import haxe.CallStack;
 import haxe.rtti.CType.Classdef;
 class VarTypesInScope {
   public var varTypesInScope: Map<String, Array<String>>;
