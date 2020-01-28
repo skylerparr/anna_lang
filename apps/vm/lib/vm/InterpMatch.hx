@@ -1,14 +1,23 @@
 package vm;
-import haxe.macro.Expr;
+import lang.macros.MacroContext;
+import hscript.plus.ParserPlus;
+import hscript.Interp;
+import hscript.Parser;
 class InterpMatch implements Operation {
-  public var ast: Expr;
+  private static var parser: ParserPlus = {
+    parser = new ParserPlus();
+    parser.allowTypes = true;
+    parser.allowMetadata = true;
+    parser;
+  }
+  public var code: String;
 
   public var hostModule: Atom;
   public var hostFunction: Atom;
   public var lineNumber: Int;
 
-  public function new(ast: Expr, hostModule: Atom, hostFunction: Atom, lineNumber: Int) {
-    this.ast = ast;
+  public function new(code: String, hostModule: Atom, hostFunction: Atom, lineNumber: Int) {
+    this.code = code;
 
     this.hostModule = hostModule;
     this.hostFunction = hostFunction;
@@ -16,8 +25,25 @@ class InterpMatch implements Operation {
   }
 
   public function execute(scopeVariables: Map<String, Dynamic>, processStack: ProcessStack): Void {
-    IO.inspect(ast);
-    IO.inspect(scopeVariables);
+    try {
+      var ast = parser.parseString(code);
+      var interp = new Interp();
+      interp.variables.set("scopeVariables", scopeVariables);
+      interp.variables.set("Map", Map);
+      interp.variables.set("Anna", Anna);
+      var matched: Map<String, Dynamic> = interp.execute(ast);
+      if(Kernel.isNull(matched)) {
+        IO.inspect('BadMatch: ${MacroContext.currentModule.name}.eval()');
+        vm.Kernel.crash(vm.Process.self());
+        return;
+      }
+      for(key in matched.keys()) {
+        scopeVariables.set(key, matched.get(key));
+      }
+    } catch(e: Dynamic) {
+      IO.inspect('BadMatch: ${MacroContext.currentModule.name}.eval()');
+      vm.Kernel.crash(vm.Process.self());
+    }
   }
 
   public function isRecursive(): Bool {

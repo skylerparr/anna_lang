@@ -4,7 +4,6 @@ import haxe.macro.Expr;
 import haxe.macro.Printer;
 import hscript.plus.ParserPlus;
 using haxe.macro.Tools;
-import haxe.macro.Expr;
 
 class PatternMatch {
   private static var parser: ParserPlus = {
@@ -23,14 +22,13 @@ class PatternMatch {
     var expr: Expr = generatePatternMatch(pattern, valueExpr);
 
     var retVal = macro {
-      var scope: Map<String, Dynamic> = new Map<String, Dynamic>();
+      var scope: haxe.ds.StringMap<Dynamic> = new haxe.ds.StringMap();
       while(true) {
         $e{expr}
         break;
       }
       scope;
     }
-    MacroLogger.logExpr(retVal, 'retVal');
     return retVal;
   }
 
@@ -270,14 +268,18 @@ class PatternMatch {
         var expr = Macros.haxeToExpr(typeAndValue.value);
         generatePatternMatch(expr, valueExpr);
       case EBinop(OpArrow, base, suffix):
-        var valueStr: String = '${printer.printExpr(valueExpr)}.substring(${printer.printExpr(base)}.length)';
+        var valueStr: String = '${printer.printExpr(valueExpr)}.substring(len)';
         var exprMatch: Expr = generatePatternMatch(suffix, Macros.haxeToExpr(valueStr));
         macro {
-          for(i in 0...$e{base}.length) {
-            if($e{base}.charAt(i) != $e{valueExpr}.charAt(i)) {
+          var len: Int = $e{base}.length;
+          var i: Int = 0;
+          var str: String = $e{valueExpr};
+          while(i < len) {
+            if($e{base}.charAt(i) != str.charAt(i)) {
               scope = null;
               break;
             }
+            ++i;
           }
           if(scope == null) {
             break;

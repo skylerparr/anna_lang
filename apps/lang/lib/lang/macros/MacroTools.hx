@@ -567,7 +567,6 @@ class MacroTools {
 
   public static function resolveType(expr: Expr):String {
     var type: Type = MacroContext.typeof(expr);
-    MacroLogger.log(type, 'type');
     return switch(type) {
       case TInst(t, other):
         switch(t.get().interfaces) {

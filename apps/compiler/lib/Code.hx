@@ -656,6 +656,42 @@ import vm.Function;
     };
     assert(fun, test_name);
 
+    test_name = 'should create anonymous function with members in scope variables (interp)';
+    status = @_'success';
+    result = @native Lang.eval('@fn {
+      ([{Atom: pass, String: name}] => {
+        ReplTests.assert(status, pass, name);
+      });
+    };');
+    fun = cast(result, Function);
+    assert(fun, test_name);
+
+    test_name = 'should assign to variable';
+    variable = "foo";
+    assert("foo", variable, test_name);
+
+    test_name = 'should assign to variable (interp)';
+    @native Lang.eval('new_var = "foo"; ReplTests.assert("foo", new_var, test_name);');
+
+    test_name = 'should assign to string pattern';
+    'bar ' => variable = "bar foo";
+    assert("foo", cast(variable, String), test_name);
+
+    test_name = 'should assign to string pattern (interp)';
+    @native Lang.eval("'bar ' => vari = 'bar foo'; ReplTests.assert('foo', cast(vari, String), test_name);");
+
+    test_name = 'should be able to cast to type';
+    pid1 = Kernel.self();
+    pid2 = Kernel.self();
+    result = Kernel.same(cast(pid1, Dynamic), cast(pid2, Dynamic));
+    assert(result, test_name);
+
+    test_name = 'should be able to cast to type (interp)';
+    pid1 = Kernel.self();
+    pid2 = Kernel.self();
+    result = @native Lang.eval("Kernel.same(cast(pid1, Dynamic), cast(pid2, Dynamic))");
+    assert(cast(result, Atom), test_name);
+
     System.println('');
     @_'ok';
   });

@@ -81,6 +81,7 @@ class Lang {
       interp.variables.set("SourceFile", SourceFile);
       interp.variables.set("Kernel", Kernel);
       interp.variables.set("ArgHelper", ArgHelper);
+      interp.variables.set("InterpMatch", vm.InterpMatch);
       interp.variables.set("A", function(v) {
         return v;
       });

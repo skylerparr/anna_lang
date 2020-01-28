@@ -68,7 +68,7 @@ class Match {
 
       return [Macros.haxeToExpr('ops.push(new vm.${className}(${MacroTools.getAtom(currentModuleStr)}, ${MacroTools.getAtom(MacroContext.currentFunction)}, ${MacroTools.getLineNumber(params)}));')];
       #else
-      return [Macros.haxeToExpr('ops.push(new vm.InterpMatch(${params}, ${MacroTools.getAtom(currentModuleStr)}, ${MacroTools.getAtom(MacroContext.currentFunction)}, ${MacroTools.getLineNumber(params)}));')];
+      return [Macros.haxeToExpr('ops.push(new InterpMatch(\'${printer.printExpr(patternMatch)}\', ${MacroTools.getAtom(currentModuleStr)}, ${MacroTools.getAtom(MacroContext.currentFunction)}, ${MacroTools.getLineNumber(params)}));')];
       #end
     }
   }
