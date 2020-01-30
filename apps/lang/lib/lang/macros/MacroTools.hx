@@ -415,6 +415,11 @@ class MacroTools {
         }
         var strValue: String = getCustomType(type, listValues);
         {type: type, value: 'Tuple.create([${getAtom("const")}, ${strValue}])', rawValue: strValue};
+      case EParenthesis(e):
+        getTypeAndValue(e);
+      case EBinop(OpOr, lhs, rhs):
+        var value = printer.printExpr(expr);
+        {type: "LList", value: value, rawValue: value};
       case e:
         MacroLogger.log(expr, 'expr');
         MacroLogger.logExpr(expr, 'expr code');

@@ -531,6 +531,13 @@ import vm.Function;
     result = @native Lang.eval('{"nice"; little; ["list"];}');
     assert({'nice'; little; ['list'];}, cast(result, LList), test_name);
 
+    test_name = 'should match head and tail';
+    assert({'ok'; 'foo1'; 'foo2';}, {'ok'; 'foo1'; 'foo2';}, test_name);
+
+    test_name = 'should match head and tail (interp)';
+    result = @native Lang.eval("{'ok'; 'foo1'; 'foo2';}");
+    assert({'ok'; 'foo1'; 'foo2';}, cast(result, LList), test_name);
+
     test_name = 'should match on single map item';
     assert(['foo' => 'bar'], ['foo' => 'bar'], test_name);
 
@@ -699,12 +706,19 @@ import vm.Function;
     test_name = 'should assign to tuple pattern (interp)';
     @native Lang.eval("[@_'ok', bert] = [@_'ok', 'foo']; ReplTests.assert('foo', cast(bert, String), test_name);");
 
-//    test_name = 'should assign to list pattern';
-//    ({@_'ok'; foo2;}) = {@_'ok'; 'foo';};
-//    assert("foo", cast(foo, String), test_name);
-//
-//    test_name = 'should assign to tuple pattern (interp)';
-//    @native Lang.eval("({@_'ok'; foo3;}) = {@_'ok'; 'foo';}; ReplTests.assert('foo', cast(bert, String), test_name);");
+    test_name = 'should assign to list pattern';
+    ({@_'ok'; foo2;}) = {@_'ok'; 'foo';};
+    assert("foo", cast(foo2, String), test_name);
+
+    test_name = 'should assign to list pattern (interp)';
+    @native Lang.eval("({@_'ok'; foo3;}) = {@_'ok'; 'foo';}; ReplTests.assert('foo', cast(foo3, String), test_name);");
+
+    test_name = 'should assign to lists head and tail in a pattern';
+    ({'ok' | foo_tail;}) = {'ok'; 'foo1'; 'foo2';};
+    assert({'foo1'; 'foo2';}, cast(foo_tail, LList), test_name);
+
+    test_name = 'should assign to lists head and tail in a pattern (interp)';
+    @native Lang.eval("({'ok' | foo_tail2;}) = {'ok'; 'foo1'; 'foo2';}; ReplTests.assert({'foo1'; 'foo2';}, cast(foo_tail2, LList), test_name);");
 
     System.println('');
     @_'ok';
@@ -782,6 +796,20 @@ import vm.Function;
   });
 
   @def assert({LList: {'nice'; @_'little'; ['list'];}, LList: {'nice'; @_'little'; ['list'];}, String: test_name}, [Atom], {
+    System.print('.');
+    @_'ok';
+  });
+
+  @def assert({LList: {'ok' | foo1;}, LList: {'ok' | foo2;}, String: test_name}, [Atom], {
+    System.print('.');
+    foo1 = cast(foo1, LList);
+    foo2 = cast(foo2, LList);
+    assert(foo1, foo2, test_name);
+    recurse_lists(foo1, foo2, test_name);
+    @_'ok';
+  });
+
+  @def assert({LList: {'foo1'; 'foo2';}, LList: {'foo1'; 'foo2';}, String: test_name}, [Atom], {
     System.print('.');
     @_'ok';
   });
@@ -906,6 +934,14 @@ import vm.Function;
     [label, pid];
   });
 
+  @def recurse_lists({LList: {}, LList: {}, String: test_name}, [Atom], {
+    assert(@_'true', test_name);
+    @_'ok';
+  });
+
+  @def recurse_lists({LList: {head | tail;}, LList: {head1 | tail1;}, String: test_name}, [Atom], {
+    recurse_lists(cast(tail, LList), cast(tail1, LList), test_name);
+  });
 }))
 @:build(lang.macros.AnnaLang.defCls(History, {
   @alias vm.Process;

@@ -1,5 +1,6 @@
 package lang.macros;
 import lang.macros.MacroTools;
+import lang.macros.MacroTools;
 import haxe.macro.Expr;
 import haxe.macro.Printer;
 import hscript.plus.ParserPlus;
@@ -80,11 +81,11 @@ class PatternMatch {
         ;
       case ECall({expr: EField({expr: EConst(CIdent("LList"))}, _)}, [{expr: EArrayDecl([{expr: EBinop(OpOr, head, tail)}])}]):
         var individualMatches: Array<Expr> = [];
-        var strExpr: String = 'lang.EitherSupport.getValue(LList.hd(rhsList))';
-        var expr: Expr = generatePatternMatch(head, lang.macros.Macros.haxeToExpr(strExpr));
+        var patternExpr: Expr = macro lang.EitherSupport.getValue(LList.hd(rhsList));
+        var expr: Expr = generatePatternMatch(head, patternExpr);
         individualMatches.push(expr);
-        var strExpr: String = 'lang.EitherSupport.getValue(LList.tl(rhsList))';
-        var expr: Expr = generatePatternMatch(tail, lang.macros.Macros.haxeToExpr(strExpr));
+        var patternExpr: Expr = macro lang.EitherSupport.getValue(LList.tl(rhsList));
+        var expr: Expr = generatePatternMatch(tail, patternExpr);
         individualMatches.push(expr);
         var individualMatchesBlock: Expr = MacroTools.buildBlock(individualMatches);
         macro {
@@ -96,11 +97,11 @@ class PatternMatch {
         var individualMatches: Array<Expr> = [];
         var counter: Int = 0;
         for(v in values) {
-          var strExpr: String = 'lang.EitherSupport.getValue(LList.hd(rhsList))';
-          var expr: Expr = generatePatternMatch(v, lang.macros.Macros.haxeToExpr(strExpr));
+          var strExpr: Expr = macro lang.EitherSupport.getValue(LList.hd(rhsList));
+          var expr: Expr = generatePatternMatch(v, strExpr);
           individualMatches.push(expr);
-          var assignTail: String = 'rhsList = LList.tl(rhsList)';
-          individualMatches.push(lang.macros.Macros.haxeToExpr(assignTail));
+          var assignTail: Expr = macro rhsList = LList.tl(rhsList);
+          individualMatches.push(assignTail);
           counter++;
         }
         individualMatches.pop(); //remove the last tail assigment, it's unnecessary.
@@ -108,7 +109,7 @@ class PatternMatch {
         if(individualMatchesBlock == null) {
           individualMatchesBlock = macro {};
         }
-        var listLength: Expr = lang.macros.Macros.haxeToExpr('${values.length}');
+        var listLength: Expr = MacroTools.buildConst(CInt(values.length + ""));
         var expr = macro {
           if(!Std.is($e{valueExpr}, LList)) {
             scope = null;
@@ -292,7 +293,7 @@ class PatternMatch {
         MacroLogger.logExpr(pattern, 'PatternMatch pattern');
         MacroLogger.log(valueExpr, 'PatternMatch valueExpr');
         MacroLogger.logExpr(valueExpr, 'PatternMatch valueExpr');
-        throw new ParsingException("AnnaLang: Unexpected expression");
+        throw new ParsingException("AnnaLang: Unexpected pattern match");
         macro null;
     }
   }
