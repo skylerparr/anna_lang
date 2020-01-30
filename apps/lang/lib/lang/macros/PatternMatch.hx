@@ -204,7 +204,7 @@ class PatternMatch {
           MacroLogger.log(values, 'values');
           var strExpr: String = '';
           strExpr = 'Keyword.hasKey(${printer.printExpr(valueExpr)}, ${value.field})';
-          var expr: Expr = generatePatternMatch(lang.macros.Macros.haxeToExpr('Atom.create("true")'), lang.macros.Macros.haxeToExpr(strExpr));
+          var expr: Expr = generatePatternMatch(MacroTools.getAtomExpr("true"), lang.macros.Macros.haxeToExpr(strExpr));
           individualMatches.push(expr);
 
           strExpr = 'Keyword.get(${printer.printExpr(valueExpr)}, ${value.field})';
@@ -232,12 +232,12 @@ class PatternMatch {
                 switch(expr.expr) {
                   case EArrayDecl([field, assign]):
                     var strExpr: String = '';
-                    strExpr = 'Keyword.hasKey(${printer.printExpr(valueExpr)}, ${printer.printExpr(field)})';
-                    var expr: Expr = generatePatternMatch(lang.macros.Macros.haxeToExpr('Atom.create("true")'), lang.macros.Macros.haxeToExpr(strExpr));
+                    var expr = macro Keyword.hasKey($e{valueExpr}, $e{field});
+                    expr = generatePatternMatch(MacroTools.getAtomExpr("true"), expr);
                     individualMatches.push(expr);
 
-                    strExpr = 'Keyword.get(${printer.printExpr(valueExpr)}, ${printer.printExpr(field)})';
-                    var expr: Expr = generatePatternMatch(assign, lang.macros.Macros.haxeToExpr(strExpr));
+                    expr = macro Keyword.get($e{valueExpr}, $e{field});
+                    expr = generatePatternMatch(assign, expr);
                     individualMatches.push(expr);
 
                   case _:

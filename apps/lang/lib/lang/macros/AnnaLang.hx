@@ -212,10 +212,10 @@ class AnnaLang {
             // Actual operations this function will be doing
             var funBody = funDef.funBody;
             var body: Array<Expr> = [];
-            var varName: String = 'var ops: Array<vm.Operation> = [];';
+            var varName: Expr = macro var ops: Array<vm.Operation> = [];
 
             MacroContext.currentVar = 'ops';
-            body.push(Macros.haxeToExpr(varName));
+            body.push(varName);
 
             var funBodies: Array<Dynamic> = cast(funDef.funBody, Array<Dynamic>);
             for(bodyExpr in funBodies) {
@@ -254,7 +254,8 @@ class AnnaLang {
             var funArgsTypes: Array<Dynamic> = funDef.funArgsTypes;
             var exprs: Array<Expr> = [];
             var varType: ComplexType = MacroTools.buildType('Array<String>');
-            exprs.push(Macros.haxeToExpr('var args: Array<String> = [];'));
+            var expr = macro var args: Array<String> = [];
+            exprs.push(expr);
             for(funArgs in funArgsTypes) {
               if(funArgs.isPatternVar) {
                 continue;
@@ -387,6 +388,7 @@ class AnnaLang {
     for(moduleDef in MacroContext.declaredClasses) {
       var associatedIface = MacroContext.associatedInterfaces.get(moduleDef.moduleName);
       var expr: Expr = null;
+      var moduleNameExpr = MacroTools.buildConst(CString(moduleDef.moduleName));
       if(associatedIface != null) {
         expr = Macros.haxeToExpr('vm.Classes.define(Atom.create("${associatedIface}"), ${moduleDef.moduleName})');
         defineCodeBody.push(expr);
@@ -394,7 +396,7 @@ class AnnaLang {
       expr = Macros.haxeToExpr('vm.Classes.define(Atom.create("${moduleDef.moduleName}"), ${moduleDef.moduleName})');
       defineCodeBody.push(expr);
 
-      expr = Macros.haxeToExpr('var moduleDef: lang.macros.ModuleDef = new lang.macros.ModuleDef("${moduleDef.moduleName}");');
+      expr = macro var moduleDef: lang.macros.ModuleDef = new lang.macros.ModuleDef("$e{moduleNameExpr}");
       defineCodeBody.push(expr);
 
       for(aliasKey in moduleDef.aliases.keys()) {
@@ -413,11 +415,11 @@ class AnnaLang {
         var declaredFunctionsValue: Array<Dynamic> = moduleDef.declaredFunctions.get(declaredFunctionsKey);
         var genFunctionStrs: Array<String> = [];
 
-        expr = Macros.haxeToExpr('var decFuns: Array<Dynamic> = [];');
+        expr = macro var decFuns: Array<Dynamic> = [];
         defineCodeBody.push(expr);
 
         for(declaredFunction in declaredFunctionsValue) {
-          expr = Macros.haxeToExpr('var decFun: Dynamic = {};');
+          expr = macro var decFun: Dynamic = {};
           defineCodeBody.push(expr);
 
           var fields: Array<String> = Reflect.fields(declaredFunction);
@@ -435,7 +437,7 @@ class AnnaLang {
             }
           }
 
-          expr = Macros.haxeToExpr('decFuns.push(decFun);');
+          expr = macro decFuns.push(decFun);
           defineCodeBody.push(expr);
         }
         expr = Macros.haxeToExpr('moduleDef.declaredFunctions.set("${declaredFunctionsKey}", decFuns)');
@@ -445,7 +447,7 @@ class AnnaLang {
       expr = Macros.haxeToExpr('lang.macros.MacroContext.declaredClasses.set("${moduleDef.moduleName}", moduleDef)');
       defineCodeBody.push(expr);
     }
-    defineCodeBody.push(Macros.haxeToExpr('return Atom.create("ok");'));
+    defineCodeBody.push(macro {return Atom.create("ok"); });
     var defineCodeField: Field = MacroTools.buildPublicStaticFunction("defineCode", [], MacroTools.buildType("Atom"));
     var field: Field = MacroTools.assignFunBody(defineCodeField, MacroTools.buildBlock(defineCodeBody));
 
@@ -472,10 +474,16 @@ class AnnaLang {
     MacroLogger.logExpr(body, 'bodyString');
 
     prewalk(body);
+
     // For some unknown reason, we need to define a garbage function or haxe will crash :: eye_roll ::
-    Def.gen(Macros.haxeToExpr('alkdsjfkldsjf_ldkfj34893_dlksfj([Atom], {
-      @_"ok";
-    });'));
+    Def.gen({ expr: ECall({ expr: EConst(CIdent('alkdsjfkldsjf_ldkfj34893_dlksfj')),
+      pos: MacroContext.currentPos() },[{ expr: EArrayDecl([{ expr: EConst(CIdent('Atom')),
+      pos: MacroContext.currentPos() }]), pos: MacroContext.currentPos() },{
+      expr: EBlock([{ expr: EMeta({ name: '_', params: [], pos: MacroContext.currentPos() },
+      { expr: EConst(CString('ok')), pos: MacroContext.currentPos() }),
+        pos: MacroContext.currentPos() }]), pos: MacroContext.currentPos() }]),
+      pos: MacroContext.currentPos() });
+
     MacroContext.declaredClasses.set(className, moduleDef);
     moduleDef.aliases = MacroContext.aliases;
 
@@ -775,14 +783,23 @@ class AnnaLang {
         var returnTypes: String = funDef[0].funReturnTypes;
         MacroContext.lastFunctionReturnType = returnTypes.substr(1, returnTypes.length - 2);
         #end
-        var haxeStr: String = 'ops.push(new vm.PushStack(${MacroTools.getAtom(module.moduleName)}, ${MacroTools.getAtom(fqFunName)}, ${MacroTools.getList(funArgs)}, ${MacroTools.getAtom(currentModuleStr)}, ${MacroTools.getAtom(MacroContext.currentFunction)}, ${lineNumber}))';
-
-        MacroLogger.log(haxeStr, 'haxeStr');
-        retVal.push(lang.macros.Macros.haxeToExpr(haxeStr));
+        var expr = buildPushStackExpr(moduleName, fqFunName, funArgs, currentModuleStr, MacroContext.currentFunction, lineNumber);
+        retVal.push(expr);
         return retVal;
       }
       typeIndex++;
     }
+  }
+
+  private static inline function buildPushStackExpr(moduleName: String, fqFunName:
+        String, funArgs:Array<String>, currentModuleStr: String,
+        currentFunction, lineNumber: Int): Expr {
+    return macro ops.push(new vm.PushStack($e{MacroTools.getAtomExpr(moduleName)},
+          $e{MacroTools.getAtomExpr(fqFunName)},
+          $e{MacroTools.getListExpr(funArgs)},
+          $e{MacroTools.getAtomExpr(currentModuleStr)},
+          $e{MacroTools.getAtomExpr(currentFunction)},
+          $e{MacroTools.buildConst(CInt(lineNumber + ''))}));
   }
 
   private static function getTypesForVar(typeAndValue: Dynamic, arg: Expr):Array<String> {

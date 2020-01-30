@@ -76,16 +76,21 @@ class Fn {
         anonFn.apiFunc = Atom.create(MacroContext.currentFunction);
         vm.Classes.defineFunction(Atom.create(currentModuleStr), Atom.create(anonFunctionName + '_${paramTypeStrings.join('_')}'), anonFn);
         #end
-        var haxeStr: String = 'ops.push(new vm.DeclareAnonFunction(
-              ${MacroTools.getAtom('${currentModuleStr}.${defined.internalFunctionName}')},
-              ${MacroTools.getAtom(currentModuleStr)},
-              ${MacroTools.getAtom(MacroContext.currentFunction)},
-              ${MacroTools.getLineNumber(params)}))';
-        return [lang.macros.Macros.haxeToExpr(haxeStr)];
+        return [buildDeclareAnonFunctionExpr(currentModuleStr, defined.internalFunctionName,params)];
       case _:
         MacroLogger.log(params, 'params');
         MacroLogger.logExpr(params, 'params');
         throw new ParsingException("AnnaLang: Expected block");
     }
+  }
+
+  public static function buildDeclareAnonFunctionExpr(currentModuleStr: String,
+                                                      internalFunctionName: String,
+                                                      params): Expr {
+    return macro ops.push(new vm.DeclareAnonFunction(
+      $e{MacroTools.getAtomExpr('${currentModuleStr}.${internalFunctionName}')},
+      $e{MacroTools.getAtomExpr(currentModuleStr)},
+      $e{MacroTools.getAtomExpr(MacroContext.currentFunction)},
+      $e{MacroTools.buildConst(CInt(MacroTools.getLineNumber(params) + ''))}));
   }
 }

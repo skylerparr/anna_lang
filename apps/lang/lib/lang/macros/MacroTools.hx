@@ -215,12 +215,31 @@ class MacroTools {
     return 'Atom.create("${value}")';
   }
 
+  public static inline function getAtomExpr(value: String):Expr {
+    return { expr: ECall({ expr: EField({ expr: EConst(CIdent('Atom')), pos: MacroContext.currentPos() },
+        'create'), pos: MacroContext.currentPos() },
+        [{ expr: EConst(CString(value)), pos: MacroContext.currentPos() }]),
+        pos: MacroContext.currentPos() }
+  }
+
   public static inline function getTuple(value: Array<String>):String {
     return 'Tuple.create([${value.join(', ')}])';
   }
 
   public static inline function getList(values: Array<String>):String {
+    MacroLogger.log(getListExpr(values), 'getListExpr(values)');
     return 'LList.create([${values.join(', ')}])';
+  }
+
+  public static inline function getListExpr(values: Array<String>):Expr {
+    var items: Array<Expr> = [];
+    for(value in values) {
+      var expr = Macros.haxeToExpr(value);
+      items.push(expr);
+    }
+    return { expr: ECall({ expr: EField({ expr: EConst(CIdent('LList')),
+      pos: MacroContext.currentPos() },'create'), pos: MacroContext.currentPos() },
+    [{ expr: EArrayDecl(items), pos: MacroContext.currentPos() }]), pos: MacroContext.currentPos()};
   }
 
   public static inline function getKeyword(values: Array<String>):String {

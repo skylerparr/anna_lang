@@ -68,9 +68,10 @@ class Lang {
     interp.variables.set("Map", ObjectMap);
     interp.variables.set("IO", IO);
     interp.variables.set("Repl", {});
+    interp.variables.set("Assert", {});
     interp.variables.set("AnnaCompiler", {});
     interp.variables.set("EitherEnums", EitherEnums);
-    interp.variables.set("SourceFile", SourceFile);
+//    interp.variables.set("SourceFile", SourceFile);
     interp.variables.set("Kernel", Kernel);
     interp.variables.set("Std", Std);
     interp.variables.set("ArgHelper", ArgHelper);
