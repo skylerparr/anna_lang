@@ -179,6 +179,10 @@ import vm.Function;
     @native Kernel.same(a, b);
   });
 
+  @def equal({Dynamic: a, Dynamic: b}, [Atom], {
+    @native Kernel.equal(a, b);
+  });
+
   @def exit({Pid: pid}, [Atom], {
     @native Kernel.exit(pid);
   });
@@ -458,7 +462,6 @@ import vm.Function;
     @_'ok';
   });
 
-
 }))
 @:build(lang.macros.AnnaLang.defCls(Assert, {
   @def assert({Atom: @_'true'}, [Atom], {
@@ -476,6 +479,14 @@ import vm.Function;
   @def refute({Atom: _}, [Atom], {
     @_'error';
   });
+}))
+@:build(lang.macros.AnnaLang.defCls(StringTest, {
+
+  @def should_match_strings([Atom], {
+    result = Kernel.equal(cast('foo', Dynamic), cast('foo', Dynamic));
+    Assert.assert(result);
+  });
+
 }))
 //@:build(lang.macros.AnnaLang.defCls(ReplTests, {
 //  @alias vm.Pid;

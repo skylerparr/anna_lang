@@ -490,7 +490,7 @@ class AnnaLang {
       pos: MacroContext.currentPos() },[{ expr: EArrayDecl([{ expr: EConst(CIdent('Atom')),
       pos: MacroContext.currentPos() }]), pos: MacroContext.currentPos() },{
       expr: EBlock([{ expr: EMeta({ name: '_', params: [], pos: MacroContext.currentPos() },
-      { expr: EConst(CString('ok')), pos: MacroContext.currentPos() }),
+      { expr: EConst(CString(className)), pos: MacroContext.currentPos() }),
         pos: MacroContext.currentPos() }]), pos: MacroContext.currentPos() }]),
       pos: MacroContext.currentPos() });
 
