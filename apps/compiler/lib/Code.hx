@@ -289,13 +289,13 @@ import vm.Function;
 
   @def process_command({String: 'test'}, [Atom], {
     History.push('test');
-    ReplTests.start();
+//    ReplTests.start();
     @_'ok';
   });
 
   @def process_command({String: 't'}, [Atom], {
     History.push('t');
-    ReplTests.start();
+//    ReplTests.start();
     @_'ok';
   });
 
@@ -305,7 +305,6 @@ import vm.Function;
 
   @def process_command({String: face}, [Atom], {
     History.push(face);
-		System.println(face);
     Repl.eval(face);
     @_'ok';
   });
@@ -453,523 +452,523 @@ import vm.Function;
 
 
 }))
-@:build(lang.macros.AnnaLang.defCls(Assert, {
-  @alias vm.Pid;
-
-  @def assert({Atom: @_'true', String: _test_name}, [Atom], {
-
-    @_'ok';
-  });
-
-  @def assert({Atom: _, String: test_name}, [Atom], {
-
-    @_'ok';
-  });
-
-}))
-@:build(lang.macros.AnnaLang.defCls(ReplTests, {
-  @alias vm.Pid;
-
-  @def start([Atom], {
-    test_name = "should match strings";
-    assert("foo", "foo", test_name);
-
-    test_name = "should match strings (interp)";
-    result = @native Lang.eval('"foo"');
-    assert("foo", cast(result, String), test_name);
-
-    test_name = 'should match on ints';
-    assert(432, 432, test_name);
-
-    test_name = 'should match on ints (interp)';
-    result = @native Lang.eval('432');
-    assert(432, cast(result, Int), test_name);
-
-    test_name = 'should match on floats';
-    assert(4.32, 4.32, test_name);
-
-    test_name = 'should match on floats (interp)';
-    result = @native Lang.eval('4.32');
-    assert(4.32, cast(result, Float), test_name);
-
-    test_name = 'should match on constant atoms';
-    assert(@_'ok', @_'ok', test_name);
-
-    test_name = 'should match on constant atoms (interp)';
-    result = @native Lang.eval('@_"ok"');
-    assert(@_'ok', cast(result, Atom), test_name);
-
-    test_name = 'should match on tuple with all constant elements';
-    assert([@_'ok', 'message'], [@_'ok', 'message'], test_name);
-
-    test_name = 'should match on tuple with all constant elements (interp)';
-    result = @native Lang.eval('[@_"ok", "message"]');
-    assert([@_'ok', 'message'], cast(result, Tuple), test_name);
-
-    test_name = 'should match on tuple with message variable';
-    message = 'message';
-    assert([@_'ok', message], [@_'ok', message], test_name);
-
-    test_name = 'should match on tuple with message variable (interp)';
-    result = @native Lang.eval('[@_"ok", message]');
-    assert([@_'ok', message], cast(result, Tuple), test_name);
-
-    test_name = 'should match on tuple with all elements variables';
-    status = @_'ok';
-    assert([status, message], [status, message], test_name);
-
-    test_name = 'should match on tuple with all elements variables (interp)';
-    result = @native Lang.eval('[status, message]');
-    assert([status, message], cast(result, Tuple), test_name);
-
-    test_name = 'should match on variable status tuples';
-    assert([status, 'message'], [status, 'message'], test_name);
-
-    test_name = 'should match on variable status tuples (interp)';
-    result = @native Lang.eval('[status, "message"]');
-    assert([status, 'message'], cast(result, Tuple), test_name);
-
-    test_name = 'should match on tuple within a tuple';
-    assert([status, [@_'error', 'complete']], [status, [@_'error', 'complete']], test_name);
-
-    test_name = 'should match on tuple within a tuple (interp)';
-    result = @native Lang.eval('[status, [@_"error", "complete"]]');
-    assert([status, [@_'error', 'complete']], cast(result, Tuple), test_name);
-
-    test_name = 'should match on single list item';
-    assert({'nice';}, {'nice';}, test_name);
-
-    test_name = 'should match on single list item (interp)';
-    result = @native Lang.eval('{"nice";}');
-    assert({'nice';}, cast(result, LList), test_name);
-
-    test_name = 'should match on constant list items';
-    assert({'nice'; @_'little'; ['list'];}, {'nice'; @_'little'; ['list'];}, test_name);
-
-    test_name = 'should match on constant list items (interp)';
-    result = @native Lang.eval('{"nice"; @_"little"; ["list"];}');
-    assert({'nice'; @_'little'; ['list'];}, cast(result, LList), test_name);
-
-    test_name = 'should match on variable list items';
-    little = @_'little';
-    assert({'nice'; little; ['list'];}, {'nice'; little; ['list'];}, test_name);
-
-    test_name = 'should match on variable list items (interp)';
-    result = @native Lang.eval('{"nice"; little; ["list"];}');
-    assert({'nice'; little; ['list'];}, cast(result, LList), test_name);
-
-    test_name = 'should match head and tail';
-    assert({'ok'; 'foo1'; 'foo2';}, {'ok'; 'foo1'; 'foo2';}, test_name);
-
-    test_name = 'should match head and tail (interp)';
-    result = @native Lang.eval("{'ok'; 'foo1'; 'foo2';}");
-    assert({'ok'; 'foo1'; 'foo2';}, cast(result, LList), test_name);
-
-    test_name = 'should match on single map item';
-    assert(['foo' => 'bar'], ['foo' => 'bar'], test_name);
-
-    test_name = 'should match on single map item (interp)';
-    result = @native Lang.eval('["foo" => "bar"]');
-    assert(['foo' => 'bar'], cast(result, MMap), test_name);
-
-    test_name = 'should match on single map item with variable value';
-    bar = 'bar';
-    assert(['foo' => bar], ['foo' => bar], test_name);
-
-    test_name = 'should match on single map item with variable value (interp)';
-    result = @native Lang.eval('["foo" => bar]');
-    assert(['foo' => bar], cast(result, MMap), test_name);
-
-    test_name = 'should match on single map item with variable key';
-    foo = 'foo';
-    assert([foo => bar], [foo => bar], test_name);
-
-    test_name = 'should match on single map item with variable value (interp)';
-    result = @native Lang.eval('[foo => bar]');
-    assert([foo => bar], cast(result, MMap), test_name);
-
-    test_name = 'should match on map with multiple values';
-    assert(['baz' => {foo;}, 'cat' => [bar]], ['baz' => {foo;}, 'cat' => [bar]], test_name);
-
-    test_name = 'should match on single map item with variable value (interp)';
-    result = @native Lang.eval('["baz" => {foo;}, "cat" => [bar]]');
-    assert(['baz' => {foo;}, 'cat' => [bar]], cast(result, MMap), test_name);
-
-    test_name = 'should match on map with unmatched number of keys';
-    assert(['barrel' => {foo;}, 'cartoon' => [bar]], ['barrel' => {foo;}, 'cartoons' => [bar]], test_name);
-
-    test_name = 'should match on map with unmatched number of keys (interp)';
-    result = @native Lang.eval('["barrel" => {foo;}, "cartoons" => [bar]]');
-    assert(['barrel' => {foo;}, 'cartoon' => [bar]], cast(result, MMap), test_name);
-
-    test_name = 'should match on map with atom keys';
-    assert([@_'success' => foo, @_'fail' => bar], [@_'success' => foo, @_'fail' => bar], test_name);
-
-    test_name = 'should match on map with atom keys (interp)';
-    result = @native Lang.eval('[@_"success" => foo, @_"fail" => bar]');
-    assert([@_'success' => foo, @_'fail' => bar], cast(result, MMap), test_name);
-
-    test_name = 'should match on string suffix';
-    assert('ellie bear', 'ellie bear', test_name);
-
-    test_name = 'should match on string suffix (interp)';
-    result = @native Lang.eval('"ellie bear"');
-    assert('ellie bear', cast(result, String), test_name);
-
-    test_name = 'should match on static keyword with single key/value';
-    assert({ellie: 'bear'}, {ellie: 'bear'}, test_name);
-
-    test_name = 'should match on static keyword with single key/value (interp)';
-    result = @native Lang.eval('{ellie: "bear"}');
-    assert({ellie: 'bear'}, cast(result, Keyword), test_name);
-
-    test_name = 'should match on static keyword with single value with variable';
-    bear = 'bear';
-    assert({ellie: bear}, {ellie: bear}, test_name);
-
-    test_name = 'should match on static keyword with single value with variable (interp)';
-    result = @native Lang.eval('{ellie: bear}');
-    assert({ellie: bear}, cast(result, Keyword), test_name);
-
-    test_name = 'should match on static keyword with multiple keys and variables';
-    benus = 'benus';
-    assert({ellie: benus, benus: {@_'cat'; 'strange';}}, {ellie: benus, benus: {@_'cat'; 'strange';}}, test_name);
-
-    test_name = 'should match on static keyword with multiple keys and variables (interp)';
-    result = @native Lang.eval('{ellie: benus, benus: {@_"cat"; "strange";}}');
-    assert({ellie: benus, benus: {@_'cat'; 'strange';}}, cast(result, Keyword), test_name);
-
-    test_name = 'should invoke with static arg';
-    result = cast(ReplTests.sample("sample function"), Tuple);
-    assert([@_'ok', 'sample function'], result, test_name);
-
-    test_name = 'should invoke with static arg (interp)';
-    result = cast(@native Lang.eval('ReplTests.sample("sample function");'), Tuple);
-    assert([@_'ok', 'sample function'], result, test_name);
-
-    test_name = 'should invoke public functions (interp)';
-    result = cast(@native Lang.eval('ReplTests.sample("sample function", Kernel.self());'), Tuple);
-    pid = Kernel.self();
-    assert(['sample function', pid], result, test_name);
-
-    test_name = 'should invoke public functions with variables';
-    pid = Kernel.self();
-    label = 'sample1 function';
-    result = cast(ReplTests.sample(label, pid), Tuple);
-    assert(['sample1 function', pid], result, test_name);
-
-    test_name = 'should invoke public functions with variables (interp)';
-    pid = Kernel.self();
-    label = 'sample2 function';
-    result = cast(@native Lang.eval('ReplTests.sample(label, pid);'), Tuple);
-    assert(['sample2 function', pid], result, test_name);
-
-    test_name = 'should be able to cast to type';
-    pid1 = Kernel.self();
-    pid2 = Kernel.self();
-    result = Kernel.same(cast(pid1, Dynamic), cast(pid2, Dynamic));
-    assert(result, test_name);
-
-    test_name = 'should be able to cast to type (interp)';
-    pid1 = Kernel.self();
-    pid2 = Kernel.self();
-    result = @native Lang.eval("Kernel.same(cast(pid1, Dynamic), cast(pid2, Dynamic))");
-    assert(cast(result, Atom), test_name);
-
-    test_name = 'should create anonymous function';
-    fun = @fn {
-      ([{Atom: arg, String: name}] => {
-        assert(@_'success', arg, name);
-      });
-    };
-    assert(fun, test_name);
-
-    test_name = 'should create anonymous function (interp)';
-    result = @native Lang.eval('@fn {
-      ([{Atom: arg, String: name}] => {
-        ReplTests.assert(@_"success", arg, name);
-      });
-    };');
-    fun = cast(result, Function);
-    assert(fun, test_name);
-
-    test_name = 'should create anonymous function with members in scope variables';
-    status = @_'success';
-    fun = @fn {
-      ([{Atom: pass, String: name}] => {
-        assert(status, pass, name);
-      });
-    };
-    assert(fun, test_name);
-
-    test_name = 'should create anonymous function with members in scope variables (interp)';
-    status = @_'success';
-    result = @native Lang.eval('@fn {
-      ([{Atom: pass, String: name}] => {
-        ReplTests.assert(status, pass, name);
-      });
-    };');
-    fun = cast(result, Function);
-    assert(fun, test_name);
-
-    test_name = 'should assign to variable';
-    variable = "foo";
-    assert("foo", variable, test_name);
-
-    test_name = 'should assign to variable (interp)';
-    @native Lang.eval('new_var = "foo"; ReplTests.assert("foo", new_var, test_name);');
-
-    test_name = 'should assign to string pattern';
-    'bar ' => variable = "bar foo";
-    assert("foo", cast(variable, String), test_name);
-
-    test_name = 'should assign to string pattern (interp)';
-    @native Lang.eval("'bar ' => vari = 'bar foo'; ReplTests.assert('foo', cast(vari, String), test_name);");
-
-    test_name = 'should assign to tuple pattern';
-    [@_'ok', foo] = [@_'ok', 'foo'];
-    assert("foo", cast(foo, String), test_name);
-
-    test_name = 'should assign to tuple pattern (interp)';
-    @native Lang.eval("[@_'ok', bert] = [@_'ok', 'foo']; ReplTests.assert('foo', cast(bert, String), test_name);");
-
-    test_name = 'should assign to list pattern';
-    ({@_'ok'; foo2;}) = {@_'ok'; 'foo';};
-    assert("foo", cast(foo2, String), test_name);
-
-    test_name = 'should assign to list pattern (interp)';
-    @native Lang.eval("({@_'ok'; foo3;}) = {@_'ok'; 'foo';}; ReplTests.assert('foo', cast(foo3, String), test_name);");
-
-    test_name = 'should assign to lists head and tail in a pattern';
-    ({'ok' | foo_tail;}) = {'ok'; 'foo1'; 'foo2';};
-    assert({'foo1'; 'foo2';}, cast(foo_tail, LList), test_name);
-
-    test_name = 'should assign to lists head and tail in a pattern (interp)';
-    @native Lang.eval("({'ok' | foo_tail2;}) = {'ok'; 'foo1'; 'foo2';}; ReplTests.assert({'foo1'; 'foo2';}, cast(foo_tail2, LList), test_name);");
-
-    System.println('');
-    @_'ok';
-  });
-
-  @def assert({String: 'foo', String: 'foo', String: test_name}, [Atom], {
-    System.print('.');
-    @_'ok';
-  });
-
-  @def assert({Float: 4.32, Float: 4.32, String: test_name}, [Atom], {
-    System.print('.');
-    @_'ok';
-  });
-
-  @def assert({Int: 432, Int: 432, String: test_name}, [Atom], {
-    System.print('.');
-    @_'ok';
-  });
-
-  @def assert({Atom: @_'ok', Atom: @_'ok', String: test_name}, [Atom], {
-    System.print('.');
-    @_'ok';
-  });
-
-  @def assert({Atom: @_'true', String: test_name}, [Atom], {
-    System.print('.');
-    @_'ok';
-  });
-
-  @def assert({Atom: @_'success', Atom: @_'success', String: test_name}, [Atom], {
-    System.print('.');
-    @_'ok';
-  });
-
-  @def assert({Tuple: [@_'ok', 'message'], Tuple: [@_'ok', 'message'], String: test_name}, [Atom], {
-    System.print('.');
-    @_'ok';
-  });
-
-  @def assert({Tuple: [@_'ok', 'sample function'], Tuple: [@_'ok', 'sample function'], String: test_name}, [Atom], {
-    System.print('.');
-    @_'ok';
-  });
-
-  @def assert({Tuple: [status, [@_'error', 'complete']], Tuple: [status, [@_'error', 'complete']], String: test_name}, [Atom], {
-    System.print('.');
-    @_'ok';
-  });
-
-  @def assert({Tuple: ['sample function', pid1], Tuple: ['sample function', pid2], String: test_name}, [Atom], {
-    System.print('.');
-    same = Kernel.same(cast(pid1, Dynamic), cast(pid2, Dynamic));
-    assert(same, test_name);
-    @_'ok';
-  });
-
-  @def assert({Tuple: ['sample1 function', pid1], Tuple: ['sample1 function', pid2], String: test_name}, [Atom], {
-    System.print('.');
-    same = Kernel.same(cast(pid1, Dynamic), cast(pid2, Dynamic));
-    assert(same, test_name);
-    @_'ok';
-  });
-
-  @def assert({Tuple: ['sample2 function', pid1], Tuple: ['sample2 function', pid2], String: test_name}, [Atom], {
-    System.print('.');
-    same = Kernel.same(cast(pid1, Dynamic), cast(pid2, Dynamic));
-    assert(same, test_name);
-    @_'ok';
-  });
-
-  @def assert({LList: {'nice';}, LList: {'nice';}, String: test_name}, [Atom], {
-    System.print('.');
-    @_'ok';
-  });
-
-  @def assert({LList: {'nice'; @_'little'; ['list'];}, LList: {'nice'; @_'little'; ['list'];}, String: test_name}, [Atom], {
-    System.print('.');
-    @_'ok';
-  });
-
-  @def assert({LList: {'ok' | foo1;}, LList: {'ok' | foo2;}, String: test_name}, [Atom], {
-    System.print('.');
-    foo1 = cast(foo1, LList);
-    foo2 = cast(foo2, LList);
-    assert(foo1, foo2, test_name);
-    recurse_lists(foo1, foo2, test_name);
-    @_'ok';
-  });
-
-  @def assert({LList: {'foo1'; 'foo2';}, LList: {'foo1'; 'foo2';}, String: test_name}, [Atom], {
-    System.print('.');
-    @_'ok';
-  });
-
-  @def assert({MMap: ['foo' => 'bar'], MMap: ['foo' => 'bar'], String: test_name}, [Atom], {
-    System.print('.');
-    @_'ok';
-  });
-
-  @def assert({MMap: ['baz' => {foo;}, 'cat' => [bar]], MMap: ['baz' => {foo;}, 'cat' => [bar]], String: test_name}, [Atom], {
-    System.print('.');
-    @_'ok';
-  });
-
-  @def assert({MMap: ['barrel' => {foo;}], MMap: ['barrel' => {foo;}], String: test_name}, [Atom], {
-    System.print('.');
-    @_'ok';
-  });
-
-  @def assert({MMap: [@_'success' => foo, @_'fail' => bar], MMap: [@_'success' => foo, @_'fail' => bar], String: test_name}, [Atom], {
-    System.print('.');
-    @_'ok';
-  });
-
-  @def assert({String: 'ellie ' => bear, String: 'ellie ' => bear2, String: test_name}, [Atom], {
-    assert(bear);
-    assert(bear2);
-  });
-
-  @def assert({String: 'bear'}, [Atom], {
-    System.print('.');
-    @_'ok';
-  });
-
-  @def assert({String: fail}, [Atom], {
-    assert('bear', fail, '');
-    @_'error';
-  });
-
-  @def assert({Keyword: {ellie: 'bear'}, Keyword: {ellie: 'bear'}, String: test_name}, [Atom], {
-    System.print('.');
-    @_'ok';
-  });
-
-  @def assert({Keyword: {ellie: 'benus', benus: {@_'cat'; 'strange';}}, Keyword: {ellie: 'benus', benus: {@_'cat'; 'strange';}}, String: test_name}, [Atom], {
-    System.print('.');
-    @_'ok';
-  });
-
-  @def assert({Function: fun, String: test_name}, [Atom], {
-    fun(@_'success', test_name);
-  });
-
-  @def assert({String: expectation, String: actual, String: test_name}, [Atom], {
-    System.println('');
-    System.println(test_name);
-    System.print('expected: ');
-    @native IO.inspect(expectation);
-    System.print('     got: ');
-    @native IO.inspect(actual);
-  });
-
-  @def assert({Int: expectation, Int: actual, String: test_name}, [Atom], {
-    System.println('');
-    System.println(test_name);
-    System.print('expected: ');
-    @native IO.inspect(expectation);
-    System.print('     got: ');
-    @native IO.inspect(actual);
-  });
-
-  @def assert({Atom: expectation, Atom: actual, String: test_name}, [Atom], {
-    System.println('');
-    System.println(test_name);
-    System.print('expected: ');
-    @native IO.inspect(expectation);
-    System.print('     got: ');
-    @native IO.inspect(actual);
-  });
-
-  @def assert({Tuple: expectation, Tuple: actual, String: test_name}, [Atom], {
-    System.println('');
-    System.println(test_name);
-    System.print('expected: ');
-    @native IO.inspect(expectation);
-    System.print('     got: ');
-    @native IO.inspect(actual);
-  });
-
-  @def assert({LList: expectation, LList: actual, String: test_name}, [Atom], {
-    System.println('');
-    System.println(test_name);
-    System.print('expected: ');
-    @native IO.inspect(expectation);
-    System.print('     got: ');
-    @native IO.inspect(actual);
-  });
-
-  @def assert({MMap: expectation, MMap: actual, String: test_name}, [Atom], {
-    System.println('');
-    System.println(test_name);
-    System.print('expected: ');
-    @native IO.inspect(expectation);
-    System.print('     got: ');
-    @native IO.inspect(actual);
-  });
-
-  @def assert({Keyword: expectation, Keyword: actual, String: test_name}, [Atom], {
-    System.println('');
-    System.println(test_name);
-    System.print('expected: ');
-    @native IO.inspect(expectation);
-    System.print('     got: ');
-    @native IO.inspect(actual);
-  });
-
-  @def sample({String: label}, [Tuple], {
-    [@_'ok', label];
-  });
-
-  @def sample({String: label, Pid: pid}, [Tuple], {
-    [label, pid];
-  });
-
-  @def recurse_lists({LList: {}, LList: {}, String: test_name}, [Atom], {
-    assert(@_'true', test_name);
-    @_'ok';
-  });
-
-  @def recurse_lists({LList: {head | tail;}, LList: {head1 | tail1;}, String: test_name}, [Atom], {
-    recurse_lists(cast(tail, LList), cast(tail1, LList), test_name);
-  });
-}))
+//@:build(lang.macros.AnnaLang.defCls(Assert, {
+//  @alias vm.Pid;
+//
+//  @def assert({Atom: @_'true', String: _test_name}, [Atom], {
+//
+//    @_'ok';
+//  });
+//
+//  @def assert({Atom: _, String: test_name}, [Atom], {
+//
+//    @_'ok';
+//  });
+//
+//}))
+//@:build(lang.macros.AnnaLang.defCls(ReplTests, {
+//  @alias vm.Pid;
+//
+//  @def start([Atom], {
+//    test_name = "should match strings";
+//    assert("foo", "foo", test_name);
+//
+//    test_name = "should match strings (interp)";
+//    result = @native Lang.eval('"foo"');
+//    assert("foo", cast(result, String), test_name);
+//
+//    test_name = 'should match on ints';
+//    assert(432, 432, test_name);
+//
+//    test_name = 'should match on ints (interp)';
+//    result = @native Lang.eval('432');
+//    assert(432, cast(result, Int), test_name);
+//
+//    test_name = 'should match on floats';
+//    assert(4.32, 4.32, test_name);
+//
+//    test_name = 'should match on floats (interp)';
+//    result = @native Lang.eval('4.32');
+//    assert(4.32, cast(result, Float), test_name);
+//
+//    test_name = 'should match on constant atoms';
+//    assert(@_'ok', @_'ok', test_name);
+//
+//    test_name = 'should match on constant atoms (interp)';
+//    result = @native Lang.eval('@_"ok"');
+//    assert(@_'ok', cast(result, Atom), test_name);
+//
+//    test_name = 'should match on tuple with all constant elements';
+//    assert([@_'ok', 'message'], [@_'ok', 'message'], test_name);
+//
+//    test_name = 'should match on tuple with all constant elements (interp)';
+//    result = @native Lang.eval('[@_"ok", "message"]');
+//    assert([@_'ok', 'message'], cast(result, Tuple), test_name);
+//
+//    test_name = 'should match on tuple with message variable';
+//    message = 'message';
+//    assert([@_'ok', message], [@_'ok', message], test_name);
+//
+//    test_name = 'should match on tuple with message variable (interp)';
+//    result = @native Lang.eval('[@_"ok", message]');
+//    assert([@_'ok', message], cast(result, Tuple), test_name);
+//
+//    test_name = 'should match on tuple with all elements variables';
+//    status = @_'ok';
+//    assert([status, message], [status, message], test_name);
+//
+//    test_name = 'should match on tuple with all elements variables (interp)';
+//    result = @native Lang.eval('[status, message]');
+//    assert([status, message], cast(result, Tuple), test_name);
+//
+//    test_name = 'should match on variable status tuples';
+//    assert([status, 'message'], [status, 'message'], test_name);
+//
+//    test_name = 'should match on variable status tuples (interp)';
+//    result = @native Lang.eval('[status, "message"]');
+//    assert([status, 'message'], cast(result, Tuple), test_name);
+//
+//    test_name = 'should match on tuple within a tuple';
+//    assert([status, [@_'error', 'complete']], [status, [@_'error', 'complete']], test_name);
+//
+//    test_name = 'should match on tuple within a tuple (interp)';
+//    result = @native Lang.eval('[status, [@_"error", "complete"]]');
+//    assert([status, [@_'error', 'complete']], cast(result, Tuple), test_name);
+//
+//    test_name = 'should match on single list item';
+//    assert({'nice';}, {'nice';}, test_name);
+//
+//    test_name = 'should match on single list item (interp)';
+//    result = @native Lang.eval('{"nice";}');
+//    assert({'nice';}, cast(result, LList), test_name);
+//
+//    test_name = 'should match on constant list items';
+//    assert({'nice'; @_'little'; ['list'];}, {'nice'; @_'little'; ['list'];}, test_name);
+//
+//    test_name = 'should match on constant list items (interp)';
+//    result = @native Lang.eval('{"nice"; @_"little"; ["list"];}');
+//    assert({'nice'; @_'little'; ['list'];}, cast(result, LList), test_name);
+//
+//    test_name = 'should match on variable list items';
+//    little = @_'little';
+//    assert({'nice'; little; ['list'];}, {'nice'; little; ['list'];}, test_name);
+//
+//    test_name = 'should match on variable list items (interp)';
+//    result = @native Lang.eval('{"nice"; little; ["list"];}');
+//    assert({'nice'; little; ['list'];}, cast(result, LList), test_name);
+//
+//    test_name = 'should match head and tail';
+//    assert({'ok'; 'foo1'; 'foo2';}, {'ok'; 'foo1'; 'foo2';}, test_name);
+//
+//    test_name = 'should match head and tail (interp)';
+//    result = @native Lang.eval("{'ok'; 'foo1'; 'foo2';}");
+//    assert({'ok'; 'foo1'; 'foo2';}, cast(result, LList), test_name);
+//
+//    test_name = 'should match on single map item';
+//    assert(['foo' => 'bar'], ['foo' => 'bar'], test_name);
+//
+//    test_name = 'should match on single map item (interp)';
+//    result = @native Lang.eval('["foo" => "bar"]');
+//    assert(['foo' => 'bar'], cast(result, MMap), test_name);
+//
+//    test_name = 'should match on single map item with variable value';
+//    bar = 'bar';
+//    assert(['foo' => bar], ['foo' => bar], test_name);
+//
+//    test_name = 'should match on single map item with variable value (interp)';
+//    result = @native Lang.eval('["foo" => bar]');
+//    assert(['foo' => bar], cast(result, MMap), test_name);
+//
+//    test_name = 'should match on single map item with variable key';
+//    foo = 'foo';
+//    assert([foo => bar], [foo => bar], test_name);
+//
+//    test_name = 'should match on single map item with variable value (interp)';
+//    result = @native Lang.eval('[foo => bar]');
+//    assert([foo => bar], cast(result, MMap), test_name);
+//
+//    test_name = 'should match on map with multiple values';
+//    assert(['baz' => {foo;}, 'cat' => [bar]], ['baz' => {foo;}, 'cat' => [bar]], test_name);
+//
+//    test_name = 'should match on single map item with variable value (interp)';
+//    result = @native Lang.eval('["baz" => {foo;}, "cat" => [bar]]');
+//    assert(['baz' => {foo;}, 'cat' => [bar]], cast(result, MMap), test_name);
+//
+//    test_name = 'should match on map with unmatched number of keys';
+//    assert(['barrel' => {foo;}, 'cartoon' => [bar]], ['barrel' => {foo;}, 'cartoons' => [bar]], test_name);
+//
+//    test_name = 'should match on map with unmatched number of keys (interp)';
+//    result = @native Lang.eval('["barrel" => {foo;}, "cartoons" => [bar]]');
+//    assert(['barrel' => {foo;}, 'cartoon' => [bar]], cast(result, MMap), test_name);
+//
+//    test_name = 'should match on map with atom keys';
+//    assert([@_'success' => foo, @_'fail' => bar], [@_'success' => foo, @_'fail' => bar], test_name);
+//
+//    test_name = 'should match on map with atom keys (interp)';
+//    result = @native Lang.eval('[@_"success" => foo, @_"fail" => bar]');
+//    assert([@_'success' => foo, @_'fail' => bar], cast(result, MMap), test_name);
+//
+//    test_name = 'should match on string suffix';
+//    assert('ellie bear', 'ellie bear', test_name);
+//
+//    test_name = 'should match on string suffix (interp)';
+//    result = @native Lang.eval('"ellie bear"');
+//    assert('ellie bear', cast(result, String), test_name);
+//
+//    test_name = 'should match on static keyword with single key/value';
+//    assert({ellie: 'bear'}, {ellie: 'bear'}, test_name);
+//
+//    test_name = 'should match on static keyword with single key/value (interp)';
+//    result = @native Lang.eval('{ellie: "bear"}');
+//    assert({ellie: 'bear'}, cast(result, Keyword), test_name);
+//
+//    test_name = 'should match on static keyword with single value with variable';
+//    bear = 'bear';
+//    assert({ellie: bear}, {ellie: bear}, test_name);
+//
+//    test_name = 'should match on static keyword with single value with variable (interp)';
+//    result = @native Lang.eval('{ellie: bear}');
+//    assert({ellie: bear}, cast(result, Keyword), test_name);
+//
+//    test_name = 'should match on static keyword with multiple keys and variables';
+//    benus = 'benus';
+//    assert({ellie: benus, benus: {@_'cat'; 'strange';}}, {ellie: benus, benus: {@_'cat'; 'strange';}}, test_name);
+//
+//    test_name = 'should match on static keyword with multiple keys and variables (interp)';
+//    result = @native Lang.eval('{ellie: benus, benus: {@_"cat"; "strange";}}');
+//    assert({ellie: benus, benus: {@_'cat'; 'strange';}}, cast(result, Keyword), test_name);
+//
+//    test_name = 'should invoke with static arg';
+//    result = cast(ReplTests.sample("sample function"), Tuple);
+//    assert([@_'ok', 'sample function'], result, test_name);
+//
+//    test_name = 'should invoke with static arg (interp)';
+//    result = cast(@native Lang.eval('ReplTests.sample("sample function");'), Tuple);
+//    assert([@_'ok', 'sample function'], result, test_name);
+//
+//    test_name = 'should invoke public functions (interp)';
+//    result = cast(@native Lang.eval('ReplTests.sample("sample function", Kernel.self());'), Tuple);
+//    pid = Kernel.self();
+//    assert(['sample function', pid], result, test_name);
+//
+//    test_name = 'should invoke public functions with variables';
+//    pid = Kernel.self();
+//    label = 'sample1 function';
+//    result = cast(ReplTests.sample(label, pid), Tuple);
+//    assert(['sample1 function', pid], result, test_name);
+//
+//    test_name = 'should invoke public functions with variables (interp)';
+//    pid = Kernel.self();
+//    label = 'sample2 function';
+//    result = cast(@native Lang.eval('ReplTests.sample(label, pid);'), Tuple);
+//    assert(['sample2 function', pid], result, test_name);
+//
+//    test_name = 'should be able to cast to type';
+//    pid1 = Kernel.self();
+//    pid2 = Kernel.self();
+//    result = Kernel.same(cast(pid1, Dynamic), cast(pid2, Dynamic));
+//    assert(result, test_name);
+//
+//    test_name = 'should be able to cast to type (interp)';
+//    pid1 = Kernel.self();
+//    pid2 = Kernel.self();
+//    result = @native Lang.eval("Kernel.same(cast(pid1, Dynamic), cast(pid2, Dynamic))");
+//    assert(cast(result, Atom), test_name);
+//
+//    test_name = 'should create anonymous function';
+//    fun = @fn {
+//      ([{Atom: arg, String: name}] => {
+//        assert(@_'success', arg, name);
+//      });
+//    };
+//    assert(fun, test_name);
+//
+//    test_name = 'should create anonymous function (interp)';
+//    result = @native Lang.eval('@fn {
+//      ([{Atom: arg, String: name}] => {
+//        ReplTests.assert(@_"success", arg, name);
+//      });
+//    };');
+//    fun = cast(result, Function);
+//    assert(fun, test_name);
+//
+//    test_name = 'should create anonymous function with members in scope variables';
+//    status = @_'success';
+//    fun = @fn {
+//      ([{Atom: pass, String: name}] => {
+//        assert(status, pass, name);
+//      });
+//    };
+//    assert(fun, test_name);
+//
+//    test_name = 'should create anonymous function with members in scope variables (interp)';
+//    status = @_'success';
+//    result = @native Lang.eval('@fn {
+//      ([{Atom: pass, String: name}] => {
+//        ReplTests.assert(status, pass, name);
+//      });
+//    };');
+//    fun = cast(result, Function);
+//    assert(fun, test_name);
+//
+//    test_name = 'should assign to variable';
+//    variable = "foo";
+//    assert("foo", variable, test_name);
+//
+//    test_name = 'should assign to variable (interp)';
+//    @native Lang.eval('new_var = "foo"; ReplTests.assert("foo", new_var, test_name);');
+//
+//    test_name = 'should assign to string pattern';
+//    'bar ' => variable = "bar foo";
+//    assert("foo", cast(variable, String), test_name);
+//
+//    test_name = 'should assign to string pattern (interp)';
+//    @native Lang.eval("'bar ' => vari = 'bar foo'; ReplTests.assert('foo', cast(vari, String), test_name);");
+//
+//    test_name = 'should assign to tuple pattern';
+//    [@_'ok', foo] = [@_'ok', 'foo'];
+//    assert("foo", cast(foo, String), test_name);
+//
+//    test_name = 'should assign to tuple pattern (interp)';
+//    @native Lang.eval("[@_'ok', bert] = [@_'ok', 'foo']; ReplTests.assert('foo', cast(bert, String), test_name);");
+//
+//    test_name = 'should assign to list pattern';
+//    ({@_'ok'; foo2;}) = {@_'ok'; 'foo';};
+//    assert("foo", cast(foo2, String), test_name);
+//
+//    test_name = 'should assign to list pattern (interp)';
+//    @native Lang.eval("({@_'ok'; foo3;}) = {@_'ok'; 'foo';}; ReplTests.assert('foo', cast(foo3, String), test_name);");
+//
+//    test_name = 'should assign to lists head and tail in a pattern';
+//    ({'ok' | foo_tail;}) = {'ok'; 'foo1'; 'foo2';};
+//    assert({'foo1'; 'foo2';}, cast(foo_tail, LList), test_name);
+//
+//    test_name = 'should assign to lists head and tail in a pattern (interp)';
+//    @native Lang.eval("({'ok' | foo_tail2;}) = {'ok'; 'foo1'; 'foo2';}; ReplTests.assert({'foo1'; 'foo2';}, cast(foo_tail2, LList), test_name);");
+//
+//    System.println('');
+//    @_'ok';
+//  });
+//
+//  @def assert({String: 'foo', String: 'foo', String: test_name}, [Atom], {
+//    System.print('.');
+//    @_'ok';
+//  });
+//
+//  @def assert({Float: 4.32, Float: 4.32, String: test_name}, [Atom], {
+//    System.print('.');
+//    @_'ok';
+//  });
+//
+//  @def assert({Int: 432, Int: 432, String: test_name}, [Atom], {
+//    System.print('.');
+//    @_'ok';
+//  });
+//
+//  @def assert({Atom: @_'ok', Atom: @_'ok', String: test_name}, [Atom], {
+//    System.print('.');
+//    @_'ok';
+//  });
+//
+//  @def assert({Atom: @_'true', String: test_name}, [Atom], {
+//    System.print('.');
+//    @_'ok';
+//  });
+//
+//  @def assert({Atom: @_'success', Atom: @_'success', String: test_name}, [Atom], {
+//    System.print('.');
+//    @_'ok';
+//  });
+//
+//  @def assert({Tuple: [@_'ok', 'message'], Tuple: [@_'ok', 'message'], String: test_name}, [Atom], {
+//    System.print('.');
+//    @_'ok';
+//  });
+//
+//  @def assert({Tuple: [@_'ok', 'sample function'], Tuple: [@_'ok', 'sample function'], String: test_name}, [Atom], {
+//    System.print('.');
+//    @_'ok';
+//  });
+//
+//  @def assert({Tuple: [status, [@_'error', 'complete']], Tuple: [status, [@_'error', 'complete']], String: test_name}, [Atom], {
+//    System.print('.');
+//    @_'ok';
+//  });
+//
+//  @def assert({Tuple: ['sample function', pid1], Tuple: ['sample function', pid2], String: test_name}, [Atom], {
+//    System.print('.');
+//    same = Kernel.same(cast(pid1, Dynamic), cast(pid2, Dynamic));
+//    assert(same, test_name);
+//    @_'ok';
+//  });
+//
+//  @def assert({Tuple: ['sample1 function', pid1], Tuple: ['sample1 function', pid2], String: test_name}, [Atom], {
+//    System.print('.');
+//    same = Kernel.same(cast(pid1, Dynamic), cast(pid2, Dynamic));
+//    assert(same, test_name);
+//    @_'ok';
+//  });
+//
+//  @def assert({Tuple: ['sample2 function', pid1], Tuple: ['sample2 function', pid2], String: test_name}, [Atom], {
+//    System.print('.');
+//    same = Kernel.same(cast(pid1, Dynamic), cast(pid2, Dynamic));
+//    assert(same, test_name);
+//    @_'ok';
+//  });
+//
+//  @def assert({LList: {'nice';}, LList: {'nice';}, String: test_name}, [Atom], {
+//    System.print('.');
+//    @_'ok';
+//  });
+//
+//  @def assert({LList: {'nice'; @_'little'; ['list'];}, LList: {'nice'; @_'little'; ['list'];}, String: test_name}, [Atom], {
+//    System.print('.');
+//    @_'ok';
+//  });
+//
+//  @def assert({LList: {'ok' | foo1;}, LList: {'ok' | foo2;}, String: test_name}, [Atom], {
+//    System.print('.');
+//    foo1 = cast(foo1, LList);
+//    foo2 = cast(foo2, LList);
+//    assert(foo1, foo2, test_name);
+//    recurse_lists(foo1, foo2, test_name);
+//    @_'ok';
+//  });
+//
+//  @def assert({LList: {'foo1'; 'foo2';}, LList: {'foo1'; 'foo2';}, String: test_name}, [Atom], {
+//    System.print('.');
+//    @_'ok';
+//  });
+//
+//  @def assert({MMap: ['foo' => 'bar'], MMap: ['foo' => 'bar'], String: test_name}, [Atom], {
+//    System.print('.');
+//    @_'ok';
+//  });
+//
+//  @def assert({MMap: ['baz' => {foo;}, 'cat' => [bar]], MMap: ['baz' => {foo;}, 'cat' => [bar]], String: test_name}, [Atom], {
+//    System.print('.');
+//    @_'ok';
+//  });
+//
+//  @def assert({MMap: ['barrel' => {foo;}], MMap: ['barrel' => {foo;}], String: test_name}, [Atom], {
+//    System.print('.');
+//    @_'ok';
+//  });
+//
+//  @def assert({MMap: [@_'success' => foo, @_'fail' => bar], MMap: [@_'success' => foo, @_'fail' => bar], String: test_name}, [Atom], {
+//    System.print('.');
+//    @_'ok';
+//  });
+//
+//  @def assert({String: 'ellie ' => bear, String: 'ellie ' => bear2, String: test_name}, [Atom], {
+//    assert(bear);
+//    assert(bear2);
+//  });
+//
+//  @def assert({String: 'bear'}, [Atom], {
+//    System.print('.');
+//    @_'ok';
+//  });
+//
+//  @def assert({String: fail}, [Atom], {
+//    assert('bear', fail, '');
+//    @_'error';
+//  });
+//
+//  @def assert({Keyword: {ellie: 'bear'}, Keyword: {ellie: 'bear'}, String: test_name}, [Atom], {
+//    System.print('.');
+//    @_'ok';
+//  });
+//
+//  @def assert({Keyword: {ellie: 'benus', benus: {@_'cat'; 'strange';}}, Keyword: {ellie: 'benus', benus: {@_'cat'; 'strange';}}, String: test_name}, [Atom], {
+//    System.print('.');
+//    @_'ok';
+//  });
+//
+//  @def assert({Function: fun, String: test_name}, [Atom], {
+//    fun(@_'success', test_name);
+//  });
+//
+//  @def assert({String: expectation, String: actual, String: test_name}, [Atom], {
+//    System.println('');
+//    System.println(test_name);
+//    System.print('expected: ');
+//    @native IO.inspect(expectation);
+//    System.print('     got: ');
+//    @native IO.inspect(actual);
+//  });
+//
+//  @def assert({Int: expectation, Int: actual, String: test_name}, [Atom], {
+//    System.println('');
+//    System.println(test_name);
+//    System.print('expected: ');
+//    @native IO.inspect(expectation);
+//    System.print('     got: ');
+//    @native IO.inspect(actual);
+//  });
+//
+//  @def assert({Atom: expectation, Atom: actual, String: test_name}, [Atom], {
+//    System.println('');
+//    System.println(test_name);
+//    System.print('expected: ');
+//    @native IO.inspect(expectation);
+//    System.print('     got: ');
+//    @native IO.inspect(actual);
+//  });
+//
+//  @def assert({Tuple: expectation, Tuple: actual, String: test_name}, [Atom], {
+//    System.println('');
+//    System.println(test_name);
+//    System.print('expected: ');
+//    @native IO.inspect(expectation);
+//    System.print('     got: ');
+//    @native IO.inspect(actual);
+//  });
+//
+//  @def assert({LList: expectation, LList: actual, String: test_name}, [Atom], {
+//    System.println('');
+//    System.println(test_name);
+//    System.print('expected: ');
+//    @native IO.inspect(expectation);
+//    System.print('     got: ');
+//    @native IO.inspect(actual);
+//  });
+//
+//  @def assert({MMap: expectation, MMap: actual, String: test_name}, [Atom], {
+//    System.println('');
+//    System.println(test_name);
+//    System.print('expected: ');
+//    @native IO.inspect(expectation);
+//    System.print('     got: ');
+//    @native IO.inspect(actual);
+//  });
+//
+//  @def assert({Keyword: expectation, Keyword: actual, String: test_name}, [Atom], {
+//    System.println('');
+//    System.println(test_name);
+//    System.print('expected: ');
+//    @native IO.inspect(expectation);
+//    System.print('     got: ');
+//    @native IO.inspect(actual);
+//  });
+//
+//  @def sample({String: label}, [Tuple], {
+//    [@_'ok', label];
+//  });
+//
+//  @def sample({String: label, Pid: pid}, [Tuple], {
+//    [label, pid];
+//  });
+//
+//  @def recurse_lists({LList: {}, LList: {}, String: test_name}, [Atom], {
+//    assert(@_'true', test_name);
+//    @_'ok';
+//  });
+//
+//  @def recurse_lists({LList: {head | tail;}, LList: {head1 | tail1;}, String: test_name}, [Atom], {
+//    recurse_lists(cast(tail, LList), cast(tail1, LList), test_name);
+//  });
+//}))
 @:build(lang.macros.AnnaLang.defCls(History, {
   @alias vm.Process;
   @alias vm.Kernel;
@@ -1102,7 +1101,7 @@ import vm.Function;
 
   @def start({
     History.start();
-		UnitTests.start();
+//		UnitTests.start();
 
     pid = Kernel.spawn(@_'CompilerMain', @_'start_interactive_anna');
     supervise(cast(pid, Pid));
@@ -1230,68 +1229,68 @@ import vm.Function;
   });
 
 }))
-@:build(lang.macros.AnnaLang.defCls(UnitTests, {
-  @alias vm.Process;
-  @alias vm.Kernel;
-
-  @const ALL_TESTS = @_'all_tests';
-
-  @def start([Tuple], {
-    all_tests_pid = Kernel.spawn_link(@_'UnitTests', @_'start_tests_store', cast([], Tuple), {});
-    Kernel.register_pid(all_tests_pid, ALL_TESTS);
-    [@_'ok', all_tests_pid];
-  });
-
-  @def start_tests_store([LList], {
-    tests_store_loop({});
-  });
-
-  @def tests_store_loop({LList: all_tests}, [LList], {
-    received = Kernel.receive(@fn {
-      ([{Tuple: [@_'store', test_module, test_name]}] => {
-        @native LList.add(all_tests, [test_module, test_name]);
-      });
-      ([{Tuple: [@_'get', respond_pid]}] => {
-        @native Kernel.send(respond_pid, all_tests);
-        all_tests;
-      });
-    });
-    tests_store_loop(cast(received, LList));
-  });
-
-  @def add_test({Atom: module, Atom: func}, [Atom], {
-    all_tests_pid = Kernel.get_pid_by_name(ALL_TESTS);
-    Kernel.send(all_tests_pid, [@_'store', module, func]);
-    @_'ok';
-  });
-
-  @def run_tests([Atom], {
-    all_tests_pid = Kernel.get_pid_by_name(ALL_TESTS);
-    self = Kernel.self();
-    Kernel.send(all_tests_pid, [@_'get', self]);
-    all_tests = Kernel.receive(@fn {
-      ([{LList: all_tests}] => {
-        all_tests;
-      });
-    });
-    do_run_tests(cast(all_tests, LList));
-    @_'ok';
-  });
-
-  @def do_run_tests({LList: {}}, [Atom], {
-    @_'ok';
-  });
-
-  @def do_run_tests({LList: {first | rest;}}, [Atom], {
-    run_test(cast(first, Tuple));
-    do_run_tests(cast(rest, LList));
-    @_'ok';
-  });
-
-  @def run_test({Tuple: [module, func]}, [Atom], {
-    @_'ok';
-  });
-}))
+//@:build(lang.macros.AnnaLang.defCls(UnitTests, {
+//  @alias vm.Process;
+//  @alias vm.Kernel;
+//
+//  @const ALL_TESTS = @_'all_tests';
+//
+//  @def start([Tuple], {
+//    all_tests_pid = Kernel.spawn_link(@_'UnitTests', @_'start_tests_store', cast([], Tuple), {});
+//    Kernel.register_pid(all_tests_pid, ALL_TESTS);
+//    [@_'ok', all_tests_pid];
+//  });
+//
+//  @def start_tests_store([LList], {
+//    tests_store_loop({});
+//  });
+//
+//  @def tests_store_loop({LList: all_tests}, [LList], {
+//    received = Kernel.receive(@fn {
+//      ([{Tuple: [@_'store', test_module, test_name]}] => {
+//        @native LList.add(all_tests, [test_module, test_name]);
+//      });
+//      ([{Tuple: [@_'get', respond_pid]}] => {
+//        @native Kernel.send(respond_pid, all_tests);
+//        all_tests;
+//      });
+//    });
+//    tests_store_loop(cast(received, LList));
+//  });
+//
+//  @def add_test({Atom: module, Atom: func}, [Atom], {
+//    all_tests_pid = Kernel.get_pid_by_name(ALL_TESTS);
+//    Kernel.send(all_tests_pid, [@_'store', module, func]);
+//    @_'ok';
+//  });
+//
+//  @def run_tests([Atom], {
+//    all_tests_pid = Kernel.get_pid_by_name(ALL_TESTS);
+//    self = Kernel.self();
+//    Kernel.send(all_tests_pid, [@_'get', self]);
+//    all_tests = Kernel.receive(@fn {
+//      ([{LList: all_tests}] => {
+//        all_tests;
+//      });
+//    });
+//    do_run_tests(cast(all_tests, LList));
+//    @_'ok';
+//  });
+//
+//  @def do_run_tests({LList: {}}, [Atom], {
+//    @_'ok';
+//  });
+//
+//  @def do_run_tests({LList: {first | rest;}}, [Atom], {
+//    run_test(cast(first, Tuple));
+//    do_run_tests(cast(rest, LList));
+//    @_'ok';
+//  });
+//
+//  @def run_test({Tuple: [module, func]}, [Atom], {
+//    @_'ok';
+//  });
+//}))
 @:build(lang.macros.AnnaLang.compile())
 class Code {
 

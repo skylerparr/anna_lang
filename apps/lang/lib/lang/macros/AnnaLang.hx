@@ -307,6 +307,13 @@ class AnnaLang {
                 MacroLogger.logExpr(patternExpr, 'patternExpr');
                 haxeStr = 'var match${matchCount}: Map<String, Dynamic> = ${printer.printExpr(patternExpr)};';
                 matchCount++;
+              } else {
+                haxeStr = 'var match${matchCount}: Map<String, Dynamic> = {
+                  var scope:haxe.ds.StringMap<Dynamic> = new haxe.ds.StringMap();
+                  scope.set("${funArgsType.name}", ${argName});
+                  scope;
+                };';
+                matchCount++;
               }
               patternMatches.push(haxeStr);
             }

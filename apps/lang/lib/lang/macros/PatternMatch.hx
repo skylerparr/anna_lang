@@ -17,9 +17,6 @@ class PatternMatch {
   private static var printer: Printer = new Printer();
 
   public static function match(pattern: Expr, valueExpr: Expr): Expr {
-    MacroLogger.log("===============================");
-    MacroLogger.log("PatternMatch", 'PatternMatch');
-
     var expr: Expr = generatePatternMatch(pattern, valueExpr);
 
     var retVal = macro {
@@ -201,7 +198,6 @@ class PatternMatch {
       case EObjectDecl(values):
         var individualMatches: Array<Expr> = [];
         for(value in values) {
-          MacroLogger.log(values, 'values');
           var strExpr: String = '';
           strExpr = 'Keyword.hasKey(${printer.printExpr(valueExpr)}, ${value.field})';
           var expr: Expr = generatePatternMatch(MacroTools.getAtomExpr("true"), lang.macros.Macros.haxeToExpr(strExpr));
@@ -263,9 +259,7 @@ class PatternMatch {
         MacroLogger.logExpr(expr, 'expr');
         expr;
       case EMeta(_):
-        MacroLogger.logExpr(pattern, 'pattern');
         var typeAndValue = MacroTools.getTypeAndValue(pattern);
-        MacroLogger.log(typeAndValue, 'PatternMatch typeAndValue');
         var expr = Macros.haxeToExpr(typeAndValue.value);
         generatePatternMatch(expr, valueExpr);
       case EBinop(OpArrow, base, suffix):
