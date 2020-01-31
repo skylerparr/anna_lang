@@ -312,9 +312,9 @@ import vm.Function;
     @_'ok';
   });
 
-  @def process_command({String: face}, [Atom], {
-    History.push(face);
-    Repl.eval(face);
+  @def process_command({String: cmd}, [Atom], {
+    History.push(cmd);
+    Repl.eval(cmd);
     @_'ok';
   });
 }))
