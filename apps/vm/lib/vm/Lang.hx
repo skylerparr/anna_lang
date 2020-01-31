@@ -77,6 +77,7 @@ class Lang {
     interp.variables.set("Std", Std);
     interp.variables.set("ArgHelper", ArgHelper);
     interp.variables.set("InterpMatch", vm.InterpMatch);
+    interp.variables.set("vm", {Classes: vm.Classes, InterpMatch: vm.InterpMatch});
     interp.variables.set("lang", {EitherSupport: EitherSupport});
     interp.variables.set("A", function(v) {
       return v;

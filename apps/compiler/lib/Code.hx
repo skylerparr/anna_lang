@@ -460,20 +460,23 @@ import vm.Function;
 
 
 }))
-//@:build(lang.macros.AnnaLang.defCls(Assert, {
-//  @alias vm.Pid;
-//
-//  @def assert({Atom: @_'true', String: _test_name}, [Atom], {
-//
-//    @_'ok';
-//  });
-//
-//  @def assert({Atom: _, String: test_name}, [Atom], {
-//
-//    @_'ok';
-//  });
-//
-//}))
+@:build(lang.macros.AnnaLang.defCls(Assert, {
+  @def assert({Atom: @_'true'}, [Atom], {
+    @_'ok';
+  });
+
+  @def assert({Atom: _}, [Atom], {
+    @_'error';
+  });
+
+  @def refute({Atom: @_'false'}, [Atom], {
+    @_'ok';
+  });
+
+  @def refute({Atom: _}, [Atom], {
+    @_'error';
+  });
+}))
 //@:build(lang.macros.AnnaLang.defCls(ReplTests, {
 //  @alias vm.Pid;
 //
@@ -1164,6 +1167,12 @@ import vm.Function;
     handle_result(result);
   });
 
+  // ctrl+u
+  @def handle_input({Int: 21, String: _current_string}, [String], {
+    clear_prompt('');
+    print_prompt('');
+  });
+
   // ctrl+d
   @def handle_input({Int: 4, String: current_string}, [String], {
     System.println('');
@@ -1182,35 +1191,22 @@ import vm.Function;
   });
 
   // up arrow
-  @def handle_input({Int: 65, String: current_string}, [String], {
+  @def handle_input({Int: 27, String: current_string}, [String], {
+    @native IO.getsCharCode();
+    @native IO.getsCharCode();
+
     clear_prompt(current_string);
     current_string = History.back();
-    System.print('i');
     print_prompt(current_string);
   });
 
   // down arrow
   @def handle_input({Int: 66, String: current_string}, [String], {
+    @native IO.getsCharCode();
+    @native IO.getsCharCode();
     clear_prompt(current_string);
     current_string = History.forward();
-    System.print('i');
     print_prompt(current_string);
-  });
-
-  // right arrow
-  @def handle_input({Int: 67, String: current_string}, [String], {
-    collect_user_input(current_string);
-  });
-
-  // left arrow
-  @def handle_input({Int: 68, String: current_string}, [String], {
-    collect_user_input(current_string);
-  });
-
-  // ctrl+u
-  @def handle_input({Int: 21, String: current_string}, [String], {
-    clear_prompt(current_string);
-    print_prompt('');
   });
 
   @def handle_input({Int: code, String: current_string}, [String], {
@@ -1222,7 +1218,7 @@ import vm.Function;
 
   @def clear_prompt({String: current_string}, {
     str_len = Str.length(current_string);
-    str_len = Kernel.add(str_len, 10);
+    str_len = Kernel.add(str_len, 100);
     clear_string = Str.rpad('\r', ' ', str_len);
     System.print(clear_string);
   });
@@ -1236,6 +1232,17 @@ import vm.Function;
     collect_user_input(current_string);
   });
 
+}))
+@:build(lang.macros.AnnaLang.defCls(AppCode, {
+  @alias vm.Classes;
+
+  @def get_modules([LList], {
+    @native Classes.getModules();
+  });
+
+  @def get_api({Atom: module}, [LList], {
+    @native Classes.getApiFunctions(module);
+  });
 }))
 //@:build(lang.macros.AnnaLang.defCls(UnitTests, {
 //  @alias vm.Process;

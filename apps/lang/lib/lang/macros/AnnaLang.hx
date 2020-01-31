@@ -48,6 +48,7 @@ class AnnaLang {
   }
 
   macro public static function init(): Array<Field> {
+    MacroLogger.init();
     return persistClassFields();
   }
 
@@ -461,6 +462,8 @@ class AnnaLang {
     var classFields: Array<Field> = persistClassFields();
     classFields.push(field);
     MacroLogger.printFields(classFields);
+
+    MacroLogger.close();
     return classFields;
   }
 
@@ -483,7 +486,7 @@ class AnnaLang {
     prewalk(body);
 
     // For some unknown reason, we need to define a garbage function or haxe will crash :: eye_roll ::
-    Def.gen({ expr: ECall({ expr: EConst(CIdent('alkdsjfkldsjf_ldkfj34893_dlksfj')),
+    Def.gen({ expr: ECall({ expr: EConst(CIdent('__MODULE_NAME__')),
       pos: MacroContext.currentPos() },[{ expr: EArrayDecl([{ expr: EConst(CIdent('Atom')),
       pos: MacroContext.currentPos() }]), pos: MacroContext.currentPos() },{
       expr: EBlock([{ expr: EMeta({ name: '_', params: [], pos: MacroContext.currentPos() },

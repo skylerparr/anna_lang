@@ -133,4 +133,24 @@ class Classes {
     }
     return null;
   }
+
+  public static inline function getModules(): LList {
+    var modules: Array<Atom> = [];
+    for(module in functions.keys()) {
+      modules.push(module); 
+    }
+    return LList.create(cast modules);
+  }
+
+  public static inline function getApiFunctions(className: Atom): LList {
+    var retVal: Array<Atom> = [];
+    var funMap: Map<Atom, Atom> = apiFunctions.get(className);
+    if(funMap == null) {
+      return LList.create([]); 
+    }
+    for(fun in funMap) {
+      retVal.push(fun);
+    }
+    return LList.create(cast retVal);
+  }
 }
