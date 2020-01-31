@@ -125,6 +125,15 @@ import vm.Function;
     @native Kernel.stop();
   });
 
+  @def flush([Atom], {
+    data = Kernel.receive(@fn {
+      ([{Tuple: result}] => {
+        result;
+      });
+    });
+    @_'ok';
+  });
+
   @def receive({Function: fun}, [Dynamic], {
     @native Kernel.receive(fun);
   });
@@ -288,13 +297,13 @@ import vm.Function;
 //  });
 
   @def process_command({String: 'test'}, [Atom], {
-    History.push('test');
+//    History.push('test');
 //    ReplTests.start();
     @_'ok';
   });
 
   @def process_command({String: 't'}, [Atom], {
-    History.push('t');
+//    History.push('t');
 //    ReplTests.start();
     @_'ok';
   });
@@ -442,7 +451,6 @@ import vm.Function;
 //}))
 @:build(lang.macros.AnnaLang.defCls(Repl, {
   @alias vm.Lang;
-  @const bar = @_'bar';
 
   @def eval({String: text}, [Atom], {
     result = @native Lang.eval(text);

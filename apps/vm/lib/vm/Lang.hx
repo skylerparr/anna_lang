@@ -24,6 +24,7 @@ class Lang {
 
   public inline static function eval(string:String):Tuple {
     string = StringTools.trim(string);
+    string = StringTools.replace(string, "'", "\'");
     var isList: Bool = false;
     try {
       if(StringTools.startsWith(string, '{') && StringTools.endsWith(string, '}')) {
