@@ -11,7 +11,6 @@ class MacroLogger {
   public static var init: Bool = false;
 
   public static function log(message: Dynamic, label: String = null): Void {
-    return;
     if(!init) {
       File.saveContent('${Sys.getCwd()}log', '');
       init = true;
@@ -30,7 +29,6 @@ class MacroLogger {
   }
 
   public static function printFields(fields: Array<Field>):Void {
-    return;
     var p: Printer = new Printer();
     for(field in fields) {
       MacroLogger.log(p.printField(field));
@@ -38,7 +36,6 @@ class MacroLogger {
   }
 
   public static function logExpr(expr: Expr, label: String = null): Void {
-    return;
     var p: Printer = new Printer();
     MacroLogger.log(p.printExpr(expr), label);
   }
