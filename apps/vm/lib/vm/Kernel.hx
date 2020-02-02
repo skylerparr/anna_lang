@@ -272,15 +272,29 @@ class Kernel {
   }
 
   public static function spawn(module: Atom, func: Atom, types: Tuple, args: LList): Pid {
+    func = resolveApiFuncWithTypes(func, types);
     return currentScheduler.spawn(function() {
       return new PushStack(module, func, args, "Kernel".atom(), "spawn".atom(), MacroTools.line());
     });
   }
 
   public static function spawn_link(module: Atom, func: Atom, types: Tuple, args: LList): Pid {
+    func = resolveApiFuncWithTypes(func, types);
     return currentScheduler.spawnLink(Process.self(), function() {
       return new PushStack(module, func, args, "Kernel".atom(), "spawn_link".atom(), MacroTools.line());
     });
+  }
+
+  private static function resolveApiFuncWithTypes(func: Atom, types: Tuple): Atom {
+    var funString: String = func.value;
+    var funTypes: Array<String> = [];
+    for(funType in types.asArray()) {
+      funTypes.push(cast(funType, Atom).value);
+    }
+    if(funTypes.length > 0) {
+      funString += '_';
+    }
+    return Atom.create('${funString}${funTypes.join('_')}');
   }
 
   public static function receive(callback: Function): Pid {

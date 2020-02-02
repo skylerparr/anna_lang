@@ -156,7 +156,7 @@ import vm.Function;
   });
 
   @def spawn({Atom: module, Atom: func}, [Pid], {
-    @native Kernel.spawn(module, func, [], {});
+    @native Kernel.spawn(module, func, @tuple[], {});
   });
 
   @def spawn({Atom: module, Atom: func, Tuple: types, LList: args}, [Pid], {
@@ -307,7 +307,10 @@ import vm.Function;
   });
 
   @def process_command({String: 't'}, [Atom], {
-//    History.push('t');
+    History.push('t');
+    UnitTests.add_test(@_'StringTest');
+
+    UnitTests.run_tests();
 //    ReplTests.start();
     @_'ok';
   });
@@ -482,7 +485,7 @@ import vm.Function;
 }))
 @:build(lang.macros.AnnaLang.defCls(StringTest, {
 
-  @def should_match_strings([Atom], {
+  @def test_should_match_strings([Atom], {
     result = Kernel.equal(cast('foo', Dynamic), cast('foo', Dynamic));
     Assert.assert(result);
   });
@@ -999,7 +1002,7 @@ import vm.Function;
   @const PID_HISTORY = @_'history';
 
   @def start([Tuple], {
-    history_pid = @native Kernel.spawn_link(@_'History', @_'start_history', [], {});
+    history_pid = @native Kernel.spawn_link(@_'History', @_'start_history', @tuple[], {});
     Kernel.register_pid(history_pid, PID_HISTORY);
 
     [@_'ok', history_pid];
@@ -1123,7 +1126,7 @@ import vm.Function;
 
   @def start({
     History.start();
-//		UnitTests.start();
+		UnitTests.start();
 
     pid = Kernel.spawn(@_'CompilerMain', @_'start_interactive_anna');
     supervise(cast(pid, Pid));
@@ -1255,68 +1258,87 @@ import vm.Function;
     @native Classes.getApiFunctions(module);
   });
 }))
-//@:build(lang.macros.AnnaLang.defCls(UnitTests, {
-//  @alias vm.Process;
-//  @alias vm.Kernel;
-//
-//  @const ALL_TESTS = @_'all_tests';
-//
-//  @def start([Tuple], {
-//    all_tests_pid = Kernel.spawn_link(@_'UnitTests', @_'start_tests_store', cast([], Tuple), {});
-//    Kernel.register_pid(all_tests_pid, ALL_TESTS);
-//    [@_'ok', all_tests_pid];
-//  });
-//
-//  @def start_tests_store([LList], {
-//    tests_store_loop({});
-//  });
-//
-//  @def tests_store_loop({LList: all_tests}, [LList], {
-//    received = Kernel.receive(@fn {
-//      ([{Tuple: [@_'store', test_module, test_name]}] => {
-//        @native LList.add(all_tests, [test_module, test_name]);
-//      });
-//      ([{Tuple: [@_'get', respond_pid]}] => {
-//        @native Kernel.send(respond_pid, all_tests);
-//        all_tests;
-//      });
-//    });
-//    tests_store_loop(cast(received, LList));
-//  });
-//
-//  @def add_test({Atom: module, Atom: func}, [Atom], {
-//    all_tests_pid = Kernel.get_pid_by_name(ALL_TESTS);
-//    Kernel.send(all_tests_pid, [@_'store', module, func]);
-//    @_'ok';
-//  });
-//
-//  @def run_tests([Atom], {
-//    all_tests_pid = Kernel.get_pid_by_name(ALL_TESTS);
-//    self = Kernel.self();
-//    Kernel.send(all_tests_pid, [@_'get', self]);
-//    all_tests = Kernel.receive(@fn {
-//      ([{LList: all_tests}] => {
-//        all_tests;
-//      });
-//    });
-//    do_run_tests(cast(all_tests, LList));
-//    @_'ok';
-//  });
-//
-//  @def do_run_tests({LList: {}}, [Atom], {
-//    @_'ok';
-//  });
-//
-//  @def do_run_tests({LList: {first | rest;}}, [Atom], {
-//    run_test(cast(first, Tuple));
-//    do_run_tests(cast(rest, LList));
-//    @_'ok';
-//  });
-//
-//  @def run_test({Tuple: [module, func]}, [Atom], {
-//    @_'ok';
-//  });
-//}))
+@:build(lang.macros.AnnaLang.defCls(UnitTests, {
+  @alias vm.Process;
+  @alias vm.Kernel;
+  @alias vm.Classes;
+
+  @const ALL_TESTS = @_'all_tests';
+
+  @def start([Tuple], {
+    all_tests_pid = Kernel.spawn_link(@_'UnitTests', @_'start_tests_store', @tuple[], {});
+    Kernel.register_pid(all_tests_pid, ALL_TESTS);
+    [@_'ok', all_tests_pid];
+  });
+
+  @def start_tests_store([LList], {
+    tests_store_loop({});
+  });
+
+  @def tests_store_loop({LList: all_tests}, [LList], {
+    received = Kernel.receive(@fn {
+      ([{Tuple: [@_'store', test_module]}] => {
+        @native LList.add(all_tests, test_module);
+      });
+      ([{Tuple: [@_'get', respond_pid]}] => {
+        @native Kernel.send(respond_pid, all_tests);
+        @native LList.empty();
+      });
+    });
+    tests_store_loop(cast(received, LList));
+  });
+
+  @def add_test({Atom: module}, [Atom], {
+    all_tests_pid = Kernel.get_pid_by_name(ALL_TESTS);
+    Kernel.send(all_tests_pid, [@_'store', module]);
+    @_'ok';
+  });
+
+  @def run_tests([Atom], {
+    all_tests_pid = Kernel.get_pid_by_name(ALL_TESTS);
+    self = Kernel.self();
+    Kernel.send(all_tests_pid, [@_'get', self]);
+    all_tests = Kernel.receive(@fn {
+      ([{LList: all_tests}] => {
+        all_tests;
+      });
+    });
+    do_run_tests(cast(all_tests, LList));
+    @_'ok';
+  });
+
+  @def do_run_tests({LList: {}}, [Atom], {
+    @_'ok';
+  });
+
+  @def do_run_tests({LList: {module | rest;}}, [Atom], {
+    functions = @native Classes.getApiFunctions(module);
+    Kernel.spawn(@_'UnitTests', @_'run_test_case', [@_'Atom', @_'LList'], {module; functions;});
+    do_run_tests(cast(rest, LList));
+    @_'ok';
+  });
+
+  @def run_test_case({Atom: module, LList: {}}, [Tuple], {
+    [@_'ok'];
+  });
+
+  @def run_test_case({Atom: module, LList: {first | rest;}}, [Tuple], {
+    fun_string = @native Atom.to_s(first);
+    run_test(module, fun_string);
+    run_test_case(module, cast(rest, LList));
+  });
+
+  @def run_test({Atom: module, String: 'test_' => test_name}, [Atom], {
+    test_name = Str.concat('test_', test_name);
+    test_fun = @native Atom.create(test_name);
+    Kernel.spawn(module, test_fun);
+    @_'ok';
+  });
+
+  @def run_test({Atom: module, String: _}, [Atom], {
+    @_'no_test';
+  });
+}))
 @:build(lang.macros.AnnaLang.compile())
 class Code {
 

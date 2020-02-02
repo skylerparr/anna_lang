@@ -15,6 +15,10 @@ class LList implements CustomType {
     return retVal;
   }
 
+  public static function empty(): LList {
+    return create([]);
+  }
+
   public static function getAt(list: LList, index: Int): Any {
     return (cast list)._getAt(index);
   }
