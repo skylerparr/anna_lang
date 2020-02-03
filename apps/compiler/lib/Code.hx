@@ -194,6 +194,15 @@ import vm.Function;
 	@def get_pid_by_name({Atom: name}, [Pid], {
     @native Process.getPidByName(name);
 	});
+
+  @def apply({Function: fun, LList: args}, [Dynamic], {
+    @native Kernel.apply(self(), fun, args);
+  });
+
+  @def apply({Atom: module, Atom: fun, Tuple: types, LList: args}, [Dynamic], {
+    @native Kernel.applyMFA(self(), module, fun, types, args);
+  });
+
 }))
 @:build(lang.macros.AnnaLang.defCls(System, {
   @def print({String: str}, [Atom], {
@@ -486,7 +495,8 @@ import vm.Function;
 @:build(lang.macros.AnnaLang.defCls(StringTest, {
 
   @def test_should_match_strings([Atom], {
-    result = Kernel.equal(cast('foo', Dynamic), cast('foo', Dynamic));
+    result = Kernel.equal(cast('foo', Dynamic), cast('foob', Dynamic));
+    @native IO.inspect(result);
     Assert.assert(result);
   });
 
@@ -1319,7 +1329,7 @@ import vm.Function;
   });
 
   @def run_test_case({Atom: module, LList: {}}, [Tuple], {
-    [@_'ok'];
+    [@_'ok', 'tests complete'];
   });
 
   @def run_test_case({Atom: module, LList: {first | rest;}}, [Tuple], {
@@ -1332,12 +1342,14 @@ import vm.Function;
     test_name = Str.concat('test_', test_name);
     test_fun = @native Atom.create(test_name);
     Kernel.spawn(module, test_fun);
+
     @_'ok';
   });
 
   @def run_test({Atom: module, String: _}, [Atom], {
     @_'no_test';
   });
+
 }))
 @:build(lang.macros.AnnaLang.compile())
 class Code {

@@ -339,7 +339,7 @@ class Kernel {
     return currentScheduler.demonitor(Process.self(), pid);
   }
 
-  public static function apply(pid: Pid, fn: Function, args: LList, callback: Dynamic->Void = null): Void {
+  public static inline function apply(pid: Pid, fn: Function, args: LList, callback: Dynamic->Void = null): Void {
     if(fn == null) {
       IO.inspect('Function not found ${fn.apiFunc}');
       Kernel.crash(Process.self());
@@ -362,6 +362,20 @@ class Kernel {
       nextScopeVariables.set(argName, value);
     }
     currentScheduler.apply(pid, fn, callArgs, nextScopeVariables, callback);
+  }
+
+  public static inline function applyMFA(pid: Pid, module: Atom, fun: Atom, types: Tuple, args: LList, callback: Dynamic->Void = null): Void {
+    fun = resolveApiFuncWithTypes(fun, types);
+    var anonFn: vm.Function = Classes.getFunction(module, fun);
+    if(anonFn == null) {
+      IO.inspect('Function not found ${module.toAnnaString()}${fun.toAnnaString()} with args ${args.toAnnaString()}');
+      Kernel.crash(Process.self());
+      return;
+    }
+    anonFn.scope = pid.processStack.getVariablesInScope();
+    anonFn.apiFunc = fun;
+
+    apply(pid, anonFn, args, callback);
   }
 
   public static inline function isNull(val: Dynamic): Bool {
@@ -388,14 +402,14 @@ class Kernel {
     return left % right;
   }
 
-  public static function same(left: Dynamic, right: Dynamic): Atom {
+  public static inline function same(left: Dynamic, right: Dynamic): Atom {
     if(left == right) {
       return Atom.create('true');
     }
     return Atom.create('false');
   }
 
-  public static function equal(left: Dynamic, right: Dynamic): Atom {
+  public static inline function equal(left: Dynamic, right: Dynamic): Atom {
     var args = [left, right];
     if(areSameDataTypesEqual(args) && structuresAreEqual(args)) {
       return Atom.create('true');
@@ -403,15 +417,15 @@ class Kernel {
     return Atom.create('false');
   }
 
-  public static function concat(lhs: String, rhs: String): String {
+  public static inline function concat(lhs: String, rhs: String): String {
     return lhs + rhs;
   }
   
-  private static function structuresAreEqual(args: Array<Dynamic>): Bool {
+  private static inline function structuresAreEqual(args: Array<Dynamic>): Bool {
     return (Anna.inspect(args[0])) == (Anna.inspect(args[1]));
   }
 
-  private static function areSameDataTypesEqual(args: Array<Dynamic>): Bool {
+  private static inline function areSameDataTypesEqual(args: Array<Dynamic>): Bool {
     var a: Dynamic = args[0];
     var b: Dynamic = args[1];
     return Type.typeof(a) == Type.typeof(b) && a == b;
