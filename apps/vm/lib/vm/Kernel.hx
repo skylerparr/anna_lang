@@ -278,6 +278,12 @@ class Kernel {
     });
   }
 
+  public static function spawnFn(fn: Function, args: LList): Pid {
+    return currentScheduler.spawn(function() {
+      return new InvokeAnonFunction(fn, args, 'Kernel'.atom(), 'spawnFn'.atom(), MacroTools.line());
+    });
+  }
+
   public static function spawn_link(module: Atom, func: Atom, types: Tuple, args: LList): Pid {
     func = resolveApiFuncWithTypes(func, types);
     return currentScheduler.spawnLink(Process.self(), function() {

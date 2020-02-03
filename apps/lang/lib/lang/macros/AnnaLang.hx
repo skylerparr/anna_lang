@@ -754,7 +754,7 @@ class AnnaLang {
             var typeAndValue = MacroTools.getTypeAndValue(arg);
             var typesForVar: Array<String> = getTypesForVar(typeAndValue, arg);
             if(typeIndex >= typesForVar.length) {
-              throw new FunctionClauseNotFound('Function ${moduleName}.${fqFunName} with args [${argStrings.join(', ')}] at line ${lineNumber} not found');
+              throw new FunctionClauseNotFound('Function ${moduleName}.${funName} with args [${argStrings.join(', ')}] at line ${lineNumber} not found');
             }
             var type: String = getType(typesForVar[typeIndex]);
             type = StringTools.replace(type, '.', '_');

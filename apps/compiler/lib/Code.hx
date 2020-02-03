@@ -143,6 +143,11 @@ import vm.Function;
     @_'ok';
   });
 
+  @def send({Pid: pid, MMap: value}, [Atom], {
+    @native Kernel.send(pid, value);
+    @_'ok';
+  });
+
   @def self([Pid], {
     @native vm.Process.self();
   });
@@ -157,6 +162,10 @@ import vm.Function;
 
   @def spawn({Atom: module, Atom: func}, [Pid], {
     @native Kernel.spawn(module, func, @tuple[], {});
+  });
+
+  @def spawn({Function: fun}, [Pid], {
+    @native Kernel.spawnFn(fun, {});
   });
 
   @def spawn({Atom: module, Atom: func, Tuple: types, LList: args}, [Pid], {
@@ -496,8 +505,8 @@ import vm.Function;
 
   @def test_should_match_strings([Atom], {
     result = Kernel.equal(cast('foo', Dynamic), cast('foob', Dynamic));
-    @native IO.inspect(result);
     Assert.assert(result);
+    @_'ok';
   });
 
 }))
@@ -1274,10 +1283,15 @@ import vm.Function;
   @alias vm.Classes;
 
   @const ALL_TESTS = @_'all_tests';
+  @const TEST_RESULTS = @_'test_results';
 
   @def start([Tuple], {
     all_tests_pid = Kernel.spawn_link(@_'UnitTests', @_'start_tests_store', @tuple[], {});
     Kernel.register_pid(all_tests_pid, ALL_TESTS);
+
+    test_results_pid = Kernel.spawn_link(@_'UnitTests', @_'start_test_results_store', @tuple[], {});
+    Kernel.register_pid(test_results_pid, TEST_RESULTS);
+
     [@_'ok', all_tests_pid];
   });
 
@@ -1301,6 +1315,70 @@ import vm.Function;
   @def add_test({Atom: module}, [Atom], {
     all_tests_pid = Kernel.get_pid_by_name(ALL_TESTS);
     Kernel.send(all_tests_pid, [@_'store', module]);
+    @_'ok';
+  });
+
+  @def start_test_results_store([Tuple], {
+    test_results_store_loop([[], [], @_'false']);
+  });
+
+  @def test_results_store_loop({Tuple: [all_tests, test_results, all_tests_registered]}, [Tuple], {
+    received = Kernel.receive(@fn {
+      ([{Tuple: [@_'save', test_name, module, func, result, payload]}] => {
+        test_results = @native MMap.put(test_results, test_name, [module, func, result, payload]);
+        [all_tests, test_results, all_tests_registered];
+      });
+      ([{Tuple: [@_'start_test', test_name]}] => {
+        all_tests = @native MMap.put(all_tests, test_name, @_'running');
+        [all_tests, test_results, all_tests_registered];
+      });
+      ([{Tuple: [@_'end_test', test_name]}] => {
+        all_tests = @native MMap.put(all_tests, test_name, @_'finished');
+        [all_tests, test_results, all_tests_registered];
+      });
+      ([{Tuple: [@_'suite_finished']}] => {
+        [all_tests, test_results, @_'true'];
+      });
+      ([{Tuple: [@_'get', receive_pid]}] => {
+        Kernel.send(cast(receive_pid, Pid), cast([all_tests, test_results, all_tests_registered], Tuple));
+        [all_tests, test_results, all_tests_registered];
+      });
+    });
+    test_results_store_loop(cast(received, Tuple));
+  });
+
+  @def add_test_result({String: test_name, Atom: module, Atom: func, Atom: result, MMap: payload}, [Atom], {
+    pid = Kernel.get_pid_by_name(TEST_RESULTS);
+    Kernel.send(pid, [@_'save', test_name, module, func, result, payload]);
+    @_'ok';
+  });
+
+  @def get_test_results([Tuple], {
+    pid = Kernel.get_pid_by_name(TEST_RESULTS);
+    self = Kernel.self();
+    Kernel.send(pid, [@_'get', self]);
+    Kernel.receive(@fn {
+      ([{Tuple: result}] => {
+        result;
+      });
+    });
+  });
+
+  @def start_test({String: test_name}, [Atom], {
+    pid = Kernel.get_pid_by_name(TEST_RESULTS);
+    Kernel.send(pid, [@_'start_test', test_name]);
+    @_'ok';
+  });
+
+  @def end_test({String: test_name}, [Atom], {
+    pid = Kernel.get_pid_by_name(TEST_RESULTS);
+    Kernel.send(pid, [@_'end_test', test_name]);
+    @_'ok';
+  });
+
+  @def suite_finished([Atom], {
+    pid = Kernel.get_pid_by_name(TEST_RESULTS);
+    Kernel.send(pid, [@_'suite_finished']);
     @_'ok';
   });
 
@@ -1329,6 +1407,7 @@ import vm.Function;
   });
 
   @def run_test_case({Atom: module, LList: {}}, [Tuple], {
+    suite_finished();
     [@_'ok', 'tests complete'];
   });
 
@@ -1341,9 +1420,20 @@ import vm.Function;
   @def run_test({Atom: module, String: 'test_' => test_name}, [Atom], {
     test_name = Str.concat('test_', test_name);
     test_fun = @native Atom.create(test_name);
-    Kernel.spawn(module, test_fun);
-
+    start_test(test_name);
+    Kernel.spawn(@fn {
+      ([{}] => {
+        module = cast(module, Atom);
+        test_fun = cast(test_fun, Atom);
+        run_test(module, test_fun);
+        end_test(test_name);
+      });
+    });
     @_'ok';
+  });
+
+  @def run_test({Atom: module, Atom: test_fun}, [Dynamic], {
+    Kernel.apply(module, test_fun, @tuple[], {});
   });
 
   @def run_test({Atom: module, String: _}, [Atom], {
