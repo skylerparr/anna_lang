@@ -1347,7 +1347,7 @@ import vm.Function;
     test_results_store_loop(cast(received, Tuple));
   });
 
-  @def add_test_result({String: test_name, Atom: module, Atom: func, Atom: result, MMap: payload}, [Atom], {
+  @def add_test_result({Pid: pid, String: test_name, Atom: module, Atom: func, Atom: result, MMap: payload}, [Atom], {
     pid = Kernel.get_pid_by_name(TEST_RESULTS);
     Kernel.send(pid, [@_'save', test_name, module, func, result, payload]);
     @_'ok';
@@ -1425,6 +1425,9 @@ import vm.Function;
       ([{}] => {
         module = cast(module, Atom);
         test_fun = cast(test_fun, Atom);
+        self_pid = Kernel.self();
+
+        add_test_result(self_pid, test_name, module, test_fun, @_'running', []);
         run_test(module, test_fun);
         end_test(test_name);
       });
