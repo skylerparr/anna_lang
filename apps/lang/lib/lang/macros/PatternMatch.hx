@@ -30,13 +30,16 @@ class PatternMatch {
     return retVal;
   }
 
-  public static function generatePatternMatch(pattern: Expr, valueExpr: Expr):Expr {
+  public static function generatePatternMatch(pattern: Expr, valueExpr: Expr, counter: Int = 0):Expr {
     return switch(pattern.expr) {
       case ECall({expr: EField({expr: EConst(CIdent("Tuple"))}, "create")}, [{expr: EArrayDecl([{expr: ECall({ expr: EField({ expr: EConst(CIdent('Atom')) },'create') }, [{ expr: EConst(CString('const')) }]) }, value])}]):
         generatePatternMatch(value, valueExpr);
       case ECall({expr: EField({expr: EConst(CIdent("Tuple"))}, "create")}, [{expr: EArrayDecl([{expr: ECall({ expr: EField({ expr: EConst(CIdent('Atom')) },'create') }, [{ expr: EConst(CString('var')) }]) }, { expr: EConst(CString(varName)) }])}]):
         var value = { expr: EConst(CIdent(varName)), pos: MacroContext.currentPos() }
         generatePatternMatch(value, valueExpr);
+      case ECall({expr: EField({expr: EConst(CIdent("Tuple"))}, "create")}, [{expr: EArrayDecl([{expr: ECall({ expr: EField({ expr: EConst(CIdent('Atom')) },'create') }, [{ expr: EConst(CString('pinned')) }]) }, { expr: EConst(CString(varName)) }])}]):
+        var haxeStr: String = 'arrayTuple[${counter}] = scopeVariables.get("${varName}"); lang.EitherSupport.getValue(arrayTuple[${counter}]);';
+        Macros.haxeToExpr(haxeStr);
       case EConst(CIdent(v)):
         var varName: Dynamic = v;
         var value: Dynamic = printer.printExpr(valueExpr);
@@ -52,7 +55,7 @@ class PatternMatch {
         var counter: Int = 0;
         for(patternExpr in values) {
           var strExpr: String = 'lang.EitherSupport.getValue(arrayTuple[${counter}])';
-          var expr: Expr = generatePatternMatch(patternExpr, lang.macros.Macros.haxeToExpr(strExpr));
+          var expr: Expr = generatePatternMatch(patternExpr, lang.macros.Macros.haxeToExpr(strExpr), counter);
           individualMatches.push(expr);
           counter++;
         }
@@ -73,6 +76,7 @@ class PatternMatch {
             } else {
               var arrayTuple = Tuple.array($e{valueExpr});
               $e{individualMatchesBlock}
+              scope.set("$$$", Tuple.create(arrayTuple));
             }
           }
         ;

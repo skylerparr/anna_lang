@@ -269,6 +269,10 @@ class MacroTools {
     return 'Tuple.create([${getAtom("var")}, "${value}"])';
   }
 
+  public static inline function getPinned(value):String {
+    return 'Tuple.create([${getAtom("pinned")}, "${value}"])';
+  }
+
   public static function getTypeAndValue(expr: Expr):Dynamic {
     return switch(expr.expr) {
       case EConst(CIdent(varName)):
@@ -439,6 +443,8 @@ class MacroTools {
       case EBinop(OpOr, lhs, rhs):
         var value = printer.printExpr(expr);
         {type: "LList", value: value, rawValue: value};
+      case EUnop(OpNegBits, false, {expr: EConst(CIdent(pinnedVarName))}):
+        {type: 'Variable', value: getPinned(pinnedVarName), rawValue: pinnedVarName};
       case e:
         MacroLogger.log(expr, 'expr');
         MacroLogger.logExpr(expr, 'expr code');

@@ -486,6 +486,7 @@ import vm.Function;
 }))
 @:build(lang.macros.AnnaLang.defCls(Assert, {
   @def assert({Atom: @_'true'}, [Atom], {
+    UnitTests.update_status(Kernel.self(), @_'pass');
     @_'ok';
   });
 
@@ -504,7 +505,7 @@ import vm.Function;
 @:build(lang.macros.AnnaLang.defCls(StringTest, {
 
   @def test_should_match_strings([Atom], {
-    result = Kernel.equal(cast('foo', Dynamic), cast('foob', Dynamic));
+    result = Kernel.equal(cast('foo', Dynamic), cast('foo', Dynamic));
     Assert.assert(result);
     @_'ok';
   });
@@ -1324,8 +1325,13 @@ import vm.Function;
 
   @def test_results_store_loop({Tuple: [all_tests, test_results, all_tests_registered]}, [Tuple], {
     received = Kernel.receive(@fn {
-      ([{Tuple: [@_'save', test_name, module, func, result, payload]}] => {
-        test_results = @native MMap.put(test_results, test_name, [module, func, result, payload]);
+      ([{Tuple: [@_'save', test_pid, test_name, module, func, status, payload]}] => {
+        test_results = @native MMap.put(test_results, test_pid, [test_name, module, func, status, payload]);
+        [all_tests, test_results, all_tests_registered];
+      });
+      ([{Tuple: [@_'update_status', test_pid, new_status]}] => {
+        test_status = [test_name, module, func, ~new_status, payload] = @native MMap.get(test_results, test_pid);
+        test_results = @native MMap.put(test_results, test_pid, test_status);
         [all_tests, test_results, all_tests_registered];
       });
       ([{Tuple: [@_'start_test', test_name]}] => {
@@ -1347,9 +1353,9 @@ import vm.Function;
     test_results_store_loop(cast(received, Tuple));
   });
 
-  @def add_test_result({Pid: pid, String: test_name, Atom: module, Atom: func, Atom: result, MMap: payload}, [Atom], {
+  @def add_test_result({Pid: test_pid, String: test_name, Atom: module, Atom: func, Atom: result, MMap: payload}, [Atom], {
     pid = Kernel.get_pid_by_name(TEST_RESULTS);
-    Kernel.send(pid, [@_'save', test_name, module, func, result, payload]);
+    Kernel.send(pid, [@_'save', test_pid, test_name, module, func, result, payload]);
     @_'ok';
   });
 
@@ -1379,6 +1385,12 @@ import vm.Function;
   @def suite_finished([Atom], {
     pid = Kernel.get_pid_by_name(TEST_RESULTS);
     Kernel.send(pid, [@_'suite_finished']);
+    @_'ok';
+  });
+
+  @def update_status({Pid: test_pid, Atom: status}, [Atom], {
+    pid = Kernel.get_pid_by_name(TEST_RESULTS);
+    Kernel.send(pid, [@_'update_status', test_pid, status]);
     @_'ok';
   });
 
@@ -1427,7 +1439,7 @@ import vm.Function;
         test_fun = cast(test_fun, Atom);
         self_pid = Kernel.self();
 
-        add_test_result(self_pid, test_name, module, test_fun, @_'running', []);
+        add_test_result(self_pid, test_name, module, test_fun, @_'no_assertions', []);
         run_test(module, test_fun);
         end_test(test_name);
       });
