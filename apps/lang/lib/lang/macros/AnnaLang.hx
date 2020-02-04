@@ -710,6 +710,22 @@ class AnnaLang {
     MacroTools.addMetaToClass(cls, metaData);
   }
 
+  public static function generatePermutations(lists:Array<Array<String>>, result: Array<Array<String>>, depth: Int, current: Array<String>):Void {
+    var solutions: Int = 1;
+    for(i in 0...lists.length) {
+      solutions *= lists[i].length;
+    }
+    for(i in 0...solutions) {
+      var j: Int = 1;
+      var items: Array<String> = [];
+      for(item in lists) {
+        items.push(item[Std.int(i/j) % item.length]);
+        j *= item.length;
+      }
+      result.push(items);
+    }
+  }
+
   private static function createPushStack(currentModuleStr: String, funName: String, args: Array<Expr>, lineNumber: Int):Array<Expr> {
     var moduleName: String = currentModuleStr;
     if(moduleName == "") {
@@ -724,52 +740,53 @@ class AnnaLang {
       }
     }
 
-    var typeIndex: Int = 0;
-    var fqFunName: String = '';
-    while(true) {
-      var argStrings: Array<String> = [];
-      var retVal: Array<Expr> = [];
-      var types: Array<String> = [];
-      var funArgs: Array<String> = [];
-      var argCounter: Int = 0;
+    var fqFunNameTypeMap: Map<String, String> = new Map();
+    var types: Array<Array<String>> = [];
+    var funArgs: Array<String> = [];
+    var argCounter: Int = 0;
+    var retVal: Array<Expr> = [];
+    var argStrings: Array<String> = [];
 
-      for(arg in args) {
-        argStrings.push(printer.printExpr(arg));
+    for(arg in args) {
+      argStrings.push(printer.printExpr(arg));
 
-        switch(arg.expr) {
-          case ECall(_, _):
-            var argString = '__${funName}_${argCounter} = ${printer.printExpr(arg)};';
-            #if !macro
-            vm.Process.self().processStack.getVariablesInScope().set('__${funName}_${argCounter}', 'Unknown');
-            #end
-            arg = lang.macros.Macros.haxeToExpr(argString);
-            var exprs: Array<Expr> = walkBlock(MacroTools.buildBlock([arg]));
-            for(expr in exprs) {
-              retVal.push(expr);
-            }
+      switch(arg.expr) {
+        case ECall(_, _):
+          var argString = '__${funName}_${argCounter} = ${printer.printExpr(arg)};';
+          #if !macro
+          vm.Process.self().processStack.getVariablesInScope().set('__${funName}_${argCounter}', 'Unknown');
+          #end
+          arg = lang.macros.Macros.haxeToExpr(argString);
+          var exprs: Array<Expr> = walkBlock(MacroTools.buildBlock([arg]));
+          for(expr in exprs) {
+            retVal.push(expr);
+          }
 
-            types.push(getType(StringTools.replace(MacroContext.lastFunctionReturnType, '.', '_')));
-            funArgs.push(MacroTools.getTuple([MacroTools.getAtom("var"), '"__${funName}_${argCounter}"']));
-          case _:
-            var typeAndValue = MacroTools.getTypeAndValue(arg);
-            var typesForVar: Array<String> = getTypesForVar(typeAndValue, arg);
-            if(typeIndex >= typesForVar.length) {
-              throw new FunctionClauseNotFound('Function ${moduleName}.${funName} with args [${argStrings.join(', ')}] at line ${lineNumber} not found');
-            }
-            var type: String = getType(typesForVar[typeIndex]);
+          types.push([getType(StringTools.replace(MacroContext.lastFunctionReturnType, '.', '_'))]);
+          funArgs.push(MacroTools.getTuple([MacroTools.getAtom("var"), '"__${funName}_${argCounter}"']));
+        case _:
+          var typeAndValue = MacroTools.getTypeAndValue(arg);
+          var typesForVar: Array<String> = getTypesForVar(typeAndValue, arg);
+          
+          var possibleTypes: Array<String> = [];
+          for(typeForVar in typesForVar) {
+            var type: String = getType(typeForVar);
             type = StringTools.replace(type, '.', '_');
-            types.push(type);
-            funArgs.push(typeAndValue.value);
-        }
-        argCounter++;
+            possibleTypes.remove(type);
+            possibleTypes.push(type);
+          }
+          types.push(possibleTypes);
+          funArgs.push(typeAndValue.value);
       }
-      var spacer: String = '_';
-      if(types.length == 0) {
-        spacer = '';
-      }
+    }
 
-      fqFunName = makeFqFunName(funName, types);
+    var perms: Array<Array<String>> = [];
+    generatePermutations(types, perms, 0, []);
+    var possibleSignatures: Array<String> = [];
 
+    for(typeArgs in perms) {
+      var fqFunName: String = makeFqFunName(funName, typeArgs);
+      MacroLogger.log(fqFunName, 'fqFunName');
       var frags: Array<String> = fqFunName.split('.');
       fqFunName = frags.pop();
       var declaredFunctions = module.declaredFunctions;
@@ -782,10 +799,6 @@ class AnnaLang {
           retVal.push(lang.macros.Macros.haxeToExpr(haxeStr));
           return retVal;
         }
-        MacroLogger.log(varTypeInScope, 'varTypeInScope');
-        MacroLogger.log(declaredFunctions, 'declaredFunctions');
-        MacroLogger.log(funArgs, 'funArgs');
-
       } else {
         #if macro
         MacroContext.lastFunctionReturnType = funDef[0].funReturnTypes[0];
@@ -797,8 +810,8 @@ class AnnaLang {
         retVal.push(expr);
         return retVal;
       }
-      typeIndex++;
     }
+    throw new FunctionClauseNotFound('Function ${moduleName}.${funName} with args [${argStrings.join(', ')}] at line ${lineNumber} not found');
   }
 
   private static inline function buildPushStackExpr(moduleName: String, fqFunName:
