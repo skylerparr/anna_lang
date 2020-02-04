@@ -1285,6 +1285,7 @@ import vm.Function;
 
   @const ALL_TESTS = @_'all_tests';
   @const TEST_RESULTS = @_'test_results';
+  @const DEFAULT_RESULTS = [[], [], @_'false'];
 
   @def start([Tuple], {
     all_tests_pid = Kernel.spawn_link(@_'UnitTests', @_'start_tests_store', @tuple[], {});
@@ -1320,7 +1321,7 @@ import vm.Function;
   });
 
   @def start_test_results_store([Tuple], {
-    test_results_store_loop([[], [], @_'false']);
+    test_results_store_loop(DEFAULT_RESULTS);
   });
 
   @def test_results_store_loop({Tuple: [all_tests, test_results, all_tests_registered]}, [Tuple], {
@@ -1348,6 +1349,9 @@ import vm.Function;
       ([{Tuple: [@_'get', receive_pid]}] => {
         Kernel.send(cast(receive_pid, Pid), cast([all_tests, test_results, all_tests_registered], Tuple));
         [all_tests, test_results, all_tests_registered];
+      });
+      ([{Tuple: [@_'reset']}] => {
+        DEFAULT_RESULTS;
       });
     });
     test_results_store_loop(cast(received, Tuple));
@@ -1394,7 +1398,14 @@ import vm.Function;
     @_'ok';
   });
 
+  @def reset([Atom], {
+    pid = Kernel.get_pid_by_name(TEST_RESULTS);
+    Kernel.send(pid, [@_'reset']);
+    @_'ok';
+  });
+
   @def run_tests([Atom], {
+    reset();
     all_tests_pid = Kernel.get_pid_by_name(ALL_TESTS);
     self = Kernel.self();
     Kernel.send(all_tests_pid, [@_'get', self]);
