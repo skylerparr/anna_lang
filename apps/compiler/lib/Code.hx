@@ -340,6 +340,7 @@ import vm.Function;
   @def process_command({String: 't'}, [Atom], {
     History.push('t');
     UnitTests.add_test(@_'StringTest');
+    UnitTests.add_test(@_'NumberTest');
 
     UnitTests.run_tests();
 //    ReplTests.start();
@@ -358,18 +359,21 @@ import vm.Function;
 }))
 @:build(lang.macros.AnnaLang.defApi(EEnum, {
   @def all({LList: list, Function: callback}, [Atom]);
+  @def all({MMap: map, Function: callback}, [Atom]);
   @def reduce({LList: list, LList: acc, Function: callback}, [List]);
 }))
 @:build(lang.macros.AnnaLang.defCls(DefaultEnum, {
   @alias vm.Function;
   @impl EEnum;
 
+  // all LList
+  // ---------------------------------------------------------
   @def all({LList: {}, Function: _}, [Atom], {
     @_'true';
   });
 
   @def all({LList: {head | rest;}, Function: callback}, [Atom], {
-    result = callback(cast(head, LList));
+    result = callback(cast(head, Dynamic));
     is_all(cast(result, Atom), cast(rest, LList), callback);
   });
 
@@ -381,6 +385,35 @@ import vm.Function;
     @_'false';
   });
 
+  //======================================================
+  // all MMap
+  // ---------------------------------------------------------
+  @def all({MMap: map, Function: callback}, [Atom], {
+    keys = @native MMap.keys(map);
+    iterate_keys(keys, map, callback);
+  });
+
+  @def iterate_keys({LList: {}, MMap: _, Function: _}, [Atom], {
+    @_'true';
+  });
+
+  @def iterate_keys({LList: {key | rest;}, MMap: map, Function: callback}, [Atom], {
+    value = @native MMap.get(map, key);
+    result = callback(cast(value, Dynamic));
+    is_all(cast(result, Atom), cast(rest, LList), map, callback);
+  });
+
+  @def is_all({Atom: @_'true', LList: keys, MMap: map, Function: callback}, [Atom], {
+    iterate_keys(keys, map, callback);
+  });
+
+  @def is_all({Atom: _, LList: _, MMap: map, Function: _}, [Atom], {
+    @_'false';
+  });
+  //======================================================
+
+  // reduce
+  // --------------------------------------------------------
   @def reduce({LList: {}, LList: acc, Function: _}, [LList], {
     acc;
   });
@@ -389,6 +422,7 @@ import vm.Function;
     result = callback(cast(head, LList), acc);
     reduce(cast(rest, LList), acc, callback);
   });
+  //==========================================================
 }))
 @:build(lang.macros.AnnaLang.set_iface(EEnum, DefaultEnum))
 //@:build(lang.macros.AnnaLang.defType(SourceFile, {
@@ -522,9 +556,19 @@ import vm.Function;
     assert(result); 
   });
 
+  @def assert({Int: lhs, Int: rhs}, [Atom], {
+    result = Kernel.equal(cast(lhs, Dynamic), cast(rhs, Dynamic));
+    assert(result);
+  });
+
   @def refute({String: lhs, String: rhs}, [Atom], {
     result = Kernel.equal(cast(lhs, Dynamic), cast(rhs, Dynamic));
     refute(result); 
+  });
+
+  @def refute({Int: lhs, Int: rhs}, [Atom], {
+    result = Kernel.equal(cast(lhs, Dynamic), cast(rhs, Dynamic));
+    refute(result);
   });
 
   @def assert({Atom: @_'true'}, [Atom], {
@@ -557,12 +601,97 @@ import vm.Function;
 }))
 @:build(lang.macros.AnnaLang.defCls(StringTest, {
 
-  @def test_should_match_strings([Atom], {
+  @def test_should_create_strings([Atom], {
     Assert.assert('foo', 'foo');
   });
 
+  @def test_should_create_strings_interp([Atom], {
+    result = @native Lang.eval('"foo"');
+    Assert.assert('foo', cast(result, String));
+  });
+
   @def test_should_not_match_strings([Atom], {
-    Assert.assert('foo', 'bar');
+    Assert.refute('foo', 'bar');
+  });
+
+  @def test_should_match_function_head_strings([Atom], {
+    match('foo', 'bar');
+  });
+
+  @def test_should_match_function_head_strings_interp([Atom], {
+    result = @native Lang.eval('"bar"');
+    match('foo', cast(result, String));
+  });
+
+  @def match({String: 'foo', String: 'bar'}, [Atom], {
+    Assert.assert(@_'true');
+  });
+
+  @def match({String: _, String: _}, [Atom], {
+    Assert.assert(@_'false');
+  });
+
+}))
+@:build(lang.macros.AnnaLang.defCls(NumberTest, {
+
+  @def test_should_create_ints([Atom], {
+    Assert.assert(123, 123);
+  });
+
+  @def test_should_create_ints_interp([Atom], {
+    result = @native Lang.eval('4738');
+    Assert.assert(4738, cast(result, Number));
+  });
+
+  @def test_should_not_match_ints([Atom], {
+    Assert.refute(321, 123);
+  });
+
+  @def test_should_match_function_head_ints([Atom], {
+    match(123, 456);
+  });
+
+  @def test_should_match_function_head_ints_interp([Atom], {
+    result = @native Lang.eval('456');
+    match(123, cast(result, Number));
+  });
+
+  @def test_should_create_floats([Atom], {
+    Assert.assert(43.3245, 43.3245);
+  });
+
+  @def test_should_create_floats_interp([Atom], {
+    result = @native Lang.eval('43.3245');
+    Assert.assert(43.3245, cast(result, Number));
+  });
+
+  @def test_should_not_match_floats([Atom], {
+    Assert.refute(43.3245, 293.2094);
+  });
+
+  @def test_should_match_function_head_floats([Atom], {
+    match(43.3245, 89435.349);
+  });
+
+  @def test_should_match_function_head_floats_interp([Atom], {
+    result = @native Lang.eval('89435.349');
+    match(43.3245, cast(result, Number));
+  });
+
+  @def match({Float: 43.3245, Float: 89435.349}, [Atom], {
+    Assert.assert(@_'true');
+  });
+
+  @def match({Int: 123, Int: 456}, [Atom], {
+    Assert.assert(@_'true');
+  });
+
+  @def match({Float: 43.3245, Float: 89435.349}, [Atom], {
+    Assert.assert(@_'true');
+  });
+
+  @def match({Float: _, Float: _}, [Atom], {
+    Assert.assert(@_'false');
   });
 
 }))
@@ -570,27 +699,6 @@ import vm.Function;
 //  @alias vm.Pid;
 //
 //  @def start([Atom], {
-//    test_name = "should match strings";
-//    assert("foo", "foo", test_name);
-//
-//    test_name = "should match strings (interp)";
-//    result = @native Lang.eval('"foo"');
-//    assert("foo", cast(result, String), test_name);
-//
-//    test_name = 'should match on ints';
-//    assert(432, 432, test_name);
-//
-//    test_name = 'should match on ints (interp)';
-//    result = @native Lang.eval('432');
-//    assert(432, cast(result, Int), test_name);
-//
-//    test_name = 'should match on floats';
-//    assert(4.32, 4.32, test_name);
-//
-//    test_name = 'should match on floats (interp)';
-//    result = @native Lang.eval('4.32');
-//    assert(4.32, cast(result, Float), test_name);
-//
 //    test_name = 'should match on constant atoms';
 //    assert(@_'ok', @_'ok', test_name);
 //
@@ -1473,6 +1581,7 @@ import vm.Function;
     test_name = cast(test_name, String);
     end_test(test_name);
     header = Str.concat("Test Failure: ", test_name);
+    System.println('');
     System.println(header);
     Kernel.exit(test_pid);
     @_'ok';
@@ -1514,14 +1623,23 @@ import vm.Function;
     do_wait(@_'wait');
   });
 
-  @def do_wait({Atom: @_'done'}, [Atom], {
+  @def do_wait({Atom: @_'true'}, [Atom], {
+    System.println('');
     @_'ok';
   });
 
   @def do_wait({Atom: _}, [Atom], {
     Kernel.sleep(50);
     [all_tests, _, _] = get_test_results();
-    do_wait()
+    all_finished = EEnum.all(cast(all_tests, MMap), @fn {
+      ([{Atom: @_'finished'}] => {
+        @_'true';
+      });
+      ([{Atom: _}] => {
+        @_'false';
+      });
+    });
+    do_wait(all_finished);
   });
 
   @def run_test_case({Atom: module, LList: {}}, [Tuple], {
