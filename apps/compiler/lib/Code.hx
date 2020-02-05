@@ -153,6 +153,10 @@ import vm.Function;
     @_'ok';
   });
 
+  @def sleep({Int: milliseconds}, [Atom], {
+    @native Process.sleep(milliseconds);
+  });
+
   @def self([Pid], {
     @native vm.Process.self();
   });
@@ -352,23 +356,41 @@ import vm.Function;
     @_'ok';
   });
 }))
-//@:build(lang.macros.AnnaLang.defApi(EEnum, {
-//  @def reduce({LList: list, LList: acc, Function: callback}, [List]);
-//}))
-//@:build(lang.macros.AnnaLang.defCls(DefaultEnum, {
-//  @alias vm.Function;
-//  @impl EEnum;
-//
-//  @def reduce({LList: {}, LList: acc, Function: _}, [LList], {
-//    acc;
-//  });
-//
-//  @def reduce({LList: {head | rest;}, LList: acc, Function: callback}, [LList], {
-//    result = callback(head, acc);
-//    reduce(cast(rest, LList), acc, callback);
-//  });
-//}))
-//@:build(lang.macros.AnnaLang.set_iface(EEnum, DefaultEnum))
+@:build(lang.macros.AnnaLang.defApi(EEnum, {
+  @def all({LList: list, Function: callback}, [Atom]);
+  @def reduce({LList: list, LList: acc, Function: callback}, [List]);
+}))
+@:build(lang.macros.AnnaLang.defCls(DefaultEnum, {
+  @alias vm.Function;
+  @impl EEnum;
+
+  @def all({LList: {}, Function: _}, [Atom], {
+    @_'true';
+  });
+
+  @def all({LList: {head | rest;}, Function: callback}, [Atom], {
+    result = callback(cast(head, LList));
+    is_all(cast(result, Atom), cast(rest, LList), callback);
+  });
+
+  @def is_all({Atom: @_'true', LList: list, Function: callback}, [Atom], {
+    all(list, callback);
+  });
+
+  @def is_all({Atom: _, LList: _, Function: _}, [Atom], {
+    @_'false';
+  });
+
+  @def reduce({LList: {}, LList: acc, Function: _}, [LList], {
+    acc;
+  });
+
+  @def reduce({LList: {head | rest;}, LList: acc, Function: callback}, [LList], {
+    result = callback(cast(head, LList), acc);
+    reduce(cast(rest, LList), acc, callback);
+  });
+}))
+@:build(lang.macros.AnnaLang.set_iface(EEnum, DefaultEnum))
 //@:build(lang.macros.AnnaLang.defType(SourceFile, {
 //  var module_name: String = '';
 //  var source_code: String = '';
@@ -1448,7 +1470,9 @@ import vm.Function;
         results;
       });
     });
-    header = Str.concat("Test Failure: ", cast(test_name, String));
+    test_name = cast(test_name, String);
+    end_test(test_name);
+    header = Str.concat("Test Failure: ", test_name);
     System.println(header);
     Kernel.exit(test_pid);
     @_'ok';
@@ -1471,6 +1495,7 @@ import vm.Function;
       });
     });
     do_run_tests(cast(all_tests, LList));
+    wait_for_tests_to_complete();
     @_'ok';
   });
 
@@ -1483,6 +1508,20 @@ import vm.Function;
     Kernel.spawn(@_'UnitTests', @_'run_test_case', [@_'Atom', @_'LList'], {module; functions;});
     do_run_tests(cast(rest, LList));
     @_'ok';
+  });
+
+  @def wait_for_tests_to_complete([Atom], {
+    do_wait(@_'wait');
+  });
+
+  @def do_wait({Atom: @_'done'}, [Atom], {
+    @_'ok';
+  });
+
+  @def do_wait({Atom: _}, [Atom], {
+    Kernel.sleep(50);
+    [all_tests, _, _] = get_test_results();
+    do_wait()
   });
 
   @def run_test_case({Atom: module, LList: {}}, [Tuple], {
