@@ -143,6 +143,11 @@ import vm.Function;
     @_'ok';
   });
 
+  @def send({Pid: pid, Atom: value}, [Atom], {
+    @native Kernel.send(pid, value);
+    @_'ok';
+  });
+
   @def send({Pid: pid, MMap: value}, [Atom], {
     @native Kernel.send(pid, value);
     @_'ok';
@@ -194,6 +199,10 @@ import vm.Function;
 
   @def exit({Pid: pid}, [Atom], {
     @native Kernel.exit(pid);
+  });
+
+  @def crash({Pid: pid}, [Atom], {
+    @native Kernel.crash(pid);
   });
 
 	@def register_pid({Pid: pid, Atom: name}, [Atom], {
@@ -485,29 +494,53 @@ import vm.Function;
 
 }))
 @:build(lang.macros.AnnaLang.defCls(Assert, {
+
+  @def assert({String: lhs, String: rhs}, [Atom], {
+    result = Kernel.equal(cast(lhs, Dynamic), cast(rhs, Dynamic));
+    assert(result); 
+  });
+
+  @def refute({String: lhs, String: rhs}, [Atom], {
+    result = Kernel.equal(cast(lhs, Dynamic), cast(rhs, Dynamic));
+    refute(result); 
+  });
+
   @def assert({Atom: @_'true'}, [Atom], {
-    UnitTests.update_status(Kernel.self(), @_'pass');
-    @_'ok';
+    record_status(@_'pass');
   });
 
   @def assert({Atom: _}, [Atom], {
-    @_'error';
+    record_status(@_'fail');
   });
 
   @def refute({Atom: @_'false'}, [Atom], {
+    record_status(@_'pass');
     @_'ok';
   });
 
   @def refute({Atom: _}, [Atom], {
+    record_status(@_'fail');
     @_'error';
   });
+
+  @def record_status({Atom: status}, [Atom], {
+    UnitTests.update_status(Kernel.self(), status);
+    Kernel.receive(@fn {
+      ([{Atom: msg}] => {
+        msg;
+      });
+    });
+  });
+
 }))
 @:build(lang.macros.AnnaLang.defCls(StringTest, {
 
   @def test_should_match_strings([Atom], {
-    result = Kernel.equal(cast('foo', Dynamic), cast('foo', Dynamic));
-    Assert.assert(result);
-    @_'ok';
+    Assert.assert('foo', 'foo');
+  });
+
+  @def test_should_not_match_strings([Atom], {
+    Assert.assert('foo', 'bar');
   });
 
 }))
@@ -1346,6 +1379,11 @@ import vm.Function;
       ([{Tuple: [@_'suite_finished']}] => {
         [all_tests, test_results, @_'true'];
       });
+      ([{Tuple: [@_'get_result', test_pid]}] => {
+        test_result = @native MMap.get(test_results, test_pid);
+        Kernel.send(cast(test_pid, Pid), cast(test_result, Tuple));
+        [all_tests, test_results, all_tests_registered];
+      });
       ([{Tuple: [@_'get', receive_pid]}] => {
         Kernel.send(cast(receive_pid, Pid), cast([all_tests, test_results, all_tests_registered], Tuple));
         [all_tests, test_results, all_tests_registered];
@@ -1392,9 +1430,27 @@ import vm.Function;
     @_'ok';
   });
 
-  @def update_status({Pid: test_pid, Atom: status}, [Atom], {
+  @def update_status({Pid: test_pid, Atom: @_'pass'}, [Atom], {
+    status = @_'pass';
     pid = Kernel.get_pid_by_name(TEST_RESULTS);
     Kernel.send(pid, [@_'update_status', test_pid, status]);
+    Kernel.send(test_pid, status);
+    @_'ok';
+  });
+
+  @def update_status({Pid: test_pid, Atom: @_'fail'}, [Atom], {
+    status = @_'fail';
+    pid = Kernel.get_pid_by_name(TEST_RESULTS);
+    Kernel.send(pid, [@_'update_status', test_pid, status]);
+    Kernel.send(pid, [@_'get_result', test_pid]);
+    [test_name, module, func, new_status, payload] = Kernel.receive(@fn {
+      ([{Tuple: results}, [Tuple]] => {
+        results;
+      });
+    });
+    header = Str.concat("Test Failure: ", cast(test_name, String));
+    System.println(header);
+    Kernel.exit(test_pid);
     @_'ok';
   });
 
@@ -1452,6 +1508,7 @@ import vm.Function;
 
         add_test_result(self_pid, test_name, module, test_fun, @_'no_assertions', []);
         run_test(module, test_fun);
+        System.print('.');
         end_test(test_name);
       });
     });
