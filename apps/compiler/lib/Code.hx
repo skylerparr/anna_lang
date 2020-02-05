@@ -341,6 +341,8 @@ import vm.Function;
     History.push('t');
     UnitTests.add_test(@_'StringTest');
     UnitTests.add_test(@_'NumberTest');
+    UnitTests.add_test(@_'AtomTest');
+    UnitTests.add_test(@_'TupleTest');
 
     UnitTests.run_tests();
 //    ReplTests.start();
@@ -551,9 +553,19 @@ import vm.Function;
 }))
 @:build(lang.macros.AnnaLang.defCls(Assert, {
 
-  @def assert({String: lhs, String: rhs}, [Atom], {
+  @def assert({Atom: lhs, Atom: rhs}, [Atom], {
     result = Kernel.equal(cast(lhs, Dynamic), cast(rhs, Dynamic));
     assert(result); 
+  });
+
+  @def assert({Tuple: lhs, Tuple: rhs}, [Atom], {
+    result = Kernel.equal(cast(lhs, Dynamic), cast(rhs, Dynamic));
+    assert(result);
+  });
+
+  @def assert({String: lhs, String: rhs}, [Atom], {
+    result = Kernel.equal(cast(lhs, Dynamic), cast(rhs, Dynamic));
+    assert(result);
   });
 
   @def assert({Int: lhs, Int: rhs}, [Atom], {
@@ -561,9 +573,19 @@ import vm.Function;
     assert(result);
   });
 
-  @def refute({String: lhs, String: rhs}, [Atom], {
+  @def refute({Atom: lhs, Atom: rhs}, [Atom], {
     result = Kernel.equal(cast(lhs, Dynamic), cast(rhs, Dynamic));
     refute(result); 
+  });
+
+  @def refute({Tuple: lhs, Tuple: rhs}, [Atom], {
+    result = Kernel.equal(cast(lhs, Dynamic), cast(rhs, Dynamic));
+    refute(result);
+  });
+
+  @def refute({String: lhs, String: rhs}, [Atom], {
+    result = Kernel.equal(cast(lhs, Dynamic), cast(rhs, Dynamic));
+    refute(result);
   });
 
   @def refute({Int: lhs, Int: rhs}, [Atom], {
@@ -695,54 +717,98 @@ import vm.Function;
   });
 
 }))
+@:build(lang.macros.AnnaLang.defCls(AtomTest, {
+
+  @def test_should_create_atoms([Atom], {
+    Assert.assert(@_'ok', @_'ok');
+  });
+
+
+  @def test_should_not_match_atoms([Atom], {
+    Assert.refute(@_'ok', @_'fail');
+  });
+
+  @def test_should_create_atoms_interp([Atom], {
+    result = @native Lang.eval('@_"ok"');
+    Assert.assert(@_'ok', cast(result, Atom));
+  });
+
+  @def test_should_match_function_head_atoms([Atom], {
+    match(@_'ok', @_'good');
+  });
+
+  @def test_should_match_function_head_atoms_interp([Atom], {
+    result = @native Lang.eval("@_'good'");
+    match(@_'ok', cast(result, Atom));
+  });
+
+  @def match({Atom: @_'ok', Atom: @_'good'}, [Atom], {
+    Assert.assert(@_'true');
+  });
+
+  @def match({Atom: _, Atom: _}, [Atom], {
+    Assert.assert(@_'false');
+  });
+
+}))
+@:build(lang.macros.AnnaLang.defCls(TupleTest, {
+
+  @def test_should_create_tuple_with_all_constant_elements([Atom], {
+    Assert.assert([@_'ok', 'message'], [@_'ok', 'message']);
+  });
+
+  @def test_should_create_tuple_with_all_constant_elements_interp([Atom], {
+    result = @native Lang.eval("[@_'ok', 'message']");
+    Assert.assert([@_'ok', 'message'], cast(result, Tuple));
+  });
+
+  @def test_should_create_tuple_with_all_variable_elements([Atom], {
+    status = @_'ok';
+    message = 'message';
+    Assert.assert([@_'ok', 'message'], [status, message]);
+  });
+
+  @def test_should_create_tuple_with_all_variable_elements_interp([Atom], {
+    result = @native Lang.eval("status = @_'ok'; message = 'message'; [status, message]");
+    Assert.assert([@_'ok', 'message'], cast(result, Tuple));
+  });
+
+  @def test_should_create_tuple_within_a_tuple([Atom], {
+    status = @_'ok';
+    Assert.assert([@_'ok', [@_'error', 'complete']], [status, [@_'error', 'complete']]);
+  });
+
+  @def test_should_create_tuple_within_a_tuple_interp([Atom], {
+    result = @native Lang.eval("status = @_'ok'; [status, [@_'error', 'complete']]");
+    Assert.assert([@_'ok', [@_'error', 'complete']], cast(result, Tuple));
+  });
+
+  @def test_should_match_tuple_on_function_head([Atom], {
+    match([@_'ok', [@_'error', 'complete']]);
+  });
+
+  @def test_should_match_tuple_on_function_head_interp([Atom], {
+    result = @native Lang.eval("TupleTest.match([@_'eval', [@_'error', 'complete']]);");
+    Assert.assert(cast(result, Atom));
+  });
+
+  @def match({Tuple: [@_'ok', [@_'error', 'complete']]}, [Atom], {
+    Assert.assert(@_'true');
+  });
+
+  @def match({Tuple: [@_'eval', [@_'error', 'complete']]}, [Atom], {
+    @_'true';
+  });
+
+  @def match({Tuple: _}, [Atom], {
+    Assert.assert(@_'false');
+  });
+
+}))
 //@:build(lang.macros.AnnaLang.defCls(ReplTests, {
 //  @alias vm.Pid;
 //
 //  @def start([Atom], {
-//    test_name = 'should match on constant atoms';
-//    assert(@_'ok', @_'ok', test_name);
-//
-//    test_name = 'should match on constant atoms (interp)';
-//    result = @native Lang.eval('@_"ok"');
-//    assert(@_'ok', cast(result, Atom), test_name);
-//
-//    test_name = 'should match on tuple with all constant elements';
-//    assert([@_'ok', 'message'], [@_'ok', 'message'], test_name);
-//
-//    test_name = 'should match on tuple with all constant elements (interp)';
-//    result = @native Lang.eval('[@_"ok", "message"]');
-//    assert([@_'ok', 'message'], cast(result, Tuple), test_name);
-//
-//    test_name = 'should match on tuple with message variable';
-//    message = 'message';
-//    assert([@_'ok', message], [@_'ok', message], test_name);
-//
-//    test_name = 'should match on tuple with message variable (interp)';
-//    result = @native Lang.eval('[@_"ok", message]');
-//    assert([@_'ok', message], cast(result, Tuple), test_name);
-//
-//    test_name = 'should match on tuple with all elements variables';
-//    status = @_'ok';
-//    assert([status, message], [status, message], test_name);
-//
-//    test_name = 'should match on tuple with all elements variables (interp)';
-//    result = @native Lang.eval('[status, message]');
-//    assert([status, message], cast(result, Tuple), test_name);
-//
-//    test_name = 'should match on variable status tuples';
-//    assert([status, 'message'], [status, 'message'], test_name);
-//
-//    test_name = 'should match on variable status tuples (interp)';
-//    result = @native Lang.eval('[status, "message"]');
-//    assert([status, 'message'], cast(result, Tuple), test_name);
-//
-//    test_name = 'should match on tuple within a tuple';
-//    assert([status, [@_'error', 'complete']], [status, [@_'error', 'complete']], test_name);
-//
-//    test_name = 'should match on tuple within a tuple (interp)';
-//    result = @native Lang.eval('[status, [@_"error", "complete"]]');
-//    assert([status, [@_'error', 'complete']], cast(result, Tuple), test_name);
-//
 //    test_name = 'should match on single list item';
 //    assert({'nice';}, {'nice';}, test_name);
 //

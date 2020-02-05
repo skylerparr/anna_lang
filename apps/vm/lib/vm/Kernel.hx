@@ -434,7 +434,7 @@ class Kernel {
   private static inline function areSameDataTypesEqual(args: Array<Dynamic>): Bool {
     var a: Dynamic = args[0];
     var b: Dynamic = args[1];
-    return Type.typeof(a) == Type.typeof(b) && a == b;
+    return Type.typeof(a) == Type.typeof(b);
   }
 
 }
