@@ -393,17 +393,24 @@ class CPPMultithreadedScheduler implements Scheduler {
 
   public function monitor(parentPid: Pid, pid: Pid): Atom {
     if(notRunning()) {
-      return null;
+      Logger.log('not running');
+      return 'nil'.atom();
     }
+    Logger.log('monitor');
     var currentThread: ThreadHandle = Thread.current().handle;
+    Logger.log(currentThread, 'currentThread');
     if(currentThread == getThreadForPid(pid).handle) {
+      Logger.log('same thread');
       threadSchedulerMessagesMap.get(currentThread).scheduler.monitor(parentPid, pid);
     } else {
       var threadForPid: ThreadHandle = getThreadForPid(parentPid).handle;
+      Logger.log(threadForPid, 'threadForPid');
       if(threadForPid == null) {
         return 'nil'.atom();
       }
-      push(threadSchedulerMessagesMap.get(parentPid), MONITOR(parentPid, pid));
+      var message = threadSchedulerMessagesMap.get(threadForPid); 
+      Logger.log(message, 'message');
+      push(message, MONITOR(parentPid, pid));
     }
     return "ok".atom();
   }

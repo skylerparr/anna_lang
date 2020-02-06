@@ -31,7 +31,7 @@ class Logger {
 
   public static function init():Void {
     #if !macro
-    #if (cpp || cppia)
+    #if cpp
     sys.io.File.saveContent(filePath, '');
 //    logThread = cpp.vm.Thread.create(logListener);
     #end
@@ -51,7 +51,6 @@ class Logger {
     #end
   }
 
-  #if (cpp || cppia)
   macro public static function log(term: Expr, label: Expr = null): Expr {
     var locStr: String = '${haxe.macro.Context.currentPos()}';
     var frags: Array<String> = locStr.split('/');
@@ -68,10 +67,5 @@ class Logger {
       Logger.sendLog(log);
     }
   }
-  #else
-  macro public static function log(term: Expr, label: Expr = null): Expr {
-    return macro{};
-  }
-  #end
 
 }

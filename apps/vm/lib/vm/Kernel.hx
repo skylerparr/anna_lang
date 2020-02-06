@@ -338,6 +338,9 @@ class Kernel {
   }
 
   public static function monitor(pid: Pid): Atom {
+    Logger.log(pid, 'pid');
+    Logger.log(Process.self(), 'self');
+    Logger.log(currentScheduler, 'currentScheduler');
     return currentScheduler.monitor(Process.self(), pid);
   }
 
