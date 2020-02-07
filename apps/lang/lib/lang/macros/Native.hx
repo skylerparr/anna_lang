@@ -1,8 +1,5 @@
 package lang.macros;
 import lang.macros.MacroTools;
-import lang.macros.MacroTools;
-import lang.macros.MacroTools;
-import lang.macros.MacroTools;
 import haxe.macro.Expr;
 import haxe.macro.Printer;
 import hscript.plus.ParserPlus;
@@ -27,7 +24,7 @@ class Native {
   public static function gen(params: Expr): Array<Expr> {
     var funName: String = MacroContext.currentVar;
     var moduleName: String = MacroTools.getModuleName(params);
-    moduleName = AnnaLang.getAlias(moduleName);
+    moduleName = Helpers.getAlias(moduleName);
     var invokeFunName = MacroTools.getFunctionName(params);
     var args = MacroTools.getFunBody(params);
     var retVal: Array<Expr> = [];

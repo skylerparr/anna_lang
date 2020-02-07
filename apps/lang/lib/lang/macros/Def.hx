@@ -28,14 +28,14 @@ class Def {
       if(!argType.isPatternVar) {
         var strType: String = MacroTools.resolveType(lang.macros.Macros.haxeToExpr(argType.type));
         strType = r.replace(strType, '');
-        types.push(AnnaLang.getType(strType));
+        types.push(Helpers.getType(strType));
         argType.type = strType;
       }
     }
-    var argTypes: String = AnnaLang.sanitizeArgTypeNames(types);
+    var argTypes: String = Helpers.sanitizeArgTypeNames(types);
     var funBody: Array<Expr> = MacroTools.getFunBody(params);
 
-    var internalFunctionName: String = AnnaLang.makeFqFunName(funName, types);
+    var internalFunctionName: String = Helpers.makeFqFunName(funName, types);
 
     // add the functions to the context for reference later
     var funBodies: Array<Dynamic> = MacroContext.currentModuleDef.declaredFunctions.get(internalFunctionName);

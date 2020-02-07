@@ -1,5 +1,6 @@
 package lang.macros;
 
+import lang.macros.utils.Helpers;
 import lang.macros.MacroTools;
 import lang.macros.MacroTools;
 import hscript.plus.ParserPlus;
@@ -23,7 +24,7 @@ class Match {
     var typeAndValue = MacroTools.getTypeAndValue(params);
     if(typeAndValue.type == "Variable") {
       var moduleName: String = MacroTools.getModuleName(params);
-      moduleName = AnnaLang.getAlias(moduleName);
+      moduleName = Helpers.getAlias(moduleName);
 
       var currentModule: TypeDefinition = MacroContext.currentModule;
       var currentModuleStr: String = currentModule.name;
@@ -57,7 +58,7 @@ class Match {
             }
           }
       }
-      AnnaLang.applyBuildMacro(cls);
+      Helpers.applyBuildMacro(cls);
 
       var className: String = '___${_id++}';
       cls.name = className;

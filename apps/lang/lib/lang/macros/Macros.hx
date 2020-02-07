@@ -13,15 +13,6 @@ using haxe.macro.Tools;
 // #pos\(.*?\)
 class Macros {
 
-  private static var parser: ParserPlus = {
-    parser = new ParserPlus();
-    parser.allowTypes = true;
-    parser.allowMetadata = true;
-    parser;
-  }
-
-  private static var printer: Printer = new Printer();
-
   macro public static function build(): Array<Field> {
     var fields: Array<Field> = Context.getBuildFields();
     var retFields: Array<Field> = [];
@@ -36,7 +27,7 @@ class Macros {
     return retFields;
   }
 
-  private static function updateField(field: Field): Field {
+  private function updateField(field: Field): Field {
     return switch(field.kind) {
       case FVar(_, null):
         field;
@@ -80,7 +71,7 @@ class Macros {
     }
   }
 
-  private static function findMetaInBlock(expr: Expr, rhs: Expr):Expr {
+  private function findMetaInBlock(expr: Expr, rhs: Expr):Expr {
     if(expr == null) {
       return expr;
     }
@@ -197,7 +188,7 @@ class Macros {
     }
   }
 
-  private static function handleBinop(expr: Expr, rhs: Expr, retValBlock: Array<Expr>):Void {
+  private function handleBinop(expr: Expr, rhs: Expr, retValBlock: Array<Expr>):Void {
     switch(expr.expr) {
       case EBinop(OpArrow, a, b):
         var meta = findMetaInBlock(a, rhs);
@@ -271,7 +262,7 @@ class Macros {
     }
   }
 
-  private static function handleMeta(entry, lhs, rhs):Expr {
+  private function handleMeta(entry, lhs, rhs):Expr {
     var result = switch(lhs.expr) {
       case EBinop(_, lhs, rhs):
         extractMeta(entry, lhs, rhs);
@@ -289,7 +280,7 @@ class Macros {
     return result;
   }
 
-  private static function extractMeta(entry, exprL: Expr, exprR: Expr): Expr {
+  private function extractMeta(entry, exprL: Expr, exprR: Expr): Expr {
     var funString: String = entry.name;
     var fun = Reflect.field(lang.macros.Macros, '_' + funString);
     var result = fun(exprL, exprR);
@@ -301,7 +292,7 @@ class Macros {
     }
   }
 
-  public static function extractBlock(expr: Expr):Array<Expr> {
+  public function extractBlock(expr: Expr):Array<Expr> {
     return switch(expr.expr) {
       case EBlock(exprs):
         exprs;
@@ -310,7 +301,7 @@ class Macros {
     }
   }
 
-  public static function findMeta(expr: Expr, callback: Expr->Expr):Expr {
+  public function findMeta(expr: Expr, callback: Expr->Expr):Expr {
     return {
       switch(expr.expr) {
         case EArrayDecl(values) | ECall({ expr: EField({ expr: EArrayDecl(values)}, _)}, _) | EBlock(values):
@@ -357,17 +348,17 @@ class Macros {
     }
   }
 
-  private static inline function collectMetaExpr(value: Expr, arrayValues: Array<Expr>): Void {
+  private inline function collectMetaExpr(value: Expr, arrayValues: Array<Expr>): Void {
     var meta = findMetaInBlock(value, null);
     arrayValues.push(meta);
   }
 
-  public static function getLineNumber(pos: Position):Int {
+  public function getLineNumber(pos: Position):Int {
     var str = '${pos}'.split(':')[1];
     return Std.parseInt(str);
   }
 
-  private static function _tuple(expr: Expr, _: Expr):Expr {
+  private function _tuple(expr: Expr, _: Expr):Expr {
     return findMeta(expr, function(expr: Expr): Expr {
       return macro {
         Tuple.create($e{expr});
@@ -375,7 +366,7 @@ class Macros {
     });
   }
 
-  private static function _map(expr: Expr, _: Expr):Expr {
+  private function _map(expr: Expr, _: Expr):Expr {
     return findMeta(expr, function(expr: Expr): Expr {
       return macro {
         MMap.create($e{expr});
@@ -383,7 +374,7 @@ class Macros {
     });
   }
 
-  public static function _list(expr: Expr, _: Expr):Expr {
+  public function _list(expr: Expr, _: Expr):Expr {
     return findMeta(expr, function(expr: Expr): Expr {
       return macro {
         LList.create($e{expr});
@@ -391,7 +382,7 @@ class Macros {
     });
   }
 
-  public static function _atom(expr: Expr, _: Expr):Expr {
+  public function _atom(expr: Expr, _: Expr):Expr {
     return findMeta(expr, function(expr: Expr): Expr {
       return macro {
         Atom.create($e{expr});
@@ -399,7 +390,7 @@ class Macros {
     });
   }
 
-  public static function _keyword(expr: Expr, _: Expr):Expr {
+  public function _keyword(expr: Expr, _: Expr):Expr {
     return findMeta(expr, function(expr: Expr): Expr {
       return macro {
         Keyword.create($e{expr});
@@ -407,7 +398,7 @@ class Macros {
     });
   }
 
-  public static function __(e1: Expr, e2: Expr):Expr {
+  public function __(e1: Expr, e2: Expr):Expr {
     return _atom(e1, e2);
   }
 
@@ -420,7 +411,7 @@ class Macros {
     }
   }
   #else
-  public static function _assert(lhs: Expr, rhs: Expr):Expr {
+  public function _assert(lhs: Expr, rhs: Expr):Expr {
     return macro {
     }
   }
@@ -435,19 +426,19 @@ class Macros {
     }
   }
   #else
-  public static function _refute(lhs: Expr, rhs: Expr):Expr {
+  public function _refute(lhs: Expr, rhs: Expr):Expr {
     return macro {
     }
   }
   #end
 
-  public static function getPosContext(pos: Position): String {
+  public function getPosContext(pos: Position): String {
     var context: String = '${pos}';
     context = StringTools.replace(context, Sys.getCwd(), '');
     return context;
   }
 
-  public static function haxeToExpr(str: String): Expr {
+  public function haxeToExpr(str: String): Expr {
     var ast = parser.parseString(str);
     return new hscript.Macro(MacroContext.currentPos()).convert(ast);
   }
