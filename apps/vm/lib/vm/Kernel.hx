@@ -29,7 +29,7 @@ class Kernel {
       return 'already_started'.atom();
     }
     Logger.init();
-    var scheduler: vm.schedulers.GenericScheduler = new vm.schedulers.GenericScheduler();
+    var scheduler: vm.schedulers.CPPMultithreadedScheduler = new vm.schedulers.CPPMultithreadedScheduler();
 
     var objectFactory: ObjectFactory = new ObjectFactory();
     objectFactory.injector = new Injector();

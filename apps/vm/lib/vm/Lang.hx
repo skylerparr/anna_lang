@@ -11,9 +11,11 @@ import haxe.macro.Printer;
 import haxe.macro.Expr;
 import hscript.Macro;
 import hscript.Parser;
+import cpp.vm.Mutex;
 using lang.AtomSupport;
 class Lang {
 
+  private static var mutex: Mutex = new Mutex();
   private static var printer: Printer = new Printer();
   private static var parser: Parser = {
     var parser: Parser = new Parser();
@@ -30,12 +32,15 @@ class Lang {
       if(StringTools.startsWith(string, '{') && StringTools.endsWith(string, '}')) {
         isList = true;
       }
+      mutex.acquire();
       var ast = parser.parseString(string);
       var pos = { max: 12, min: 0, file: null };
       var ast: Expr = new Macro(pos).convert(ast);
       invokeAst(ast, isList);
+      mutex.release();
       return Tuple.create(['ok'.atom(), ast]);
     } catch(e: Dynamic) {
+      mutex.release();
       trace(e);
       trace(CallStack.exceptionStack().join(', '));
       return Tuple.create(['error'.atom(), '${e}']);

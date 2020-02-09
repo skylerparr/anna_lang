@@ -85,10 +85,16 @@ class SimpleProcess extends AbstractCustomType implements Pid {
     _children = null;
   }
 
+  private var _started: Bool = false;
+  public function started():Bool {
+    return _started;
+  }
+
   public function start(op: Operation): Void {
     var processStack: DefaultProcessStack = new DefaultProcessStack(this);
     processStack.add(new DefaultAnnaCallStack([op], new Map<String, Dynamic>()));
     this.processStack = processStack;
+    _started = true;
   }
 
   override public function toAnnaString(): String {

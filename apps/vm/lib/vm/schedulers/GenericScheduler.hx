@@ -203,25 +203,28 @@ class GenericScheduler implements Scheduler {
       return;
     }
     scheduleSleeping();
-    Logger.log(pids, 'pids');
     currentPid = pids.pop();
-    Logger.log(currentPid, '${id} current pid');
     if(currentPid == null) {
       return;
     }
-    Logger.log(currentPid.state, 'pid state');
     if(currentPid.state == ProcessState.WAITING) {
       passMessages(currentPid);
     }
     if(currentPid.state == ProcessState.RUNNING) {
-      Logger.log(currentPid, 'execute');
+      if(currentPid.processStack == null) {
+        trace(currentPid.toAnnaString());
+        trace('process stack is null');
+        trace(currentPid.started() == true);
+        _allPids.push(currentPid);
+        pids.add(currentPid);
+        return;
+      }
       currentPid.processStack.execute();
     }
     if(currentPid.state == ProcessState.RUNNING) {
       _allPids.push(currentPid);
       pids.add(currentPid);
     }
-    Logger.log('finish update');
   }
 
   public function hasSomethingToExecute(): Bool {

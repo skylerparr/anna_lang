@@ -10,6 +10,8 @@ interface Pid extends BaseObject extends CustomType {
   public var ancestors(default, null): Array<Pid>;
   public var trapExit(default, null): Atom;
 
+  function started(): Bool;
+
   function start(op: Operation): Void;
   function setState(state: ProcessState): Void;
   function setParent(pid: Pid): Bool;
