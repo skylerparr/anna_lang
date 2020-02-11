@@ -28,10 +28,7 @@ class DefaultAnnaCallStack implements AnnaCallStack {
   }
 
   public inline function execute(processStack: ProcessStack): Void {
-    Logger.log(processStack, 'process stack');
-    Logger.log(currentOperation, 'current operation');
     currentOperation = operations[index++];
-    Logger.log(currentOperation);
     if(currentOperation == null) {
       return;
     }
@@ -40,9 +37,7 @@ class DefaultAnnaCallStack implements AnnaCallStack {
       scope.set(key, scopeVariables.get(key));
     }
     scopeVariables = scope;
-    Logger.log(scopeVariables, 'scope variables');
     currentOperation.execute(scopeVariables, processStack);
-    Logger.log('finished executing');
   }
 
   public inline function finalCall(): Bool {

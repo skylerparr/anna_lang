@@ -29,7 +29,7 @@ class Kernel {
       return 'already_started'.atom();
     }
     Logger.init();
-    var scheduler: vm.schedulers.GenericScheduler = new vm.schedulers.GenericScheduler();
+    var scheduler: vm.schedulers.CPPMultithreadedScheduler = new vm.schedulers.CPPMultithreadedScheduler();
 
     var objectFactory: ObjectFactory = new ObjectFactory();
     objectFactory.injector = new Injector();
@@ -53,10 +53,8 @@ class Kernel {
       if(currentScheduler.hasSomethingToExecute()) {
         for(i in 0...1000) {
           if(currentScheduler.hasSomethingToExecute() && started) {
-            Logger.log('update');
             currentScheduler.update();
           } else {
-            Logger.log('breaking');
             break;
           }
         }
@@ -64,7 +62,6 @@ class Kernel {
         Sys.sleep(0.1);
       }
     }
-    Logger.log('stopping kernel scheduler');
     currentScheduler.stop();
     currentScheduler = null;
     statePid = null;
@@ -101,7 +98,6 @@ class Kernel {
   #end
 
   public static function stop(): Atom {
-    Logger.log('stopping kernel');
     if(currentScheduler != null) {
       started = false;
     }
@@ -133,9 +129,7 @@ class Kernel {
     //need this or we get a segfault
     Sys.sleep(0.0001);
     #end
-    Logger.log('spawning test process');
     return currentScheduler.spawn(function() {
-      Logger.log('notifying kernel to test spawn');
       return new PushStack(module.atom(), func.atom(), LList.create(cast createArgs), "Kernel".atom(), "testSpawn".atom(), MacroTools.line());
     });
   }
@@ -219,7 +213,6 @@ class Kernel {
   public static function recompile(): Atom {
     #if cppia
     Reflect.callMethod(null, Reflect.field(Type.resolveClass('DevelopmentRunner'), 'compileCompiler'), [function() {
-      Logger.log('switch to ia');
       switchToIA();
     }]);
     return 'ok'.atom();
@@ -256,11 +249,8 @@ class Kernel {
 
   public static function switchToIA(): Atom {
     #if cppia
-    Logger.log('stopping runtime');
     Reflect.callMethod(null, Reflect.field(Type.resolveClass('Runtime'), 'stop'), []);
-    Logger.log('restarting Kernel');
     restart();
-    Logger.log('starting compiler');
     testCompiler();
     return 'ok'.atom();
     #end
@@ -338,9 +328,6 @@ class Kernel {
   }
 
   public static function monitor(pid: Pid): Atom {
-    Logger.log(pid, 'pid');
-    Logger.log(Process.self(), 'self');
-    Logger.log(currentScheduler, 'currentScheduler');
     return currentScheduler.monitor(Process.self(), pid);
   }
 
@@ -355,6 +342,8 @@ class Kernel {
       return;
     }
     if(pid.state == ProcessState.KILLED || pid.state == ProcessState.COMPLETE) {
+      IO.inspect('Pid ${Anna.toAnnaString(pid)} is not alive.');
+      Kernel.crash(Process.self());
       return;
     }
     var scopeVariables = pid.processStack.getVariablesInScope();
@@ -370,6 +359,7 @@ class Kernel {
       var argName: String = fn.args[counter++];
       nextScopeVariables.set(argName, value);
     }
+    Logger.log(pid, 'apply pid');
     currentScheduler.apply(pid, fn, callArgs, nextScopeVariables, callback);
   }
 

@@ -69,13 +69,9 @@ class SimpleProcess extends AbstractCustomType implements Pid {
       }
       monitors = null;
     }
-    Logger.log(this, 'exiting children');
-    Logger.log(_children, 'children');
     for(childPid in _children) {
-      Logger.log(childPid, 'exiting child');
       Kernel.exit(childPid, 'kill'.atom());
     }
-    Logger.log(this, 'exiting parent');
     if(parent != null) {
       Kernel.exit(parent, 'kill'.atom());
     }
@@ -86,9 +82,8 @@ class SimpleProcess extends AbstractCustomType implements Pid {
   }
 
   public function start(op: Operation): Void {
-    var processStack: DefaultProcessStack = new DefaultProcessStack(this);
+    processStack = new DefaultProcessStack(this);
     processStack.add(new DefaultAnnaCallStack([op], new Map<String, Dynamic>()));
-    this.processStack = processStack;
   }
 
   override public function toAnnaString(): String {
