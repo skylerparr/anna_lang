@@ -11,7 +11,7 @@ import minject.Injector;
 using lang.AtomSupport;
 
 class CPPMultithreadedScheduler implements Scheduler {
-  public var numberOfThreads: Int = 8;
+  public var numberOfThreads: Int = 1;
 
   @inject
   public var objectCreator: ObjectCreator;
@@ -112,17 +112,14 @@ class CPPMultithreadedScheduler implements Scheduler {
   }
 
   private inline function handleAsyncMessage(message:MTSchedMessage):Void {
-    Logger.log(message, 'message');
     switch(message) {
       case SPAWN(fn, respondThread):
         var currentThread = getThreadWithFewestPids().handle;
-        Logger.log(currentThread, 'currentThread');
         var schedulerMessage: SchedulerMessages = threadSchedulerMessagesMap.get(currentThread);
         var response = schedulerMessage.scheduler.spawn(fn);
         respondThread.sendMessage(response);
       case SPAWN_LINK(parentPid, fn, respondThread):
         var currentThread = getThreadWithFewestPids().handle;
-        Logger.log(currentThread, 'currentThread');
         var schedulerMessage: SchedulerMessages = threadSchedulerMessagesMap.get(currentThread);
         var response = schedulerMessage.scheduler.spawnLink(parentPid, fn);
         respondThread.sendMessage(response);
@@ -132,12 +129,9 @@ class CPPMultithreadedScheduler implements Scheduler {
           return;
         }
         var schedulerMessage: SchedulerMessages = threadSchedulerMessagesMap.get(threadForPid);
-        Logger.log(schedulerMessage, 'schedulerMessage');
         var response = schedulerMessage.scheduler.exit(pid, signal);
-        Logger.log(response, 'response');
         respondThread.sendMessage(response);
       case STOP:
-        Logger.log("stopped async thread");
         return;
       case _:
         Logger.inspect("Unhandled message, ignored");
@@ -147,16 +141,10 @@ class CPPMultithreadedScheduler implements Scheduler {
   private function startScheduler(messages: SchedulerMessages): Void {
     var running: Bool = true;
     var scheduler: Scheduler = messages.scheduler;
-    Logger.log(cast(scheduler, GenericScheduler).id, 'starting scheduler');
     while(running) {
-      Logger.log('handling messages');
       running = handleMessages(messages);
-      Logger.log(running, 'running ${cast(scheduler, GenericScheduler).id}?');
-      Logger.log(scheduler.hasSomethingToExecute(), 'scheduler.hasSomethingToExecute ${cast(scheduler, GenericScheduler).id}?');
       if(running && scheduler.hasSomethingToExecute()) {
-        Logger.log('just before for loop');
         for(i in 0...1000) {
-          Logger.log('handling messages');
           running = handleMessages(messages);
           if(running && scheduler.hasSomethingToExecute()) {
             scheduler.update();
@@ -165,12 +153,10 @@ class CPPMultithreadedScheduler implements Scheduler {
           }
         }
       } else {
-        Logger.log(cast(scheduler, GenericScheduler).id, 'sleeping');
         Sys.sleep(0.016);
       }
     }
-    Logger.log(cast(scheduler, GenericScheduler).id, 'scheduler id exiting');
-  }
+    }
 
   private inline function handleMessages(schedulerMessages: SchedulerMessages): Bool {
     var running: Bool = true;
@@ -178,11 +164,8 @@ class CPPMultithreadedScheduler implements Scheduler {
     var messages: List<MTSchedMessage> = getAndClearMessages(schedulerMessages);
     for(message in messages) {
       var message = messages.pop();
-      Logger.log(message, 'handling message');
       switch(message) {
         case SEND(pid, payload):
-          Logger.log(Tuple.create([pid, payload]), 'send');
-          Logger.log(scheduler, 'scheduler');
           scheduler.send(pid, payload);
         case RECEIVE(pid, fn, timeout, callback):
           scheduler.receive(pid, fn, timeout, callback);
@@ -206,22 +189,18 @@ class CPPMultithreadedScheduler implements Scheduler {
         case DEMONITOR(parentPid, pid):
           scheduler.demonitor(parentPid, pid);
         case STOP:
-          Logger.log(cast(scheduler, GenericScheduler).id, 'stopping scheduler id');
           scheduler.stop();
           running = false;
           break;
         case _:
       }
     }
-    Logger.log(running, '${cast(scheduler, GenericScheduler).id} running?');
     return running;
   }
 
   private inline function getAndClearMessages(messages: SchedulerMessages): List<MTSchedMessage> {
     var listUsedByScheduler = messages.listUsedByScheduler;
-    Logger.log(messages.list.length, 'messages length');
     if(messages.list.length != 0) {
-      Logger.log(cast(messages.scheduler, GenericScheduler).id, 'acquire lock');
       messages.mutex.acquire();
       var list: List<MTSchedMessage> = messages.list;
       var msg: MTSchedMessage = list.pop();
@@ -229,7 +208,6 @@ class CPPMultithreadedScheduler implements Scheduler {
         listUsedByScheduler.push(msg);
         msg = list.pop();
       }
-      Logger.log(cast(messages.scheduler, GenericScheduler).id, 'release lock');
       messages.mutex.release();
     }
     return listUsedByScheduler;
@@ -245,13 +223,9 @@ class CPPMultithreadedScheduler implements Scheduler {
 
   private inline function push(messages: SchedulerMessages, msg: MTSchedMessage): Void {
     var msgs: List<MTSchedMessage> = messages.list;
-    Logger.log(cast(messages.scheduler, GenericScheduler).id, 'acquire lock');
     messages.mutex.acquire();
-    Logger.log(msg, "msg");
     msgs.push(msg);
-    Logger.log(cast(messages.scheduler, GenericScheduler).id, 'release lock');
     messages.mutex.release();
-    Logger.log(msgs.length, 'messages length');
   }
 
   public function stop(): Atom {
@@ -259,13 +233,10 @@ class CPPMultithreadedScheduler implements Scheduler {
       return "ok".atom();
     }
     for(messages in threadSchedulerMessagesMap) {
-      Logger.log(cast(messages.scheduler, GenericScheduler).id, 'stopping thread');
       push(messages, STOP);
     }
-    Logger.log('stopping async thread');
     asyncThread.sendMessage(STOP);
     Sys.sleep(0.1);
-    Logger.log('nulling the things');
     objectCreator = null;
     pids = null;
     paused = false;
@@ -287,6 +258,7 @@ class CPPMultithreadedScheduler implements Scheduler {
     } else {
       var threadForPid: ThreadHandle = getThreadForPid(pid).handle;
       if(threadForPid == null) {
+        trace("thread for pid is null. If you see this, this is a bug");
         return 'nil'.atom();
       }
       push(threadSchedulerMessagesMap.get(threadForPid), COMPLETE(pid));
@@ -304,6 +276,7 @@ class CPPMultithreadedScheduler implements Scheduler {
     } else {
       var threadForPid: ThreadHandle = getThreadForPid(pid).handle;
       if(threadForPid == null) {
+        trace("thread for pid is null. If you see this, this is a bug");
         return pid;
       }
       push(threadSchedulerMessagesMap.get(threadForPid), SLEEP(pid, milliseconds));
@@ -315,20 +288,13 @@ class CPPMultithreadedScheduler implements Scheduler {
     if(notRunning()) {
       return "not_running".atom();
     }
-    Logger.log(pid, "send");
     var currentThread: ThreadHandle = Thread.current().handle;
-    Logger.log(currentThread);
     var thread: Thread = getThreadForPid(pid);
-    Logger.log(thread, 'thread');
-    Logger.log(thread.handle, 'thread.handle');
-    Logger.log(currentThread == thread.handle, 'same thread?');
     if(currentThread == thread.handle) {
-      Logger.log(pid, 'scheduler send same thread');
       var currentThread: ThreadHandle = Thread.current().handle;
       threadSchedulerMessagesMap.get(currentThread).scheduler.send(pid, payload);
     } else {
-      Logger.log(pid, 'scheduler send different thread');
-      var threadForPid: ThreadHandle = getThreadForPid(pid).handle;
+      var threadForPid: ThreadHandle = thread.handle;
       if(threadForPid == null) {
         return 'nil'.atom();
       }
@@ -342,10 +308,11 @@ class CPPMultithreadedScheduler implements Scheduler {
       return;
     }
     var currentThread: ThreadHandle = Thread.current().handle;
-    if(currentThread == getThreadForPid(pid).handle) {
+    var thread: Thread = getThreadForPid(pid);
+    if(currentThread == thread.handle) {
       threadSchedulerMessagesMap.get(currentThread).scheduler.receive(pid, fn, timeout, callback);
     } else {
-      var threadForPid: ThreadHandle = getThreadForPid(pid).handle;
+      var threadForPid: ThreadHandle = thread.handle;
       if(threadForPid == null) {
         return;
       }
@@ -367,14 +334,10 @@ class CPPMultithreadedScheduler implements Scheduler {
     }
     var currentThread = getThreadWithFewestPids().handle;
     if(currentThread == Thread.current().handle) {
-      Logger.log('spawn same thread');
       return threadSchedulerMessagesMap.get(currentThread).scheduler.spawn(fn);
     } else {
-      Logger.log(asyncThread, 'spawn different thread');
       asyncThread.sendMessage(SPAWN(fn, Thread.current()));
-      Logger.log('waiting for messages');
       var pid: Pid = Thread.readMessage(true);
-      Logger.log('no longer waiting');
       return pid;
     }
   }
@@ -385,7 +348,6 @@ class CPPMultithreadedScheduler implements Scheduler {
       return threadSchedulerMessagesMap.get(currentThread).scheduler.spawnLink(parentPid, fn);
     } else {
       asyncThread.sendMessage(SPAWN_LINK(parentPid, fn, Thread.current()));
-      Logger.log('waiting for messages');
       var pid: Pid = Thread.readMessage(true);
       return pid;
     }
@@ -393,23 +355,18 @@ class CPPMultithreadedScheduler implements Scheduler {
 
   public function monitor(parentPid: Pid, pid: Pid): Atom {
     if(notRunning()) {
-      Logger.log('not running');
       return 'nil'.atom();
     }
-    Logger.log('monitor');
     var currentThread: ThreadHandle = Thread.current().handle;
-    Logger.log(currentThread, 'currentThread');
     if(currentThread == getThreadForPid(pid).handle) {
-      Logger.log('same thread');
       threadSchedulerMessagesMap.get(currentThread).scheduler.monitor(parentPid, pid);
     } else {
       var threadForPid: ThreadHandle = getThreadForPid(parentPid).handle;
-      Logger.log(threadForPid, 'threadForPid');
       if(threadForPid == null) {
+        trace("thread for pid is null. If you see this, this is a bug");
         return 'nil'.atom();
       }
       var message = threadSchedulerMessagesMap.get(threadForPid); 
-      Logger.log(message, 'message');
       push(message, MONITOR(parentPid, pid));
     }
     return "ok".atom();
@@ -425,6 +382,7 @@ class CPPMultithreadedScheduler implements Scheduler {
     } else {
       var threadForPid: ThreadHandle = getThreadForPid(parentPid).handle;
       if(threadForPid == null) {
+        trace("thread for pid is null. If you see this, this is a bug");
         return 'nil'.atom();
       }
       push(threadSchedulerMessagesMap.get(threadForPid), DEMONITOR(parentPid, pid));
@@ -447,7 +405,6 @@ class CPPMultithreadedScheduler implements Scheduler {
     } else {
       asyncThread.sendMessage(EXIT(pid, signal, Thread.current()));
       while(true) {
-        Logger.log('waiting for messages');
         var retVal: Dynamic = Thread.readMessage(true);
         if(Std.is(retVal, MTSchedMessage)) {
           handleAsyncMessage(retVal);
@@ -462,8 +419,18 @@ class CPPMultithreadedScheduler implements Scheduler {
     if(notRunning()) {
       return;
     }
-    var scheduler: Scheduler = threadSchedulerMessagesMap.get(Thread.current().handle).scheduler;
-    scheduler.apply(pid, fn, args, scopeVariables, callback);
+    var currentThread: ThreadHandle = Thread.current().handle;
+    var thread: Thread = getThreadForPid(pid);
+    if(currentThread == thread.handle) {
+      threadSchedulerMessagesMap.get(currentThread).scheduler.apply(pid, fn, args, scopeVariables, callback);
+    } else {
+      var threadForPid: ThreadHandle = thread.handle;
+      if(threadForPid == null) {
+        trace("thread for pid is null. If you see this, this is a bug");
+        return;
+      }
+      push(threadSchedulerMessagesMap.get(threadForPid), APPLY(pid, fn, args, scopeVariables, callback));
+    }
   }
 
   public function self(): Pid {

@@ -29,7 +29,6 @@ class MacroLogger {
   }
 
   public static function log(message: Dynamic, label: String = null): Void {
-    return;
     writeLog(message, label);
   }
 
@@ -40,7 +39,6 @@ class MacroLogger {
   }
 
   public static function logExpr(expr: Expr, label: String = null): Void {
-    return;
     writeLog(p.printExpr(expr), label);
   }
 

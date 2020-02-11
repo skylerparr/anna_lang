@@ -25,7 +25,6 @@ class Process {
   }
 
   public static function complete(pid: Pid): Atom {
-    Logger.log(Kernel.currentScheduler, 'currentScheduler');
     Kernel.currentScheduler.complete(pid);
     return 'ok'.atom();
   }

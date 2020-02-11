@@ -1,5 +1,6 @@
 package vm.schedulers;
 
+import haxe.CallStack;
 import util.TimeUtil;
 import lang.macros.MacroTools;
 import util.UniqueList;
@@ -61,7 +62,6 @@ class GenericScheduler implements Scheduler {
     if(pids == null) {
       return "ok".atom();
     }
-    Logger.log(id, 'stopping scheduler');
     #if !cppia
     for(pid in _allPids) {
       pid.dispose();
@@ -86,13 +86,10 @@ class GenericScheduler implements Scheduler {
     if(notRunning()) {
       return "not_running".atom();
     }
-    Logger.log(pid, 'setting pid to complete');
     pid.setState(ProcessState.COMPLETE);
     #if !cppia
-    Logger.log(pid, 'disposing pid');
     pid.dispose();
     #end
-    Logger.log(pids, 'removing pid');
     pids.remove(pid);
     _allPids.remove(pid);
     pidMetaMap.remove(pid);
@@ -110,22 +107,15 @@ class GenericScheduler implements Scheduler {
   }
 
   public function send(pid: Pid, payload: Dynamic): Atom {
-    Logger.log(notRunning(), "notRunning?");
     if(notRunning()) {
       return "not_running".atom();
     }
-    Logger.log(Tuple.create([pid, pid.state]), 'pid');
     if(pid.state == ProcessState.RUNNING || pid.state == ProcessState.WAITING || pid.state == ProcessState.SLEEPING) {
-      Logger.log(payload, 'payload');
-      Logger.log(pid, 'put in mailbox');
+      Logger.log(Anna.toAnnaString(pid) + ":" + Anna.toAnnaString(payload), 'send');
       pid.putInMailbox(payload);
-      Logger.log(pids.length(), 'pids.length');
       pids.add(pid);
-      Logger.log(_allPids.length(), '_allPids.length');
       _allPids.push(pid);
     } else {
-      Logger.log('', 'exit case');
-      Logger.log(Process.self(), 'exit');
       Kernel.exit(Process.self(), 'crashed'.atom());
     }
     return "ok".atom();
@@ -156,7 +146,6 @@ class GenericScheduler implements Scheduler {
         pidsToWake.push(spec);
       }
     }
-    Logger.log(pidsToWake.length, 'number of pids to wake');
     while(pidsToWake.length > 0) {
       var sleepSpec: PidMetaData = pidsToWake.pop();
       if(sleepSpec == null) {
@@ -166,8 +155,7 @@ class GenericScheduler implements Scheduler {
       sleepSpec.pid.setState(ProcessState.RUNNING);
       pids.push(sleepSpec.pid);
     }
-    Logger.log('done scheduling sleeping');
-  }
+    }
 
   private inline function passMessages(pid: Pid): Void {
     if(pid.state != ProcessState.WAITING) {
@@ -178,22 +166,28 @@ class GenericScheduler implements Scheduler {
       var mailbox: Array<Dynamic> = pid.mailbox;
       var data = mailbox[pidMeta.mailboxIndex++ % mailbox.length];
       if(data != null) {
-        pids.add(pid);
-        _allPids.push(pid);
-        pid.setState(ProcessState.RUNNING);
-
+        Logger.log(data, 'data');
+        Logger.log(mailbox.length, "mailbox size");
         var scopeVars: Map<String, Dynamic> = pid.processStack.getVariablesInScope();
         scopeVars.set(pidMeta.fn.args[0], data);
         scopeVars.set("$$$", data);
 
+        pid.setState(ProcessState.RUNNING);
+
         apply(pid, pidMeta.fn, [data], scopeVars, function(result: Dynamic): Void {
           if(result != null) {
             mailbox.remove(data);
+            pidMeta.mailboxIndex = 0;
             if(pidMeta.callback != null) {
               pidMeta.callback(result);
             }
+          } else {
+            Logger.log('result is null');
           }
         });
+        pids.add(pid);
+        _allPids.push(pid);
+
       }
     }
   }
@@ -203,30 +197,24 @@ class GenericScheduler implements Scheduler {
       return;
     }
     scheduleSleeping();
-    Logger.log(pids, 'pids');
     currentPid = pids.pop();
-    Logger.log(currentPid, '${id} current pid');
     if(currentPid == null) {
       return;
     }
-    Logger.log(currentPid.state, 'pid state');
     if(currentPid.state == ProcessState.WAITING) {
       passMessages(currentPid);
     }
     if(currentPid.state == ProcessState.RUNNING) {
-      Logger.log(currentPid, 'execute');
       currentPid.processStack.execute();
     }
     if(currentPid.state == ProcessState.RUNNING) {
       _allPids.push(currentPid);
       pids.add(currentPid);
     }
-    Logger.log('finish update');
-  }
+    }
 
   public function hasSomethingToExecute(): Bool {
     scheduleSleeping();
-    Logger.log(pids.length(), 'number of pids');
     if(pids.length() > 0) {
       return true;
     }
@@ -238,9 +226,9 @@ class GenericScheduler implements Scheduler {
       return null;
     }
     var pid: Pid = new SimpleProcess();
+    pid.start(fn());
     pids.add(pid);
     _allPids.push(pid);
-    pid.start(fn());
     return pid;
   }
 
@@ -282,7 +270,6 @@ class GenericScheduler implements Scheduler {
     if(pid.trapExit == 'true'.atom()) {
       return 'trapped'.atom();
     }
-    Logger.log(pids, 'all pids');
     pids.remove(pid);
     pidMetaMap.remove(pid);
     if(signal == 'kill'.atom()) {
@@ -300,6 +287,7 @@ class GenericScheduler implements Scheduler {
       return;
     }
     if(pid.state != ProcessState.RUNNING) {
+      trace("pid is not running");
       return;
     }
     var fnScope: Map<String, Dynamic> = fn.scope;
