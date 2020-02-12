@@ -1640,8 +1640,6 @@ import vm.Function;
   @def update_status({Pid: test_pid, Atom: @_'pass'}, [Atom], {
     status = @_'pass';
     pid = Kernel.get_pid_by_name(TEST_RESULTS);
-    self = Kernel.self();
-    System.println([self, "about to update status"]);
     Kernel.send(pid, [@_'update_status', test_pid, status]);
     Kernel.send(test_pid, status);
     @_'ok';
@@ -1669,7 +1667,6 @@ import vm.Function;
   @def reset([Atom], {
     pid = Kernel.get_pid_by_name(TEST_RESULTS);
     Kernel.send(pid, [@_'reset']);
-    @native IO.inspect("reset");
     @_'ok';
   });
 
@@ -1694,7 +1691,6 @@ import vm.Function;
 
   @def do_run_tests({LList: {module | rest;}}, [Atom], {
     functions = @native Classes.getApiFunctions(module);
-    @native IO.inspect(functions);
     Kernel.spawn(@_'UnitTests', @_'run_test_case', [@_'Atom', @_'LList'], {module; functions;});
     do_run_tests(cast(rest, LList));
   });
