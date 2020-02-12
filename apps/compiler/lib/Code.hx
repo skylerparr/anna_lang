@@ -349,7 +349,6 @@ import vm.Function;
     UnitTests.add_test(@_'TupleTest');
 
     UnitTests.run_tests();
-    process_command('t');
   });
 
   @def process_command({String: ''}, [Atom], {
