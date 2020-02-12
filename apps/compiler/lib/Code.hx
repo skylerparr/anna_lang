@@ -634,10 +634,10 @@ import vm.Function;
     Assert.assert('foo', 'foo');
   });
 
-//  @def test_should_create_strings_interp([Atom], {
-//    result = @native Lang.eval('"foo"');
-//    Assert.assert('foo', cast(result, String));
-//  });
+  @def test_should_create_strings_interp([Atom], {
+    result = @native Lang.eval('"foo"');
+    Assert.assert('foo', cast(result, String));
+  });
 
   @def test_should_not_match_strings([Atom], {
     Assert.refute('foo', 'bar');
@@ -647,10 +647,10 @@ import vm.Function;
     match('foo', 'bar');
   });
 
-//  @def test_should_match_function_head_strings_interp([Atom], {
-//    result = @native Lang.eval('"bar"');
-//    match('foo', cast(result, String));
-//  });
+  @def test_should_match_function_head_strings_interp([Atom], {
+    result = @native Lang.eval('"bar"');
+    match('foo', cast(result, String));
+  });
 
   @def match({String: 'foo', String: 'bar'}, [Atom], {
     Assert.assert(@_'true');
@@ -667,10 +667,10 @@ import vm.Function;
     Assert.assert(123, 123);
   });
 
-//  @def test_should_create_ints_interp([Atom], {
-//    result = @native Lang.eval('4738');
-//    Assert.assert(4738, cast(result, Number));
-//  });
+  @def test_should_create_ints_interp([Atom], {
+    result = @native Lang.eval('4738');
+    Assert.assert(4738, cast(result, Number));
+  });
 
   @def test_should_not_match_ints([Atom], {
     Assert.refute(321, 123);
@@ -680,19 +680,19 @@ import vm.Function;
     match(123, 456);
   });
 
-//  @def test_should_match_function_head_ints_interp([Atom], {
-//    result = @native Lang.eval('456');
-//    match(123, cast(result, Number));
-//  });
+  @def test_should_match_function_head_ints_interp([Atom], {
+    result = @native Lang.eval('456');
+    match(123, cast(result, Number));
+  });
 
   @def test_should_create_floats([Atom], {
     Assert.assert(43.3245, 43.3245);
   });
 
-//  @def test_should_create_floats_interp([Atom], {
-//    result = @native Lang.eval('43.3245');
-//    Assert.assert(43.3245, cast(result, Number));
-//  });
+  @def test_should_create_floats_interp([Atom], {
+    result = @native Lang.eval('43.3245');
+    Assert.assert(43.3245, cast(result, Number));
+  });
 
   @def test_should_not_match_floats([Atom], {
     Assert.refute(43.3245, 293.2094);
@@ -702,10 +702,10 @@ import vm.Function;
     match(43.3245, 89435.349);
   });
 
-//  @def test_should_match_function_head_floats_interp([Atom], {
-//    result = @native Lang.eval('89435.349');
-//    match(43.3245, cast(result, Number));
-//  });
+  @def test_should_match_function_head_floats_interp([Atom], {
+    result = @native Lang.eval('89435.349');
+    match(43.3245, cast(result, Number));
+  });
 
   @def match({Float: 43.3245, Float: 89435.349}, [Atom], {
     Assert.assert(@_'true');
@@ -735,19 +735,19 @@ import vm.Function;
     Assert.refute(@_'ok', @_'fail');
   });
 
-//  @def test_should_create_atoms_interp([Atom], {
-//    result = @native Lang.eval('@_"ok"');
-//    Assert.assert(@_'ok', cast(result, Atom));
-//  });
+  @def test_should_create_atoms_interp([Atom], {
+    result = @native Lang.eval('@_"ok"');
+    Assert.assert(@_'ok', cast(result, Atom));
+  });
 
   @def test_should_match_function_head_atoms([Atom], {
     match(@_'ok', @_'good');
   });
 
-//  @def test_should_match_function_head_atoms_interp([Atom], {
-//    result = @native Lang.eval("@_'good'");
-//    match(@_'ok', cast(result, Atom));
-//  });
+  @def test_should_match_function_head_atoms_interp([Atom], {
+    result = @native Lang.eval("@_'good'");
+    match(@_'ok', cast(result, Atom));
+  });
 
   @def match({Atom: @_'ok', Atom: @_'good'}, [Atom], {
     Assert.assert(@_'true');
@@ -764,10 +764,10 @@ import vm.Function;
     Assert.assert([@_'ok', 'message'], [@_'ok', 'message']);
   });
 
-//  @def test_should_create_tuple_with_all_constant_elements_interp([Atom], {
-//    result = @native Lang.eval("[@_'ok', 'message']");
-//    Assert.assert([@_'ok', 'message'], cast(result, Tuple));
-//  });
+  @def test_should_create_tuple_with_all_constant_elements_interp([Atom], {
+    result = @native Lang.eval("[@_'ok', 'message']");
+    Assert.assert([@_'ok', 'message'], cast(result, Tuple));
+  });
 
   @def test_should_create_tuple_with_all_variable_elements([Atom], {
     status = @_'ok';
@@ -775,29 +775,29 @@ import vm.Function;
     Assert.assert([@_'ok', 'message'], [status, message]);
   });
 
-//  @def test_should_create_tuple_with_all_variable_elements_interp([Atom], {
-//    result = @native Lang.eval("status = @_'ok'; message = 'message'; [status, message]");
-//    Assert.assert([@_'ok', 'message'], cast(result, Tuple));
-//  });
+  @def test_should_create_tuple_with_all_variable_elements_interp([Atom], {
+    result = @native Lang.eval("status = @_'ok'; message = 'message'; [status, message]");
+    Assert.assert([@_'ok', 'message'], cast(result, Tuple));
+  });
 
   @def test_should_create_tuple_within_a_tuple([Atom], {
     status = @_'ok';
     Assert.assert([@_'ok', [@_'error', 'complete']], [status, [@_'error', 'complete']]);
   });
 
-//  @def test_should_create_tuple_within_a_tuple_interp([Atom], {
-//    result = @native Lang.eval("status = @_'ok'; [status, [@_'error', 'complete']]");
-//    Assert.assert([@_'ok', [@_'error', 'complete']], cast(result, Tuple));
-//  });
+  @def test_should_create_tuple_within_a_tuple_interp([Atom], {
+    result = @native Lang.eval("status = @_'ok'; [status, [@_'error', 'complete']]");
+    Assert.assert([@_'ok', [@_'error', 'complete']], cast(result, Tuple));
+  });
 
   @def test_should_match_tuple_on_function_head([Atom], {
     match([@_'ok', [@_'error', 'complete']]);
   });
 
-//  @def test_should_match_tuple_on_function_head_interp([Atom], {
-//    result = @native Lang.eval("TupleTest.match([@_'eval', [@_'error', 'complete']]);");
-//    Assert.assert(cast(result, Atom));
-//  });
+  @def test_should_match_tuple_on_function_head_interp([Atom], {
+    result = @native Lang.eval("TupleTest.match([@_'eval', [@_'error', 'complete']]);");
+    Assert.assert(cast(result, Atom));
+  });
 
   @def match({Tuple: [@_'ok', [@_'error', 'complete']]}, [Atom], {
     Assert.assert(@_'true');
