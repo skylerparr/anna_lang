@@ -45,77 +45,6 @@ import vm.Function;
     @native StringUtil.endsWith(str, other_str);
   });
 }))
-//@:build(lang.macros.AnnaLang.defCls(File, {
-//  @def get_content({String: file_path}, [String], {
-//    #if cpp
-//    @native sys.io.File.getContent(file_path);
-//    #else
-//    '';
-//    #end
-//  });
-//
-//  @def save_content({String: file_path, String: content}, [Tuple], {
-//    #if cpp
-//    @native sys.io.File.saveContent(file_path, content);
-//    [@_'ok', file_path];
-//    #else
-//    [@_'error', 'not supported'];
-//    #end
-//  });
-//
-//  @def mkdir_p({String: dir}, [Tuple], {
-//    #if cpp
-//    @native sys.FileSystem.createDirectory(dir);
-//    [@_'ok', dir];
-//    #else
-//    [@_'error', 'not supported'];
-//    #end
-//  });
-//
-//  @def rm_rf({String: dir}, [Tuple], {
-//    #if cpp
-//    @native util.File.removeAll(dir);
-//    #else
-//    [@_'error', 'not supported'];
-//    #end
-//  });
-//
-//  @def cp({String: src, String: dest}, [Tuple], {
-//    #if cpp
-//    @native sys.io.File.copy(src, dest);
-//    [@_'ok', file_path];
-//    #else
-//    [@_'error', 'not supported'];
-//    #end
-//  });
-//
-//  @def ls({String: dir}, [Tuple], {
-//    #if cpp
-//    files = @native util.File.readDirectory(dir);
-//    [@_'ok', files];
-//    #else
-//    [@_'error', 'not supported'];
-//    #end
-//  });
-//
-//  @def is_dir({String: dir}, [Tuple], {
-//    #if cpp
-//    result = @native util.File.isDirectory(dir);
-//    [@_'ok', result];
-//    #else
-//    [@_'error', 'not supported'];
-//    #end
-//  });
-//}))
-//@:build(lang.macros.AnnaLang.defCls(JSON, {
-//  @def parse({String: data}, [Tuple], {
-//    @native util.JSON.parse(data);
-//  });
-//
-//  @def stringify({Tuple: [@_'ok', data]}, [Tuple], {
-//    @native util.JSON.stringify(data);
-//  });
-//}))
 @:build(lang.macros.AnnaLang.defCls(Kernel, {
   @alias vm.Pid;
   @alias vm.Kernel;
@@ -349,6 +278,8 @@ import vm.Function;
     UnitTests.add_test(@_'TupleTest');
     UnitTests.add_test(@_'LListTest');
     UnitTests.add_test(@_'MMapTest');
+    UnitTests.add_test(@_'KeywordTest');
+    UnitTests.add_test(@_'ModuleFunctionTest');
 
     UnitTests.run_tests();
   });
@@ -431,120 +362,7 @@ import vm.Function;
   //==========================================================
 }))
 @:build(lang.macros.AnnaLang.set_iface(EEnum, DefaultEnum))
-//@:build(lang.macros.AnnaLang.defType(SourceFile, {
-//  var module_name: String = '';
-//  var source_code: String = '';
-//  var module_type: String = '';
-//}))
-//@:build(lang.macros.AnnaLang.defType(ProjectConfig, {
-//  var app_name: String = '';
-//  var src_files: LList = {};
-//}))
-//@:build(lang.macros.AnnaLang.defCls(AnnaCompiler, {
-//  @alias util.Template;
-//
-//  @const PROJECT_SRC_PATH = 'project/';
-//  @const ANNA_LANG_SUFFIX = '.anna';
-//  @const HAXE_SUFFIX = '.hx';
-//  @const BUILD_DIR = '_build/';
-//  @const LIB_DIR = 'lib/';
-//  @const OUTPUT_DIR = '_build/apps/main/';
-//  @const RESOURCE_DIR = '../apps/compiler/resource/';
-//  @const CONFIG_FILE = 'app_config.json';
-//  @const BUILD_FILE = 'build.hxml';
-//  @const CLASS_TEMPLATE_FILE = 'ClassTemplate.tpl';
-//  @const BUILD_TEMPLATE_FILE = 'build.hxml.tpl';
-//  @const HAXE_BUILD_MACR0_START = '@:build(lang.macros.AnnaLang.';
-//  @const HAXE_BUILD_MACR0_END = ')';
-//
-//  @def build_project([Tuple], {
-//    clean();
-//    handle_config(get_config());
-//  });
-//
-//  @def clean([Atom], {
-//    result = File.rm_rf(BUILD_DIR);
-//    result = File.mkdir_p(OUTPUT_DIR);
-//    @_'ok';
-//  });
-//
-//  @def get_config([Tuple], {
-//    content = File.get_content(CONFIG_FILE);
-//    JSON.parse(content);
-//  });
-//
-//  @def handle_config({Tuple: [@_'ok', ["application" => app_name]]}, [Tuple], {
-//    [@_'ok', files] = gather_source_files(LIB_DIR, {});
-//    generate_template(cast(files, LList));
-//    compile_app(cast(app_name, String));
-//  });
-//
-//  @def handle_config({Tuple: error}, [Tuple], {
-//    @native IO.inspect(error);
-//    error;
-//  });
-//
-//  @def gather_source_files({String: dir, LList: ret_val}, [Tuple], {
-//    [@_'ok', files] = File.ls(dir);
-//    result = EEnum.reduce(cast(files, LList), {}, @fn {
-//      ([{String: file, LList: acc}, [LList]] => {
-//        fun = @fn{
-//          ([{Atom: @_'true'}, [LList]] => {
-//            filename = Str.concat(cast(dir, String), cast(file, String));
-//            content = File.get_content(filename);
-//
-//            [@_'ok', module_name, module_type] = @native util.AST.getModuleInfo(content);
-//
-//            content = Str.concat(HAXE_BUILD_MACR0_START, content);
-//            content = Str.concat(content, HAXE_BUILD_MACR0_END);
-//
-//            src_file = SourceFile%{source_code: content, module_name: module_name, module_type: module_type};
-//
-//            @native LList.add(acc, src_file);
-//          });
-//          ([{Atom: @_'false'}, [LList]] => {
-//            acc;
-//          });
-//        }
-//        fun(Str.ends_with(file, ANNA_LANG_SUFFIX));
-//      });
-//    });
-//    [@_'ok', result];
-//  });
-//
-//  @def generate_template({LList: source_files}, [Tuple], {
-//    template_file = Str.concat(RESOURCE_DIR, CLASS_TEMPLATE_FILE);
-//    template = File.get_content(template_file);
-//    [@_'ok', result] = @native Template.execute(template, ['source_files' => source_files]);
-//
-//    filename = 'Code';
-//    filename = Str.concat(OUTPUT_DIR, filename);
-//    filename = Str.concat(filename, HAXE_SUFFIX);
-//
-//    File.save_content(filename, cast(result, String));
-//
-//    [@_'ok', result];
-//  });
-//
-//  @def compile_app({String: app_name}, [Tuple], {
-//    //copy the app_config
-//    app_config_destination = Str.concat(OUTPUT_DIR, CONFIG_FILE);
-//    File.cp(CONFIG_FILE, app_config_destination);
-//
-//    //update the haxe build file
-//    template_file = Str.concat(RESOURCE_DIR, BUILD_TEMPLATE_FILE);
-//    template = File.get_content(template_file);
-//
-//    [@_'ok', result] = @native Template.execute(template, ["app_name" => app_name]);
-//    template_file = Str.concat(BUILD_DIR, BUILD_FILE);
-//    File.save_content(template_file, cast(result, String));
-//
-//    status = @native util.Compiler.compileProject();
-//    @native IO.inspect(status);
-//
-//    [@_'ok', filename, result];
-//  });
-//}))
+
 @:build(lang.macros.AnnaLang.defCls(Repl, {
   @alias vm.Lang;
 
@@ -577,6 +395,11 @@ import vm.Function;
     assert(result);
   });
 
+  @def assert({Keyword: lhs, Keyword: rhs}, [Atom], {
+    result = Kernel.equal(cast(lhs, Dynamic), cast(rhs, Dynamic));
+    assert(result);
+  });
+
   @def assert({String: lhs, String: rhs}, [Atom], {
     result = Kernel.equal(cast(lhs, Dynamic), cast(rhs, Dynamic));
     assert(result);
@@ -593,6 +416,21 @@ import vm.Function;
   });
 
   @def refute({Tuple: lhs, Tuple: rhs}, [Atom], {
+    result = Kernel.equal(cast(lhs, Dynamic), cast(rhs, Dynamic));
+    refute(result);
+  });
+
+  @def refute({LList: lhs, LList: rhs}, [Atom], {
+    result = Kernel.equal(cast(lhs, Dynamic), cast(rhs, Dynamic));
+    refute(result);
+  });
+
+  @def refute({MMap: lhs, MMap: rhs}, [Atom], {
+    result = Kernel.equal(cast(lhs, Dynamic), cast(rhs, Dynamic));
+    refute(result);
+  });
+
+  @def refute({Keyword: lhs, Keyword: rhs}, [Atom], {
     result = Kernel.equal(cast(lhs, Dynamic), cast(rhs, Dynamic));
     refute(result);
   });
@@ -654,6 +492,26 @@ import vm.Function;
     Assert.refute('foo', 'bar');
   });
 
+  @def test_should_pattern_match_assignment([Atom], {
+    'foo ' => bar = 'foo bar';
+    Assert.assert('bar', cast(bar, String));
+
+    'foo ' => bar = 'foo bar';
+    Assert.refute('bar1', cast(bar, String));
+  });
+
+  @def test_should_pattern_match_assignment_interp([Atom], {
+    @native Lang.eval("'foo ' => bar = 'foo bar';
+    Assert.assert('bar', cast(bar, String));");
+
+    @native Lang.eval("'foo ' => bar = 'foo bar';
+    Assert.refute('bar1', cast(bar, String));");
+  });
+
+  @def test_should_pattern_match_function_string([Atom], {
+    match('foo bar');
+  });
+
   @def test_should_match_function_head_strings([Atom], {
     match('foo', 'bar');
   });
@@ -668,6 +526,14 @@ import vm.Function;
   });
 
   @def match({String: _, String: _}, [Atom], {
+    Assert.assert(@_'false');
+  });
+
+  @def match({String: 'foo ' => bar}, [Atom], {
+    Assert.assert('bar', bar);
+  });
+
+  @def match({String: _}, [Atom], {
     Assert.assert(@_'false');
   });
 
@@ -1021,48 +887,58 @@ import vm.Function;
   });
 
 }))
+@:build(lang.macros.AnnaLang.defCls(KeywordTest, {
+
+  @def test_should_create_static_keyword([Atom], {
+    Assert.refute({beanus: 'bear'}, {ellie: 'bear'});
+    Assert.assert({ellie: 'bear'}, {ellie: 'bear'});
+  });
+
+  @def test_should_create_static_keyword_interp([Atom], {
+    @native Lang.eval("Assert.refute({beanus: 'bear'}, {ellie: 'bear'});
+    Assert.assert({ellie: 'bear'}, {ellie: 'bear'});");
+  });
+
+  @def test_should_create_keyword_with_variable_values([Atom], {
+    bear = 'bear';
+    Assert.refute({beanus: 'bear'}, {ellie: bear});
+    Assert.assert({ellie: 'bear'}, {ellie: bear});
+  });
+
+  @def test_should_create_keyword_with_variable_values_interp([Atom], {
+    @native Lang.eval("bear = 'bear';
+    Assert.refute({beanus: 'bear'}, {ellie: bear});
+    Assert.assert({ellie: 'bear'}, {ellie: bear});");
+  });
+
+  @def test_should_create_keyword_with_complex_values([Atom], {
+    beanus = 'be-anus';
+    Assert.refute({ellie: 'beanus', beanus: {@_'cat'; 'strange';}}, {ellie: beanus, beanus: {@_'cat'; 'strange';}});
+    beanus = 'beanus';
+    Assert.assert({ellie: 'beanus', beanus: {@_'cat'; 'strange';}}, {ellie: beanus, beanus: {@_'cat'; 'strange';}});
+  });
+
+}))
+@:build(lang.macros.AnnaLang.defCls(ModuleFunctionTest, {
+
+  @def test_should_invoke_function_with_static_arg([Atom], {
+    single_arg(@_'true');
+  });
+
+  @def test_should_invoke_function_with_static_arg_interp([Atom], {
+    @native Lang.eval("ModuleFunctionTest.single_arg(@_'true');");
+  });
+
+  @def single_arg({Atom: status}, [Atom], {
+    Assert.refute(status, @_'false');
+    Assert.assert(status, @_'true');
+  });
+
+}))
 //@:build(lang.macros.AnnaLang.defCls(ReplTests, {
 //  @alias vm.Pid;
 //
 //  @def start([Atom], {
-//    test_name = 'should match on string suffix';
-//    assert('ellie bear', 'ellie bear', test_name);
-//
-//    test_name = 'should match on string suffix (interp)';
-//    result = @native Lang.eval('"ellie bear"');
-//    assert('ellie bear', cast(result, String), test_name);
-//
-//    test_name = 'should match on static keyword with single key/value';
-//    assert({ellie: 'bear'}, {ellie: 'bear'}, test_name);
-//
-//    test_name = 'should match on static keyword with single key/value (interp)';
-//    result = @native Lang.eval('{ellie: "bear"}');
-//    assert({ellie: 'bear'}, cast(result, Keyword), test_name);
-//
-//    test_name = 'should match on static keyword with single value with variable';
-//    bear = 'bear';
-//    assert({ellie: bear}, {ellie: bear}, test_name);
-//
-//    test_name = 'should match on static keyword with single value with variable (interp)';
-//    result = @native Lang.eval('{ellie: bear}');
-//    assert({ellie: bear}, cast(result, Keyword), test_name);
-//
-//    test_name = 'should match on static keyword with multiple keys and variables';
-//    benus = 'benus';
-//    assert({ellie: benus, benus: {@_'cat'; 'strange';}}, {ellie: benus, benus: {@_'cat'; 'strange';}}, test_name);
-//
-//    test_name = 'should match on static keyword with multiple keys and variables (interp)';
-//    result = @native Lang.eval('{ellie: benus, benus: {@_"cat"; "strange";}}');
-//    assert({ellie: benus, benus: {@_'cat'; 'strange';}}, cast(result, Keyword), test_name);
-//
-//    test_name = 'should invoke with static arg';
-//    result = cast(ReplTests.sample("sample function"), Tuple);
-//    assert([@_'ok', 'sample function'], result, test_name);
-//
-//    test_name = 'should invoke with static arg (interp)';
-//    result = cast(@native Lang.eval('ReplTests.sample("sample function");'), Tuple);
-//    assert([@_'ok', 'sample function'], result, test_name);
-//
 //    test_name = 'should invoke public functions (interp)';
 //    result = cast(@native Lang.eval('ReplTests.sample("sample function", Kernel.self());'), Tuple);
 //    pid = Kernel.self();
@@ -1165,225 +1041,6 @@ import vm.Function;
 //
 //    System.println('');
 //    @_'ok';
-//  });
-//
-//  @def assert({String: 'foo', String: 'foo', String: test_name}, [Atom], {
-//    System.print('.');
-//    @_'ok';
-//  });
-//
-//  @def assert({Float: 4.32, Float: 4.32, String: test_name}, [Atom], {
-//    System.print('.');
-//    @_'ok';
-//  });
-//
-//  @def assert({Int: 432, Int: 432, String: test_name}, [Atom], {
-//    System.print('.');
-//    @_'ok';
-//  });
-//
-//  @def assert({Atom: @_'ok', Atom: @_'ok', String: test_name}, [Atom], {
-//    System.print('.');
-//    @_'ok';
-//  });
-//
-//  @def assert({Atom: @_'true', String: test_name}, [Atom], {
-//    System.print('.');
-//    @_'ok';
-//  });
-//
-//  @def assert({Atom: @_'success', Atom: @_'success', String: test_name}, [Atom], {
-//    System.print('.');
-//    @_'ok';
-//  });
-//
-//  @def assert({Tuple: [@_'ok', 'message'], Tuple: [@_'ok', 'message'], String: test_name}, [Atom], {
-//    System.print('.');
-//    @_'ok';
-//  });
-//
-//  @def assert({Tuple: [@_'ok', 'sample function'], Tuple: [@_'ok', 'sample function'], String: test_name}, [Atom], {
-//    System.print('.');
-//    @_'ok';
-//  });
-//
-//  @def assert({Tuple: [status, [@_'error', 'complete']], Tuple: [status, [@_'error', 'complete']], String: test_name}, [Atom], {
-//    System.print('.');
-//    @_'ok';
-//  });
-//
-//  @def assert({Tuple: ['sample function', pid1], Tuple: ['sample function', pid2], String: test_name}, [Atom], {
-//    System.print('.');
-//    same = Kernel.same(cast(pid1, Dynamic), cast(pid2, Dynamic));
-//    assert(same, test_name);
-//    @_'ok';
-//  });
-//
-//  @def assert({Tuple: ['sample1 function', pid1], Tuple: ['sample1 function', pid2], String: test_name}, [Atom], {
-//    System.print('.');
-//    same = Kernel.same(cast(pid1, Dynamic), cast(pid2, Dynamic));
-//    assert(same, test_name);
-//    @_'ok';
-//  });
-//
-//  @def assert({Tuple: ['sample2 function', pid1], Tuple: ['sample2 function', pid2], String: test_name}, [Atom], {
-//    System.print('.');
-//    same = Kernel.same(cast(pid1, Dynamic), cast(pid2, Dynamic));
-//    assert(same, test_name);
-//    @_'ok';
-//  });
-//
-//  @def assert({LList: {'nice';}, LList: {'nice';}, String: test_name}, [Atom], {
-//    System.print('.');
-//    @_'ok';
-//  });
-//
-//  @def assert({LList: {'nice'; @_'little'; ['list'];}, LList: {'nice'; @_'little'; ['list'];}, String: test_name}, [Atom], {
-//    System.print('.');
-//    @_'ok';
-//  });
-//
-//  @def assert({LList: {'ok' | foo1;}, LList: {'ok' | foo2;}, String: test_name}, [Atom], {
-//    System.print('.');
-//    foo1 = cast(foo1, LList);
-//    foo2 = cast(foo2, LList);
-//    assert(foo1, foo2, test_name);
-//    recurse_lists(foo1, foo2, test_name);
-//    @_'ok';
-//  });
-//
-//  @def assert({LList: {'foo1'; 'foo2';}, LList: {'foo1'; 'foo2';}, String: test_name}, [Atom], {
-//    System.print('.');
-//    @_'ok';
-//  });
-//
-//  @def assert({MMap: ['foo' => 'bar'], MMap: ['foo' => 'bar'], String: test_name}, [Atom], {
-//    System.print('.');
-//    @_'ok';
-//  });
-//
-//  @def assert({MMap: ['baz' => {foo;}, 'cat' => [bar]], MMap: ['baz' => {foo;}, 'cat' => [bar]], String: test_name}, [Atom], {
-//    System.print('.');
-//    @_'ok';
-//  });
-//
-//  @def assert({MMap: ['barrel' => {foo;}], MMap: ['barrel' => {foo;}], String: test_name}, [Atom], {
-//    System.print('.');
-//    @_'ok';
-//  });
-//
-//  @def assert({MMap: [@_'success' => foo, @_'fail' => bar], MMap: [@_'success' => foo, @_'fail' => bar], String: test_name}, [Atom], {
-//    System.print('.');
-//    @_'ok';
-//  });
-//
-//  @def assert({String: 'ellie ' => bear, String: 'ellie ' => bear2, String: test_name}, [Atom], {
-//    assert(bear);
-//    assert(bear2);
-//  });
-//
-//  @def assert({String: 'bear'}, [Atom], {
-//    System.print('.');
-//    @_'ok';
-//  });
-//
-//  @def assert({String: fail}, [Atom], {
-//    assert('bear', fail, '');
-//    @_'error';
-//  });
-//
-//  @def assert({Keyword: {ellie: 'bear'}, Keyword: {ellie: 'bear'}, String: test_name}, [Atom], {
-//    System.print('.');
-//    @_'ok';
-//  });
-//
-//  @def assert({Keyword: {ellie: 'benus', benus: {@_'cat'; 'strange';}}, Keyword: {ellie: 'benus', benus: {@_'cat'; 'strange';}}, String: test_name}, [Atom], {
-//    System.print('.');
-//    @_'ok';
-//  });
-//
-//  @def assert({Function: fun, String: test_name}, [Atom], {
-//    fun(@_'success', test_name);
-//  });
-//
-//  @def assert({String: expectation, String: actual, String: test_name}, [Atom], {
-//    System.println('');
-//    System.println(test_name);
-//    System.print('expected: ');
-//    @native IO.inspect(expectation);
-//    System.print('     got: ');
-//    @native IO.inspect(actual);
-//  });
-//
-//  @def assert({Int: expectation, Int: actual, String: test_name}, [Atom], {
-//    System.println('');
-//    System.println(test_name);
-//    System.print('expected: ');
-//    @native IO.inspect(expectation);
-//    System.print('     got: ');
-//    @native IO.inspect(actual);
-//  });
-//
-//  @def assert({Atom: expectation, Atom: actual, String: test_name}, [Atom], {
-//    System.println('');
-//    System.println(test_name);
-//    System.print('expected: ');
-//    @native IO.inspect(expectation);
-//    System.print('     got: ');
-//    @native IO.inspect(actual);
-//  });
-//
-//  @def assert({Tuple: expectation, Tuple: actual, String: test_name}, [Atom], {
-//    System.println('');
-//    System.println(test_name);
-//    System.print('expected: ');
-//    @native IO.inspect(expectation);
-//    System.print('     got: ');
-//    @native IO.inspect(actual);
-//  });
-//
-//  @def assert({LList: expectation, LList: actual, String: test_name}, [Atom], {
-//    System.println('');
-//    System.println(test_name);
-//    System.print('expected: ');
-//    @native IO.inspect(expectation);
-//    System.print('     got: ');
-//    @native IO.inspect(actual);
-//  });
-//
-//  @def assert({MMap: expectation, MMap: actual, String: test_name}, [Atom], {
-//    System.println('');
-//    System.println(test_name);
-//    System.print('expected: ');
-//    @native IO.inspect(expectation);
-//    System.print('     got: ');
-//    @native IO.inspect(actual);
-//  });
-//
-//  @def assert({Keyword: expectation, Keyword: actual, String: test_name}, [Atom], {
-//    System.println('');
-//    System.println(test_name);
-//    System.print('expected: ');
-//    @native IO.inspect(expectation);
-//    System.print('     got: ');
-//    @native IO.inspect(actual);
-//  });
-//
-//  @def sample({String: label}, [Tuple], {
-//    [@_'ok', label];
-//  });
-//
-//  @def sample({String: label, Pid: pid}, [Tuple], {
-//    [label, pid];
-//  });
-//
-//  @def recurse_lists({LList: {}, LList: {}, String: test_name}, [Atom], {
-//    assert(@_'true', test_name);
-//    @_'ok';
-//  });
-//
-//  @def recurse_lists({LList: {head | tail;}, LList: {head1 | tail1;}, String: test_name}, [Atom], {
-//    recurse_lists(cast(tail, LList), cast(tail1, LList), test_name);
 //  });
 //}))
 @:build(lang.macros.AnnaLang.defCls(History, {
@@ -1911,6 +1568,191 @@ import vm.Function;
   });
 
 }))
+//@:build(lang.macros.AnnaLang.defType(SourceFile, {
+//  var module_name: String = '';
+//  var source_code: String = '';
+//  var module_type: String = '';
+//}))
+//@:build(lang.macros.AnnaLang.defType(ProjectConfig, {
+//  var app_name: String = '';
+//  var src_files: LList = {};
+//}))
+//@:build(lang.macros.AnnaLang.defCls(AnnaCompiler, {
+//  @alias util.Template;
+//
+//  @const PROJECT_SRC_PATH = 'project/';
+//  @const ANNA_LANG_SUFFIX = '.anna';
+//  @const HAXE_SUFFIX = '.hx';
+//  @const BUILD_DIR = '_build/';
+//  @const LIB_DIR = 'lib/';
+//  @const OUTPUT_DIR = '_build/apps/main/';
+//  @const RESOURCE_DIR = '../apps/compiler/resource/';
+//  @const CONFIG_FILE = 'app_config.json';
+//  @const BUILD_FILE = 'build.hxml';
+//  @const CLASS_TEMPLATE_FILE = 'ClassTemplate.tpl';
+//  @const BUILD_TEMPLATE_FILE = 'build.hxml.tpl';
+//  @const HAXE_BUILD_MACR0_START = '@:build(lang.macros.AnnaLang.';
+//  @const HAXE_BUILD_MACR0_END = ')';
+//
+//  @def build_project([Tuple], {
+//    clean();
+//    handle_config(get_config());
+//  });
+//
+//  @def clean([Atom], {
+//    result = File.rm_rf(BUILD_DIR);
+//    result = File.mkdir_p(OUTPUT_DIR);
+//    @_'ok';
+//  });
+//
+//  @def get_config([Tuple], {
+//    content = File.get_content(CONFIG_FILE);
+//    JSON.parse(content);
+//  });
+//
+//  @def handle_config({Tuple: [@_'ok', ["application" => app_name]]}, [Tuple], {
+//    [@_'ok', files] = gather_source_files(LIB_DIR, {});
+//    generate_template(cast(files, LList));
+//    compile_app(cast(app_name, String));
+//  });
+//
+//  @def handle_config({Tuple: error}, [Tuple], {
+//    @native IO.inspect(error);
+//    error;
+//  });
+//
+//  @def gather_source_files({String: dir, LList: ret_val}, [Tuple], {
+//    [@_'ok', files] = File.ls(dir);
+//    result = EEnum.reduce(cast(files, LList), {}, @fn {
+//      ([{String: file, LList: acc}, [LList]] => {
+//        fun = @fn{
+//          ([{Atom: @_'true'}, [LList]] => {
+//            filename = Str.concat(cast(dir, String), cast(file, String));
+//            content = File.get_content(filename);
+//
+//            [@_'ok', module_name, module_type] = @native util.AST.getModuleInfo(content);
+//
+//            content = Str.concat(HAXE_BUILD_MACR0_START, content);
+//            content = Str.concat(content, HAXE_BUILD_MACR0_END);
+//
+//            src_file = SourceFile%{source_code: content, module_name: module_name, module_type: module_type};
+//
+//            @native LList.add(acc, src_file);
+//          });
+//          ([{Atom: @_'false'}, [LList]] => {
+//            acc;
+//          });
+//        }
+//        fun(Str.ends_with(file, ANNA_LANG_SUFFIX));
+//      });
+//    });
+//    [@_'ok', result];
+//  });
+//
+//  @def generate_template({LList: source_files}, [Tuple], {
+//    template_file = Str.concat(RESOURCE_DIR, CLASS_TEMPLATE_FILE);
+//    template = File.get_content(template_file);
+//    [@_'ok', result] = @native Template.execute(template, ['source_files' => source_files]);
+//
+//    filename = 'Code';
+//    filename = Str.concat(OUTPUT_DIR, filename);
+//    filename = Str.concat(filename, HAXE_SUFFIX);
+//
+//    File.save_content(filename, cast(result, String));
+//
+//    [@_'ok', result];
+//  });
+//
+//  @def compile_app({String: app_name}, [Tuple], {
+//    //copy the app_config
+//    app_config_destination = Str.concat(OUTPUT_DIR, CONFIG_FILE);
+//    File.cp(CONFIG_FILE, app_config_destination);
+//
+//    //update the haxe build file
+//    template_file = Str.concat(RESOURCE_DIR, BUILD_TEMPLATE_FILE);
+//    template = File.get_content(template_file);
+//
+//    [@_'ok', result] = @native Template.execute(template, ["app_name" => app_name]);
+//    template_file = Str.concat(BUILD_DIR, BUILD_FILE);
+//    File.save_content(template_file, cast(result, String));
+//
+//    status = @native util.Compiler.compileProject();
+//    @native IO.inspect(status);
+//
+//    [@_'ok', filename, result];
+//  });
+//}))
+//@:build(lang.macros.AnnaLang.defCls(File, {
+//  @def get_content({String: file_path}, [String], {
+//    #if cpp
+//    @native sys.io.File.getContent(file_path);
+//    #else
+//    '';
+//    #end
+//  });
+//
+//  @def save_content({String: file_path, String: content}, [Tuple], {
+//    #if cpp
+//    @native sys.io.File.saveContent(file_path, content);
+//    [@_'ok', file_path];
+//    #else
+//    [@_'error', 'not supported'];
+//    #end
+//  });
+//
+//  @def mkdir_p({String: dir}, [Tuple], {
+//    #if cpp
+//    @native sys.FileSystem.createDirectory(dir);
+//    [@_'ok', dir];
+//    #else
+//    [@_'error', 'not supported'];
+//    #end
+//  });
+//
+//  @def rm_rf({String: dir}, [Tuple], {
+//    #if cpp
+//    @native util.File.removeAll(dir);
+//    #else
+//    [@_'error', 'not supported'];
+//    #end
+//  });
+//
+//  @def cp({String: src, String: dest}, [Tuple], {
+//    #if cpp
+//    @native sys.io.File.copy(src, dest);
+//    [@_'ok', file_path];
+//    #else
+//    [@_'error', 'not supported'];
+//    #end
+//  });
+//
+//  @def ls({String: dir}, [Tuple], {
+//    #if cpp
+//    files = @native util.File.readDirectory(dir);
+//    [@_'ok', files];
+//    #else
+//    [@_'error', 'not supported'];
+//    #end
+//  });
+//
+//  @def is_dir({String: dir}, [Tuple], {
+//    #if cpp
+//    result = @native util.File.isDirectory(dir);
+//    [@_'ok', result];
+//    #else
+//    [@_'error', 'not supported'];
+//    #end
+//  });
+//}))
+//@:build(lang.macros.AnnaLang.defCls(JSON, {
+//  @def parse({String: data}, [Tuple], {
+//    @native util.JSON.parse(data);
+//  });
+//
+//  @def stringify({Tuple: [@_'ok', data]}, [Tuple], {
+//    @native util.JSON.stringify(data);
+//  });
+//}))
 @:build(lang.macros.AnnaLang.compile())
 class Code {
 
