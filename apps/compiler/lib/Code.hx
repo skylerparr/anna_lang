@@ -897,6 +897,14 @@ import vm.Function;
     @native Lang.eval('LListTest.match({1; 2; 3; 4; 5;})');
   });
 
+  @def test_should_create_list_with_atoms([Atom], {
+    Assert.assert({@_'ok'; @_'error';}, {@_'ok'; @_'error';});
+  });
+
+  @def test_should_create_list_with_atoms_interp([Atom], {
+    @native Lang.eval("Assert.assert({@_'ok'; @_'error';}, {@_'ok'; @_'error';});");
+  });
+
   @def match({LList: {a; b; c; d; e;}}, [Atom], {
     Assert.assert(1, cast(a, Int));
     Assert.assert(2, cast(b, Int));
@@ -988,18 +996,35 @@ import vm.Function;
     Assert.assert('bar', cast(bar, String));");
   });
 
+  @def test_should_create_map_with_atom_keys([Atom], {
+    foo = 'foo';
+    bar = 'bar';
+    Assert.assert([@_'success' => 'foo', @_'fail' => 'bar'], [@_'success' => foo, @_'fail' => bar]);
+  });
+
+  @def test_should_create_map_with_atom_keys_interp([Atom], {
+    @native Lang.eval("foo = 'foo';
+    bar = 'bar';
+    Assert.assert([@_'success' => 'foo', @_'fail' => 'bar'], [@_'success' => foo, @_'fail' => bar]);");
+  });
+
+  @def test_should_create_map_with_atom_keys_and_atom_values([Atom], {
+    foo = @_'foo';
+    bar = @_'bar';
+    Assert.assert([@_'success' => @_'foo', @_'fail' => @_'bar'], [@_'success' => foo, @_'fail' => bar]);
+  });
+
+  @def test_should_create_map_with_atom_keys_and_atom_values_interp([Atom], {
+    @native Lang.eval("foo = @_'foo';
+    bar = @_'bar';
+    Assert.assert([@_'success' => @_'foo', @_'fail' => @_'bar'], [@_'success' => foo, @_'fail' => bar]);");
+  });
+
 }))
 //@:build(lang.macros.AnnaLang.defCls(ReplTests, {
 //  @alias vm.Pid;
 //
 //  @def start([Atom], {
-//    test_name = 'should match on map with atom keys';
-//    assert([@_'success' => foo, @_'fail' => bar], [@_'success' => foo, @_'fail' => bar], test_name);
-//
-//    test_name = 'should match on map with atom keys (interp)';
-//    result = @native Lang.eval('[@_"success" => foo, @_"fail" => bar]');
-//    assert([@_'success' => foo, @_'fail' => bar], cast(result, MMap), test_name);
-//
 //    test_name = 'should match on string suffix';
 //    assert('ellie bear', 'ellie bear', test_name);
 //
