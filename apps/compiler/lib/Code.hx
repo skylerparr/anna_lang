@@ -929,120 +929,88 @@ import vm.Function;
     @native Lang.eval("ModuleFunctionTest.single_arg(@_'true');");
   });
 
+  @def test_should_invoke_public_functions_with_variables([Atom], {
+    number = 4;
+    result = Kernel.add(1, number);
+    Assert.assert(5, result);
+  });
+
+
+  @def test_should_invoke_public_functions_with_variables_interp([Atom], {
+    @native Lang.eval("number = 4;
+    result = Kernel.add(7, number);
+    Assert.assert(11, result);");
+  });
+
+  @def test_should_invoke_function_with_cast([Atom], {
+    ({val | _;}) = {'foo'; 'bar'; 'cat'; 'baz';};
+    result = Str.concat(cast(val, String), ' bar');
+    Assert.assert('foo bar', result);
+  });
+
+  @def skip_should_invoke_function_with_cast_interp([Atom], {
+    //todo: fail
+    @native Lang.eval("({val | _;}) = {'foo'; 'bar'; 'cat'; 'baz';};
+    result = Str.concat(cast(val, String), ' bar');
+    Assert.assert('foo bar', result);");
+  });
+
+  @def skip_shouild_create_anonymous_function_with_no_args([Atom], {
+//    fun = @fn {
+//      ([{}, [Atom]] => {
+//        @_'true';
+//      });
+//    };
+//    Assert.assert(fun());
+  });
+
+  @def skip_shouild_create_anonymous_function_with_no_args_interp([Atom], {
+    @native Lang.eval("fun = @fn {
+      ([{}, [Atom]] => {
+        @_'true';
+      });
+    };
+    Assert.assert(fun());");
+  });
+
+  @def test_should_create_anonymous_function_with_no_args([Atom], {
+    fun = @fn {
+      ([{}] => {
+        @_'true';
+      });
+    };
+    result = fun();
+    Assert.assert(cast(result, Atom));
+  });
+
+  @def skip_should_create_anonymous_function_with_no_args_interp([Atom], {
+    @native Lang.eval("fun = @fn {
+      ([{}] => {
+        @_'false';
+      });
+    };
+    result = fun();
+    Assert.assert(cast(result, Atom));");
+  });
+
+  @def skip_should_interpret_and_create_anonymous_function_with_no_args([Atom], {
+    result = @native Lang.eval("@fn {
+      ([{}] => {
+        @_'false';
+      });
+    };");
+    fun = cast(result, Function);
+    result = fun();
+    Assert.assert(cast(result, Atom));
+  });
+
   @def single_arg({Atom: status}, [Atom], {
     Assert.refute(status, @_'false');
     Assert.assert(status, @_'true');
+    @_'true';
   });
 
 }))
-//@:build(lang.macros.AnnaLang.defCls(ReplTests, {
-//  @alias vm.Pid;
-//
-//  @def start([Atom], {
-//    test_name = 'should invoke public functions (interp)';
-//    result = cast(@native Lang.eval('ReplTests.sample("sample function", Kernel.self());'), Tuple);
-//    pid = Kernel.self();
-//    assert(['sample function', pid], result, test_name);
-//
-//    test_name = 'should invoke public functions with variables';
-//    pid = Kernel.self();
-//    label = 'sample1 function';
-//    result = cast(ReplTests.sample(label, pid), Tuple);
-//    assert(['sample1 function', pid], result, test_name);
-//
-//    test_name = 'should invoke public functions with variables (interp)';
-//    pid = Kernel.self();
-//    label = 'sample2 function';
-//    result = cast(@native Lang.eval('ReplTests.sample(label, pid);'), Tuple);
-//    assert(['sample2 function', pid], result, test_name);
-//
-//    test_name = 'should be able to cast to type';
-//    pid1 = Kernel.self();
-//    pid2 = Kernel.self();
-//    result = Kernel.same(cast(pid1, Dynamic), cast(pid2, Dynamic));
-//    assert(result, test_name);
-//
-//    test_name = 'should be able to cast to type (interp)';
-//    pid1 = Kernel.self();
-//    pid2 = Kernel.self();
-//    result = @native Lang.eval("Kernel.same(cast(pid1, Dynamic), cast(pid2, Dynamic))");
-//    assert(cast(result, Atom), test_name);
-//
-//    test_name = 'should create anonymous function';
-//    fun = @fn {
-//      ([{Atom: arg, String: name}] => {
-//        assert(@_'success', arg, name);
-//      });
-//    };
-//    assert(fun, test_name);
-//
-//    test_name = 'should create anonymous function (interp)';
-//    result = @native Lang.eval('@fn {
-//      ([{Atom: arg, String: name}] => {
-//        ReplTests.assert(@_"success", arg, name);
-//      });
-//    };');
-//    fun = cast(result, Function);
-//    assert(fun, test_name);
-//
-//    test_name = 'should create anonymous function with members in scope variables';
-//    status = @_'success';
-//    fun = @fn {
-//      ([{Atom: pass, String: name}] => {
-//        assert(status, pass, name);
-//      });
-//    };
-//    assert(fun, test_name);
-//
-//    test_name = 'should create anonymous function with members in scope variables (interp)';
-//    status = @_'success';
-//    result = @native Lang.eval('@fn {
-//      ([{Atom: pass, String: name}] => {
-//        ReplTests.assert(status, pass, name);
-//      });
-//    };');
-//    fun = cast(result, Function);
-//    assert(fun, test_name);
-//
-//    test_name = 'should assign to variable';
-//    variable = "foo";
-//    assert("foo", variable, test_name);
-//
-//    test_name = 'should assign to variable (interp)';
-//    @native Lang.eval('new_var = "foo"; ReplTests.assert("foo", new_var, test_name);');
-//
-//    test_name = 'should assign to string pattern';
-//    'bar ' => variable = "bar foo";
-//    assert("foo", cast(variable, String), test_name);
-//
-//    test_name = 'should assign to string pattern (interp)';
-//    @native Lang.eval("'bar ' => vari = 'bar foo'; ReplTests.assert('foo', cast(vari, String), test_name);");
-//
-//    test_name = 'should assign to tuple pattern';
-//    [@_'ok', foo] = [@_'ok', 'foo'];
-//    assert("foo", cast(foo, String), test_name);
-//
-//    test_name = 'should assign to tuple pattern (interp)';
-//    @native Lang.eval("[@_'ok', bert] = [@_'ok', 'foo']; ReplTests.assert('foo', cast(bert, String), test_name);");
-//
-//    test_name = 'should assign to list pattern';
-//    ({@_'ok'; foo2;}) = {@_'ok'; 'foo';};
-//    assert("foo", cast(foo2, String), test_name);
-//
-//    test_name = 'should assign to list pattern (interp)';
-//    @native Lang.eval("({@_'ok'; foo3;}) = {@_'ok'; 'foo';}; ReplTests.assert('foo', cast(foo3, String), test_name);");
-//
-//    test_name = 'should assign to lists head and tail in a pattern';
-//    ({'ok' | foo_tail;}) = {'ok'; 'foo1'; 'foo2';};
-//    assert({'foo1'; 'foo2';}, cast(foo_tail, LList), test_name);
-//
-//    test_name = 'should assign to lists head and tail in a pattern (interp)';
-//    @native Lang.eval("({'ok' | foo_tail2;}) = {'ok'; 'foo1'; 'foo2';}; ReplTests.assert({'foo1'; 'foo2';}, cast(foo_tail2, LList), test_name);");
-//
-//    System.println('');
-//    @_'ok';
-//  });
-//}))
 @:build(lang.macros.AnnaLang.defCls(History, {
   @alias vm.Process;
   @alias vm.Kernel;
@@ -1557,6 +1525,11 @@ import vm.Function;
       });
     });
     @_'ok';
+  });
+
+  @def run_test({Atom: module, String: 'skip_' => test_name}, [Atom], {
+    System.print('*');
+    @_'no_test';
   });
 
   @def run_test({Atom: module, Atom: test_fun}, [Dynamic], {
