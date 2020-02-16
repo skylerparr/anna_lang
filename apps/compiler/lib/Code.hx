@@ -948,11 +948,13 @@ import vm.Function;
     Assert.assert('foo bar', result);
   });
 
-  @def skip_should_invoke_function_with_cast_interp([Atom], {
-    //todo: fail
+  @def test_should_invoke_function_with_cast_interp([Atom], {
+//    @native Lang.eval("({val | _;}) = {'foo'; 'bar'; 'cat'; 'baz';};
+//    result = Str.concat(cast(val, String), ' bar');
+//    Assert.assert('foo bar', result);");
     @native Lang.eval("({val | _;}) = {'foo'; 'bar'; 'cat'; 'baz';};
     result = Str.concat(cast(val, String), ' bar');
-    Assert.assert('foo bar', result);");
+    System.println(result)");
   });
 
   @def skip_shouild_create_anonymous_function_with_no_args([Atom], {

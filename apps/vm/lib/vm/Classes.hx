@@ -99,6 +99,7 @@ class Classes {
         functions.set(className, classFunctions);
       }
     }
+    Lang.definedModules.set(className.value, instance);
   }
 
   public static function defineFunction(className: Atom, funName: Atom, fun: Function): Void {

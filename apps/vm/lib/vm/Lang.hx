@@ -22,6 +22,34 @@ class Lang {
     parser;
   }
 
+  public static var definedModules: Map<String, Dynamic> = {
+    definedModules = new Map<String, Dynamic>();
+    definedModules.set("Anna", Anna);
+    definedModules.set("Atom", Atom);
+    definedModules.set("Tuple", Tuple);
+    definedModules.set("LList", LList);
+    definedModules.set("MMap", MMap);
+    definedModules.set("Keyword", Keyword);
+    definedModules.set("Map", ObjectMap);
+    definedModules.set("IO", IO);
+    definedModules.set("EitherEnums", EitherEnums);
+    definedModules.set("Std", Std);
+    definedModules.set("ArgHelper", ArgHelper);
+    definedModules.set("InterpMatch", InterpMatch);
+    definedModules.set("vm", {Classes: vm.Classes, InterpMatch: vm.InterpMatch});
+    definedModules.set("lang", {EitherSupport: EitherSupport});
+    definedModules.set("A", function(v) {
+      return v;
+    });
+    definedModules.set("B", function(v) {
+      return v;
+    });
+    definedModules.set("C", function(v) {
+      return v;
+    });
+    definedModules;
+  };
+
   public inline static function eval(string:String):Tuple {
     string = StringTools.trim(string);
     string = StringTools.replace(string, "'", "\'");
@@ -44,7 +72,7 @@ class Lang {
 
   public inline static function invokeAst(ast: Expr, isList: Bool): Atom {
     switch(ast.expr) {
-      // handle defines here
+        // handle defines here
       // ex: case "defCls":
       // ex: case "defType":
       // etc.
@@ -60,31 +88,10 @@ class Lang {
 
   public static function getHaxeInterp(): Interp {
     var interp = new Interp();
-    interp.variables.set("Anna", Anna);
-    interp.variables.set("Atom", Atom);
-    interp.variables.set("Tuple", Tuple);
-    interp.variables.set("LList", LList);
-    interp.variables.set("Keyword", Keyword);
-    interp.variables.set("MMap", MMap);
-    interp.variables.set("Map", ObjectMap);
-    interp.variables.set("IO", IO);
-    interp.variables.set("Repl", {});
-    interp.variables.set("Assert", {});
-    interp.variables.set("AnnaCompiler", {});
-    interp.variables.set("EitherEnums", EitherEnums);
-//    interp.variables.set("SourceFile", SourceFile);
-    interp.variables.set("Kernel", Kernel);
-    interp.variables.set("Std", Std);
-    interp.variables.set("ArgHelper", ArgHelper);
-    interp.variables.set("InterpMatch", vm.InterpMatch);
-    interp.variables.set("vm", {Classes: vm.Classes, InterpMatch: vm.InterpMatch});
-    interp.variables.set("lang", {EitherSupport: EitherSupport});
-    interp.variables.set("A", function(v) {
-      return v;
-    });
-    interp.variables.set("B", function(v) {
-      return v;
-    });
+    for(key in definedModules.keys()) {
+      var value = definedModules.get(key);
+      interp.variables.set(key, value);
+    }
     return interp;
   }
 
