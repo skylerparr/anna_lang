@@ -25,10 +25,16 @@ class Match {
       var moduleName: String = MacroTools.getModuleName(params);
       moduleName = AnnaLang.getAlias(moduleName);
 
+
       var currentModule: TypeDefinition = MacroContext.currentModule;
       var currentModuleStr: String = currentModule.name;
       var currentFunStr: String = MacroContext.currentVar;
       var varName: String = MacroTools.getIdent(params);
+      #if !macro
+      if(MacroContext.lastFunctionReturnType == "vm_Function") {
+        vm.Process.self().processStack.getVariablesInScope().set(varName, null);
+      }
+      #end
       MacroContext.varTypesInScope.set(varName, MacroContext.lastFunctionReturnType);
       var haxeStr: String = '${currentFunStr}.push(new vm.Assign(${MacroTools.getTuple([MacroTools.getAtom("const"), '"${varName}"'])}, ${MacroTools.getAtom(currentModuleStr)}, ${MacroTools.getAtom(MacroContext.currentFunction)}, ${MacroTools.getLineNumber(params)}));';
       return [lang.macros.Macros.haxeToExpr(haxeStr)];

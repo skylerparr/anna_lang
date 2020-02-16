@@ -934,13 +934,12 @@ import vm.Function;
     result = Kernel.add(1, number);
     Assert.assert(5, result);
   });
-
-
-  @def test_should_invoke_public_functions_with_variables_interp([Atom], {
-    @native Lang.eval("number = 4;
-    result = Kernel.add(7, number);
-    Assert.assert(11, result);");
-  });
+//
+//  @def test_should_invoke_public_functions_with_variables_interp([Atom], {
+//    @native Lang.eval("number = 4;
+//    result = Kernel.add(7, number);
+//    Assert.assert(11, result);");
+//  });
 
   @def test_should_invoke_function_with_cast([Atom], {
     ({val | _;}) = {'foo'; 'bar'; 'cat'; 'baz';};
@@ -949,30 +948,9 @@ import vm.Function;
   });
 
   @def test_should_invoke_function_with_cast_interp([Atom], {
-//    @native Lang.eval("({val | _;}) = {'foo'; 'bar'; 'cat'; 'baz';};
-//    result = Str.concat(cast(val, String), ' bar');
-//    Assert.assert('foo bar', result);");
     @native Lang.eval("({val | _;}) = {'foo'; 'bar'; 'cat'; 'baz';};
     result = Str.concat(cast(val, String), ' bar');
-    System.println(result)");
-  });
-
-  @def skip_shouild_create_anonymous_function_with_no_args([Atom], {
-//    fun = @fn {
-//      ([{}, [Atom]] => {
-//        @_'true';
-//      });
-//    };
-//    Assert.assert(fun());
-  });
-
-  @def skip_shouild_create_anonymous_function_with_no_args_interp([Atom], {
-    @native Lang.eval("fun = @fn {
-      ([{}, [Atom]] => {
-        @_'true';
-      });
-    };
-    Assert.assert(fun());");
+    Assert.assert('foo bar', result);");
   });
 
   @def test_should_create_anonymous_function_with_no_args([Atom], {
@@ -985,25 +963,14 @@ import vm.Function;
     Assert.assert(cast(result, Atom));
   });
 
-  @def skip_should_create_anonymous_function_with_no_args_interp([Atom], {
+  @def test_should_create_anonymous_function_with_no_args_interp([Atom], {
     @native Lang.eval("fun = @fn {
       ([{}] => {
-        @_'false';
+        @_'true';
       });
     };
     result = fun();
     Assert.assert(cast(result, Atom));");
-  });
-
-  @def skip_should_interpret_and_create_anonymous_function_with_no_args([Atom], {
-    result = @native Lang.eval("@fn {
-      ([{}] => {
-        @_'false';
-      });
-    };");
-    fun = cast(result, Function);
-    result = fun();
-    Assert.assert(cast(result, Atom));
   });
 
   @def single_arg({Atom: status}, [Atom], {

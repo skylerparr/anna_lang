@@ -17,6 +17,7 @@ class InterpMatch implements Operation {
   public var lineNumber: Int;
 
   public function new(code: String, hostModule: Atom, hostFunction: Atom, lineNumber: Int) {
+    //todo: store as ast and not a string for a performance boost
     this.code = code;
 
     this.hostModule = hostModule;

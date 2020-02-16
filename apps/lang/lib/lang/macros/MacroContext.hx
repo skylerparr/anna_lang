@@ -1,4 +1,5 @@
 package lang.macros;
+import haxe.CallStack;
 import haxe.rtti.Rtti;
 import haxe.macro.Expr;
 

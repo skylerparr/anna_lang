@@ -23,14 +23,14 @@ using haxe.macro.Tools;
 import haxe.macro.Expr;
 
 class AnnaLang {
-  private static var parser: ParserPlus = {
+  public static var parser: ParserPlus = {
     parser = new ParserPlus();
     parser.allowTypes = true;
     parser.allowMetadata = true;
     parser;
   }
 
-  private static var printer: Printer = new Printer();
+  public static var printer: Printer = new Printer();
 
   private static var uniqueId: Int = 0;
 
@@ -735,9 +735,6 @@ class AnnaLang {
     var module: ModuleDef = MacroContext.declaredClasses.get(moduleName);
     if(module == null) {
       module = MacroContext.declaredInterfaces.get(moduleName);
-      if(module == null) {
-        throw new FunctionClauseNotFound('AnnaLang: Function ${funName}() not found on module ${moduleName}.');
-      }
     }
 
     var fqFunNameTypeMap: Map<String, String> = new Map();
@@ -789,7 +786,10 @@ class AnnaLang {
       MacroLogger.log(fqFunName, 'fqFunName');
       var frags: Array<String> = fqFunName.split('.');
       fqFunName = frags.pop();
-      var declaredFunctions = module.declaredFunctions;
+      var declaredFunctions: Map<String, Array<Dynamic>> = new Map<String, Array<Dynamic>>();
+      if(module != null) {
+        declaredFunctions = module.declaredFunctions;
+      }
 
       var funDef: Dynamic = declaredFunctions.get(fqFunName);
       if(funDef == null) {

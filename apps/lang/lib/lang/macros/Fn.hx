@@ -1,22 +1,15 @@
 package lang.macros;
 
+import lang.macros.AnnaLang;
+import lang.macros.AnnaLang;
+import haxe.CallStack;
 import lang.macros.MacroTools;
 import haxe.macro.Printer;
 import hscript.plus.ParserPlus;
 import haxe.macro.Expr;
 
 class Fn {
-  private static var parser: ParserPlus = {
-    parser = new ParserPlus();
-    parser.allowTypes = true;
-    parser.allowMetadata = true;
-    parser;
-  }
-
-  private static var printer: Printer = new Printer();
-
   public static function gen(params: Expr): Array<Expr> {
-    MacroContext.lastFunctionReturnType = "vm_Function";
     var currentModule: TypeDefinition = MacroContext.currentModule;
     var currentModuleStr: String = currentModule.name;
     #if !macro
@@ -31,7 +24,7 @@ class Fn {
         for(expr in exprs) {
           var typesAndBody: Array<Dynamic> = switch(expr.expr) {
             case EParenthesis({expr: EBinop(OpArrow, types, body)}):
-              var typesStr: String = printer.printExpr(types);
+              var typesStr: String = AnnaLang.printer.printExpr(types);
               [typesStr.substr(1, typesStr.length - 2), body];
             case e:
               MacroLogger.log(e, 'e');
@@ -45,13 +38,15 @@ class Fn {
           for(pStr in paramsStrs) {
             var typeAndName = pStr.split(':');
             var typeString: String = StringTools.trim(typeAndName[0]);
-            paramTypeStrings.push(typeString);
-            var paramName: String = StringTools.trim(typeAndName[1]);
-            paramNameStrings.push(paramName);
-            MacroContext.varTypesInScope.set(paramName, typeString);
+            if(typeString.length > 0) {
+              paramTypeStrings.push(typeString);
+              var paramName: String = StringTools.trim(typeAndName[1]);
+              paramNameStrings.push(paramName);
+              MacroContext.varTypesInScope.set(paramName, typeString);
+            }
           }
           #end
-          var haxeStr: String = '${anonFunctionName}(${typesAndBody[0]}, ${printer.printExpr(typesAndBody[1])});';
+          var haxeStr: String = '${anonFunctionName}(${typesAndBody[0]}, ${AnnaLang.printer.printExpr(typesAndBody[1])});';
           var expr = lang.macros.Macros.haxeToExpr(haxeStr);
           defined = Def.defineFunction(expr);
           defined.varTypesInScope = MacroContext.varTypesInScope;
@@ -64,7 +59,11 @@ class Fn {
           allOps = allOps.concat(operations);
         }
         var anonFn: vm.Function = new vm.SimpleFunction();
-        var anonFnString: String = 'function(${paramNameStrings.join(', ')}, scope) {
+        var scope: String = 'scope';
+        if(paramTypeStrings.length > 0) {
+          scope = ', ${scope}';
+        }
+        var anonFnString: String = 'function(${paramNameStrings.join(', ')}${scope}) {
           return allOps;
         }';
         var ast = new hscript.Parser().parseString(anonFnString);
@@ -74,8 +73,14 @@ class Fn {
         anonFn.args = paramNameStrings;
         anonFn.scope = vm.Process.self().processStack.getVariablesInScope();
         anonFn.apiFunc = Atom.create(MacroContext.currentFunction);
-        vm.Classes.defineFunction(Atom.create(currentModuleStr), Atom.create(anonFunctionName + '_${paramTypeStrings.join('_')}'), anonFn);
+        MacroContext.lastFunctionReturnType = "vm_Function";
+        var paramsTypesString: String = '';
+        if(paramTypeStrings.length > 0) {
+          paramsTypesString = '_${paramTypeStrings.join('_')}';
+        }
+        vm.Classes.defineFunction(Atom.create(currentModuleStr), Atom.create(anonFunctionName + paramsTypesString), anonFn);
         #end
+        MacroContext.lastFunctionReturnType = "vm_Function";
         return [buildDeclareAnonFunctionExpr(currentModuleStr, defined.internalFunctionName,params)];
       case _:
         MacroLogger.log(params, 'params');
