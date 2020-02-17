@@ -78,18 +78,26 @@ class MacroContext {
 
   public var defaultTypeDefinition: TypeDefinition =
   {
-    defaultTypeDefinition = {
+    var dtd = {
       pack: ["dkjf", "skljf", "kopaioe", "odfkpewp"],
       name: "__DefaultType__",
-      pos: currentPos(),
+      #if macro
+      pos: haxe.macro.Context.currentPos(),
+      #else
+      pos: {file: "none:0", min: 0, max: 0},
+      #end
       kind: TDStructure,
       fields: []
     }
+    dtd;
   }
 
   public var defaultModuleDef: ModuleDef = new ModuleDef("__DEFAULT_MODULE__");
 
-  public function new() {
+  private var annaLang: AnnaLang;
+
+  public function new(annaLang: AnnaLang) {
+    this.annaLang = annaLang;
   }
 
   #if macro
@@ -137,7 +145,7 @@ class MacroContext {
   public function getLine(): Expr {
     var lineStr = currentPos() + '';
     var lineNo: Int = Std.parseInt(lineStr.split(':')[1]);
-    return Macros.haxeToExpr('${lineNo}');
+    return annaLang.macros.haxeToExpr('${lineNo}');
   }
 }
 

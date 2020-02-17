@@ -1,5 +1,7 @@
 package lang.macros;
 
+import lang.macros.MacroContext;
+import lang.macros.AnnaLang;
 import haxe.macro.Context;
 import haxe.macro.Expr;
 import lang.macros.MacroLogger;
@@ -17,39 +19,42 @@ class EitherMacro {
     alphabet;
   };
 
-  macro public static function gen(values: Expr): Expr {
-    MacroLogger.log("=====================");
-    MacroLogger.log('EitherMacro.gen(): ${Context.getLocalClass()}');
-    switch(setup(values)) {
-      case [p, valueExpressions, typeAndExprs, varTypeMap, allTypes, numberOfElements]:
-        var eitherArray: Array<Expr> = [];
-        var exprs: Array<Expr> = [];
-        for(i in 0...valueExpressions.length) {
-          var varType: String = alphabet[i];
-          var varName: String = varType.toLowerCase();
-          if(typeAndExprs.length == 0) {
-            return macro [];
-          }
-          var typeAndExpr: Dynamic = typeAndExprs[i];
-          var uniqueVarType: String = varTypeMap.get(typeAndExpr.type);
-          exprs.push({ expr: EVars([{ expr: { expr: typeAndExpr.expr, pos: MacroContext.currentPos() }, name: varName, type: TPath({ name: 'Tuple', pack: [], params: allTypes }) }]), pos: MacroContext.currentPos() });
-          eitherArray.push({expr: EConst(CIdent(varName)), pos: MacroContext.currentPos()});
-        }
-        exprs.push(macro $a{eitherArray});
-        return macro $b{exprs};
-      case _:
-        throw "EitherMacro.get(): gen setup return has changed, this shouldn't happen accidentally!";
-    }
-  }
+//  macro public static function gen(values: Expr): Expr {
+//    MacroLogger.log("=====================");
+//    MacroLogger.log('EitherMacro.gen(): ${Context.getLocalClass()}');
+//    var macroContext = new MacroContext();
+//    switch(setup(values)) {
+//      case [p, valueExpressions, typeAndExprs, varTypeMap, allTypes, numberOfElements]:
+//        var eitherArray: Array<Expr> = [];
+//        var exprs: Array<Expr> = [];
+//        for(i in 0...valueExpressions.length) {
+//          var varType: String = alphabet[i];
+//          var varName: String = varType.toLowerCase();
+//          if(typeAndExprs.length == 0) {
+//            return macro [];
+//          }
+//          var typeAndExpr: Dynamic = typeAndExprs[i];
+//          var uniqueVarType: String = varTypeMap.get(typeAndExpr.type);
+//          exprs.push({ expr: EVars([{ expr: { expr: typeAndExpr.expr, pos: MacroContext.currentPos() }, name: varName, type: TPath({ name: 'Tuple', pack: [], params: allTypes }) }]), pos: MacroContext.currentPos() });
+//          eitherArray.push({expr: EConst(CIdent(varName)), pos: MacroContext.currentPos()});
+//        }
+//        exprs.push(macro $a{eitherArray});
+//        return macro $b{exprs};
+//      case _:
+//        throw "EitherMacro.get(): gen setup return has changed, this shouldn't happen accidentally!";
+//    }
+//  }
 
   macro public static function genMap(values: Expr): Expr {
-    return doGenMap(values);
+    var annaLang: AnnaLang = AnnaLang.annaLangForMacro;
+    return doGenMap(annaLang, values);
   }
 
-  public static function doGenMap(values: Expr): Expr {
+  public static function doGenMap(annaLang: AnnaLang, values: Expr): Expr {
+    var macroContext: MacroContext = annaLang.macroContext;
     MacroLogger.log("=====================");
 
-    switch(setup(values)) {
+    switch(setup(annaLang, values)) {
       case [p, valueExpressions, typeAndExprs, varTypeMap, allTypes, numberOfElements]:
         var eitherArray: Array<Expr> = [];
         var exprs: Array<Expr> = [];
@@ -71,23 +76,23 @@ class EitherMacro {
           argVars.push(varName);
           var typeAndExpr: Dynamic = typeAndExprs[i];
           var uniqueVarType: String = varTypeMap.get(typeAndExpr.type);
-          exprs.push({ expr: EVars([{ expr: typeAndExpr.expr, name: varName, type: TPath({ name: 'Tuple', pack: [], params: [] }) }]), pos: MacroContext.currentPos() });
+          exprs.push({ expr: EVars([{ expr: typeAndExpr.expr, name: varName, type: TPath({ name: 'Tuple', pack: [], params: [] }) }]), pos: macroContext.currentPos() });
 
           if(a == null) {
-            a = {expr: EConst(CIdent(varName)), pos: MacroContext.currentPos()};
+            a = {expr: EConst(CIdent(varName)), pos: macroContext.currentPos()};
           } else if(b == null) {
-            b = {expr: EConst(CIdent(varName)), pos: MacroContext.currentPos()};
+            b = {expr: EConst(CIdent(varName)), pos: macroContext.currentPos()};
           }
 
           if(a != null && b != null) {
-            eitherArray.push({ expr: ECall({ expr: EField({ expr: EConst(CIdent('map')), pos: MacroContext.currentPos() },'set'), pos: MacroContext.currentPos() },
-            [a,b]), pos: MacroContext.currentPos() });
+            eitherArray.push({ expr: ECall({ expr: EField({ expr: EConst(CIdent('map')), pos: macroContext.currentPos() },'set'), pos: macroContext.currentPos() },
+            [a,b]), pos: macroContext.currentPos() });
             a = null;
             b = null;
           }
         }
         var eitherType = { name: 'Array', pack: [], params: allTypes };
-        var newMap = Macros.haxeToExpr('[${argVars.join(', ')}]');
+        var newMap = annaLang.macros.haxeToExpr('[${argVars.join(', ')}]');
         exprs.push(newMap);
         return macro $b{exprs};
       case _:
@@ -95,8 +100,9 @@ class EitherMacro {
     }
   }
 
-  private static function setup(values: Expr):Array<Dynamic> {
-    var p: Printer = new Printer();
+  private static function setup(annaLang: AnnaLang, values: Expr):Array<Dynamic> {
+    var macroContext: MacroContext = annaLang.macroContext;
+    var p: Printer = annaLang.printer;
     var valueExpressions: Array<Dynamic> = switch(values) {
       case {expr: ECast({expr: EArrayDecl(expr)}, _)}:
         expr;
@@ -113,10 +119,10 @@ class EitherMacro {
       var vExpr: Expr = cast valueExpression;
       switch(vExpr.expr) {
         case EBinop(OpArrow, a, b):
-          findTypesAndExprs(typeAndExprs, a);
-          findTypesAndExprs(typeAndExprs, b);
+          findTypesAndExprs(annaLang, typeAndExprs, a);
+          findTypesAndExprs(annaLang, typeAndExprs, b);
         case _:
-          findTypesAndExprs(typeAndExprs, vExpr);
+          findTypesAndExprs(annaLang, typeAndExprs, vExpr);
       }
     }
 
@@ -146,7 +152,8 @@ class EitherMacro {
     ];
   }
 
-  private static function findTypesAndExprs(typeAndExprs: Array<Dynamic>, vExpr: Expr): Void {
+  private static function findTypesAndExprs(annaLang: AnnaLang, typeAndExprs: Array<Dynamic>, vExpr: Expr): Void {
+    var macroContext: MacroContext = annaLang.macroContext;
     switch(vExpr) {
       case {expr: EConst(val)}:
         switch(val) {
@@ -157,7 +164,9 @@ class EitherMacro {
           case CFloat(value):
             typeAndExprs.push({type: "Float", expr: vExpr});
           case CIdent(ident):
-            var expr: Expr = Macros.haxeToExpr('Tuple.create([Atom.create("var"), "${ident}"])');
+//            var expr: Expr = Macros.haxeToExpr('Tuple.create([Atom.create("var"), "${ident}"])');
+            var identExpr: Expr = {expr: EConst(CString(ident)), pos: macroContext.currentPos()}
+            var expr: Expr = macro Tuple.create([Atom.create("var"), $e{identExpr}]);
             typeAndExprs.push({type: 'Dynamic', expr: expr});
           case _:
         }
@@ -172,19 +181,19 @@ class EitherMacro {
             MacroLogger.logExpr(e, 'e');
         }
       case {expr: ENew({name: type}, _args)}:
-        typeAndExprs.push({type: {expr: EConst(CIdent(type)), pos: MacroContext.currentPos()}, expr: vExpr});
+        typeAndExprs.push({type: {expr: EConst(CIdent(type)), pos: macroContext.currentPos()}, expr: vExpr});
       case {expr: EBinop(op, e1, e2)}:
         for(expr in [e1, e2]) {
-          findTypesAndExprs(typeAndExprs, expr);
+          findTypesAndExprs(annaLang, typeAndExprs, expr);
         }
       case {expr: EMeta(_)}:
-        var typesAndValues = MacroTools.getTypeAndValue(vExpr);
-        var expr = Macros.haxeToExpr(typesAndValues.value);
-        findTypesAndExprs(typeAndExprs, expr);
+        var typesAndValues = annaLang.macroTools.getTypeAndValue(vExpr);
+        var expr = annaLang.macros.haxeToExpr(typesAndValues.value);
+        findTypesAndExprs(annaLang, typeAndExprs, expr);
       case {expr: expr}:
         MacroLogger.log(vExpr, 'vExpr');
         MacroLogger.logExpr(vExpr, 'vExpr');
-        findTypesAndExprs(typeAndExprs, {expr: Reflect.field(expr, 'expr'), pos: MacroContext.currentPos()});
+        findTypesAndExprs(annaLang, typeAndExprs, {expr: Reflect.field(expr, 'expr'), pos: macroContext.currentPos()});
       case e:
         MacroLogger.log(e, 'e');
     }

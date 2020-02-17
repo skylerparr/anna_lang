@@ -19,31 +19,34 @@ class Application {
   private static inline var CONFIG_FILE: String = 'app_config.json';
 
   macro public static function getProjectConfig(appAtomName: Expr): Expr {
+    var annaLang: AnnaLang = AnnaLang.annaLangForMacro;
+    var macros: Macros = annaLang.macros;
+
     var appName: String = getAtomValue(appAtomName);
     var config: Dynamic = fetchAppConfigByName(appName);
 
-    var appNameExpr: Expr = Macros.haxeToExpr('"${appName}".atom()');
-    var autoStart: Expr = Macros.haxeToExpr('"${config.autoStart}"');
+    var appNameExpr: Expr = macros.haxeToExpr('"${appName}".atom()');
+    var autoStart: Expr = macros.haxeToExpr('"${config.autoStart}"');
     var configApps: Array<String> = cast config.apps;
     var apps: Array<String> = [];
     for(app in configApps) {
       apps.push('"${app}"');
     }
-    var appsExpr: Expr = Macros.haxeToExpr('[${apps.join(",")}]');
+    var appsExpr: Expr = macros.haxeToExpr('[${apps.join(",")}]');
     var haxelibsStr: String = '';
     var haxelibs: Array<Dynamic> = cast(config.haxelibs, Array<Dynamic>);
     for(lib in haxelibs) {
       haxelibsStr += ', "${lib}"';
     }
 
-    var haxeLibs: Expr = Macros.haxeToExpr('["hscript-plus", "sepia", "mockatoo"${haxelibsStr}]');
+    var haxeLibs: Expr = macros.haxeToExpr('["hscript-plus", "sepia", "mockatoo"${haxelibsStr}]');
     var includeClasses: Array<String> = [];
     #if !scriptable
     includeClasses = getClassesToInclude(appDir(appName + '/lib/'));
     includeClasses = includeClasses.concat(getClassesToInclude(appDir(appName + '/test/')));
     #end
 
-    var includeExpr: Expr = Macros.haxeToExpr('${includeClasses.join(';')}');
+    var includeExpr: Expr = macros.haxeToExpr('${includeClasses.join(';')}');
     return macro {
       $e{includeExpr}
       var appRoot: String = Native.callStaticField("core.PathSettings", "applicationBasePath");

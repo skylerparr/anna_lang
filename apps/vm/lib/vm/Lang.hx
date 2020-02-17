@@ -14,15 +14,45 @@ import hscript.Parser;
 using lang.AtomSupport;
 class Lang {
 
-  private static var printer: Printer = new Printer();
-  private static var parser: Parser = {
-    var parser: Parser = new Parser();
-    parser.allowMetadata = true;
-    parser.allowTypes = true;
-    parser;
+  public static var definedModules: Map<String, Dynamic> = {
+    definedModules = new Map<String, Dynamic>();
+    definedModules.set("Anna", Anna);
+    definedModules.set("Code", Code);
+    definedModules.set("Atom", Atom);
+    definedModules.set("Tuple", Tuple);
+    definedModules.set("LList", LList);
+    definedModules.set("MMap", MMap);
+    definedModules.set("Keyword", Keyword);
+    definedModules.set("Map", ObjectMap);
+    definedModules.set("IO", IO);
+    definedModules.set("EitherEnums", EitherEnums);
+    definedModules.set("Std", Std);
+    definedModules.set("ArgHelper", ArgHelper);
+    definedModules.set("InterpMatch", InterpMatch);
+    definedModules.set("vm", {Classes: vm.Classes, InterpMatch: vm.InterpMatch});
+    definedModules.set("lang", {EitherSupport: EitherSupport});
+    definedModules.set("A", function(v) {
+      return v;
+    });
+    definedModules.set("B", function(v) {
+      return v;
+    });
+    definedModules.set("C", function(v) {
+      return v;
+    });
+    definedModules;
+  };
+
+  public var annaLang: AnnaLang;
+  private var printer: Printer;
+
+  public function new() {
+    annaLang = new AnnaLang();
+    annaLang.lang = this;
+    printer = annaLang.printer;
   }
 
-  public inline static function eval(string:String):Tuple {
+  public function doEval(string: String): Tuple {
     string = StringTools.trim(string);
     string = StringTools.replace(string, "'", "\'");
     var isList: Bool = false;
@@ -30,7 +60,7 @@ class Lang {
       if(StringTools.startsWith(string, '{') && StringTools.endsWith(string, '}')) {
         isList = true;
       }
-      var ast = parser.parseString(string);
+      var ast = annaLang.parser.parseString(string);
       var pos = { max: 12, min: 0, file: null };
       var ast: Expr = new Macro(pos).convert(ast);
       invokeAst(ast, isList);
@@ -42,55 +72,38 @@ class Lang {
     }
   }
 
-  public inline static function invokeAst(ast: Expr, isList: Bool): Atom {
+  public inline static function eval(string:String):Tuple {
+    var lang: Lang = new Lang();
+    return lang.doEval(string);
+  }
+
+  public inline function invokeAst(ast: Expr, isList: Bool): Atom {
     switch(ast.expr) {
       // handle defines here
       // ex: case "defCls":
       // ex: case "defType":
       // etc.
       case EBlock(exprs) if(!isList):
-        var expr = MacroTools.buildBlock(exprs);
+        var expr = annaLang.macroTools.buildBlock(exprs);
         invokeBlock(expr);
       case _:
-        var expr = MacroTools.buildBlock([ast]);
+        var expr = annaLang.macroTools.buildBlock([ast]);
         invokeBlock(expr);
     }
     return 'ok'.atom();
   }
 
-  public static function getHaxeInterp(): Interp {
+  public var haxeInterp: Interp = {
     var interp = new Interp();
-    interp.variables.set("Anna", Anna);
-    interp.variables.set("Atom", Atom);
-    interp.variables.set("Tuple", Tuple);
-    interp.variables.set("LList", LList);
-    interp.variables.set("Keyword", Keyword);
-    interp.variables.set("MMap", MMap);
-    interp.variables.set("Map", ObjectMap);
-    interp.variables.set("IO", IO);
-    interp.variables.set("Repl", {});
-    interp.variables.set("Assert", {});
-    interp.variables.set("AnnaCompiler", {});
-    interp.variables.set("EitherEnums", EitherEnums);
-//    interp.variables.set("SourceFile", SourceFile);
-    interp.variables.set("Kernel", Kernel);
-    interp.variables.set("Std", Std);
-    interp.variables.set("ArgHelper", ArgHelper);
-    interp.variables.set("InterpMatch", vm.InterpMatch);
-    interp.variables.set("vm", {Classes: vm.Classes, InterpMatch: vm.InterpMatch});
-    interp.variables.set("lang", {EitherSupport: EitherSupport});
-    interp.variables.set("A", function(v) {
-      return v;
-    });
-    interp.variables.set("B", function(v) {
-      return v;
-    });
-    return interp;
+    for(key in definedModules.keys()) {
+      var value = definedModules.get(key);
+      interp.variables.set(key, value);
+    }
+    interp;
   }
 
-  public static inline function resolveOperations(expr: Expr): Array<Operation> {
-    AnnaLang.initCls();
-    var exprs: Array<Expr> = AnnaLang.walkBlock(expr);
+  public inline function resolveOperations(expr: Expr): Array<Operation> {
+    var exprs: Array<Expr> = annaLang.walkBlock(expr);
     var operations: Array<Operation> = [];
     for(expr in exprs) {
       var codeString = printer.printExpr(expr);
@@ -98,14 +111,14 @@ class Lang {
       codeString = StringTools.replace(codeString, 'ops.push(', '');
       codeString = codeString.substr(0, codeString.length - 1);
 
-      var ast = parser.parseString(codeString);
-      var op: Operation = getHaxeInterp().execute(ast);
+      var ast = annaLang.parser.parseString(codeString);
+      var op: Operation = haxeInterp.execute(ast);
       operations.push(op);
     }
     return operations;
   }
 
-  private static inline function invokeBlock(expr: Expr): Void {
+  private inline function invokeBlock(expr: Expr): Void {
     var operations = resolveOperations(expr);
     Process.apply(Process.self(), operations);
   }

@@ -1,55 +1,47 @@
 package lang.macros;
 
-import lang.macros.utils.Helpers;
+import lang.macros.AnnaLang;
 import lang.macros.MacroTools;
-import lang.macros.MacroTools;
-import hscript.plus.ParserPlus;
 import haxe.macro.Printer;
 import haxe.macro.Expr;
 class Match {
-  private static var parser: ParserPlus = {
-    parser = new ParserPlus();
-    parser.allowTypes = true;
-    parser.allowMetadata = true;
-    parser;
-  }
-
-  private static var printer: Printer = new Printer();
-
-  // Ensures that all pattern matches are unique
   private static var _id: Int = 0;
-  private static var matchMap: Map<String, String> = new Map<String, String>();
 
-  public static function gen(params: Expr): Array<Expr> {
-    var typeAndValue = MacroTools.getTypeAndValue(params);
+  public static function gen(annaLang: AnnaLang, params: Expr): Array<Expr> {
+    var macroTools: MacroTools = annaLang.macroTools;
+    var macroContext: MacroContext = annaLang.macroContext;
+    var macros: Macros = annaLang.macros;
+    var printer: Printer = annaLang.printer;
+
+    var typeAndValue = macroTools.getTypeAndValue(params);
     if(typeAndValue.type == "Variable") {
-      var moduleName: String = MacroTools.getModuleName(params);
-      moduleName = Helpers.getAlias(moduleName);
+      var moduleName: String = macroTools.getModuleName(params);
+      moduleName = Helpers.getAlias(moduleName, macroContext);
 
-      var currentModule: TypeDefinition = MacroContext.currentModule;
+      var currentModule: TypeDefinition = macroContext.currentModule;
       var currentModuleStr: String = currentModule.name;
-      var currentFunStr: String = MacroContext.currentVar;
-      var varName: String = MacroTools.getIdent(params);
-      MacroContext.varTypesInScope.set(varName, MacroContext.lastFunctionReturnType);
-      var haxeStr: String = '${currentFunStr}.push(new vm.Assign(${MacroTools.getTuple([MacroTools.getAtom("const"), '"${varName}"'])}, ${MacroTools.getAtom(currentModuleStr)}, ${MacroTools.getAtom(MacroContext.currentFunction)}, ${MacroTools.getLineNumber(params)}));';
-      return [lang.macros.Macros.haxeToExpr(haxeStr)];
+      var currentFunStr: String = macroContext.currentVar;
+      var varName: String = macroTools.getIdent(params);
+      macroContext.varTypesInScope.set(varName, macroContext.lastFunctionReturnType);
+      var haxeStr: String = '${currentFunStr}.push(new vm.Assign(${macroTools.getTuple([macroTools.getAtom("const"), '"${varName}"'])}, ${macroTools.getAtom(currentModuleStr)}, ${macroTools.getAtom(macroContext.currentFunction)}, ${macroTools.getLineNumber(params)}, Code.annaLang));';
+      return [macros.haxeToExpr(haxeStr)];
     } else {
-      var currentModule: TypeDefinition = MacroContext.currentModule;
+      var currentModule: TypeDefinition = macroContext.currentModule;
       var currentModuleStr: String = currentModule.name;
 
       MacroLogger.log(typeAndValue, 'match typeAndValue');
-      var patternMatch: Expr = PatternMatch.match(Macros.haxeToExpr(typeAndValue.value), Macros.haxeToExpr("scopeVariables.get(\"$$$\")"));
+      var patternMatch: Expr = PatternMatch.match(annaLang, macros.haxeToExpr(typeAndValue.value), macros.haxeToExpr("scopeVariables.get(\"$$$\")"));
       #if macro
       var cls: TypeDefinition = macro class NoClass extends vm.AbstractMatch {
-          public function new(hostModule: Atom, hostFunction: Atom, line: Int) {
-            super(hostModule, hostFunction, line);
+          public function new(hostModule: Atom, hostFunction: Atom, line: Int, annaLang: lang.macros.AnnaLang) {
+            super(hostModule, hostFunction, line, annaLang);
           }
 
           override public function execute(scopeVariables: Map<String, Dynamic>, processStack: vm.ProcessStack): Void {
             var matched: Map<String, Dynamic> = $e{patternMatch};
             if(Kernel.isNull(matched)) {
-              Logger.inspect('BadMatch: ${currentModuleStr}.${MacroContext.currentFunction}():${MacroTools.getLineNumber(params)} => ${printer.printExpr(params)}');
-              IO.inspect('BadMatch: ${currentModuleStr}.${MacroContext.currentFunction}():${MacroTools.getLineNumber(params)} => ${printer.printExpr(params)}');
+              Logger.inspect('BadMatch: ${currentModuleStr}.${macroContext.currentFunction}():${macroTools.getLineNumber(params)} => ${printer.printExpr(params)}');
+              IO.inspect('BadMatch: ${currentModuleStr}.${macroContext.currentFunction}():${macroTools.getLineNumber(params)} => ${printer.printExpr(params)}');
               vm.Kernel.crash(vm.Process.self());
               return;
             }
@@ -58,18 +50,18 @@ class Match {
             }
           }
       }
-      Helpers.applyBuildMacro(cls);
+      Helpers.applyBuildMacro(annaLang, cls);
 
       var className: String = '___${_id++}';
       cls.name = className;
       cls.pack = ["vm"];
       MacroLogger.printFields(cls.fields);
 
-      MacroContext.defineType(cls);
+      macroContext.defineType(cls);
 
-      return [Macros.haxeToExpr('ops.push(new vm.${className}(${MacroTools.getAtom(currentModuleStr)}, ${MacroTools.getAtom(MacroContext.currentFunction)}, ${MacroTools.getLineNumber(params)}));')];
+      return [macros.haxeToExpr('ops.push(new vm.${className}(${macroTools.getAtom(currentModuleStr)}, ${macroTools.getAtom(macroContext.currentFunction)}, ${macroTools.getLineNumber(params)}, Code.annaLang));')];
       #else
-      return [Macros.haxeToExpr('ops.push(new InterpMatch(\'${printer.printExpr(patternMatch)}\', ${MacroTools.getAtom(currentModuleStr)}, ${MacroTools.getAtom(MacroContext.currentFunction)}, ${MacroTools.getLineNumber(params)}));')];
+      return [macros.haxeToExpr('ops.push(new InterpMatch(\'${printer.printExpr(patternMatch)}\', ${macroTools.getAtom(currentModuleStr)}, ${macroTools.getAtom(macroContext.currentFunction)}, ${macroTools.getLineNumber(params)}, Code.annaLang));')];
       #end
     }
   }

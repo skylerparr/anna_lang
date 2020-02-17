@@ -1,5 +1,6 @@
 package vm;
 
+import lang.macros.AnnaLang;
 import vm.schedulers.CPPMultithreadedMessagePassingScheduler;
 import project.ProjectConfig;
 import vm.Pid;
@@ -24,6 +25,8 @@ class Kernel {
   @field public static var started: Bool;
   @field public static var msg: Dynamic;
 
+  private static var annaLang: AnnaLang;
+
   public static function start(): Atom {
     if(started) {
       return 'already_started'.atom();
@@ -36,6 +39,7 @@ class Kernel {
     objectFactory.injector.mapValue(ObjectCreator, objectFactory);
     objectFactory.injector.mapClass(Pid, SimpleProcess);
     scheduler.objectCreator = objectFactory;
+    annaLang = new AnnaLang();
 
     currentScheduler = scheduler;
     currentScheduler.start();
@@ -130,7 +134,7 @@ class Kernel {
     Sys.sleep(0.0001);
     #end
     return currentScheduler.spawn(function() {
-      return new PushStack(module.atom(), func.atom(), LList.create(cast createArgs), "Kernel".atom(), "testSpawn".atom(), MacroTools.line());
+      return new PushStack(module.atom(), func.atom(), LList.create(cast createArgs), "Kernel".atom(), "testSpawn".atom(), MacroTools.line(), annaLang);
     });
   }
 
@@ -264,20 +268,20 @@ class Kernel {
   public static function spawn(module: Atom, func: Atom, types: Tuple, args: LList): Pid {
     func = resolveApiFuncWithTypes(func, types);
     return currentScheduler.spawn(function() {
-      return new PushStack(module, func, args, "Kernel".atom(), "spawn".atom(), MacroTools.line());
+      return new PushStack(module, func, args, "Kernel".atom(), "spawn".atom(), MacroTools.line(), annaLang);
     });
   }
 
   public static function spawnFn(fn: Function, args: LList): Pid {
     return currentScheduler.spawn(function() {
-      return new InvokeAnonFunction(fn, args, 'Kernel'.atom(), 'spawnFn'.atom(), MacroTools.line());
+      return new InvokeAnonFunction(fn, args, 'Kernel'.atom(), 'spawnFn'.atom(), MacroTools.line(), annaLang);
     });
   }
 
   public static function spawn_link(module: Atom, func: Atom, types: Tuple, args: LList): Pid {
     func = resolveApiFuncWithTypes(func, types);
     return currentScheduler.spawnLink(Process.self(), function() {
-      return new PushStack(module, func, args, "Kernel".atom(), "spawn_link".atom(), MacroTools.line());
+      return new PushStack(module, func, args, "Kernel".atom(), "spawn_link".atom(), MacroTools.line(), annaLang);
     });
   }
 
@@ -354,7 +358,7 @@ class Kernel {
       nextScopeVariables.set(key, scopeVariables.get(key));
     }
     for(arg in LList.iterator(args)) {
-      var value: Dynamic = ArgHelper.extractArgValue(arg, scopeVariables);
+      var value: Dynamic = ArgHelper.extractArgValue(arg, scopeVariables, annaLang);
       callArgs.push(value);
       var argName: String = fn.args[counter++];
       nextScopeVariables.set(argName, value);

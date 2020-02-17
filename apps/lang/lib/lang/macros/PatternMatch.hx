@@ -1,4 +1,5 @@
 package lang.macros;
+import lang.macros.AnnaLang;
 import lang.macros.MacroTools;
 import lang.macros.MacroTools;
 import haxe.macro.Expr;
@@ -7,17 +8,8 @@ import hscript.plus.ParserPlus;
 using haxe.macro.Tools;
 
 class PatternMatch {
-  private static var parser: ParserPlus = {
-    parser = new ParserPlus();
-    parser.allowTypes = true;
-    parser.allowMetadata = true;
-    parser;
-  }
-
-  private static var printer: Printer = new Printer();
-
-  public static function match(pattern: Expr, valueExpr: Expr): Expr {
-    var expr: Expr = generatePatternMatch(pattern, valueExpr);
+  public static function match(annaLang: AnnaLang, pattern: Expr, valueExpr: Expr): Expr {
+    var expr: Expr = generatePatternMatch(annaLang, pattern, valueExpr);
 
     var retVal = macro {
       var scope: haxe.ds.StringMap<Dynamic> = new haxe.ds.StringMap();
@@ -30,21 +22,26 @@ class PatternMatch {
     return retVal;
   }
 
-  public static function generatePatternMatch(pattern: Expr, valueExpr: Expr, counter: Int = 0):Expr {
+  public static function generatePatternMatch(annaLang: AnnaLang, pattern: Expr, valueExpr: Expr, counter: Int = 0):Expr {
+    var macroContext: MacroContext = annaLang.macroContext;
+    var macros: Macros = annaLang.macros;
+    var macroTools: MacroTools = annaLang.macroTools;
+    var printer: Printer = annaLang.printer;
+
     return switch(pattern.expr) {
       case ECall({expr: EField({expr: EConst(CIdent("Tuple"))}, "create")}, [{expr: EArrayDecl([{expr: ECall({ expr: EField({ expr: EConst(CIdent('Atom')) },'create') }, [{ expr: EConst(CString('const')) }]) }, value])}]):
-        generatePatternMatch(value, valueExpr);
+        generatePatternMatch(annaLang, value, valueExpr);
       case ECall({expr: EField({expr: EConst(CIdent("Tuple"))}, "create")}, [{expr: EArrayDecl([{expr: ECall({ expr: EField({ expr: EConst(CIdent('Atom')) },'create') }, [{ expr: EConst(CString('var')) }]) }, { expr: EConst(CString(varName)) }])}]):
-        var value = { expr: EConst(CIdent(varName)), pos: MacroContext.currentPos() }
-        generatePatternMatch(value, valueExpr);
+        var value = { expr: EConst(CIdent(varName)), pos: macroContext.currentPos() }
+        generatePatternMatch(annaLang, value, valueExpr);
       case ECall({expr: EField({expr: EConst(CIdent("Tuple"))}, "create")}, [{expr: EArrayDecl([{expr: ECall({ expr: EField({ expr: EConst(CIdent('Atom')) },'create') }, [{ expr: EConst(CString('pinned')) }]) }, { expr: EConst(CString(varName)) }])}]):
         var haxeStr: String = 'arrayTuple[${counter}] = scopeVariables.get("${varName}"); lang.EitherSupport.getValue(arrayTuple[${counter}]);';
-        Macros.haxeToExpr(haxeStr);
+        macros.haxeToExpr(haxeStr);
       case EConst(CIdent(v)):
         var varName: Dynamic = v;
         var value: Dynamic = printer.printExpr(valueExpr);
         var haxeStr: String = 'scope.set("${varName}", ${value});';
-        var expr: Expr = lang.macros.Macros.haxeToExpr(haxeStr);
+        var expr: Expr = macros.haxeToExpr(haxeStr);
         expr;
       case EConst(CString(_)) | EConst(CInt(_)) | EConst(CFloat(_)):
         valuesNotEqual(pattern, valueExpr);
@@ -55,16 +52,16 @@ class PatternMatch {
         var counter: Int = 0;
         for(patternExpr in values) {
           var strExpr: String = 'lang.EitherSupport.getValue(arrayTuple[${counter}])';
-          var expr: Expr = generatePatternMatch(patternExpr, lang.macros.Macros.haxeToExpr(strExpr), counter);
+          var expr: Expr = generatePatternMatch(annaLang, patternExpr, macros.haxeToExpr(strExpr), counter);
           individualMatches.push(expr);
           counter++;
         }
-        var individualMatchesBlock: Expr = MacroTools.buildBlock(individualMatches);
+        var individualMatchesBlock: Expr = macroTools.buildBlock(individualMatches);
         if(individualMatchesBlock == null) {
           individualMatchesBlock = macro {};
         }
 
-        var tupleLength: Expr = lang.macros.Macros.haxeToExpr('${values.length}');
+        var tupleLength: Expr = macros.haxeToExpr('${values.length}');
         macro
           if(!Std.is($e{valueExpr}, Tuple)) {
             scope = null;
@@ -83,12 +80,12 @@ class PatternMatch {
       case ECall({expr: EField({expr: EConst(CIdent("LList"))}, _)}, [{expr: EArrayDecl([{expr: EBinop(OpOr, head, tail)}])}]):
         var individualMatches: Array<Expr> = [];
         var patternExpr: Expr = macro lang.EitherSupport.getValue(LList.hd(rhsList));
-        var expr: Expr = generatePatternMatch(head, patternExpr);
+        var expr: Expr = generatePatternMatch(annaLang, head, patternExpr);
         individualMatches.push(expr);
         var patternExpr: Expr = macro lang.EitherSupport.getValue(LList.tl(rhsList));
-        var expr: Expr = generatePatternMatch(tail, patternExpr);
+        var expr: Expr = generatePatternMatch(annaLang, tail, patternExpr);
         individualMatches.push(expr);
-        var individualMatchesBlock: Expr = MacroTools.buildBlock(individualMatches);
+        var individualMatchesBlock: Expr = macroTools.buildBlock(individualMatches);
         macro {
           var rhsList: LList = $e{valueExpr};
           $e{individualMatchesBlock};
@@ -99,18 +96,18 @@ class PatternMatch {
         var counter: Int = 0;
         for(v in values) {
           var strExpr: Expr = macro lang.EitherSupport.getValue(LList.hd(rhsList));
-          var expr: Expr = generatePatternMatch(v, strExpr);
+          var expr: Expr = generatePatternMatch(annaLang, v, strExpr);
           individualMatches.push(expr);
           var assignTail: Expr = macro rhsList = LList.tl(rhsList);
           individualMatches.push(assignTail);
           counter++;
         }
         individualMatches.pop(); //remove the last tail assigment, it's unnecessary.
-        var individualMatchesBlock: Expr = MacroTools.buildBlock(individualMatches);
+        var individualMatchesBlock: Expr = macroTools.buildBlock(individualMatches);
         if(individualMatchesBlock == null) {
           individualMatchesBlock = macro {};
         }
-        var listLength: Expr = MacroTools.buildConst(CInt(values.length + ""));
+        var listLength: Expr = macroTools.buildConst(CInt(values.length + ""));
         var expr = macro {
           if(!Std.is($e{valueExpr}, LList)) {
             scope = null;
@@ -137,14 +134,14 @@ class PatternMatch {
               if(isKey) {
                 key = printer.printExpr(v.expr);
                 var strExpr: String = 'MMap.hasKey(${printer.printExpr(valueExpr)}, ArgHelper.extractArgValue(${key}, ____scopeVariables))';
-                var expr: Expr = generatePatternMatch(lang.macros.Macros.haxeToExpr('Atom.create("true")'), lang.macros.Macros.haxeToExpr(strExpr));
+                var expr: Expr = generatePatternMatch(annaLang, macros.haxeToExpr('Atom.create("true")'), macros.haxeToExpr(strExpr));
                 individualMatches.push(expr);
               } else {
                 var value = printer.printExpr(v.expr);
                 MacroLogger.log(value, 'value');
                 MacroLogger.log(key, 'key');
                 var strExpr: String = 'lang.EitherSupport.getValue(MMap.get(${printer.printExpr(valueExpr)}, ArgHelper.extractArgValue(${key}, ____scopeVariables)))';
-                var expr: Expr = generatePatternMatch(v.expr, lang.macros.Macros.haxeToExpr(strExpr));
+                var expr: Expr = generatePatternMatch(annaLang, v.expr, macros.haxeToExpr(strExpr));
                 individualMatches.push(expr);
               }
               isKey = !isKey;
@@ -154,7 +151,7 @@ class PatternMatch {
               throw new ParsingException('AnnaLang: Expected EVar, got ${e}');
           }
         }
-        var individualMatchesBlock: Expr = MacroTools.buildBlock(individualMatches);
+        var individualMatchesBlock: Expr = macroTools.buildBlock(individualMatches);
         if(individualMatchesBlock == null) {
           individualMatchesBlock = macro {};
         }
@@ -169,10 +166,10 @@ class PatternMatch {
         var individualMatches: Array<Expr> = [];
         for(arg in args) {
           var strExpr: String = 'Reflect.field(${printer.printExpr(valueExpr)}, "${arg.field}")';
-          var expr: Expr = generatePatternMatch(arg.expr, lang.macros.Macros.haxeToExpr(strExpr));
+          var expr: Expr = generatePatternMatch(annaLang, arg.expr, macros.haxeToExpr(strExpr));
           individualMatches.push(expr);
         }
-        var individualMatchesBlock: Expr = MacroTools.buildBlock(individualMatches);
+        var individualMatchesBlock: Expr = macroTools.buildBlock(individualMatches);
         if(individualMatchesBlock == null) {
           individualMatchesBlock = macro {};
         }
@@ -185,7 +182,7 @@ class PatternMatch {
         }
       case EBlock([base, suffix]):
         var valueStr: String = '${printer.printExpr(valueExpr)}.substring(${printer.printExpr(base)}.length)';
-        var exprMatch: Expr = generatePatternMatch(suffix, Macros.haxeToExpr(valueStr));
+        var exprMatch: Expr = generatePatternMatch(annaLang, suffix, macros.haxeToExpr(valueStr));
         macro {
           for(i in 0...$e{base}.length) {
             if($e{base}.charAt(i) != $e{valueExpr}.charAt(i)) {
@@ -204,14 +201,14 @@ class PatternMatch {
         for(value in values) {
           var strExpr: String = '';
           strExpr = 'Keyword.hasKey(${printer.printExpr(valueExpr)}, ${value.field})';
-          var expr: Expr = generatePatternMatch(MacroTools.getAtomExpr("true"), lang.macros.Macros.haxeToExpr(strExpr));
+          var expr: Expr = generatePatternMatch(annaLang, macroTools.getAtomExpr("true"), macros.haxeToExpr(strExpr));
           individualMatches.push(expr);
 
           strExpr = 'Keyword.get(${printer.printExpr(valueExpr)}, ${value.field})';
-          var expr: Expr = generatePatternMatch(value.expr, lang.macros.Macros.haxeToExpr(strExpr));
+          var expr: Expr = generatePatternMatch(annaLang, value.expr, macros.haxeToExpr(strExpr));
           individualMatches.push(expr);
         }
-        var individualMatchesBlock: Expr = MacroTools.buildBlock(individualMatches);
+        var individualMatchesBlock: Expr = macroTools.buildBlock(individualMatches);
         if(individualMatchesBlock == null) {
           individualMatchesBlock = macro {};
         }
@@ -233,11 +230,11 @@ class PatternMatch {
                   case EArrayDecl([field, assign]):
                     var strExpr: String = '';
                     var expr = macro Keyword.hasKey($e{valueExpr}, $e{field});
-                    expr = generatePatternMatch(MacroTools.getAtomExpr("true"), expr);
+                    expr = generatePatternMatch(annaLang, macroTools.getAtomExpr("true"), expr);
                     individualMatches.push(expr);
 
                     expr = macro Keyword.get($e{valueExpr}, $e{field});
-                    expr = generatePatternMatch(assign, expr);
+                    expr = generatePatternMatch(annaLang, assign, expr);
                     individualMatches.push(expr);
 
                   case _:
@@ -249,7 +246,7 @@ class PatternMatch {
               throw new ParsingException("AnnaLang: Unexpected syntax. Expects: @keyword{foo: 'bar', baz: 'cat'}");
           }
         }
-        var individualMatchesBlock: Expr = MacroTools.buildBlock(individualMatches);
+        var individualMatchesBlock: Expr = macroTools.buildBlock(individualMatches);
         if(individualMatchesBlock == null) {
           individualMatchesBlock = macro {};
         }
@@ -263,12 +260,12 @@ class PatternMatch {
         MacroLogger.logExpr(expr, 'expr');
         expr;
       case EMeta(_):
-        var typeAndValue = MacroTools.getTypeAndValue(pattern);
-        var expr = Macros.haxeToExpr(typeAndValue.value);
-        generatePatternMatch(expr, valueExpr);
+        var typeAndValue = macroTools.getTypeAndValue(pattern);
+        var expr = macros.haxeToExpr(typeAndValue.value);
+        generatePatternMatch(annaLang, expr, valueExpr);
       case EBinop(OpArrow, base, suffix):
         var valueStr: String = '${printer.printExpr(valueExpr)}.substring(len)';
-        var exprMatch: Expr = generatePatternMatch(suffix, Macros.haxeToExpr(valueStr));
+        var exprMatch: Expr = generatePatternMatch(annaLang, suffix, macros.haxeToExpr(valueStr));
         macro {
           var len: Int = $e{base}.length;
           var i: Int = 0;

@@ -1,23 +1,17 @@
 package lang.macros;
 
+import lang.macros.AnnaLang;
 import lang.macros.MacroTools;
 import haxe.macro.Printer;
 import hscript.plus.ParserPlus;
 import haxe.macro.Expr;
 
 class Fn {
-  private static var parser: ParserPlus = {
-    parser = new ParserPlus();
-    parser.allowTypes = true;
-    parser.allowMetadata = true;
-    parser;
-  }
+  public static function gen(annaLang: AnnaLang, params: Expr): Array<Expr> {
+    var macroContext: MacroContext = annaLang.macroContext;
 
-  private static var printer: Printer = new Printer();
-
-  public static function gen(params: Expr): Array<Expr> {
-    MacroContext.lastFunctionReturnType = "vm_Function";
-    var currentModule: TypeDefinition = MacroContext.currentModule;
+    macroContext.lastFunctionReturnType = "vm_Function";
+    var currentModule: TypeDefinition = macroContext.currentModule;
     var currentModuleStr: String = currentModule.name;
     #if !macro
     var paramTypeStrings: Array<String> = [];
@@ -31,7 +25,7 @@ class Fn {
         for(expr in exprs) {
           var typesAndBody: Array<Dynamic> = switch(expr.expr) {
             case EParenthesis({expr: EBinop(OpArrow, types, body)}):
-              var typesStr: String = printer.printExpr(types);
+              var typesStr: String = annaLang.printer.printExpr(types);
               [typesStr.substr(1, typesStr.length - 2), body];
             case e:
               MacroLogger.log(e, 'e');
@@ -48,19 +42,19 @@ class Fn {
             paramTypeStrings.push(typeString);
             var paramName: String = StringTools.trim(typeAndName[1]);
             paramNameStrings.push(paramName);
-            MacroContext.varTypesInScope.set(paramName, typeString);
+            macroContext.varTypesInScope.set(paramName, typeString);
           }
           #end
-          var haxeStr: String = '${anonFunctionName}(${typesAndBody[0]}, ${printer.printExpr(typesAndBody[1])});';
-          var expr = lang.macros.Macros.haxeToExpr(haxeStr);
-          defined = Def.defineFunction(expr);
-          defined.varTypesInScope = MacroContext.varTypesInScope;
+          var haxeStr: String = '${anonFunctionName}(${typesAndBody[0]}, ${annaLang.printer.printExpr(typesAndBody[1])});';
+          var expr = annaLang.macros.haxeToExpr(haxeStr);
+          defined = Def.defineFunction(annaLang, expr);
+          defined.varTypesInScope = macroContext.varTypesInScope;
         }
         #if !macro
         var terms: Array<Dynamic> = cast(defined.funBody, Array<Dynamic>);
         var allOps: Array<vm.Operation> = [];
         for(term in terms) {
-          var operations = vm.Lang.resolveOperations(cast term);
+          var operations = annaLang.lang.resolveOperations(cast term);
           allOps = allOps.concat(operations);
         }
         var anonFn: vm.Function = new vm.SimpleFunction();
@@ -73,10 +67,10 @@ class Fn {
         anonFn.fn = interp.execute(ast);
         anonFn.args = paramNameStrings;
         anonFn.scope = vm.Process.self().processStack.getVariablesInScope();
-        anonFn.apiFunc = Atom.create(MacroContext.currentFunction);
+        anonFn.apiFunc = Atom.create(macroContext.currentFunction);
         vm.Classes.defineFunction(Atom.create(currentModuleStr), Atom.create(anonFunctionName + '_${paramTypeStrings.join('_')}'), anonFn);
         #end
-        return [buildDeclareAnonFunctionExpr(currentModuleStr, defined.internalFunctionName,params)];
+        return [buildDeclareAnonFunctionExpr(annaLang, currentModuleStr, defined.internalFunctionName,params)];
       case _:
         MacroLogger.log(params, 'params');
         MacroLogger.logExpr(params, 'params');
@@ -84,13 +78,19 @@ class Fn {
     }
   }
 
-  public static function buildDeclareAnonFunctionExpr(currentModuleStr: String,
+  public static function buildDeclareAnonFunctionExpr(annaLang: AnnaLang,
+                                                      currentModuleStr: String,
                                                       internalFunctionName: String,
                                                       params): Expr {
+    var macroContext = annaLang.macroContext;
+    var macroTools = annaLang.macroTools;
+    var annaLangArg: Expr = macro Code.annaLang;
+
     return macro ops.push(new vm.DeclareAnonFunction(
-      $e{MacroTools.getAtomExpr('${currentModuleStr}.${internalFunctionName}')},
-      $e{MacroTools.getAtomExpr(currentModuleStr)},
-      $e{MacroTools.getAtomExpr(MacroContext.currentFunction)},
-      $e{MacroTools.buildConst(CInt(MacroTools.getLineNumber(params) + ''))}));
+      $e{macroTools.getAtomExpr('${currentModuleStr}.${internalFunctionName}')},
+      $e{macroTools.getAtomExpr(currentModuleStr)},
+      $e{macroTools.getAtomExpr(macroContext.currentFunction)},
+      $e{macroTools.buildConst(CInt(macroTools.getLineNumber(params) + ''))},
+      $e{annaLangArg}));
   }
 }

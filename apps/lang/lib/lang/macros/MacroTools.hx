@@ -9,17 +9,20 @@ import haxe.macro.Expr.ComplexType;
 import haxe.macro.Expr.MetadataEntry;
 class MacroTools {
 
-  #if macro
-  public static var macroContext: MacroContext;
-  #else
-  public var macroContext: MacroContext;
-  #end
+  private var annaLang: AnnaLang;
+  private var macroContext: MacroContext;
+  private var macros: Macros;
+  private var printer: Printer;
 
-  public function new() {
+  public function new(annaLang: AnnaLang) {
+    this.annaLang = annaLang;
+    this.macroContext = annaLang.macroContext;
+    this.macros = annaLang.macros;
+    this.printer = annaLang.printer;
   }
 
   macro public static function line(): Expr {
-    return macroContext.getLine();
+    return AnnaLang.annaLangForMacro.macroContext.getLine();
   }
 
   public function createClass(className: String): TypeDefinition {
@@ -29,7 +32,7 @@ class MacroTools {
       name: className,
       pack: [],
       params: [],
-      pos: MacroContext.currentPos(),
+      pos: macroContext.currentPos(),
       fields: [],
       isExtern: false
     };
@@ -58,40 +61,48 @@ class MacroTools {
     return {
       name: name,
       params: params,
-      pos: MacroContext.currentPos()
+      pos: macroContext.currentPos()
     }
   }
 
   public function buildConst(value: Constant):Expr {
     return {
       expr: EConst(value),
-      pos: MacroContext.currentPos()
+      pos: macroContext.currentPos()
     };
   }
-  
+
+
+  public function buildIdent(value: String):Expr {
+    return {
+      expr: EConst(CIdent(value)),
+      pos: macroContext.currentPos()
+    };
+  }
+
   public function buildExprField(ident: Expr, field: String):Expr {
     return {
       expr: EField(ident, field),
-      pos: MacroContext.currentPos()
+      pos: macroContext.currentPos()
     };
   }
   
   public function buildCall(field: Expr, params: Array<Expr>):Expr {
     return {
       expr: ECall(field, params),
-      pos: MacroContext.currentPos()
+      pos: macroContext.currentPos()
     };
   }
 
   public function buildReturn(ident: Expr):Expr {
     return {
       expr: EReturn(ident),
-      pos: MacroContext.currentPos()
+      pos: macroContext.currentPos()
     }
   }
 
   public function buildType(typeString: String):ComplexType {
-    var expr = lang.macros.Macros.haxeToExpr('var x: ${typeString};');
+    var expr = macros.haxeToExpr('var x: ${typeString};');
     var type = switch(expr.expr) {
       case EVars([_var]):
         _var.type;
@@ -107,7 +118,7 @@ class MacroTools {
     } else {
       return {
         expr: EBlock(blk),
-        pos: MacroContext.currentPos(),
+        pos: macroContext.currentPos(),
       }
     }
   }
@@ -123,7 +134,7 @@ class MacroTools {
         ret: returnType
       }),
       name: name,
-      pos: MacroContext.currentPos()
+      pos: macroContext.currentPos()
     }
   }
 
@@ -138,7 +149,7 @@ class MacroTools {
         ret: returnType
       }),
       name: name,
-      pos: MacroContext.currentPos()
+      pos: macroContext.currentPos()
     }
   }
 
@@ -153,7 +164,7 @@ class MacroTools {
         ret: returnType
       }),
       name: name,
-      pos: MacroContext.currentPos()
+      pos: macroContext.currentPos()
     }
   }
 
@@ -167,8 +178,23 @@ class MacroTools {
     return {
       kind: FVar(varType, buildBlock(varBody)),
       name: funName,
-      pos: MacroContext.currentPos(),
+      pos: macroContext.currentPos(),
       access: [APublic]
+    }
+  }
+
+  public function buildPublicStaticVar(name: String, varType: ComplexType, initBody: Array<Expr>): Field {
+    var funName: String = name;
+    var varBody: Array<Expr> = [];
+    for(expr in initBody) {
+      varBody.push(expr);
+    }
+
+    return {
+      kind: FVar(varType, buildBlock(varBody)),
+      name: funName,
+      pos: macroContext.currentPos(),
+      access: [APublic, AStatic]
     }
   }
 
@@ -215,10 +241,10 @@ class MacroTools {
   }
 
   public inline function getAtomExpr(value: String):Expr {
-    return { expr: ECall({ expr: EField({ expr: EConst(CIdent('Atom')), pos: MacroContext.currentPos() },
-        'create'), pos: MacroContext.currentPos() },
-        [{ expr: EConst(CString(value)), pos: MacroContext.currentPos() }]),
-        pos: MacroContext.currentPos() }
+    return { expr: ECall({ expr: EField({ expr: EConst(CIdent('Atom')), pos: macroContext.currentPos() },
+        'create'), pos: macroContext.currentPos() },
+        [{ expr: EConst(CString(value)), pos: macroContext.currentPos() }]),
+        pos: macroContext.currentPos() }
   }
 
   public inline function getTuple(value: Array<String>):String {
@@ -233,12 +259,12 @@ class MacroTools {
   public inline function getListExpr(values: Array<String>):Expr {
     var items: Array<Expr> = [];
     for(value in values) {
-      var expr = Macros.haxeToExpr(value);
+      var expr = macros.haxeToExpr(value);
       items.push(expr);
     }
     return { expr: ECall({ expr: EField({ expr: EConst(CIdent('LList')),
-      pos: MacroContext.currentPos() },'create'), pos: MacroContext.currentPos() },
-    [{ expr: EArrayDecl(items), pos: MacroContext.currentPos() }]), pos: MacroContext.currentPos()};
+      pos: macroContext.currentPos() },'create'), pos: macroContext.currentPos() },
+    [{ expr: EArrayDecl(items), pos: macroContext.currentPos() }]), pos: macroContext.currentPos()};
   }
 
   public inline function getKeyword(values: Array<String>):String {
@@ -252,9 +278,11 @@ class MacroTools {
   public inline function getMap(values: Array<String>):String {
     var mapExprs: Array<Expr> = [];
     for(v in values) {
-      mapExprs.push(Macros.haxeToExpr(v));
+      mapExprs.push(macros.haxeToExpr(v));
     }
-    var fullMapExpr = EitherMacro.doGenMap({ expr: ECast({expr: EArrayDecl(mapExprs), pos: MacroContext.currentPos()},TPath({ name: 'Array', pack: [], params: [TPType(TPath({ name: 'Dynamic', pack: [], params: [] }))]})), pos: MacroContext.currentPos()});
+    var fullMapExpr = EitherMacro.doGenMap(annaLang, { expr: ECast({expr: EArrayDecl(mapExprs), pos: macroContext.currentPos()},
+        TPath({ name: 'Array', pack: [], params: [TPType(TPath({ name: 'Dynamic', pack: [], params: [] }))]})),
+        pos: macroContext.currentPos()});
     var strValue = printer.printExpr(fullMapExpr);
     var strValue: String = 'MMap.create(${strValue})';
     return strValue;
@@ -275,11 +303,11 @@ class MacroTools {
   public function getTypeAndValue(expr: Expr):Dynamic {
     return switch(expr.expr) {
       case EConst(CIdent(varName)):
-        var const: String = MacroContext.currentModuleDef.constants.get(varName);
+        var const: String = macroContext.currentModuleDef.constants.get(varName);
         if(const == null) {
           {type: 'Variable', value: getVar(varName), rawValue: varName};
         } else {
-          getTypeAndValue(Macros.haxeToExpr(const));
+          getTypeAndValue(macros.haxeToExpr(const));
         }
       case EConst(CString(value)):
         value = StringTools.replace(value, '"', '\\"');
@@ -390,7 +418,7 @@ class MacroTools {
         {type: "Keyword", value: getConstant(strValue), rawValue: strValue};
       case ECast(expr, TPath({ name: type })):
         var typeAndValue = getTypeAndValue(expr);
-        {type: Helpers.getAlias(type), value: typeAndValue.value, rawValue: typeAndValue.value};
+        {type: Helpers.getAlias(type, macroContext), value: typeAndValue.value, rawValue: typeAndValue.value};
       case ECall({expr: EField({expr: EConst(CIdent("Atom"))}, "create")}, [{expr: EConst(CString(atom))}]):
         {type: "Atom", value: 'Tuple.create([Atom.create("const"), ${atom}])', rawValue: atom};
       case ECall({expr: EField({expr: EConst(CIdent("Tuple"))}, "create")}, [{expr: EArrayDecl(args)}]):
@@ -427,7 +455,7 @@ class MacroTools {
         var strValue: String = getKeyword(listValues);
         {type: "Keyword", value: 'Tuple.create([Atom.create("const"), ${strValue}])', rawValue: strValue};
       case ECall({expr: EField({expr: EConst(CIdent("MMap"))}, "create")}, [{expr: EBlock(args)}]):
-        var strValue: String = printer.printExpr({expr: EBlock(args), pos: MacroContext.currentPos()});
+        var strValue: String = printer.printExpr({expr: EBlock(args), pos: macroContext.currentPos()});
         {type: "MMap", value: 'Tuple.create([${getAtom("const")}, ${strValue}])', rawValue: strValue};
       case EBinop(OpMod, {expr: EConst(CIdent(type))}, {expr: EObjectDecl(fields)}):
         var listValues: Array<String> = [];
@@ -580,7 +608,7 @@ class MacroTools {
               }
             case EArrayDecl(returnTypes):
               for(returnType in returnTypes) {
-                retVal.returnTypes.push(Helpers.getAlias(getIdent(returnType)));
+                retVal.returnTypes.push(Helpers.getAlias(getIdent(returnType), macroContext));
               }
             case e:
               MacroLogger.log(e, 'e');
@@ -595,7 +623,7 @@ class MacroTools {
   }
 
   public function resolveType(expr: Expr):String {
-    var type: Type = MacroContext.typeof(expr);
+    var type: Type = macroContext.typeof(expr);
     return switch(type) {
       case TInst(t, other):
         switch(t.get().interfaces) {
@@ -662,7 +690,7 @@ class MacroTools {
   }
 
   public function getLineNumberFromContext():Int {
-    var lineStr: String = '${MacroContext.currentPos()}';
+    var lineStr: String = '${macroContext.currentPos()}';
     var lineNo: Int = Std.parseInt(lineStr.split(':')[1]);
     return lineNo;
   }

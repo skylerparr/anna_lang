@@ -1,44 +1,39 @@
 package lang.macros;
+import lang.macros.AnnaLang;
 import haxe.macro.Printer;
 import hscript.plus.ParserPlus;
 import haxe.macro.Expr;
 
 class Def {
-  private static var parser: ParserPlus = {
-    parser = new ParserPlus();
-    parser.allowTypes = true;
-    parser.allowMetadata = true;
-    parser;
-  }
 
-  private static var printer: Printer = new Printer();
-
-  public static function gen(params: Expr): Array<Expr> {
-    defineFunction(params);
+  public static function gen(annaLang: AnnaLang, params: Expr): Array<Expr> {
+    defineFunction(annaLang, params);
     return [];
   }
 
-  public static function defineFunction(params: Expr):Dynamic {
+  public static function defineFunction(annaLang: AnnaLang, params: Expr):Dynamic {
+    var macroContext: MacroContext = annaLang.macroContext;
+    var macroTools: MacroTools = annaLang.macroTools;
     var r = ~/[A-Za-z]*<|>/g;
-    var funName: String = MacroTools.getCallFunName(params);
-    var allTypes: Dynamic = MacroTools.getArgTypesAndReturnTypes(params);
+    var funName: String = macroTools.getCallFunName(params);
+    var allTypes: Dynamic = macroTools.getArgTypesAndReturnTypes(params);
     var funArgsTypes: Array<Dynamic> = allTypes.argTypes;
     var types: Array<String> = [];
     for(argType in funArgsTypes) {
       if(!argType.isPatternVar) {
-        var strType: String = MacroTools.resolveType(lang.macros.Macros.haxeToExpr(argType.type));
+        var strType: String = macroTools.resolveType(annaLang.macros.haxeToExpr(argType.type));
         strType = r.replace(strType, '');
-        types.push(Helpers.getType(strType));
+        types.push(Helpers.getType(strType, macroContext));
         argType.type = strType;
       }
     }
     var argTypes: String = Helpers.sanitizeArgTypeNames(types);
-    var funBody: Array<Expr> = MacroTools.getFunBody(params);
+    var funBody: Array<Expr> = macroTools.getFunBody(params);
 
     var internalFunctionName: String = Helpers.makeFqFunName(funName, types);
 
     // add the functions to the context for reference later
-    var funBodies: Array<Dynamic> = MacroContext.currentModuleDef.declaredFunctions.get(internalFunctionName);
+    var funBodies: Array<Dynamic> = macroContext.currentModuleDef.declaredFunctions.get(internalFunctionName);
     if(funBodies == null) {
       funBodies = [];
     }
@@ -52,7 +47,7 @@ class Def {
       allTypes: allTypes
     };
     funBodies.push(def);
-    MacroContext.currentModuleDef.declaredFunctions.set(internalFunctionName, funBodies);
+    macroContext.currentModuleDef.declaredFunctions.set(internalFunctionName, funBodies);
     return def;
   }
 

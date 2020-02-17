@@ -4,6 +4,7 @@ package ;
 import haxe.io.Output;
 import sys.io.File;
 #end
+import lang.macros.AnnaLang;
 import haxe.macro.Expr;
 
 using haxe.macro.Tools;
@@ -55,7 +56,7 @@ class Logger {
     var locStr: String = '${haxe.macro.Context.currentPos()}';
     var frags: Array<String> = locStr.split('/');
     frags = frags[frags.length - 1].split(':');
-    var position: Expr = lang.macros.Macros.haxeToExpr('"${frags[0]}:${frags[1]}"');
+    var position: Expr = AnnaLang.annaLangForMacro.macros.haxeToExpr('"${frags[0]}:${frags[1]}"');
     return macro {};
     return macro {
       var pid: Pid = vm.Process.self();

@@ -6,18 +6,28 @@ import haxe.macro.Printer;
 import hscript.plus.ParserPlus;
 import lang.macros.MacroLogger;
 import haxe.macro.Expr;
-import lang.macros.EitherMacro;
 using haxe.macro.Tools;
 
 //  =>
 // #pos\(.*?\)
 class Macros {
 
+  private var macroContext: MacroContext;
+  private var printer: Printer;
+  private var annaLang: AnnaLang;
+
+  public function new(annaLang: AnnaLang) {
+    this.annaLang = annaLang;
+    macroContext = annaLang.macroContext;
+    printer = annaLang.printer;
+  }
+
   macro public static function build(): Array<Field> {
+    var macros: Macros = AnnaLang.annaLangForMacro.macros;
     var fields: Array<Field> = Context.getBuildFields();
     var retFields: Array<Field> = [];
     for(field in fields) {
-      var newField: Field = updateField(field);
+      var newField: Field = macros.updateField(field);
       retFields.push(newField);
     }
     MacroLogger.log("---------------------");
@@ -40,7 +50,7 @@ class Macros {
               metaInBlock.push(e);
             }
             var eblock = EBlock(metaInBlock);
-            field.kind = FVar(fvar, {expr: eblock, pos: MacroContext.currentPos()});
+            field.kind = FVar(fvar, {expr: eblock, pos: macroContext.currentPos()});
             field;
           case EMeta(entry, expr):
             var metaBlock = extractMeta(entry, expr, null);
@@ -63,7 +73,7 @@ class Macros {
               retValExprs.push(e);
           }
         }
-        ffun.expr = {expr: EBlock(retValExprs), pos: MacroContext.currentPos()};
+        ffun.expr = {expr: EBlock(retValExprs), pos: macroContext.currentPos()};
         field.kind = FFun(ffun);
         field;
       case FProp(get, set, t, e):
@@ -84,7 +94,7 @@ class Macros {
           var meta = findMetaInBlock(param, rhs);
           valueBlocks.push(meta);
         }
-        retValBlock.push({expr: ECall(ecall, valueBlocks), pos: MacroContext.currentPos()});
+        retValBlock.push({expr: ECall(ecall, valueBlocks), pos: macroContext.currentPos()});
       case EMeta(entry, expr):
         return handleMeta(entry, expr, rhs);
       case ENew(enew, params):
@@ -93,14 +103,14 @@ class Macros {
           var meta = findMetaInBlock(param, rhs);
           valueBlocks.push(meta);
         }
-        retValBlock.push({expr: ENew(enew, valueBlocks), pos: MacroContext.currentPos()});
+        retValBlock.push({expr: ENew(enew, valueBlocks), pos: macroContext.currentPos()});
       case EArrayDecl(values):
         var valueBlocks: Array<Expr> = [];
         for(value in values) {
           var meta = findMetaInBlock(value, rhs);
           valueBlocks.push(meta);
         }
-        retValBlock.push({expr: EArrayDecl(valueBlocks), pos: MacroContext.currentPos()});
+        retValBlock.push({expr: EArrayDecl(valueBlocks), pos: macroContext.currentPos()});
       case EField(fieldExpr, field):
         retValBlock.push(expr);
       case EVars(vars):
@@ -124,12 +134,12 @@ class Macros {
           var meta = findMetaInBlock(expr, null);
           updatedMeta.push(meta);
         }
-        retValBlock.push({expr: EBlock(updatedMeta), pos: MacroContext.currentPos()});
+        retValBlock.push({expr: EBlock(updatedMeta), pos: macroContext.currentPos()});
       case EIf(econd, eif, eelse):
         var econdMeta = findMetaInBlock(econd, null);
         var eifMeta = findMetaInBlock(eif, null);
         var eelseMeta = findMetaInBlock(eelse, null);
-        retValBlock.push({expr: EIf(econdMeta, eifMeta, eelseMeta), pos: MacroContext.currentPos()});
+        retValBlock.push({expr: EIf(econdMeta, eifMeta, eelseMeta), pos: macroContext.currentPos()});
       case EArray(e1, e2):
         retValBlock.push(expr);
       case EBreak:
@@ -150,7 +160,7 @@ class Macros {
         var haxeStr: String = 'for(${printer.printExpr(it)}) {
           ${printer.printExpr(expr)}
         }';
-        retValBlock.push(lang.macros.Macros.haxeToExpr(haxeStr));
+        retValBlock.push(haxeToExpr(haxeStr));
       case EIn(e1, e2):
         throw "AnnaLang: Unimplemented case";
       case EObjectDecl(fields):
@@ -159,12 +169,12 @@ class Macros {
           var expr = findMetaInBlock(item.expr, null);
           keyValues.push({field: item.field, expr: expr});
         }
-        retValBlock.push({expr: EObjectDecl(keyValues), pos: MacroContext.currentPos()});
+        retValBlock.push({expr: EObjectDecl(keyValues), pos: macroContext.currentPos()});
       case EParenthesis(e):
         retValBlock.push(expr);
       case EReturn(e):
         var eReturnMeta = findMetaInBlock(e, null);
-        retValBlock.push({expr: EReturn(eReturnMeta), pos: MacroContext.currentPos()});
+        retValBlock.push({expr: EReturn(eReturnMeta), pos: macroContext.currentPos()});
       case ESwitch(e, cases, edef):
         retValBlock.push(expr);
       case ETernary(econd, eif, eelse):
@@ -183,7 +193,7 @@ class Macros {
     if(retValBlock.length == 1) {
       return retValBlock[0];
     } else {
-      var block: Expr = {expr: EBlock(retValBlock), pos: MacroContext.currentPos()};
+      var block: Expr = {expr: EBlock(retValBlock), pos: macroContext.currentPos()};
       return block;
     }
   }
@@ -200,26 +210,26 @@ class Macros {
         var metaB = findMetaInBlock(b, rhs);
         var metaA = findMetaInBlock(a, rhs);
 
-        retValBlock.push({expr: EBinop(OpAssign, metaA, metaB), pos: MacroContext.currentPos()});
+        retValBlock.push({expr: EBinop(OpAssign, metaA, metaB), pos: macroContext.currentPos()});
       case EBinop(OpEq, a, b):
         var meta = findMetaInBlock(a, b);
         retValBlock.push(meta);
       case EBinop(OpAdd, a, b):
         var metaB = findMetaInBlock(b, rhs);
         var metaA = findMetaInBlock(a, rhs);
-        retValBlock.push({expr: EBinop(OpAdd, metaA, metaB), pos: MacroContext.currentPos()});
+        retValBlock.push({expr: EBinop(OpAdd, metaA, metaB), pos: macroContext.currentPos()});
       case EBinop(OpAnd, a, b):
         throw "AnnaLang: Unimplemented case";
       case EBinop(OpBoolAnd, a, b):
         var metaB = findMetaInBlock(b, rhs);
         var metaA = findMetaInBlock(a, rhs);
 
-        retValBlock.push({expr: EBinop(OpBoolAnd, metaA, metaB), pos: MacroContext.currentPos()});
+        retValBlock.push({expr: EBinop(OpBoolAnd, metaA, metaB), pos: macroContext.currentPos()});
       case EBinop(OpBoolOr, a, b):
         var metaB = findMetaInBlock(b, rhs);
         var metaA = findMetaInBlock(a, rhs);
 
-        retValBlock.push({expr: EBinop(OpBoolOr, metaA, metaB), pos: MacroContext.currentPos()});
+        retValBlock.push({expr: EBinop(OpBoolOr, metaA, metaB), pos: macroContext.currentPos()});
       case EBinop(OpDiv, a, b):
         throw "AnnaLang: Unimplemented case";
       case EBinop(OpGt, a, b):
@@ -234,7 +244,7 @@ class Macros {
         throw "AnnaLang: Unimplemented case";
       case EBinop(OpMod, a, b):
         var metaB = findMetaInBlock(b, rhs);
-        retValBlock.push({expr: EBinop(OpMod, a, metaB), pos: MacroContext.currentPos()});
+        retValBlock.push({expr: EBinop(OpMod, a, metaB), pos: macroContext.currentPos()});
       case EBinop(OpMult, a, b):
         var meta = findMetaInBlock(a, b);
         retValBlock.push(meta);
@@ -242,11 +252,11 @@ class Macros {
         var metaB = findMetaInBlock(b, rhs);
         var metaA = findMetaInBlock(a, rhs);
 
-        retValBlock.push({expr: EBinop(OpNotEq, metaA, metaB), pos: MacroContext.currentPos()});
+        retValBlock.push({expr: EBinop(OpNotEq, metaA, metaB), pos: macroContext.currentPos()});
       case EBinop(OpOr, a, b):
         var metaB = findMetaInBlock(b, rhs);
         var metaA = findMetaInBlock(a, rhs);
-        retValBlock.push({expr: EBinop(OpOr, metaA, metaB), pos: MacroContext.currentPos()});
+        retValBlock.push({expr: EBinop(OpOr, metaA, metaB), pos: macroContext.currentPos()});
       case EBinop(OpShl, a, b):
         throw "AnnaLang: Unimplemented case";
       case EBinop(OpShr, a, b):
@@ -312,14 +322,14 @@ class Macros {
                 collectMetaExpr(a, arrayValues);
                 collectMetaExpr(b, arrayValues);
               case EMeta(metaName, {expr: EBinop(OpArrow, a, b), pos: _}):
-                a = {expr: EMeta(metaName, a), pos: MacroContext.currentPos()};
+                a = {expr: EMeta(metaName, a), pos: macroContext.currentPos()};
                 collectMetaExpr(a, arrayValues);
                 collectMetaExpr(b, arrayValues);
               case _:
                 collectMetaExpr(value, arrayValues);
             }
           }
-          expr = {expr: EArrayDecl(arrayValues), pos: MacroContext.currentPos()};
+          expr = {expr: EArrayDecl(arrayValues), pos: macroContext.currentPos()};
           expr = callback(expr);
           expr;
         case EObjectDecl(values):
@@ -328,9 +338,9 @@ class Macros {
           for(value in values) {
             collectMetaExpr(value.expr, arrayValues);
             var arrayVal = arrayValues.pop();
-            finalArray.push({expr: EArrayDecl([{expr: EConst(CString(value.field)), pos: MacroContext.currentPos()}, arrayVal]), pos: MacroContext.currentPos()});
+            finalArray.push({expr: EArrayDecl([{expr: EConst(CString(value.field)), pos: macroContext.currentPos()}, arrayVal]), pos: macroContext.currentPos()});
           }
-          expr = {expr: EArrayDecl(finalArray), pos: MacroContext.currentPos()};
+          expr = {expr: EArrayDecl(finalArray), pos: macroContext.currentPos()};
           expr = callback(expr);
           expr;
         case EConst(CIdent(_)):
@@ -439,8 +449,8 @@ class Macros {
   }
 
   public function haxeToExpr(str: String): Expr {
-    var ast = parser.parseString(str);
-    return new hscript.Macro(MacroContext.currentPos()).convert(ast);
+    var ast = annaLang.parser.parseString(str);
+    return new hscript.Macro(macroContext.currentPos()).convert(ast);
   }
 
   macro public static function ei(expr: Expr): Expr {
@@ -451,72 +461,72 @@ class Macros {
     return retVal;
   }
 
-  macro public static function getTuple(expr: Expr): Expr {
+  macro public function getTuple(expr: Expr): Expr {
     return _tuple(expr, null);
   }
 
-  macro public static function getMap(expr: Expr): Expr {
+  macro public function getMap(expr: Expr): Expr {
     return _map(expr, null);
   }
 
-  macro public static function getList(expr: Expr): Expr {
+  macro public function getList(expr: Expr): Expr {
     return _list(expr, null);
   }
 
-  macro public static function getAtom(expr: Expr): Expr {
+  macro public function getAtom(expr: Expr): Expr {
     return _atom(expr, null);
   }
 
-  macro public static function getKeyword(expr:Expr):Expr {
+  macro public function getKeyword(expr:Expr):Expr {
     return _keyword(expr, null);
   }
 
-  macro public static function valuesMatch(lhs: Expr, rhs: Expr): Expr {
-    var e = switch(lhs.expr) {
-      case EConst(CString(val)) | EConst(CInt(val)) | EConst(CFloat(val)):
-        macro {
-          if(Anna.toAnnaString($e{lhs}) == Anna.toAnnaString($e{rhs})) {
-
-          } else {
-            throw new lang.UnableToMatchException('Unable to match expression ${MacroContext.currentPos()}: ${printer.printExpr(lhs)} = ${printer.printExpr(rhs)}');
-          }
-        }
-      case ECall({expr: EField({expr: EConst(CIdent('Atom'))}, 'create')}, _):
-        macro {
-          if(Anna.toAnnaString($e{lhs}) == Anna.toAnnaString($e{rhs})) {
-
-          } else {
-            throw new lang.UnableToMatchException('Unable to match expression ${MacroContext.currentPos()}: ${printer.printExpr(lhs)} = ${printer.printExpr(rhs)}');
-          }
-        }
-      case EConst(CIdent(variable)):
-        var strExpr = '${printer.printExpr(lhs)} = ${printer.printExpr(rhs)};';
-        var e = haxeToExpr(strExpr);
-        e;
-      case ECall({expr: EField({expr: EConst(CIdent('Tuple'))}, 'create')}, _):
-        macro {
-          if(Anna.toAnnaString($e{lhs}) == Anna.toAnnaString($e{rhs})) {
-
-          } else {
-            throw new lang.UnableToMatchException('Unable to match expression ${MacroContext.currentPos()}: ${printer.printExpr(lhs)} = ${printer.printExpr(rhs)}');
-          }
-        }
-      case EMeta({name: 'tuple'}, {expr: EArrayDecl(values)}):
-        var metaL = findMetaInBlock(lhs, null);
-        var metaR = findMetaInBlock(rhs, null);
-        var haxeStr: String = '
-        var array = ${printer.printExpr(metaL)}.asArray();
-        var matchArray = ${printer.printExpr(metaR)}.asArray();
-        ';
-        var valueStrArr: Array<String> = [];
-        for(index in 0...values.length) {
-          valueStrArr.push('lang.macros.Macros.valuesMatch(array[${index}], matchArray[${index}]);');
-        }
-        haxeStr = '${haxeStr}\n${valueStrArr.join('\n')}';
-        haxeToExpr(haxeStr);
-      case e:
-        lhs;
-    }
-    return e;
-  }
+//  macro public static function valuesMatch(lhs: Expr, rhs: Expr): Expr {
+//    var e = switch(lhs.expr) {
+//      case EConst(CString(val)) | EConst(CInt(val)) | EConst(CFloat(val)):
+//        macro {
+//          if(Anna.toAnnaString($e{lhs}) == Anna.toAnnaString($e{rhs})) {
+//
+//          } else {
+//            throw new lang.UnableToMatchException('Unable to match expression ${macroContext.currentPos()}: ${printer.printExpr(lhs)} = ${printer.printExpr(rhs)}');
+//          }
+//        }
+//      case ECall({expr: EField({expr: EConst(CIdent('Atom'))}, 'create')}, _):
+//        macro {
+//          if(Anna.toAnnaString($e{lhs}) == Anna.toAnnaString($e{rhs})) {
+//
+//          } else {
+//            throw new lang.UnableToMatchException('Unable to match expression ${macroContext.currentPos()}: ${printer.printExpr(lhs)} = ${printer.printExpr(rhs)}');
+//          }
+//        }
+//      case EConst(CIdent(variable)):
+//        var strExpr = '${printer.printExpr(lhs)} = ${printer.printExpr(rhs)};';
+//        var e = haxeToExpr(strExpr);
+//        e;
+//      case ECall({expr: EField({expr: EConst(CIdent('Tuple'))}, 'create')}, _):
+//        macro {
+//          if(Anna.toAnnaString($e{lhs}) == Anna.toAnnaString($e{rhs})) {
+//
+//          } else {
+//            throw new lang.UnableToMatchException('Unable to match expression ${macroContext.currentPos()}: ${printer.printExpr(lhs)} = ${printer.printExpr(rhs)}');
+//          }
+//        }
+//      case EMeta({name: 'tuple'}, {expr: EArrayDecl(values)}):
+//        var metaL = findMetaInBlock(lhs, null);
+//        var metaR = findMetaInBlock(rhs, null);
+//        var haxeStr: String = '
+//        var array = ${printer.printExpr(metaL)}.asArray();
+//        var matchArray = ${printer.printExpr(metaR)}.asArray();
+//        ';
+//        var valueStrArr: Array<String> = [];
+//        for(index in 0...values.length) {
+//          valueStrArr.push('lang.macros.Macros.valuesMatch(array[${index}], matchArray[${index}]);');
+//        }
+//        haxeStr = '${haxeStr}\n${valueStrArr.join('\n')}';
+//        haxeToExpr(haxeStr);
+//      case e:
+//        lhs;
+//    }
+//    return e;
+//  }
 }

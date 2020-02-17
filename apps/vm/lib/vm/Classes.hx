@@ -1,5 +1,6 @@
 package vm;
 
+import lang.macros.AnnaLang;
 import lang.AtomSupport;
 using lang.AtomSupport;
 using StringTools;

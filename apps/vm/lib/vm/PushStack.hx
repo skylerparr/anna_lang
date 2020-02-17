@@ -1,5 +1,6 @@
 package vm;
 
+import lang.macros.AnnaLang;
 import hscript.Macro;
 import haxe.macro.Expr.TypeDefinition;
 import lang.macros.MacroContext;
@@ -10,7 +11,7 @@ import vm.Function;
 import vm.Operation;
 class PushStack implements Operation {
 
-  public static var typeDef: TypeDefinition = {kind: TDStructure, pos: MacroContext.currentPos(), fields: [], pack: [], name: ''};
+//  public static var typeDef: TypeDefinition = {kind: TDStructure, pos: Lang.annaLang.macroContext.currentPos(), fields: [], pack: [], name: ''};
 
   public var module: Atom;
   public var func: Atom;
@@ -19,14 +20,16 @@ class PushStack implements Operation {
   public var hostModule: Atom;
   public var hostFunction: Atom;
   public var lineNumber: Int;
+  public var annaLang: AnnaLang;
 
-  public function new(module: Atom, func: Atom, args: LList, hostModule: Atom, hostFunction: Atom, line: Int) {
+  public function new(module: Atom, func: Atom, args: LList, hostModule: Atom, hostFunction: Atom, line: Int, annaLang: AnnaLang) {
     this.module = module;
     this.func = func;
     this.args = args;
     this.hostModule = hostModule;
     this.hostFunction = hostFunction;
     this.lineNumber = line;
+    this.annaLang = annaLang;
   }
 
   public function execute(scopeVariables: Map<String, Dynamic>, processStack: ProcessStack): Void {
@@ -41,7 +44,7 @@ class PushStack implements Operation {
     var callArgs: Array<Dynamic> = [];
     var nextScopeVariables: Map<String, Dynamic> = new Map<String, Dynamic>();
     for(arg in LList.iterator(args)) {
-      var value: Dynamic = ArgHelper.extractArgValue(arg, scopeVariables);
+      var value: Dynamic = ArgHelper.extractArgValue(arg, scopeVariables, annaLang);
       callArgs.push(value);
       var argName: String = fn.args[counter++];
       nextScopeVariables.set(argName, value);

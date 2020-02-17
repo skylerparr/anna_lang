@@ -1,4 +1,5 @@
 package lang.macros;
+import lang.macros.AnnaLang;
 import lang.macros.MacroTools;
 import haxe.macro.Expr;
 import haxe.macro.Printer;
@@ -7,26 +8,19 @@ import haxe.macro.Expr;
 import haxe.macro.Context;
 class Native {
 
-  private static var parser: ParserPlus = {
-    parser = new ParserPlus();
-    parser.allowTypes = true;
-    parser.allowMetadata = true;
-    parser;
-  }
-
-  private static var printer: Printer = new Printer();
-
   public static var declaredFunctions: Map<String, TypeDefinition> = new Map<String, TypeDefinition>();
 
-  public function new() {
-  }
+  public static function gen(annaLang: AnnaLang, params: Expr): Array<Expr> {
+    var macroContext: MacroContext = annaLang.macroContext;
+    var macroTools: MacroTools = annaLang.macroTools;
+    var macros: Macros = annaLang.macros;
+    var printer = annaLang.printer;
 
-  public static function gen(params: Expr): Array<Expr> {
-    var funName: String = MacroContext.currentVar;
-    var moduleName: String = MacroTools.getModuleName(params);
-    moduleName = Helpers.getAlias(moduleName);
-    var invokeFunName = MacroTools.getFunctionName(params);
-    var args = MacroTools.getFunBody(params);
+    var funName: String = macroContext.currentVar;
+    var moduleName: String = macroTools.getModuleName(params);
+    moduleName = Helpers.getAlias(moduleName, macroContext);
+    var invokeFunName = macroTools.getFunctionName(params);
+    var args = macroTools.getFunBody(params);
     var retVal: Array<Expr> = [];
     var strArgs: Array<String> = [];
     var argCounter: Int = 0;
@@ -34,32 +28,36 @@ class Native {
       switch(arg.expr) {
         case ECall(_, _):
           var argString = '__${invokeFunName}_${argCounter} = ${printer.printExpr(arg)};';
-          arg = lang.macros.Macros.haxeToExpr(argString);
-          var exprs: Array<Expr> = AnnaLang.walkBlock(MacroTools.buildBlock([arg]));
+          arg = annaLang.macros.haxeToExpr(argString);
+          var exprs: Array<Expr> = annaLang.walkBlock(macroTools.buildBlock([arg]));
           for(expr in exprs) {
             retVal.push(expr);
           }
 
-          strArgs.push(MacroTools.getTuple([MacroTools.getAtom('var'), '"__${invokeFunName}_${argCounter}"']));
+          strArgs.push(macroTools.getTuple([macroTools.getAtom('var'), '"__${invokeFunName}_${argCounter}"']));
         case _:
-          var typeAndValue = MacroTools.getTypeAndValue(arg);
+          var typeAndValue = macroTools.getTypeAndValue(arg);
           strArgs.push(typeAndValue.value);
       }
       argCounter++;
     }
-    var currentModule: TypeDefinition = MacroContext.currentModule;
+    var currentModule: TypeDefinition = macroContext.currentModule;
     var currentModuleStr: String = currentModule.name;
 
-    var invokeClass: TypeDefinition = createOperationClass(moduleName, invokeFunName, strArgs);
+    var invokeClass: TypeDefinition = createOperationClass(annaLang, moduleName, invokeFunName, strArgs);
 
-    var haxeString = '${funName}.push(new vm.${invokeClass.name}(${moduleName}.${invokeFunName}, ${MacroTools.getList(strArgs)},
-      ${MacroTools.getAtom(currentModuleStr)}, ${MacroTools.getAtom(MacroContext.currentFunction)}, ${MacroTools.getLineNumber(params)}))';
+    var haxeString = '${funName}.push(new vm.${invokeClass.name}(${moduleName}.${invokeFunName}, ${macroTools.getList(strArgs)},
+      ${macroTools.getAtom(currentModuleStr)}, ${macroTools.getAtom(macroContext.currentFunction)}, ${macroTools.getLineNumber(params)}, Code.annaLang))';
     MacroLogger.log(haxeString, 'haxeString');
-    retVal.push(lang.macros.Macros.haxeToExpr(haxeString));
+    retVal.push(macros.haxeToExpr(haxeString));
     return retVal;
   }
 
-  private static function createOperationClass(moduleName: String, invokeFunName: String, strArgs: Array<String>): TypeDefinition {
+  private static function createOperationClass(annaLang: AnnaLang, moduleName: String, invokeFunName: String, strArgs: Array<String>): TypeDefinition {
+    var macroContext: MacroContext = annaLang.macroContext;
+    var macroTools: MacroTools = annaLang.macroTools;
+    var macros: Macros = annaLang.macros;
+
     var className = 'InvokeFunction_${StringTools.replace(moduleName, '.', '_')}_${StringTools.replace(invokeFunName, '.', '_')}';
 
     var assignments: Array<String> = [];
@@ -67,7 +65,7 @@ class Native {
     var counter: Int = 0;
     var privateArgs: Array<String> = [];
     for(arg in strArgs) {
-      var assign: String = 'var _arg${counter} = ArgHelper.extractArgValue(arg${counter}, scope);';
+      var assign: String = 'var _arg${counter} = ArgHelper.extractArgValue(arg${counter}, scope, annaLang);';
       var classVar: String = 'arg${counter}';
       var paramVar = macro class Fake {
         private var $classVar: Tuple;
@@ -81,17 +79,17 @@ class Native {
 
     // save the return type in compiler scope to check types later
     var args: Array<String> = privateArgs.map(function(arg) { return 'null'; });
-    var expr: Expr = lang.macros.Macros.haxeToExpr('${moduleName}.${invokeFunName}(${args.join(', ')})');
-    MacroContext.lastFunctionReturnType = MacroTools.resolveType(expr);
+    var expr: Expr = macros.haxeToExpr('${moduleName}.${invokeFunName}(${args.join(', ')})');
+    macroContext.lastFunctionReturnType = macroTools.resolveType(expr);
 
     if(declaredFunctions.get(className) == null) {
       var assignReturnVar: Expr = macro {};
-      if(MacroContext.lastFunctionReturnType == "Int" || MacroContext.lastFunctionReturnType == "Float") {
+      if(macroContext.lastFunctionReturnType == "Int" || macroContext.lastFunctionReturnType == "Float") {
         executeBodyStr = 'var retVal = {${executeBodyStr}}';
         assignReturnVar = macro scope.set("$$$", retVal);
-        MacroContext.lastFunctionReturnType = "Number";
+        macroContext.lastFunctionReturnType = "Number";
       } else {
-        if(MacroContext.lastFunctionReturnType != "Void") {
+        if(macroContext.lastFunctionReturnType != "Void") {
           assignReturnVar = macro if(retVal == null) {
                 scope.set("$$$", lang.HashTableAtoms.get("nil"));
               } else {
@@ -101,11 +99,11 @@ class Native {
         }
       }
 
-      var execBody: Expr = lang.macros.Macros.haxeToExpr(executeBodyStr);
+      var execBody: Expr = macros.haxeToExpr(executeBodyStr);
       var cls: TypeDefinition = macro class NoClass extends vm.AbstractInvokeFunction {
 
-          public function new(func: Dynamic, args: LList, hostModule: Atom, hostFunction: Atom, line: Int) {
-            super(hostModule, hostFunction, line);
+          public function new(func: Dynamic, args: LList, hostModule: Atom, hostFunction: Atom, line: Int, annaLang: lang.macros.AnnaLang) {
+            super(hostModule, hostFunction, line, annaLang);
             var counter: Int = 0;
             for(arg in LList.iterator(args)) {
                 var tuple: Tuple = lang.EitherSupport.getValue(arg);
@@ -120,13 +118,13 @@ class Native {
       }
 
       for(paramVar in paramVars) {
-        MacroTools.addFieldToClass(cls, paramVar);
+        macroTools.addFieldToClass(cls, paramVar);
       }
 
       cls.name = className;
       cls.pack = ["vm"];
 
-      MacroContext.defineType(cls);
+      macroContext.defineType(cls);
 
       declaredFunctions.set(className, cls);
       return cls;

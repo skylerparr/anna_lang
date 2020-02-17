@@ -1,4 +1,5 @@
 package vm;
+import lang.macros.AnnaLang;
 import vm.SimpleFunction;
 import vm.Operation;
 using lang.AtomSupport;
@@ -9,13 +10,15 @@ class DeclareAnonFunction implements Operation {
   public var hostModule: Atom;
   public var hostFunction: Atom;
   public var lineNumber: Int;
+  public var annaLang: AnnaLang;
 
-  public function new(func: Atom, hostModule: Atom, hostFunction: Atom, lineNumber: Int) {
+  public function new(func: Atom, hostModule: Atom, hostFunction: Atom, lineNumber: Int, annaLang: AnnaLang) {
     this.func = func;
 
     this.hostModule = hostModule;
     this.hostFunction = hostFunction;
     this.lineNumber = lineNumber;
+    this.annaLang = annaLang;
   }
 
   public function execute(scopeVariables: Map<String, Dynamic>, processStack: ProcessStack): Void {
