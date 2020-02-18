@@ -95,13 +95,13 @@ class Lang {
     return 'ok'.atom();
   }
 
-  public var haxeInterp: Interp = {
+  public static function getHaxeInterp(): Interp {
     var interp = new Interp();
     for(key in definedModules.keys()) {
       var value = definedModules.get(key);
       interp.variables.set(key, value);
     }
-    interp;
+    return interp;
   }
 
   public inline function resolveOperations(expr: Expr): Array<Operation> {
@@ -114,7 +114,7 @@ class Lang {
       codeString = codeString.substr(0, codeString.length - 1);
 
       var ast = annaLang.parser.parseString(codeString);
-      var op: Operation = haxeInterp.execute(ast);
+      var op: Operation = getHaxeInterp().execute(ast);
       operations.push(op);
     }
     return operations;

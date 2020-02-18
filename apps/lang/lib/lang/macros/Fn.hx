@@ -39,10 +39,12 @@ class Fn {
           for(pStr in paramsStrs) {
             var typeAndName = pStr.split(':');
             var typeString: String = StringTools.trim(typeAndName[0]);
-            paramTypeStrings.push(typeString);
-            var paramName: String = StringTools.trim(typeAndName[1]);
-            paramNameStrings.push(paramName);
-            macroContext.varTypesInScope.set(paramName, typeString);
+            if(typeString.length > 0) {
+              paramTypeStrings.push(typeString);
+              var paramName: String = StringTools.trim(typeAndName[1]);
+              paramNameStrings.push(paramName);
+              macroContext.varTypesInScope.set(paramName, typeString);
+            }
           }
           #end
           var haxeStr: String = '${anonFunctionName}(${typesAndBody[0]}, ${annaLang.printer.printExpr(typesAndBody[1])});';
@@ -58,7 +60,11 @@ class Fn {
           allOps = allOps.concat(operations);
         }
         var anonFn: vm.Function = new vm.SimpleFunction();
-        var anonFnString: String = 'function(${paramNameStrings.join(', ')}, scope) {
+        var scope: String = 'scope';
+        if(paramTypeStrings.length > 0) {
+          scope = ', ${scope}';
+        }
+        var anonFnString: String = 'function(${paramNameStrings.join(', ')}${scope}) {
           return allOps;
         }';
         var ast = new hscript.Parser().parseString(anonFnString);
@@ -68,9 +74,15 @@ class Fn {
         anonFn.args = paramNameStrings;
         anonFn.scope = vm.Process.self().processStack.getVariablesInScope();
         anonFn.apiFunc = Atom.create(macroContext.currentFunction);
-        vm.Classes.defineFunction(Atom.create(currentModuleStr), Atom.create(anonFunctionName + '_${paramTypeStrings.join('_')}'), anonFn);
+        macroContext.lastFunctionReturnType = "vm_Function";
+        var paramsTypesString: String = '';
+        if(paramTypeStrings.length > 0) {
+          paramsTypesString = '_${paramTypeStrings.join('_')}';
+        }
+        vm.Classes.defineFunction(Atom.create(currentModuleStr), Atom.create(anonFunctionName + paramsTypesString), anonFn);
         #end
-        return [buildDeclareAnonFunctionExpr(annaLang, currentModuleStr, defined.internalFunctionName,params)];
+        macroContext.lastFunctionReturnType = "vm_Function";
+        return [buildDeclareAnonFunctionExpr(annaLang, currentModuleStr, defined.internalFunctionName, params)];
       case _:
         MacroLogger.log(params, 'params');
         MacroLogger.logExpr(params, 'params');

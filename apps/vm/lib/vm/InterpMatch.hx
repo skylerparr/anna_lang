@@ -24,7 +24,7 @@ class InterpMatch implements Operation {
   public function execute(scopeVariables: Map<String, Dynamic>, processStack: ProcessStack): Void {
     try {
       var ast = annaLang.parser.parseString(code);
-      var interp = annaLang.lang.haxeInterp;
+      var interp = Lang.getHaxeInterp();
       interp.variables.set("scopeVariables", scopeVariables);
       var matched: Map<String, Dynamic> = interp.execute(ast);
       if(Kernel.isNull(matched)) {
