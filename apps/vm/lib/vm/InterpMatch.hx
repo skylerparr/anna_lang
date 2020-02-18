@@ -1,4 +1,5 @@
 package vm;
+import hscript.Expr;
 import lang.macros.AnnaLang;
 import lang.macros.MacroContext;
 import hscript.plus.ParserPlus;
@@ -6,6 +7,7 @@ import hscript.Interp;
 import hscript.Parser;
 class InterpMatch implements Operation {
   public var code: String;
+  private var ast: Expr;
 
   public var hostModule: Atom;
   public var hostFunction: Atom;
@@ -14,6 +16,7 @@ class InterpMatch implements Operation {
 
   public function new(code: String, hostModule: Atom, hostFunction: Atom, lineNumber: Int, annaLang: AnnaLang) {
     this.code = code;
+    ast = annaLang.parser.parseString(code);
 
     this.hostModule = hostModule;
     this.hostFunction = hostFunction;
@@ -23,7 +26,6 @@ class InterpMatch implements Operation {
 
   public function execute(scopeVariables: Map<String, Dynamic>, processStack: ProcessStack): Void {
     try {
-      var ast = annaLang.parser.parseString(code);
       var interp = Lang.getHaxeInterp();
       interp.variables.set("scopeVariables", scopeVariables);
       var matched: Map<String, Dynamic> = interp.execute(ast);
