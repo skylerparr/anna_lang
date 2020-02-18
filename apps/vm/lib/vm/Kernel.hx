@@ -32,7 +32,7 @@ class Kernel {
       return 'already_started'.atom();
     }
     Logger.init();
-    var scheduler: vm.schedulers.CPPMultithreadedScheduler = new vm.schedulers.CPPMultithreadedScheduler();
+    var scheduler: vm.schedulers.GenericScheduler = new vm.schedulers.GenericScheduler();
 
     var objectFactory: ObjectFactory = new ObjectFactory();
     objectFactory.injector = new Injector();
@@ -375,10 +375,21 @@ class Kernel {
       Kernel.crash(Process.self());
       return;
     }
-    anonFn.scope = pid.processStack.getVariablesInScope();
+    anonFn.scope = new Map<String, Dynamic>();
     anonFn.apiFunc = fun;
 
-    apply(pid, anonFn, args, callback);
+    //todo: dry?
+    if(pid.state == ProcessState.KILLED || pid.state == ProcessState.COMPLETE) {
+      IO.inspect('Pid ${Anna.toAnnaString(pid)} is not alive.');
+      Kernel.crash(Process.self());
+      return;
+    }
+    var scopeVariables = pid.processStack.getVariablesInScope();
+    var counter: Int = 0;
+    var callArgs: Array<Dynamic> = [];
+    var nextScopeVariables: Map<String, Dynamic> = new Map<String, Dynamic>();
+    Logger.log(pid, 'apply pid');
+    currentScheduler.apply(pid, anonFn, callArgs, nextScopeVariables, callback);
   }
 
   public static inline function isNull(val: Dynamic): Bool {

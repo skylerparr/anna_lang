@@ -757,9 +757,6 @@ class AnnaLang {
     var module: ModuleDef = macroContext.declaredClasses.get(moduleName);
     if(module == null) {
       module = macroContext.declaredInterfaces.get(moduleName);
-      if(module == null) {
-        throw new FunctionClauseNotFound('AnnaLang: Function ${funName}() not found on module ${moduleName}.');
-      }
     }
 
     var fqFunNameTypeMap: Map<String, String> = new Map();
@@ -811,7 +808,10 @@ class AnnaLang {
       MacroLogger.log(fqFunName, 'fqFunName');
       var frags: Array<String> = fqFunName.split('.');
       fqFunName = frags.pop();
-      var declaredFunctions = module.declaredFunctions;
+      var declaredFunctions: Map<String, Array<Dynamic>> = new Map<String, Array<Dynamic>>();
+      if(module != null) {
+        declaredFunctions = module.declaredFunctions;
+      }
 
       var funDef: Dynamic = declaredFunctions.get(fqFunName);
       if(funDef == null) {

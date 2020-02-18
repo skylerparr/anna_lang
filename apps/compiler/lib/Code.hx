@@ -938,9 +938,19 @@ import vm.Function;
 //
 //  @def test_should_invoke_public_functions_with_variables_interp([Atom], {
 //    @native Lang.eval("number = 4;
+//    System.println(number);
 //    result = Kernel.add(7, number);
+//    System.println(result);
 //    Assert.assert(11, result);");
 //  });
+
+  @def test_should_invoke_public_functions_with_same_var_name_with_variables_interp([Atom], {
+    @native Lang.eval("string = 'foo';
+    System.println(string);
+    result = Str.concat(string, ' bar');
+    System.println(result);
+    Assert.assert('foo bar', result);");
+  });
 
   @def test_should_invoke_function_with_cast([Atom], {
     ({val | _;}) = {'foo'; 'bar'; 'cat'; 'baz';};
@@ -950,7 +960,9 @@ import vm.Function;
 
 //  @def test_should_invoke_function_with_cast_interp([Atom], {
 //    @native Lang.eval("({val | _;}) = {'foo'; 'bar'; 'cat'; 'baz';};
+//    System.println(cast(val, String));
 //    result = Str.concat(cast(val, String), ' bar');
+//    System.println(result);
 //    Assert.assert('foo bar', result);");
 //  });
 

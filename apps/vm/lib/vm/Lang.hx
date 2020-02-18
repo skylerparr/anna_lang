@@ -47,7 +47,11 @@ class Lang {
   private var printer: Printer;
 
   public function new() {
+    var code: Dynamic = Type.resolveClass("Code");
     annaLang = new AnnaLang();
+//    for(key in code.annaLang.macroContext) {
+//
+//    }
     annaLang.lang = this;
     printer = annaLang.printer;
   }
@@ -67,7 +71,7 @@ class Lang {
       return Tuple.create(['ok'.atom(), ast]);
     } catch(e: Dynamic) {
       trace(e);
-      trace(CallStack.exceptionStack().join(', '));
+      trace(CallStack.callStack().join('\n'));
       return Tuple.create(['error'.atom(), '${e}']);
     }
   }
