@@ -47,11 +47,9 @@ class Lang {
   private var printer: Printer;
 
   public function new() {
-    var code: Dynamic = Type.resolveClass("Code");
     annaLang = new AnnaLang();
-//    for(key in code.annaLang.macroContext) {
-//
-//    }
+    var code: Dynamic = Type.resolveClass("Code");
+    annaLang.macroContext = code.annaLang.macroContext.clone();
     annaLang.lang = this;
     printer = annaLang.printer;
   }

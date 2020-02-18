@@ -935,20 +935,16 @@ import vm.Function;
     result = Kernel.add(1, number);
     Assert.assert(5, result);
   });
-//
-//  @def test_should_invoke_public_functions_with_variables_interp([Atom], {
-//    @native Lang.eval("number = 4;
-//    System.println(number);
-//    result = Kernel.add(7, number);
-//    System.println(result);
-//    Assert.assert(11, result);");
-//  });
+
+  @def test_should_invoke_public_functions_with_variables_interp([Atom], {
+    @native Lang.eval("number = 4;
+    result = Kernel.add(7, number);
+    Assert.assert(11, result);");
+  });
 
   @def test_should_invoke_public_functions_with_same_var_name_with_variables_interp([Atom], {
     @native Lang.eval("string = 'foo';
-    System.println(string);
     result = Str.concat(string, ' bar');
-    System.println(result);
     Assert.assert('foo bar', result);");
   });
 

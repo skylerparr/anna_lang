@@ -3,6 +3,38 @@ import haxe.rtti.Rtti;
 import haxe.macro.Expr;
 
 class MacroContext {
+
+  public function clone(): MacroContext {
+    var mc: MacroContext = new MacroContext(annaLang);
+    mc.currentModule = this.currentModule;
+    mc.currentFunction = this.currentFunction;
+    mc.currentVar = this.currentVar;
+    for(aliasKey in this.aliases.keys()) {
+      mc.aliases.set(aliasKey, this.aliases.get(aliasKey));
+    }
+    mc.currentFunctionArgTypes = [];
+    var thisCurrentFAT = this.currentFunctionArgTypes;
+    if(thisCurrentFAT == null) {
+      thisCurrentFAT = [];
+    }
+    for(cf in thisCurrentFAT) {
+      mc.currentFunctionArgTypes.push(cf);
+    }
+    mc.varTypesInScope = this.varTypesInScope.clone();
+    mc.lastFunctionReturnType = this.lastFunctionReturnType;
+    for(key in associatedInterfaces.keys()) {
+      mc.associatedInterfaces.set(key, associatedInterfaces.get(key));
+    }
+    for(key in declaredClasses.keys()) {
+      mc.declaredClasses.set(key, declaredClasses.get(key));
+    }
+    for(key in declaredInterfaces.keys()) {
+      mc.declaredInterfaces.set(key, declaredInterfaces.get(key));
+    }
+    mc.currentModuleDef = this.currentModuleDef;
+    return mc;
+  }
+
   @:isVar
   public var currentModule(get, set): TypeDefinition;
   @:isVar
