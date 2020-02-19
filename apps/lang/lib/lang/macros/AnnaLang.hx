@@ -483,7 +483,6 @@ class AnnaLang {
     var initBody: Expr = macro new lang.macros.AnnaLang();
     field = macroTools.buildPublicStaticVar("annaLang", macroTools.buildType("lang.macros.AnnaLang"), [initBody]);
     classFields.push(field);
-    MacroLogger.log("===========================================================", '"==========================================================="');
     MacroLogger.printFields(classFields);
 
     MacroLogger.close();
@@ -816,6 +815,7 @@ class AnnaLang {
       var funDef: Dynamic = declaredFunctions.get(fqFunName);
       if(funDef == null) {
         var varTypeInScope: String = macroContext.varTypesInScope.getTypes(funName)[0];
+        MacroLogger.log(varTypeInScope, '666 varTypeInScope, ${funName}');
         if(varTypeInScope == 'vm_Function' || varTypeInScope == 'vm.Function') {
           var haxeStr: String = 'ops.push(new vm.AnonymousFunction(${macroTools.getAtom(funName)}, ${macroTools.getList(funArgs)}, ${macroTools.getAtom(currentModuleStr)}, ${macroTools.getAtom(macroContext.currentFunction)}, ${lineNumber}, Code.annaLang))';
           retVal.push(macros.haxeToExpr(haxeStr));

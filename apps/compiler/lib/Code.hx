@@ -933,6 +933,7 @@ import vm.Function;
 
 }))
 @:build(lang.macros.AnnaLang.defmodule(ModuleFunctionTest, {
+  @alias vm.Function;
 
   @def test_should_invoke_function_with_static_arg([Atom], {
     single_arg(@_'true');
@@ -1038,6 +1039,18 @@ import vm.Function;
     result = fun(32, 563);
     Assert.assert(595, cast(result, Int));
     Assert.refute(532, cast(result, Int));");
+  });
+
+  @def test_should_interpret_function_string_and_assign_to_the_compiled_code_and_execute([Atom], {
+    fun_interp = @native Lang.eval("@fn {
+      ([{Int: a, Int: b}] => {
+        Kernel.add(a, b);
+      });
+    };");
+    fun = cast(fun_interp, Function);
+    result = fun(32, 563);
+    Assert.assert(595, cast(result, Int));
+    Assert.refute(532, cast(result, Int));
   });
 
   @def single_arg({Atom: status}, [Atom], {
