@@ -516,13 +516,13 @@ class AnnaLang {
 
     prewalk(body);
 
-//    Def.gen(this, { expr: ECall({ expr: EConst(CIdent('__MODULE_NAME__')),
-//      pos: macroContext.currentPos() },[{ expr: EArrayDecl([{ expr: EConst(CIdent('Atom')),
-//      pos: macroContext.currentPos() }]), pos: macroContext.currentPos() },{
-//      expr: EBlock([{ expr: EMeta({ name: '_', params: [], pos: macroContext.currentPos() },
-//      { expr: EConst(CString(className)), pos: macroContext.currentPos() }),
-//        pos: macroContext.currentPos() }]), pos: macroContext.currentPos() }]),
-//      pos: macroContext.currentPos() });
+    Def.gen(this, { expr: ECall({ expr: EConst(CIdent('__MODULE_NAME__')),
+      pos: macroContext.currentPos() },[{ expr: EArrayDecl([{ expr: EConst(CIdent('Atom')),
+      pos: macroContext.currentPos() }]), pos: macroContext.currentPos() },{
+      expr: EBlock([{ expr: EMeta({ name: '_', params: [], pos: macroContext.currentPos() },
+      { expr: EConst(CString(className)), pos: macroContext.currentPos() }),
+        pos: macroContext.currentPos() }]), pos: macroContext.currentPos() }]),
+      pos: macroContext.currentPos() });
 
     macroContext.declaredClasses.set(className, moduleDef);
     moduleDef.aliases = macroContext.aliases;
@@ -835,46 +835,6 @@ class AnnaLang {
     }
     throw new FunctionClauseNotFound('Function ${moduleName}.${funName} with args [${argStrings.join(', ')}] at line ${lineNumber} not found');
   }
-//
-//  public function getAlias(str: String):String {
-//    return switch(macroContext.aliases.get(str)) {
-//      case null:
-//        str;
-//      case val:
-//        val;
-//    }
-//  }
-//
-//  public inline function getType(type: String):String {
-//    return switch(type) {
-//      case "Int" | "Float":
-//        "Number";
-//      case null:
-//        annaLang.getAlias(macroContext.lastFunctionReturnType);
-//      case _:
-//        type;
-//    }
-//  }
-//
-//  public inline function sanitizeArgTypeNames(types: Array<String>):String {
-//    return StringTools.replace(types.join("_"), ".", "_");
-//  }
-//
-//  public inline function makeFqFunName(funName: String, types: Array<String>):String {
-//    var spacer: String = '_';
-//    if(types.length == 0) {
-//      spacer = '';
-//    }
-//    return '${funName}${spacer}${sanitizeArgTypeNames(types)}';
-//  }
-//
-//  public static function applyBuildMacro(cls: TypeDefinition):Void {
-//    var metaConst = macroTools.buildConst(CIdent('lang.macros.Macros'));
-//    var metaField = macroTools.buildExprField(metaConst, 'build');
-//    var metaCall = macroTools.buildCall(metaField, []);
-//    var metaData = macroTools.buildMeta(':build', [metaCall]);
-//    macroTools.addMetaToClass(cls, metaData);
-//  }
 
   private inline function buildPushStackExpr(moduleName: String, fqFunName:
         String, funArgs:Array<String>, currentModuleStr: String,

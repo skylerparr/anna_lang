@@ -68,6 +68,10 @@ import vm.Function;
     @native Kernel.receive(fun);
   });
 
+  @def receive({Function: fun, Int: timeout}, [Dynamic], {
+    @native Kernel.receive(fun, timeout);
+  });
+
   @def send({Pid: pid, Tuple: value}, [Atom], {
     @native Kernel.send(pid, value);
     @_'ok';
@@ -109,6 +113,14 @@ import vm.Function;
 
   @def spawn({Atom: module, Atom: func, Tuple: types, LList: args}, [Pid], {
     @native Kernel.spawn(module, func, types, args);
+  });
+
+  @def spawn_link({Function: fun}, [Pid], {
+    @native Kernel.spawn_linkFn(fun, {});
+  });
+
+  @def spawn_link({Atom: module, Atom: func}, [Pid], {
+    @native Kernel.spawn_link(module, func, @tuple[], {});
   });
 
   @def spawn_link({Atom: module, Atom: func, Tuple: types, LList: args}, [Pid], {
@@ -980,6 +992,54 @@ import vm.Function;
     Assert.assert(cast(result, Atom));");
   });
 
+  @def test_should_create_anonymous_function_with_1_arg([Atom], {
+    fun = @fn {
+      ([{Atom: status}] => {
+        status;
+      });
+    };
+    result = fun(@_'true');
+    Assert.assert(cast(result, Atom));
+
+    result = fun(@_'false');
+    Assert.refute(cast(result, Atom));
+  }); 
+
+  @def test_should_create_anonymous_function_with_1_arg_interp([Atom], {
+    @native Lang.eval("fun = @fn {
+      ([{Atom: status}] => {
+        status;
+      });
+    };
+    result = fun(@_'true');
+    Assert.assert(cast(result, Atom));
+
+    result = fun(@_'false');
+    Assert.refute(cast(result, Atom));");
+  }); 
+
+  @def test_should_create_anonymous_function_with_2_args([Atom], {
+    fun = @fn {
+      ([{Int: a, Int: b}] => {
+        Kernel.add(a, b);
+      });
+    };
+    result = fun(32, 563);
+    Assert.assert(595, cast(result, Int));
+    Assert.refute(532, cast(result, Int));
+  });
+
+  @def test_should_create_anonymous_function_with_2_args_interp([Atom], {
+    @native Lang.eval("fun = @fn {
+      ([{Int: a, Int: b}] => {
+        Kernel.add(a, b);
+      });
+    };
+    result = fun(32, 563);
+    Assert.assert(595, cast(result, Int));
+    Assert.refute(532, cast(result, Int));");
+  });
+
   @def single_arg({Atom: status}, [Atom], {
     Assert.refute(status, @_'false');
     Assert.assert(status, @_'true');
@@ -1319,9 +1379,9 @@ import vm.Function;
       ([{Tuple: [@_'suite_finished']}] => {
         [all_tests, test_results, @_'true'];
       });
-      ([{Tuple: [@_'get_result', test_pid]}] => {
+      ([{Tuple: [@_'get_result', respond_pid, test_pid]}] => {
         test_result = @native MMap.get(test_results, test_pid);
-        Kernel.send(cast(test_pid, Pid), cast(test_result, Tuple));
+        Kernel.send(cast(respond_pid, Pid), cast(test_result, Tuple));
         [all_tests, test_results, all_tests_registered];
       });
       ([{Tuple: [@_'get', receive_pid]}] => {
@@ -1386,7 +1446,8 @@ import vm.Function;
     status = @_'fail';
     pid = Kernel.get_pid_by_name(TEST_RESULTS);
     Kernel.send(pid, [@_'update_status', test_pid, status]);
-    Kernel.send(pid, [@_'get_result', test_pid]);
+    self = Kernel.self();
+    Kernel.send(pid, [@_'get_result', self, test_pid]);
     [test_name, module, func, new_status, payload] = Kernel.receive(@fn {
       ([{Tuple: results}, [Tuple]] => {
         results;
@@ -1488,7 +1549,7 @@ import vm.Function;
     test_name = Str.concat('test_', test_name);
     test_fun = @native Atom.create(test_name);
     start_test(test_name);
-    Kernel.spawn(@fn {
+    pid = Kernel.spawn(@fn {
       ([{}] => {
         module = cast(module, Atom);
         test_fun = cast(test_fun, Atom);
@@ -1496,10 +1557,18 @@ import vm.Function;
 
         add_test_result(self_pid, test_name, module, test_fun, @_'no_assertions', []);
         run_test(module, test_fun);
-        System.print('.');
         end_test(test_name);
       });
     });
+    Kernel.monitor(pid);
+    Kernel.receive(@fn {
+      ([{Tuple: [@_"DOWN", pid, @_'crashed']}] => {
+        update_status(pid, @_'fail');
+      });
+      ([{Tuple: status}] => {
+        System.print(".");
+      });
+    }, 60000);
     @_'ok';
   });
 

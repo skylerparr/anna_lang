@@ -5,7 +5,7 @@ import lang.macros.MacroContext;
 class Helpers {
 
   public static function getType(type: String, macroContext: MacroContext):String {
-    return switch(type) {
+    return switch(StringTools.trim(type)) {
       case "Int" | "Float":
         "Number";
       case null:

@@ -278,6 +278,12 @@ class Kernel {
     });
   }
 
+  public static function spawn_linkFn(fn: Function, args: LList): Pid {
+     return currentScheduler.spawnLink(Process.self(), function() {
+      return new InvokeAnonFunction(fn, args, 'Kernel'.atom(), 'spawn_linkFn'.atom(), MacroTools.line(), annaLang);
+    });
+  }
+
   public static function spawn_link(module: Atom, func: Atom, types: Tuple, args: LList): Pid {
     func = resolveApiFuncWithTypes(func, types);
     return currentScheduler.spawnLink(Process.self(), function() {
@@ -297,9 +303,9 @@ class Kernel {
     return Atom.create('${funString}${funTypes.join('_')}');
   }
 
-  public static function receive(callback: Function): Pid {
+  public static function receive(callback: Function, timeout: Null<Int> = null): Pid {
     var pid: Pid = Process.self();
-    currentScheduler.receive(pid, callback);
+    currentScheduler.receive(pid, callback, timeout);
     return pid;
   }
 

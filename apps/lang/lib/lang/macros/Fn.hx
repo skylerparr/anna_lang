@@ -38,7 +38,7 @@ class Fn {
           var paramsStrs = paramsStr.split(',');
           for(pStr in paramsStrs) {
             var typeAndName = pStr.split(':');
-            var typeString: String = StringTools.trim(typeAndName[0]);
+            var typeString: String = StringTools.trim(Helpers.getType(typeAndName[0], macroContext));
             if(typeString.length > 0) {
               paramTypeStrings.push(typeString);
               var paramName: String = StringTools.trim(typeAndName[1]);
