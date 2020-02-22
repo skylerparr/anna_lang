@@ -13,10 +13,12 @@ class PatternMatch {
 
     var retVal = macro {
       var scope: haxe.ds.StringMap<Dynamic> = new haxe.ds.StringMap();
+      trace(scope);
       while(true) {
         $e{expr}
         break;
       }
+      trace(scope);
       scope;
     }
     return retVal;
@@ -295,6 +297,8 @@ class PatternMatch {
   public static inline function valuesNotEqual(pattern: Expr, valueExpr: Expr):Expr {
     return macro
       if($e{pattern} != $e{valueExpr}) {
+        trace("ne");
+        trace($e{pattern}, "is not equal");
         scope = null;
         break;
       }

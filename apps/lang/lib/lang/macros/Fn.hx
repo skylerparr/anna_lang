@@ -9,12 +9,15 @@ import haxe.macro.Expr;
 class Fn {
   public static function gen(annaLang: AnnaLang, params: Expr): Array<Expr> {
     var macroContext: MacroContext = annaLang.macroContext;
+    var macros: Macros = annaLang.macros;
 
-    macroContext.lastFunctionReturnType = "vm_Function";
     var currentModule: TypeDefinition = macroContext.currentModule;
     var currentModuleStr: String = currentModule.name;
     #if !macro
-    var paramTypeStrings: Array<String> = [];
+    var patternMatches: Array<String> = [];
+    var operationGroups: Array<Array<vm.Operation>> = [];
+    var index: Int = 0;
+    var paramsTypesString: String = '';
     var paramNameStrings: Array<String> = [];
     #end
     switch(params.expr) {
@@ -24,7 +27,7 @@ class Fn {
         var defined = null;
         for(expr in exprs) {
           var typesAndBody: Array<Dynamic> = switch(expr.expr) {
-            case EParenthesis({expr: EBinop(OpArrow, types, body)}):
+            case EBinop(OpArrow, types, body):
               var typesStr: String = annaLang.printer.printExpr(types);
               [typesStr.substr(1, typesStr.length - 2), body];
             case e:
@@ -32,7 +35,14 @@ class Fn {
               MacroLogger.logExpr(params, 'params');
               throw new ParsingException("AnnaLang: Expected parenthesis");
           }
+          var haxeStr: String = '${anonFunctionName}(${typesAndBody[0]}, ${annaLang.printer.printExpr(typesAndBody[1])});';
+          var expr = annaLang.macros.haxeToExpr(haxeStr);
+          defined = Def.defineFunction(annaLang, expr);
+          defined.varTypesInScope = macroContext.varTypesInScope;
           #if !macro
+          var paramTypeStrings: Array<String> = [];
+          var paramNameStrings: Array<String> = []; 
+
           var paramsStr: String = typesAndBody[0];
           paramsStr = paramsStr.substr(1, paramsStr.length - 2);
           var paramsStrs = paramsStr.split(',');
@@ -46,39 +56,53 @@ class Fn {
               macroContext.varTypesInScope.set(paramName, typeString);
             }
           }
+          var terms: Array<Dynamic> = cast(defined.funBody, Array<Dynamic>);
+          var allOps: Array<vm.Operation> = [];
+          for(term in terms) {
+            var operations = annaLang.lang.resolveOperations(cast term);
+            allOps = allOps.concat(operations);
+          }
+          operationGroups.push(allOps);
+          var anonFn: vm.Function = new vm.SimpleFunction();
+          var scope: String = 'scopeVariables';
+          if(paramTypeStrings.length > 0) {
+            var params: String = '';
+            for(i in 0...paramTypeStrings.length) {
+              params += '_${i}, ';
+            }
+            scope = '${params}${scope}';
+          }
+          if(paramTypeStrings.length > 0) {
+            paramsTypesString = '_${paramTypeStrings.join('_')}';
+          }
+          var patternMatch: Expr = PatternMatch.match(annaLang, macros.haxeToExpr(paramNameStrings.join(', ')), macros.haxeToExpr("scopeVariables.get(\"$$$\")"));
+
+          var patternMatchString: String = '
+            scopeVariables.set("$$$$$", _0);
+            var matched = ${annaLang.printer.printExpr(patternMatch)}
+            trace(matched);
+            if(matched != null) {
+              return allOps${index++};
+            }
+          }';
+          patternMatches.push(patternMatchString);
           #end
-          var haxeStr: String = '${anonFunctionName}(${typesAndBody[0]}, ${annaLang.printer.printExpr(typesAndBody[1])});';
-          var expr = annaLang.macros.haxeToExpr(haxeStr);
-          defined = Def.defineFunction(annaLang, expr);
-          defined.varTypesInScope = macroContext.varTypesInScope;
         }
         #if !macro
-        var terms: Array<Dynamic> = cast(defined.funBody, Array<Dynamic>);
-        var allOps: Array<vm.Operation> = [];
-        for(term in terms) {
-          var operations = annaLang.lang.resolveOperations(cast term);
-          allOps = allOps.concat(operations);
-        }
-        var anonFn: vm.Function = new vm.SimpleFunction();
-        var scope: String = 'scope';
-        if(paramTypeStrings.length > 0) {
-          scope = ', ${scope}';
-        }
-        var anonFnString: String = 'function(${paramNameStrings.join(', ')}${scope}) {
-          return allOps;
+        var anonFnString = 'function(_0, scopeVariables) {
+          ${patternMatches.join('\n')} 
         }';
-        var ast = new hscript.Parser().parseString(anonFnString);
-        var interp = new hscript.Interp();
-        interp.variables.set('allOps', allOps);
+        trace(anonFnString);
+        var ast = annaLang.parser.parseString(anonFnString);
+        var interp = vm.Lang.getHaxeInterp();
+        for(i in 0...patternMatches.length) {
+          interp.variables.set('allOps${i}', operationGroups[i]);
+        }
+        var anonFn = new vm.SimpleFunction();
         anonFn.fn = interp.execute(ast);
         anonFn.args = paramNameStrings;
         anonFn.scope = vm.Process.self().processStack.getVariablesInScope();
         anonFn.apiFunc = Atom.create(macroContext.currentFunction);
-        macroContext.lastFunctionReturnType = "vm_Function";
-        var paramsTypesString: String = '';
-        if(paramTypeStrings.length > 0) {
-          paramsTypesString = '_${paramTypeStrings.join('_')}';
-        }
         vm.Classes.defineFunction(Atom.create(currentModuleStr), Atom.create(anonFunctionName + paramsTypesString), anonFn);
         #end
         macroContext.lastFunctionReturnType = "vm_Function";

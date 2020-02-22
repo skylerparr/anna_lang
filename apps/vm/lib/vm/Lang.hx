@@ -69,7 +69,8 @@ class Lang {
       return Tuple.create(['ok'.atom(), ast]);
     } catch(e: Dynamic) {
       trace(e);
-      trace(CallStack.callStack().join('\n'));
+      trace("call stack:", CallStack.callStack().join('\n'));
+      trace("exception stack:", CallStack.exceptionStack().join('\n'));
       return Tuple.create(['error'.atom(), '${e}']);
     }
   }
