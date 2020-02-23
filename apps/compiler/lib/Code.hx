@@ -1041,17 +1041,17 @@ import vm.Function;
 //    Assert.refute(532, cast(result, Int));");
 //  });
 //
-//  @def test_should_interpret_function_string_and_assign_to_the_compiled_code_and_execute([Atom], {
-//    fun_interp = @native Lang.eval("@fn {
-//      [{Int: a, Int: b}] => {
-//        Kernel.add(a, b);
-//      };
-//    };");
-//    fun = cast(fun_interp, Function);
-//    result = fun(32, 563);
-//    Assert.assert(595, cast(result, Int));
-//    Assert.refute(532, cast(result, Int));
-//  });
+  @def test_should_interpret_function_string_and_assign_to_the_compiled_code_and_execute([Atom], {
+    fun_interp = @native Lang.eval("@fn {
+      [{Int: a, Int: b}] => {
+        Kernel.add(a, b);
+      };
+    };");
+    fun = cast(fun_interp, Function);
+    result = fun(32, 563);
+    Assert.assert(595, cast(result, Int));
+    Assert.refute(532, cast(result, Int));
+  });
 //
 //  @def test_should_pattern_match_individual_anonymous_function_heads([Atom], {
 //    fun = @fn {
@@ -1067,21 +1067,21 @@ import vm.Function;
 //    result = fun(@_'error');
 //    Assert.refute(cast(result, Atom));
 //  });
-
-  @def test_should_pattern_match_individual_anonymous_function_heads_interp([Atom], {
-    @native Lang.eval("fun = @fn {
-      [{Atom: @_'ok'}] => {
-        @_'true';
-      };
-      [{Atom: @_'error'}] => {
-        @_'false';
-      };
-    };
-    result = fun(@_'ok');
-    Assert.assert(cast(result, Atom));
-    result = fun(@_'error');
-    Assert.refute(cast(result, Atom));");
-  });
+//
+//  @def test_should_pattern_match_individual_anonymous_function_heads_interp([Atom], {
+//    @native Lang.eval("fun = @fn {
+//      [{Atom: @_'ok'}] => {
+//        @_'true';
+//      };
+//      [{Atom: @_'error'}] => {
+//        @_'false';
+//      };
+//    };
+//    result = fun(@_'ok');
+//    Assert.assert(cast(result, Atom));
+//    result = fun(@_'error');
+//    Assert.refute(cast(result, Atom));");
+//  });
 
   @def single_arg({Atom: status}, [Atom], {
     Assert.refute(status, @_'false');

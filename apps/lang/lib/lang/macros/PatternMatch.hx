@@ -13,12 +13,10 @@ class PatternMatch {
 
     var retVal = macro {
       var scope: haxe.ds.StringMap<Dynamic> = new haxe.ds.StringMap();
-      trace(scope);
       while(true) {
         $e{expr}
         break;
       }
-      trace(scope);
       scope;
     }
     return retVal;
@@ -284,21 +282,20 @@ class PatternMatch {
           $e{exprMatch};
           break;
         }
+      case EBlock([]):
+        macro null;
       case e:
         MacroLogger.log(e, 'PatternMatch e');
         MacroLogger.logExpr(pattern, 'PatternMatch pattern');
         MacroLogger.log(valueExpr, 'PatternMatch valueExpr');
         MacroLogger.logExpr(valueExpr, 'PatternMatch valueExpr');
         throw new ParsingException("AnnaLang: Unexpected pattern match");
-        macro null;
     }
   }
 
   public static inline function valuesNotEqual(pattern: Expr, valueExpr: Expr):Expr {
     return macro
       if($e{pattern} != $e{valueExpr}) {
-        trace("ne");
-        trace($e{pattern}, "is not equal");
         scope = null;
         break;
       }

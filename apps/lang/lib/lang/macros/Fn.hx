@@ -19,10 +19,11 @@ class Fn {
     var index: Int = 0;
     var paramsTypesString: String = '';
     var paramNameStrings: Array<String> = [];
+    var scope: String = 'scopeVariables';
+    var paramCount: Int = 0;
     #end
     switch(params.expr) {
       case EBlock(exprs):
-        var counter: Int = 0;
         var anonFunctionName: String = "_" + haxe.crypto.Sha256.encode('${Math.random()}');
         var defined = null;
         for(expr in exprs) {
@@ -41,7 +42,7 @@ class Fn {
           defined.varTypesInScope = macroContext.varTypesInScope;
           #if !macro
           var paramTypeStrings: Array<String> = [];
-          var paramNameStrings: Array<String> = []; 
+          var paramNameStrings: Array<String> = [];
 
           var paramsStr: String = typesAndBody[0];
           paramsStr = paramsStr.substr(1, paramsStr.length - 2);
@@ -56,40 +57,45 @@ class Fn {
               macroContext.varTypesInScope.set(paramName, typeString);
             }
           }
+          paramCount = paramTypeStrings.length;
           var terms: Array<Dynamic> = cast(defined.funBody, Array<Dynamic>);
           var allOps: Array<vm.Operation> = [];
           for(term in terms) {
-            var operations = annaLang.lang.resolveOperations(cast term);
+            var operations: Array<vm.Operation> = annaLang.lang.resolveOperations(cast term);
             allOps = allOps.concat(operations);
           }
           operationGroups.push(allOps);
           var anonFn: vm.Function = new vm.SimpleFunction();
-          var scope: String = 'scopeVariables';
-          if(paramTypeStrings.length > 0) {
-            var params: String = '';
-            for(i in 0...paramTypeStrings.length) {
-              params += '_${i}, ';
-            }
-            scope = '${params}${scope}';
-          }
           if(paramTypeStrings.length > 0) {
             paramsTypesString = '_${paramTypeStrings.join('_')}';
-          }
-          var patternMatch: Expr = PatternMatch.match(annaLang, macros.haxeToExpr(paramNameStrings.join(', ')), macros.haxeToExpr("scopeVariables.get(\"$$$\")"));
+            var patternMatch: Expr = PatternMatch.match(
+              annaLang,
+              macros.haxeToExpr(paramNameStrings.join(', ')),
+              macros.haxeToExpr("scopeVariables.get(\"$$$\")")
+            );
 
-          var patternMatchString: String = '
+            var patternMatchString: String = '
             scopeVariables.set("$$$$$", _0);
             var matched = ${annaLang.printer.printExpr(patternMatch)}
-            trace(matched);
             if(matched != null) {
+              for (key in matched.keys()) {
+		            scopeVariables.set(key, matched.get(key));
+	            }
               return allOps${index++};
-            }
-          }';
-          patternMatches.push(patternMatchString);
+            }';
+            patternMatches.push(patternMatchString);
+          } else {
+            patternMatches.push('return allOps0;');
+          }
           #end
         }
         #if !macro
-        var anonFnString = 'function(_0, scopeVariables) {
+        var paramArgs: String = '';
+        for(i in 0...paramCount) {
+          paramArgs += '_${i}, ';
+        }
+        scope = '${paramArgs}${scope}';
+        var anonFnString = 'function(${scope}) {
           ${patternMatches.join('\n')} 
         }';
         trace(anonFnString);
