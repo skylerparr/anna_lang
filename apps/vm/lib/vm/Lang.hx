@@ -17,18 +17,18 @@ class Lang {
   public static var definedModules: Map<String, Dynamic> = {
     definedModules = new Map<String, Dynamic>();
     definedModules.set("Anna", Anna);
-    definedModules.set("Code", Code);
-    definedModules.set("Atom", Atom);
-    definedModules.set("Tuple", Tuple);
-    definedModules.set("LList", LList);
-    definedModules.set("MMap", MMap);
-    definedModules.set("Keyword", Keyword);
-    definedModules.set("Map", ObjectMap);
-    definedModules.set("IO", IO);
-    definedModules.set("EitherEnums", EitherEnums);
-    definedModules.set("Std", Std);
     definedModules.set("ArgHelper", ArgHelper);
+    definedModules.set("Atom", Atom);
+    definedModules.set("Code", Code);
+    definedModules.set("EitherEnums", EitherEnums);
     definedModules.set("InterpMatch", InterpMatch);
+    definedModules.set("IO", IO);
+    definedModules.set("Keyword", Keyword);
+    definedModules.set("LList", LList);
+    definedModules.set("Map", ObjectMap);
+    definedModules.set("MMap", MMap);
+    definedModules.set("Std", Std);
+    definedModules.set("Tuple", Tuple);
     definedModules.set("vm", {Classes: vm.Classes, InterpMatch: vm.InterpMatch});
     definedModules.set("lang", {EitherSupport: EitherSupport});
     definedModules.set("A", function(v) {

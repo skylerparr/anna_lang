@@ -302,67 +302,17 @@ class AnnaLang {
           for(funDef in funDefs) {
             var funArgsTypes: Array<Dynamic> = cast funDef.funArgsTypes;
             var returnType: ComplexType = macroTools.buildType('Array<vm.Operation>');
-            var funArgs: Array<FunctionArg> = [];
-            var patternMatches: Array<String> = [];
             var argNameCounter: Int = 0;
-            var matchCount: Int = 0;
 
-            for(funArgsType in funArgsTypes) {
-              if(funArgsType.isPatternVar) {
-                continue;
-              }
-              var argName: String = '_${argNameCounter++}';
-              funArgs.push({name: argName, type: macroTools.buildType(funArgsType.type)});
-              var haxeStr: String = '';
-              if(funArgsType.pattern != funArgsType.name) {
-                var pattern: String = funArgsType.pattern;
-                if(funArgsType.type == "String") {
-                  var ereg: EReg = ~/"|'.*"|'.*=>/;
-                  if(!ereg.match(pattern)) {
-                    pattern = '"${pattern}"';
-                  }
-                }
-                var patternExpr = PatternMatch.match(this, macros.haxeToExpr(pattern), macros.haxeToExpr(argName));
-                MacroLogger.logExpr(patternExpr, 'patternExpr');
-                haxeStr = 'var match${matchCount}: Map<String, Dynamic> = ${printer.printExpr(patternExpr)};';
-                matchCount++;
-              } else {
-                haxeStr = 'var match${matchCount}: Map<String, Dynamic> = {
-                  var scope:haxe.ds.StringMap<Dynamic> = new haxe.ds.StringMap();
-                  scope.set("${funArgsType.name}", ${argName});
-                  scope;
-                };';
-                matchCount++;
-              }
-              patternMatches.push(haxeStr);
-            }
-            funArgs.push({name: "____scopeVariables", type: macroTools.buildType('Map<String, Dynamic>')});
+            var funHeads: Dynamic = buildFunctionHeadPatternMatch(funDef);
+            var patternMatches: Array<String> = funHeads.patternMatches;
+            var funArgs: Array<FunctionArg> = funHeads.funArgs;
+            var matchCount: Int = funHeads.matchCount;
+
+            patternTest += makeFunctionHeadPatternReturn(patternMatches, funArgs, 'return _${internalFunctionName}_${index++};');
             if(field == null) {
               field = macroTools.buildPublicFunction(internalFunctionName, funArgs, returnType);
             }
-            var makeIfBlock: Bool = false;
-            if(patternMatches.length > 0) {
-              var matchStatements: Array<String> = [];
-              var matchCount: Int = 0;
-              for(pattenMatch in patternMatches) {
-                if(pattenMatch != "") {
-                  matchStatements.push('match${matchCount++} != null');
-                }
-              }
-              patternTest += patternMatches.join("\n");
-              if(matchStatements.length > 0) {
-                patternTest += 'if(${matchStatements.join(" && ")}) {';
-                for(i in 0...matchStatements.length) {
-                  patternTest += '__updateScope(match${i}, ____scopeVariables);';
-                }
-                makeIfBlock = true;
-              }
-            }
-            patternTest += 'return _${internalFunctionName}_${index};';
-            if(makeIfBlock) {
-              patternTest += "}";
-            }
-            index++;
           }
           patternTest += 'return null;';
           var patternExpr: Expr = macros.haxeToExpr(patternTest);
@@ -371,19 +321,6 @@ class AnnaLang {
           macroTools.addFieldToClass(macroContext.currentModule, field);
         }
       }
-
-      var funArgs: Array<FunctionArg> = [];
-      funArgs.push({name: 'match', type: macroTools.buildType("Map<String, Dynamic>")});
-      funArgs.push({name: 'scope', type: macroTools.buildType("Map<String, Dynamic>")});
-      var field = macroTools.buildPrivateFunction('__updateScope', funArgs, macroTools.buildType("Void"));
-      var body: Expr = macro {
-        for(key in match.keys()) {
-          scope.set(key, match.get(key));
-        }
-      }
-
-      macroTools.assignFunBody(field, body);
-      macroTools.addFieldToClass(macroContext.currentModule, field);
 
       //finally add the api definition function
       for(funKey in apiMap.keys()) {
@@ -397,7 +334,7 @@ class AnnaLang {
         var functionAtoms: Expr = macros.haxeToExpr('[${allDefsStr.join(', ')}]');
 
         var varType: ComplexType = macroTools.buildType('Array<Atom>');
-        field = macroTools.buildPublicVar('__api_${funKey}', varType, [functionAtoms]);
+        var field = macroTools.buildPublicVar('__api_${funKey}', varType, [functionAtoms]);
         macroTools.addFieldToClass(macroContext.currentModule, field);
       }
 
@@ -487,6 +424,72 @@ class AnnaLang {
 
     MacroLogger.close();
     return classFields;
+  }
+
+  public inline function buildFunctionHeadPatternMatch(funDef: Dynamic): Dynamic {
+    var funArgsTypes: Array<Dynamic> = cast funDef.funArgsTypes;
+    var funArgs: Array<FunctionArg> = [];
+    var patternMatches: Array<String> = [];
+    var argNameCounter: Int = 0;
+    var matchCount: Int = 0;
+
+    for(funArgsType in funArgsTypes) {
+      if(funArgsType.isPatternVar) {
+        continue;
+      }
+      var argName: String = '_${argNameCounter++}';
+      funArgs.push({name: argName, type: macroTools.buildType(funArgsType.type)});
+      var haxeStr: String = '';
+      if(funArgsType.pattern != funArgsType.name) {
+        var pattern: String = funArgsType.pattern;
+        if(funArgsType.type == "String") {
+          var ereg: EReg = ~/"|'.*"|'.*=>/;
+          if(!ereg.match(pattern)) {
+            pattern = '"${pattern}"';
+          }
+        }
+        var patternExpr = PatternMatch.match(this, macros.haxeToExpr(pattern), macros.haxeToExpr(argName));
+        haxeStr = 'var match${matchCount}: Map<String, Dynamic> = ${printer.printExpr(patternExpr)};';
+      } else {
+        haxeStr = 'var match${matchCount}: Map<String, Dynamic> = {
+                  var scope:haxe.ds.StringMap<Dynamic> = new haxe.ds.StringMap();
+                  scope.set("${funArgsType.name}", ${argName});
+                  scope;
+                };';
+      }
+      matchCount++;
+      patternMatches.push(haxeStr);
+    }
+    return {patternMatches: patternMatches, matchCount: matchCount, funArgs: funArgs};
+  }
+
+  public inline function makeFunctionHeadPatternReturn(patternMatches: Array<String>, funArgs: Array<Dynamic>, retString: String): String {
+    var patternTest = '';
+    funArgs.push({name: "____scopeVariables", type: macroTools.buildType('Map<String, Dynamic>')});
+
+    var makeIfBlock: Bool = false;
+    if(patternMatches.length > 0) {
+      var matchStatements: Array<String> = [];
+      var matchCount: Int = 0;
+      for(pattenMatch in patternMatches) {
+        if(pattenMatch != "") {
+          matchStatements.push('match${matchCount++} != null');
+        }
+      }
+      patternTest += patternMatches.join("\n");
+      if(matchStatements.length > 0) {
+        patternTest += 'if(${matchStatements.join(" && ")}) {';
+        for(i in 0...matchStatements.length) {
+          patternTest += 'ArgHelper.__updateScope(match${i}, ____scopeVariables);';
+        }
+        makeIfBlock = true;
+      }
+    }
+    patternTest += retString;
+    if(makeIfBlock) {
+      patternTest += "}";
+    }
+    return patternTest;
   }
 
   macro public static function set_iface(ifaceName: Expr, implName: Expr): Array<Field> {
@@ -815,7 +818,6 @@ class AnnaLang {
       var funDef: Dynamic = declaredFunctions.get(fqFunName);
       if(funDef == null) {
         var varTypeInScope: String = macroContext.varTypesInScope.getTypes(funName)[0];
-        MacroLogger.log(varTypeInScope, '666 varTypeInScope, ${funName}');
         if(varTypeInScope == 'vm_Function' || varTypeInScope == 'vm.Function') {
           var haxeStr: String = 'ops.push(new vm.AnonymousFunction(${macroTools.getAtom(funName)}, ${macroTools.getList(funArgs)}, ${macroTools.getAtom(currentModuleStr)}, ${macroTools.getAtom(macroContext.currentFunction)}, ${lineNumber}, Code.annaLang))';
           retVal.push(macros.haxeToExpr(haxeStr));

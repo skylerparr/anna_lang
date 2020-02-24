@@ -285,13 +285,13 @@ import vm.Function;
 
   @def process_command({String: 't'}, [Atom], {
     History.push('t');
-//    UnitTests.add_test(@_'StringTest');
-//    UnitTests.add_test(@_'NumberTest');
-//    UnitTests.add_test(@_'AtomTest');
-//    UnitTests.add_test(@_'TupleTest');
-//    UnitTests.add_test(@_'LListTest');
-//    UnitTests.add_test(@_'MMapTest');
-//    UnitTests.add_test(@_'KeywordTest');
+    UnitTests.add_test(@_'StringTest');
+    UnitTests.add_test(@_'NumberTest');
+    UnitTests.add_test(@_'AtomTest');
+    UnitTests.add_test(@_'TupleTest');
+    UnitTests.add_test(@_'LListTest');
+    UnitTests.add_test(@_'MMapTest');
+    UnitTests.add_test(@_'KeywordTest');
     UnitTests.add_test(@_'ModuleFunctionTest');
 
     UnitTests.run_tests();
@@ -490,557 +490,557 @@ import vm.Function;
   });
 
 }))
-//@:build(lang.macros.AnnaLang.defmodule(StringTest, {
-//
-//  @def test_should_create_strings([Atom], {
-//    Assert.assert('foo', 'foo');
-//  });
-//
-//  @def test_should_create_strings_interp([Atom], {
-//    result = @native Lang.eval('"foo"');
-//    Assert.assert('foo', cast(result, String));
-//  });
-//
-//  @def test_should_not_match_strings([Atom], {
-//    Assert.refute('foo', 'bar');
-//  });
-//
-//  @def test_should_pattern_match_assignment([Atom], {
-//    'foo ' => bar = 'foo bar';
-//    Assert.assert('bar', cast(bar, String));
-//
-//    'foo ' => bar = 'foo bar';
-//    Assert.refute('bar1', cast(bar, String));
-//  });
-//
-//  @def test_should_pattern_match_assignment_interp([Atom], {
-//    @native Lang.eval("'foo ' => bar = 'foo bar';
-//    Assert.assert('bar', cast(bar, String));");
-//
-//    @native Lang.eval("'foo ' => bar = 'foo bar';
-//    Assert.refute('bar1', cast(bar, String));");
-//  });
-//
-//  @def test_should_pattern_match_function_string([Atom], {
-//    match('foo bar');
-//  });
-//
-//  @def test_should_match_function_head_strings([Atom], {
-//    match('foo', 'bar');
-//  });
-//
-//  @def test_should_match_function_head_strings_interp([Atom], {
-//    result = @native Lang.eval('"bar"');
-//    match('foo', cast(result, String));
-//  });
-//
-//  @def match({String: 'foo', String: 'bar'}, [Atom], {
-//    Assert.assert(@_'true');
-//  });
-//
-//  @def match({String: _, String: _}, [Atom], {
-//    Assert.assert(@_'false');
-//  });
-//
-//  @def match({String: 'foo ' => bar}, [Atom], {
-//    Assert.assert('bar', bar);
-//  });
-//
-//  @def match({String: _}, [Atom], {
-//    Assert.assert(@_'false');
-//  });
-//
-//}))
-//@:build(lang.macros.AnnaLang.defmodule(NumberTest, {
-//
-//  @def test_should_create_ints([Atom], {
-//    Assert.assert(123, 123);
-//  });
-//
-//  @def test_should_create_ints_interp([Atom], {
-//    result = @native Lang.eval('4738');
-//    Assert.assert(4738, cast(result, Number));
-//  });
-//
-//  @def test_should_not_match_ints([Atom], {
-//    Assert.refute(321, 123);
-//  });
-//
-//  @def test_should_match_function_head_ints([Atom], {
-//    match(123, 456);
-//  });
-//
-//  @def test_should_match_function_head_ints_interp([Atom], {
-//    result = @native Lang.eval('456');
-//    match(123, cast(result, Number));
-//  });
-//
-//  @def test_should_create_floats([Atom], {
-//    Assert.assert(43.3245, 43.3245);
-//  });
-//
-//  @def test_should_create_floats_interp([Atom], {
-//    result = @native Lang.eval('43.3245');
-//    Assert.assert(43.3245, cast(result, Number));
-//  });
-//
-//  @def test_should_not_match_floats([Atom], {
-//    Assert.refute(43.3245, 293.2094);
-//  });
-//
-//  @def test_should_match_function_head_floats([Atom], {
-//    match(43.3245, 89435.349);
-//  });
-//
-//  @def test_should_match_function_head_floats_interp([Atom], {
-//    result = @native Lang.eval('89435.349');
-//    match(43.3245, cast(result, Number));
-//  });
-//
-//  @def match({Float: 43.3245, Float: 89435.349}, [Atom], {
-//    Assert.assert(@_'true');
-//  });
-//
-//  @def match({Int: 123, Int: 456}, [Atom], {
-//    Assert.assert(@_'true');
-//  });
-//
-//  @def match({Float: 43.3245, Float: 89435.349}, [Atom], {
-//    Assert.assert(@_'true');
-//  });
-//
-//  @def match({Float: _, Float: _}, [Atom], {
-//    Assert.assert(@_'false');
-//  });
-//
-//}))
-//@:build(lang.macros.AnnaLang.defmodule(AtomTest, {
-//
-//  @def test_should_create_atoms([Atom], {
-//    Assert.assert(@_'ok', @_'ok');
-//  });
-//
-//
-//  @def test_should_not_match_atoms([Atom], {
-//    Assert.refute(@_'ok', @_'fail');
-//  });
-//
-//  @def test_should_create_atoms_interp([Atom], {
-//    result = @native Lang.eval('@_"ok"');
-//    Assert.assert(@_'ok', cast(result, Atom));
-//  });
-//
-//  @def test_should_match_function_head_atoms([Atom], {
-//    match(@_'ok', @_'good');
-//  });
-//
-//  @def test_should_match_function_head_atoms_interp([Atom], {
-//    result = @native Lang.eval("@_'good'");
-//    match(@_'ok', cast(result, Atom));
-//  });
-//
-//  @def match({Atom: @_'ok', Atom: @_'good'}, [Atom], {
-//    Assert.assert(@_'true');
-//  });
-//
-//  @def match({Atom: _, Atom: _}, [Atom], {
-//    Assert.assert(@_'false');
-//  });
-//
-//}))
-//@:build(lang.macros.AnnaLang.defmodule(TupleTest, {
-//
-//  @def test_should_create_tuple_with_all_constant_elements([Atom], {
-//    Assert.assert([@_'ok', 'message'], [@_'ok', 'message']);
-//  });
-//
-//  @def test_should_create_tuple_with_all_constant_elements_interp([Atom], {
-//    result = @native Lang.eval("[@_'ok', 'message']");
-//    Assert.assert([@_'ok', 'message'], cast(result, Tuple));
-//  });
-//
-//  @def test_should_create_tuple_with_all_variable_elements([Atom], {
-//    status = @_'ok';
-//    message = 'message';
-//    Assert.assert([@_'ok', 'message'], [status, message]);
-//  });
-//
-//  @def test_should_create_tuple_with_all_variable_elements_interp([Atom], {
-//    result = @native Lang.eval("status = @_'ok'; message = 'message'; [status, message]");
-//    Assert.assert([@_'ok', 'message'], cast(result, Tuple));
-//  });
-//
-//  @def test_should_create_tuple_within_a_tuple([Atom], {
-//    status = @_'ok';
-//    Assert.assert([@_'ok', [@_'error', 'complete']], [status, [@_'error', 'complete']]);
-//  });
-//
-//  @def test_should_create_tuple_within_a_tuple_interp([Atom], {
-//    result = @native Lang.eval("status = @_'ok'; [status, [@_'error', 'complete']]");
-//    Assert.assert([@_'ok', [@_'error', 'complete']], cast(result, Tuple));
-//  });
-//
-//  @def test_should_match_tuple_on_function_head([Atom], {
-//    match([@_'ok', [@_'error', 'complete']]);
-//  });
-//
-//  @def test_should_match_tuple_on_function_head_interp([Atom], {
-//    result = @native Lang.eval("TupleTest.match([@_'eval', [@_'error', 'complete']]);");
-//    Assert.assert(cast(result, Atom));
-//  });
-//
-//  @def match({Tuple: [@_'ok', [@_'error', 'complete']]}, [Atom], {
-//    Assert.assert(@_'true');
-//  });
-//
-//  @def match({Tuple: [@_'eval', [@_'error', 'complete']]}, [Atom], {
-//    @_'true';
-//  });
-//
-//  @def match({Tuple: _}, [Atom], {
-//    Assert.assert(@_'false');
-//  });
-//
-//}))
-//@:build(lang.macros.AnnaLang.defmodule(LListTest, {
-//
-//  @def test_should_create_llist_with_all_constant_elements([Atom], {
-//    Assert.assert({@_'ok'; 'message';}, {@_'ok'; 'message';});
-//  });
-//
-//  @def test_should_create_llist_with_all_constant_elements_interp([Atom], {
-//    result = @native Lang.eval("{@_'ok'; 'message';}");
-//    Assert.assert({@_'ok'; 'message';}, cast(result, LList));
-//  });
-//
-//  @def test_should_create_llist_with_all_variable_elements([Atom], {
-//    status = @_'ok';
-//    message = 'message';
-//    Assert.assert({@_'ok'; 'message';}, {status; message;});
-//  });
-//
-//  @def test_should_create_llist_with_all_variable_elements_interp([Atom], {
-//    result = @native Lang.eval("status = @_'ok'; message = 'message'; {status; message;}");
-//    Assert.assert({@_'ok'; 'message';}, cast(result, LList));
-//  });
-//
-//  @def test_should_create_llist_within_llist([Atom], {
-//    Assert.assert({@_'ok'; {"nice"; "little"; ["list"];}}, {@_'ok'; {"nice"; "little"; ["list"];}});
-//  });
-//
-//  @def test_should_create_llist_within_llist_interp([Atom], {
-//    result = @native Lang.eval("{@_'ok'; {'nice'; 'little'; ['list'];}}");
-//    Assert.assert({@_'ok'; {"nice"; "little"; ["list"];}}, cast(result, LList));
-//  });
-//
-//  @def test_should_assign_head_and_tail([Atom], {
-//    ({head | tail;}) = {1; 2; 3; 4;};
-//    Assert.assert(1, cast(head, Int));
-//    Assert.assert({2; 3; 4;}, cast(tail, LList));
-//  });
-//
-//  @def test_should_assign_head_and_tail_interp([Atom], {
-//    @native Lang.eval('({head | tail;}) = {1; 2; 3; 4;}; Assert.assert(1, cast(head, Int));
-//    Assert.assert({2; 3; 4;}, cast(tail, LList));');
-//  });
-//
-//  @def test_should_assign_to_individual_elements([Atom], {
-//    ({one; two; three; four;}) = {1; 2; 3; 4;};
-//    Assert.assert(1, cast(one, Int));
-//    Assert.assert(2, cast(two, Int));
-//    Assert.assert(3, cast(three, Int));
-//    Assert.assert(4, cast(four, Int));
-//  });
-//
-//  @def test_should_assign_to_individual_elements_interp([Atom], {
-//    @native Lang.eval('({one; two; three; four;}) = {1; 2; 3; 4;};
-//    Assert.assert(1, cast(one, Int));
-//    Assert.assert(2, cast(two, Int));
-//    Assert.assert(3, cast(three, Int));
-//    Assert.assert(4, cast(four, Int));');
-//  });
-//
-//  @def test_function_pattern_match_llist_with_head_and_tail([Atom], {
-//    match({1; 2; 3; 4;});
-//  });
-//
-//  @def test_function_pattern_match_llist_with_head_and_tail_interp([Atom], {
-//    @native Lang.eval('LListTest.match({1; 2; 3; 4;});');
-//  });
-//
-//  @def test_should_pattern_match_function_elements([Atom], {
-//    match({1; 2; 3; 4; 5;});
-//  });
-//
-//  @def test_should_pattern_match_function_elements_interp([Atom], {
-//    @native Lang.eval('LListTest.match({1; 2; 3; 4; 5;})');
-//  });
-//
-//  @def test_should_create_list_with_atoms([Atom], {
-//    Assert.assert({@_'ok'; @_'error';}, {@_'ok'; @_'error';});
-//  });
-//
-//  @def test_should_create_list_with_atoms_interp([Atom], {
-//    @native Lang.eval("Assert.assert({@_'ok'; @_'error';}, {@_'ok'; @_'error';});");
-//  });
-//
-//  @def match({LList: {a; b; c; d; e;}}, [Atom], {
-//    Assert.assert(1, cast(a, Int));
-//    Assert.assert(2, cast(b, Int));
-//    Assert.assert(3, cast(c, Int));
-//    Assert.assert(4, cast(d, Int));
-//    Assert.assert(5, cast(e, Int));
-//  });
-//
-//  @def match({LList: {head | tail;}}, [Atom], {
-//    Assert.assert(1, cast(head, Int));
-//    Assert.assert({2; 3; 4;}, cast(tail, LList));
-//  });
-//
-//  @def match({LList: _}, [Atom], {
-//    Assert.assert(@_'false');
-//  });
-//
-//}))
-//@:build(lang.macros.AnnaLang.defmodule(MMapTest, {
-//
-//  @def test_should_create_constant_map([Atom], {
-//    Assert.assert(['foo' => 'bar'], ['foo' => 'bar']);
-//  });
-//
-//  @def test_should_create_constant_map_interp([Atom], {
-//    result = @native Lang.eval("['foo' => 'bar']");
-//    Assert.assert(['foo' => 'bar'], cast(result, MMap));
-//  });
-//
-//  @def test_should_create_map_with_variable_value([Atom], {
-//    bar = 'bar';
-//    Assert.assert(['foo' => 'bar'], ['foo' => bar]);
-//  });
-//
-//  @def test_should_create_map_with_variable_value_interp([Atom], {
-//    @native Lang.eval("bar = 'bar'; Assert.assert(['foo' => 'bar'], ['foo' => bar]);");
-//  });
-//
-//  @def test_should_create_map_with_variable_key([Atom], {
-//    bar = 'foo';
-//    Assert.assert(['foo' => 'bar'], [bar => 'bar']);
-//  });
-//
-//  @def test_should_create_map_with_variable_key_interp([Atom], {
-//    @native Lang.eval("foo = 'foo'; Assert.assert(['foo' => 'bar'], [foo => 'bar']);");
-//  });
-//
-//  @def test_should_create_map_with_variable_key_and_variable_value([Atom], {
-//    foo = 'foo';
-//    bar = 'bar';
-//    Assert.assert(['foo' => 'bar'], [foo => bar]);
-//  });
-//
-//  @def test_should_create_map_with_variable_key_and_variable_value_interp([Atom], {
-//    @native Lang.eval("foo = 'foo';
-//    bar = 'bar';
-//    Assert.assert(['foo' => 'bar'], [foo => bar]);");
-//  });
-//
-//  @def test_should_create_map_with_multiple_types([Atom], {
-//    foo = 'foo';
-//    bar = @_'bar';
-//    Assert.assert(['baz' => {'foo';}, 'cat' => [@_'bar']], ['baz' => {foo;}, 'cat' => [bar]]);
-//  });
-//
-//  @def test_should_create_map_with_multiple_types_interp([Atom], {
-//    @native Lang.eval("foo = 'foo';
-//    bar = @_'bar';
-//    Assert.assert(['baz' => {'foo';}, 'cat' => [@_'bar']], ['baz' => {foo;}, 'cat' => [bar]]);");
-//  });
-//
-//  @def test_should_assign_map_values_to_pattern_match([Atom], {
-//    ['foo' => bar, 'baz' => 'cat'] = ['foo' => 'bar', 'baz' => 'cat'];
-//    Assert.assert('bar', cast(bar, String));
-//  });
-//
-//  @def test_should_assign_map_values_to_pattern_match_interp([Atom], {
-//    @native Lang.eval("['foo' => bar, 'baz' => 'cat'] = ['foo' => 'bar', 'baz' => 'cat'];
-//    Assert.assert('bar', cast(bar, String));");
-//  });
-//
-//  @def test_should_match_on_map_with_mismatched_number_of_keys([Atom], {
-//    ['foo' => bar] = ['foo' => 'bar', 'baz' => 'cat'];
-//    Assert.assert('bar', cast(bar, String));
-//  });
-//
-//  @def test_should_match_on_map_with_mismatched_number_of_keys_interp([Atom], {
-//    @native Lang.eval("['foo' => bar] = ['foo' => 'bar', 'baz' => 'cat'];
-//    Assert.assert('bar', cast(bar, String));");
-//  });
-//
-//  @def test_should_create_map_with_atom_keys([Atom], {
-//    foo = 'foo';
-//    bar = 'bar';
-//    Assert.assert([@_'success' => 'foo', @_'fail' => 'bar'], [@_'success' => foo, @_'fail' => bar]);
-//  });
-//
-//  @def test_should_create_map_with_atom_keys_interp([Atom], {
-//    @native Lang.eval("foo = 'foo';
-//    bar = 'bar';
-//    Assert.assert([@_'success' => 'foo', @_'fail' => 'bar'], [@_'success' => foo, @_'fail' => bar]);");
-//  });
-//
-//  @def test_should_create_map_with_atom_keys_and_atom_values([Atom], {
-//    foo = @_'foo';
-//    bar = @_'bar';
-//    Assert.assert([@_'success' => @_'foo', @_'fail' => @_'bar'], [@_'success' => foo, @_'fail' => bar]);
-//  });
-//
-//  @def test_should_create_map_with_atom_keys_and_atom_values_interp([Atom], {
-//    @native Lang.eval("foo = @_'foo';
-//    bar = @_'bar';
-//    Assert.assert([@_'success' => @_'foo', @_'fail' => @_'bar'], [@_'success' => foo, @_'fail' => bar]);");
-//  });
-//
-//}))
-//@:build(lang.macros.AnnaLang.defmodule(KeywordTest, {
-//
-//  @def test_should_create_static_keyword([Atom], {
-//    Assert.refute({beanus: 'bear'}, {ellie: 'bear'});
-//    Assert.assert({ellie: 'bear'}, {ellie: 'bear'});
-//  });
-//
-//  @def test_should_create_static_keyword_interp([Atom], {
-//    @native Lang.eval("Assert.refute({beanus: 'bear'}, {ellie: 'bear'});
-//    Assert.assert({ellie: 'bear'}, {ellie: 'bear'});");
-//  });
-//
-//  @def test_should_create_keyword_with_variable_values([Atom], {
-//    bear = 'bear';
-//    Assert.refute({beanus: 'bear'}, {ellie: bear});
-//    Assert.assert({ellie: 'bear'}, {ellie: bear});
-//  });
-//
-//  @def test_should_create_keyword_with_variable_values_interp([Atom], {
-//    @native Lang.eval("bear = 'bear';
-//    Assert.refute({beanus: 'bear'}, {ellie: bear});
-//    Assert.assert({ellie: 'bear'}, {ellie: bear});");
-//  });
-//
-//  @def test_should_create_keyword_with_complex_values([Atom], {
-//    beanus = 'be-anus';
-//    Assert.refute({ellie: 'beanus', beanus: {@_'cat'; 'strange';}}, {ellie: beanus, beanus: {@_'cat'; 'strange';}});
-//    beanus = 'beanus';
-//    Assert.assert({ellie: 'beanus', beanus: {@_'cat'; 'strange';}}, {ellie: beanus, beanus: {@_'cat'; 'strange';}});
-//  });
-//
-//}))
+@:build(lang.macros.AnnaLang.defmodule(StringTest, {
+
+  @def test_should_create_strings([Atom], {
+    Assert.assert('foo', 'foo');
+  });
+
+  @def test_should_create_strings_interp([Atom], {
+    result = @native Lang.eval('"foo"');
+    Assert.assert('foo', cast(result, String));
+  });
+
+  @def test_should_not_match_strings([Atom], {
+    Assert.refute('foo', 'bar');
+  });
+
+  @def test_should_pattern_match_assignment([Atom], {
+    'foo ' => bar = 'foo bar';
+    Assert.assert('bar', cast(bar, String));
+
+    'foo ' => bar = 'foo bar';
+    Assert.refute('bar1', cast(bar, String));
+  });
+
+  @def test_should_pattern_match_assignment_interp([Atom], {
+    @native Lang.eval("'foo ' => bar = 'foo bar';
+    Assert.assert('bar', cast(bar, String));");
+
+    @native Lang.eval("'foo ' => bar = 'foo bar';
+    Assert.refute('bar1', cast(bar, String));");
+  });
+
+  @def test_should_pattern_match_function_string([Atom], {
+    match('foo bar');
+  });
+
+  @def test_should_match_function_head_strings([Atom], {
+    match('foo', 'bar');
+  });
+
+  @def test_should_match_function_head_strings_interp([Atom], {
+    result = @native Lang.eval('"bar"');
+    match('foo', cast(result, String));
+  });
+
+  @def match({String: 'foo', String: 'bar'}, [Atom], {
+    Assert.assert(@_'true');
+  });
+
+  @def match({String: _, String: _}, [Atom], {
+    Assert.assert(@_'false');
+  });
+
+  @def match({String: 'foo ' => bar}, [Atom], {
+    Assert.assert('bar', bar);
+  });
+
+  @def match({String: _}, [Atom], {
+    Assert.assert(@_'false');
+  });
+
+}))
+@:build(lang.macros.AnnaLang.defmodule(NumberTest, {
+
+  @def test_should_create_ints([Atom], {
+    Assert.assert(123, 123);
+  });
+
+  @def test_should_create_ints_interp([Atom], {
+    result = @native Lang.eval('4738');
+    Assert.assert(4738, cast(result, Number));
+  });
+
+  @def test_should_not_match_ints([Atom], {
+    Assert.refute(321, 123);
+  });
+
+  @def test_should_match_function_head_ints([Atom], {
+    match(123, 456);
+  });
+
+  @def test_should_match_function_head_ints_interp([Atom], {
+    result = @native Lang.eval('456');
+    match(123, cast(result, Number));
+  });
+
+  @def test_should_create_floats([Atom], {
+    Assert.assert(43.3245, 43.3245);
+  });
+
+  @def test_should_create_floats_interp([Atom], {
+    result = @native Lang.eval('43.3245');
+    Assert.assert(43.3245, cast(result, Number));
+  });
+
+  @def test_should_not_match_floats([Atom], {
+    Assert.refute(43.3245, 293.2094);
+  });
+
+  @def test_should_match_function_head_floats([Atom], {
+    match(43.3245, 89435.349);
+  });
+
+  @def test_should_match_function_head_floats_interp([Atom], {
+    result = @native Lang.eval('89435.349');
+    match(43.3245, cast(result, Number));
+  });
+
+  @def match({Float: 43.3245, Float: 89435.349}, [Atom], {
+    Assert.assert(@_'true');
+  });
+
+  @def match({Int: 123, Int: 456}, [Atom], {
+    Assert.assert(@_'true');
+  });
+
+  @def match({Float: 43.3245, Float: 89435.349}, [Atom], {
+    Assert.assert(@_'true');
+  });
+
+  @def match({Float: _, Float: _}, [Atom], {
+    Assert.assert(@_'false');
+  });
+
+}))
+@:build(lang.macros.AnnaLang.defmodule(AtomTest, {
+
+  @def test_should_create_atoms([Atom], {
+    Assert.assert(@_'ok', @_'ok');
+  });
+
+
+  @def test_should_not_match_atoms([Atom], {
+    Assert.refute(@_'ok', @_'fail');
+  });
+
+  @def test_should_create_atoms_interp([Atom], {
+    result = @native Lang.eval('@_"ok"');
+    Assert.assert(@_'ok', cast(result, Atom));
+  });
+
+  @def test_should_match_function_head_atoms([Atom], {
+    match(@_'ok', @_'good');
+  });
+
+  @def test_should_match_function_head_atoms_interp([Atom], {
+    result = @native Lang.eval("@_'good'");
+    match(@_'ok', cast(result, Atom));
+  });
+
+  @def match({Atom: @_'ok', Atom: @_'good'}, [Atom], {
+    Assert.assert(@_'true');
+  });
+
+  @def match({Atom: _, Atom: _}, [Atom], {
+    Assert.assert(@_'false');
+  });
+
+}))
+@:build(lang.macros.AnnaLang.defmodule(TupleTest, {
+
+  @def test_should_create_tuple_with_all_constant_elements([Atom], {
+    Assert.assert([@_'ok', 'message'], [@_'ok', 'message']);
+  });
+
+  @def test_should_create_tuple_with_all_constant_elements_interp([Atom], {
+    result = @native Lang.eval("[@_'ok', 'message']");
+    Assert.assert([@_'ok', 'message'], cast(result, Tuple));
+  });
+
+  @def test_should_create_tuple_with_all_variable_elements([Atom], {
+    status = @_'ok';
+    message = 'message';
+    Assert.assert([@_'ok', 'message'], [status, message]);
+  });
+
+  @def test_should_create_tuple_with_all_variable_elements_interp([Atom], {
+    result = @native Lang.eval("status = @_'ok'; message = 'message'; [status, message]");
+    Assert.assert([@_'ok', 'message'], cast(result, Tuple));
+  });
+
+  @def test_should_create_tuple_within_a_tuple([Atom], {
+    status = @_'ok';
+    Assert.assert([@_'ok', [@_'error', 'complete']], [status, [@_'error', 'complete']]);
+  });
+
+  @def test_should_create_tuple_within_a_tuple_interp([Atom], {
+    result = @native Lang.eval("status = @_'ok'; [status, [@_'error', 'complete']]");
+    Assert.assert([@_'ok', [@_'error', 'complete']], cast(result, Tuple));
+  });
+
+  @def test_should_match_tuple_on_function_head([Atom], {
+    match([@_'ok', [@_'error', 'complete']]);
+  });
+
+  @def test_should_match_tuple_on_function_head_interp([Atom], {
+    result = @native Lang.eval("TupleTest.match([@_'eval', [@_'error', 'complete']]);");
+    Assert.assert(cast(result, Atom));
+  });
+
+  @def match({Tuple: [@_'ok', [@_'error', 'complete']]}, [Atom], {
+    Assert.assert(@_'true');
+  });
+
+  @def match({Tuple: [@_'eval', [@_'error', 'complete']]}, [Atom], {
+    @_'true';
+  });
+
+  @def match({Tuple: _}, [Atom], {
+    Assert.assert(@_'false');
+  });
+
+}))
+@:build(lang.macros.AnnaLang.defmodule(LListTest, {
+
+  @def test_should_create_llist_with_all_constant_elements([Atom], {
+    Assert.assert({@_'ok'; 'message';}, {@_'ok'; 'message';});
+  });
+
+  @def test_should_create_llist_with_all_constant_elements_interp([Atom], {
+    result = @native Lang.eval("{@_'ok'; 'message';}");
+    Assert.assert({@_'ok'; 'message';}, cast(result, LList));
+  });
+
+  @def test_should_create_llist_with_all_variable_elements([Atom], {
+    status = @_'ok';
+    message = 'message';
+    Assert.assert({@_'ok'; 'message';}, {status; message;});
+  });
+
+  @def test_should_create_llist_with_all_variable_elements_interp([Atom], {
+    result = @native Lang.eval("status = @_'ok'; message = 'message'; {status; message;}");
+    Assert.assert({@_'ok'; 'message';}, cast(result, LList));
+  });
+
+  @def test_should_create_llist_within_llist([Atom], {
+    Assert.assert({@_'ok'; {"nice"; "little"; ["list"];}}, {@_'ok'; {"nice"; "little"; ["list"];}});
+  });
+
+  @def test_should_create_llist_within_llist_interp([Atom], {
+    result = @native Lang.eval("{@_'ok'; {'nice'; 'little'; ['list'];}}");
+    Assert.assert({@_'ok'; {"nice"; "little"; ["list"];}}, cast(result, LList));
+  });
+
+  @def test_should_assign_head_and_tail([Atom], {
+    ({head | tail;}) = {1; 2; 3; 4;};
+    Assert.assert(1, cast(head, Int));
+    Assert.assert({2; 3; 4;}, cast(tail, LList));
+  });
+
+  @def test_should_assign_head_and_tail_interp([Atom], {
+    @native Lang.eval('({head | tail;}) = {1; 2; 3; 4;}; Assert.assert(1, cast(head, Int));
+    Assert.assert({2; 3; 4;}, cast(tail, LList));');
+  });
+
+  @def test_should_assign_to_individual_elements([Atom], {
+    ({one; two; three; four;}) = {1; 2; 3; 4;};
+    Assert.assert(1, cast(one, Int));
+    Assert.assert(2, cast(two, Int));
+    Assert.assert(3, cast(three, Int));
+    Assert.assert(4, cast(four, Int));
+  });
+
+  @def test_should_assign_to_individual_elements_interp([Atom], {
+    @native Lang.eval('({one; two; three; four;}) = {1; 2; 3; 4;};
+    Assert.assert(1, cast(one, Int));
+    Assert.assert(2, cast(two, Int));
+    Assert.assert(3, cast(three, Int));
+    Assert.assert(4, cast(four, Int));');
+  });
+
+  @def test_function_pattern_match_llist_with_head_and_tail([Atom], {
+    match({1; 2; 3; 4;});
+  });
+
+  @def test_function_pattern_match_llist_with_head_and_tail_interp([Atom], {
+    @native Lang.eval('LListTest.match({1; 2; 3; 4;});');
+  });
+
+  @def test_should_pattern_match_function_elements([Atom], {
+    match({1; 2; 3; 4; 5;});
+  });
+
+  @def test_should_pattern_match_function_elements_interp([Atom], {
+    @native Lang.eval('LListTest.match({1; 2; 3; 4; 5;})');
+  });
+
+  @def test_should_create_list_with_atoms([Atom], {
+    Assert.assert({@_'ok'; @_'error';}, {@_'ok'; @_'error';});
+  });
+
+  @def test_should_create_list_with_atoms_interp([Atom], {
+    @native Lang.eval("Assert.assert({@_'ok'; @_'error';}, {@_'ok'; @_'error';});");
+  });
+
+  @def match({LList: {a; b; c; d; e;}}, [Atom], {
+    Assert.assert(1, cast(a, Int));
+    Assert.assert(2, cast(b, Int));
+    Assert.assert(3, cast(c, Int));
+    Assert.assert(4, cast(d, Int));
+    Assert.assert(5, cast(e, Int));
+  });
+
+  @def match({LList: {head | tail;}}, [Atom], {
+    Assert.assert(1, cast(head, Int));
+    Assert.assert({2; 3; 4;}, cast(tail, LList));
+  });
+
+  @def match({LList: _}, [Atom], {
+    Assert.assert(@_'false');
+  });
+
+}))
+@:build(lang.macros.AnnaLang.defmodule(MMapTest, {
+
+  @def test_should_create_constant_map([Atom], {
+    Assert.assert(['foo' => 'bar'], ['foo' => 'bar']);
+  });
+
+  @def test_should_create_constant_map_interp([Atom], {
+    result = @native Lang.eval("['foo' => 'bar']");
+    Assert.assert(['foo' => 'bar'], cast(result, MMap));
+  });
+
+  @def test_should_create_map_with_variable_value([Atom], {
+    bar = 'bar';
+    Assert.assert(['foo' => 'bar'], ['foo' => bar]);
+  });
+
+  @def test_should_create_map_with_variable_value_interp([Atom], {
+    @native Lang.eval("bar = 'bar'; Assert.assert(['foo' => 'bar'], ['foo' => bar]);");
+  });
+
+  @def test_should_create_map_with_variable_key([Atom], {
+    bar = 'foo';
+    Assert.assert(['foo' => 'bar'], [bar => 'bar']);
+  });
+
+  @def test_should_create_map_with_variable_key_interp([Atom], {
+    @native Lang.eval("foo = 'foo'; Assert.assert(['foo' => 'bar'], [foo => 'bar']);");
+  });
+
+  @def test_should_create_map_with_variable_key_and_variable_value([Atom], {
+    foo = 'foo';
+    bar = 'bar';
+    Assert.assert(['foo' => 'bar'], [foo => bar]);
+  });
+
+  @def test_should_create_map_with_variable_key_and_variable_value_interp([Atom], {
+    @native Lang.eval("foo = 'foo';
+    bar = 'bar';
+    Assert.assert(['foo' => 'bar'], [foo => bar]);");
+  });
+
+  @def test_should_create_map_with_multiple_types([Atom], {
+    foo = 'foo';
+    bar = @_'bar';
+    Assert.assert(['baz' => {'foo';}, 'cat' => [@_'bar']], ['baz' => {foo;}, 'cat' => [bar]]);
+  });
+
+  @def test_should_create_map_with_multiple_types_interp([Atom], {
+    @native Lang.eval("foo = 'foo';
+    bar = @_'bar';
+    Assert.assert(['baz' => {'foo';}, 'cat' => [@_'bar']], ['baz' => {foo;}, 'cat' => [bar]]);");
+  });
+
+  @def test_should_assign_map_values_to_pattern_match([Atom], {
+    ['foo' => bar, 'baz' => 'cat'] = ['foo' => 'bar', 'baz' => 'cat'];
+    Assert.assert('bar', cast(bar, String));
+  });
+
+  @def test_should_assign_map_values_to_pattern_match_interp([Atom], {
+    @native Lang.eval("['foo' => bar, 'baz' => 'cat'] = ['foo' => 'bar', 'baz' => 'cat'];
+    Assert.assert('bar', cast(bar, String));");
+  });
+
+  @def test_should_match_on_map_with_mismatched_number_of_keys([Atom], {
+    ['foo' => bar] = ['foo' => 'bar', 'baz' => 'cat'];
+    Assert.assert('bar', cast(bar, String));
+  });
+
+  @def test_should_match_on_map_with_mismatched_number_of_keys_interp([Atom], {
+    @native Lang.eval("['foo' => bar] = ['foo' => 'bar', 'baz' => 'cat'];
+    Assert.assert('bar', cast(bar, String));");
+  });
+
+  @def test_should_create_map_with_atom_keys([Atom], {
+    foo = 'foo';
+    bar = 'bar';
+    Assert.assert([@_'success' => 'foo', @_'fail' => 'bar'], [@_'success' => foo, @_'fail' => bar]);
+  });
+
+  @def test_should_create_map_with_atom_keys_interp([Atom], {
+    @native Lang.eval("foo = 'foo';
+    bar = 'bar';
+    Assert.assert([@_'success' => 'foo', @_'fail' => 'bar'], [@_'success' => foo, @_'fail' => bar]);");
+  });
+
+  @def test_should_create_map_with_atom_keys_and_atom_values([Atom], {
+    foo = @_'foo';
+    bar = @_'bar';
+    Assert.assert([@_'success' => @_'foo', @_'fail' => @_'bar'], [@_'success' => foo, @_'fail' => bar]);
+  });
+
+  @def test_should_create_map_with_atom_keys_and_atom_values_interp([Atom], {
+    @native Lang.eval("foo = @_'foo';
+    bar = @_'bar';
+    Assert.assert([@_'success' => @_'foo', @_'fail' => @_'bar'], [@_'success' => foo, @_'fail' => bar]);");
+  });
+
+}))
+@:build(lang.macros.AnnaLang.defmodule(KeywordTest, {
+
+  @def test_should_create_static_keyword([Atom], {
+    Assert.refute({beanus: 'bear'}, {ellie: 'bear'});
+    Assert.assert({ellie: 'bear'}, {ellie: 'bear'});
+  });
+
+  @def test_should_create_static_keyword_interp([Atom], {
+    @native Lang.eval("Assert.refute({beanus: 'bear'}, {ellie: 'bear'});
+    Assert.assert({ellie: 'bear'}, {ellie: 'bear'});");
+  });
+
+  @def test_should_create_keyword_with_variable_values([Atom], {
+    bear = 'bear';
+    Assert.refute({beanus: 'bear'}, {ellie: bear});
+    Assert.assert({ellie: 'bear'}, {ellie: bear});
+  });
+
+  @def test_should_create_keyword_with_variable_values_interp([Atom], {
+    @native Lang.eval("bear = 'bear';
+    Assert.refute({beanus: 'bear'}, {ellie: bear});
+    Assert.assert({ellie: 'bear'}, {ellie: bear});");
+  });
+
+  @def test_should_create_keyword_with_complex_values([Atom], {
+    beanus = 'be-anus';
+    Assert.refute({ellie: 'beanus', beanus: {@_'cat'; 'strange';}}, {ellie: beanus, beanus: {@_'cat'; 'strange';}});
+    beanus = 'beanus';
+    Assert.assert({ellie: 'beanus', beanus: {@_'cat'; 'strange';}}, {ellie: beanus, beanus: {@_'cat'; 'strange';}});
+  });
+
+}))
 @:build(lang.macros.AnnaLang.defmodule(ModuleFunctionTest, {
   @alias vm.Function;
 
-//  @def test_should_invoke_function_with_static_arg([Atom], {
-//    single_arg(@_'true');
-//  });
-//
-//  @def test_should_invoke_function_with_static_arg_interp([Atom], {
-//    @native Lang.eval("ModuleFunctionTest.single_arg(@_'true');");
-//  });
-//
-//  @def test_should_invoke_public_functions_with_variables([Atom], {
-//    number = 4;
-//    result = Kernel.add(1, number);
-//    Assert.assert(5, result);
-//  });
-//
-//  @def test_should_invoke_public_functions_with_variables_interp([Atom], {
-//    @native Lang.eval("number = 4;
-//    result = Kernel.add(7, number);
-//    Assert.assert(11, result);");
-//  });
-//
-//  @def test_should_interpret_code_with_sharing_var_names_to_prevent_memory_exposure([Atom], {
-//    @native Lang.eval("string = 'foo';
-//    result = Str.concat(string, ' bar');
-//    Assert.assert('foo bar', result);");
-//  });
-//
-//  @def test_should_invoke_function_with_cast([Atom], {
-//    ({val | _;}) = {'foo'; 'bar'; 'cat'; 'baz';};
-//    result = Str.concat(cast(val, String), ' bar');
-//    Assert.assert('foo bar', result);
-//  });
-//
-//  @def test_should_invoke_function_with_cast_interp([Atom], {
-//    @native Lang.eval("({val | _;}) = {'foo'; 'bar'; 'cat'; 'baz';};
-//    result = Str.concat(cast(val, String), ' bar');
-//    Assert.assert('foo bar', result);");
-//  });
-//
-//  @def test_should_create_anonymous_function_with_no_args([Atom], {
-//    fun = @fn {
-//      [{}] => {
-//        @_'true';
-//      };
-//    };
-//    result = fun();
-//    Assert.assert(cast(result, Atom));
-//  });
-//
-//  @def test_should_create_anonymous_function_with_no_args_interp([Atom], {
-//    @native Lang.eval("fun = @fn {
-//      [{}] => {
-//        @_'true';
-//      };
-//    };
-//    result = fun();
-//    Assert.assert(cast(result, Atom));");
-//  });
-//
-//  @def test_should_create_anonymous_function_with_1_arg([Atom], {
-//    fun = @fn {
-//      [{Atom: status}] => {
-//        status;
-//      };
-//    };
-//    result = fun(@_'true');
-//    Assert.assert(cast(result, Atom));
-//
-//    result = fun(@_'false');
-//    Assert.refute(cast(result, Atom));
-//  });
-//
-//  @def test_should_create_anonymous_function_with_1_arg_interp([Atom], {
-//    @native Lang.eval("fun = @fn {
-//      [{Atom: status}] => {
-//        status;
-//      };
-//    };
-//    result = fun(@_'true');
-//    Assert.assert(cast(result, Atom));
-//
-//    result = fun(@_'false');
-//    Assert.refute(cast(result, Atom));");
-//  });
-//
-//  @def test_should_create_anonymous_function_with_2_args([Atom], {
-//    fun = @fn {
-//      [{Int: a, Int: b}] => {
-//        Kernel.add(a, b);
-//      };
-//    };
-//    result = fun(32, 563);
-//    Assert.assert(595, cast(result, Int));
-//    Assert.refute(532, cast(result, Int));
-//  });
-//
-//  @def test_should_create_anonymous_function_with_2_args_interp([Atom], {
-//    @native Lang.eval("fun = @fn {
-//      [{Int: a, Int: b}] => {
-//        Kernel.add(a, b);
-//      };
-//    };
-//    result = fun(32, 563);
-//    Assert.assert(595, cast(result, Int));
-//    Assert.refute(532, cast(result, Int));");
-//  });
-//
+  @def test_should_invoke_function_with_static_arg([Atom], {
+    single_arg(@_'true');
+  });
+
+  @def test_should_invoke_function_with_static_arg_interp([Atom], {
+    @native Lang.eval("ModuleFunctionTest.single_arg(@_'true');");
+  });
+
+  @def test_should_invoke_public_functions_with_variables([Atom], {
+    number = 4;
+    result = Kernel.add(1, number);
+    Assert.assert(5, result);
+  });
+
+  @def test_should_invoke_public_functions_with_variables_interp([Atom], {
+    @native Lang.eval("number = 4;
+    result = Kernel.add(7, number);
+    Assert.assert(11, result);");
+  });
+
+  @def test_should_interpret_code_with_sharing_var_names_to_prevent_memory_exposure([Atom], {
+    @native Lang.eval("string = 'foo';
+    result = Str.concat(string, ' bar');
+    Assert.assert('foo bar', result);");
+  });
+
+  @def test_should_invoke_function_with_cast([Atom], {
+    ({val | _;}) = {'foo'; 'bar'; 'cat'; 'baz';};
+    result = Str.concat(cast(val, String), ' bar');
+    Assert.assert('foo bar', result);
+  });
+
+  @def test_should_invoke_function_with_cast_interp([Atom], {
+    @native Lang.eval("({val | _;}) = {'foo'; 'bar'; 'cat'; 'baz';};
+    result = Str.concat(cast(val, String), ' bar');
+    Assert.assert('foo bar', result);");
+  });
+
+  @def test_should_create_anonymous_function_with_no_args([Atom], {
+    fun = @fn {
+      [{}] => {
+        @_'true';
+      };
+    };
+    result = fun();
+    Assert.assert(cast(result, Atom));
+  });
+
+  @def test_should_create_anonymous_function_with_no_args_interp([Atom], {
+    @native Lang.eval("fun = @fn {
+      [{}] => {
+        @_'true';
+      };
+    };
+    result = fun();
+    Assert.assert(cast(result, Atom));");
+  });
+
+  @def test_should_create_anonymous_function_with_1_arg([Atom], {
+    fun = @fn {
+      [{Atom: status}] => {
+        status;
+      };
+    };
+    result = fun(@_'true');
+    Assert.assert(cast(result, Atom));
+
+    result = fun(@_'false');
+    Assert.refute(cast(result, Atom));
+  });
+
+  @def test_should_create_anonymous_function_with_1_arg_interp([Atom], {
+    @native Lang.eval("fun = @fn {
+      [{Atom: status}] => {
+        status;
+      };
+    };
+    result = fun(@_'true');
+    Assert.assert(cast(result, Atom));
+
+    result = fun(@_'false');
+    Assert.refute(cast(result, Atom));");
+  });
+
+  @def test_should_create_anonymous_function_with_2_args([Atom], {
+    fun = @fn {
+      [{Int: a, Int: b}] => {
+        Kernel.add(a, b);
+      };
+    };
+    result = fun(32, 563);
+    Assert.assert(595, cast(result, Int));
+    Assert.refute(532, cast(result, Int));
+  });
+
+  @def test_should_create_anonymous_function_with_2_args_interp([Atom], {
+    @native Lang.eval("fun = @fn {
+      [{Int: a, Int: b}] => {
+        Kernel.add(a, b);
+      };
+    };
+    result = fun(32, 563);
+    Assert.assert(595, cast(result, Int));
+    Assert.refute(532, cast(result, Int));");
+  });
+
   @def test_should_interpret_function_string_and_assign_to_the_compiled_code_and_execute([Atom], {
     fun_interp = @native Lang.eval("@fn {
       [{Int: a, Int: b}] => {
@@ -1052,36 +1052,36 @@ import vm.Function;
     Assert.assert(595, cast(result, Int));
     Assert.refute(532, cast(result, Int));
   });
-//
-//  @def test_should_pattern_match_individual_anonymous_function_heads([Atom], {
-//    fun = @fn {
-//      [{Atom: @_'ok'}] => {
-//        @_'true';
-//      };
-//      [{Atom: @_'error'}] => {
-//        @_'false';
-//      };
-//    };
-//    result = fun(@_'ok');
-//    Assert.assert(cast(result, Atom));
-//    result = fun(@_'error');
-//    Assert.refute(cast(result, Atom));
-//  });
-//
-//  @def test_should_pattern_match_individual_anonymous_function_heads_interp([Atom], {
-//    @native Lang.eval("fun = @fn {
-//      [{Atom: @_'ok'}] => {
-//        @_'true';
-//      };
-//      [{Atom: @_'error'}] => {
-//        @_'false';
-//      };
-//    };
-//    result = fun(@_'ok');
-//    Assert.assert(cast(result, Atom));
-//    result = fun(@_'error');
-//    Assert.refute(cast(result, Atom));");
-//  });
+
+  @def test_should_pattern_match_individual_anonymous_function_heads([Atom], {
+    fun = @fn {
+      [{Atom: @_'ok'}] => {
+        @_'true';
+      };
+      [{Atom: @_'error'}] => {
+        @_'false';
+      };
+    };
+    result = fun(@_'ok');
+    Assert.assert(cast(result, Atom));
+    result = fun(@_'error');
+    Assert.refute(cast(result, Atom));
+  });
+
+  @def test_should_pattern_match_individual_anonymous_function_heads_interp([Atom], {
+    @native Lang.eval("fun = @fn {
+      [{Atom: @_'ok'}] => {
+        @_'true';
+      };
+      [{Atom: @_'error'}] => {
+        @_'false';
+      };
+    };
+    result = fun(@_'ok');
+    Assert.assert(cast(result, Atom));
+    result = fun(@_'error');
+    Assert.refute(cast(result, Atom));");
+  });
 
   @def single_arg({Atom: status}, [Atom], {
     Assert.refute(status, @_'false');

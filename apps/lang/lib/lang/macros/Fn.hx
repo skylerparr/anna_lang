@@ -15,8 +15,11 @@ class Fn {
     var currentModule: TypeDefinition = macroContext.currentModule;
     var currentModuleStr: String = currentModule.name;
     #if !macro
-    var allTypes: Dynamic = macroTools.getArgTypesAndReturnTypes(params);
-    trace(allTypes);
+    var patternTest = '';
+    var index: Int = 0;
+    var funArgs: Array<FunctionArg> = null;
+    var operationGroups: Array<Array<vm.Operation>> = [];
+    var paramNameStrings: Array<String> = [];
     #end
     switch(params.expr) {
       case EBlock(exprs):
@@ -37,35 +40,54 @@ class Fn {
           defined = Def.defineFunction(annaLang, expr);
           defined.varTypesInScope = macroContext.varTypesInScope;
           #if !macro
-//          var allOps: Array<vm.Operation> = [];
-//          for(term in terms) {
-//            var operations: Array<vm.Operation> = annaLang.lang.resolveOperations(cast term);
-//            allOps = allOps.concat(operations);
-//          }
-//          operationGroups.push(allOps);
+          var paramsStr: String = typesAndBody[0];
+          paramsStr = paramsStr.substr(1, paramsStr.length - 2);
+          var paramsStrs = paramsStr.split(',');
+          for(pStr in paramsStrs) {
+            var typeAndName = pStr.split(':');
+            var typeString: String = StringTools.trim(Helpers.getType(typeAndName[0], macroContext));
+            if(typeString.length > 0) {
+              var paramName: String = StringTools.trim(typeAndName[1]);
+              paramNameStrings.push(paramName);
+              macroContext.varTypesInScope.set(paramName, typeString);
+            }
+          }
 
+          var funHeads: Dynamic = annaLang.buildFunctionHeadPatternMatch(defined);
+          var patternMatches: Array<String> = funHeads.patternMatches;
+          funArgs = funHeads.funArgs;
+          var matchCount: Int = funHeads.matchCount;
+          patternTest += annaLang.makeFunctionHeadPatternReturn(patternMatches, funArgs, 'return allOps${index++};');
+          var terms: Array<Dynamic> = cast(defined.funBody, Array<Dynamic>);
+          var allOps: Array<vm.Operation> = [];
+          for(term in terms) {
+            var operations: Array<vm.Operation> = annaLang.lang.resolveOperations(cast term);
+            allOps = allOps.concat(operations);
+          }
+          operationGroups.push(allOps);
           #end
         }
         #if !macro
-//        var paramArgs: String = '';
-//        for(i in 0...paramCount) {
-//          paramArgs += '_${i}, ';
-//        }
-//        scope = '${paramArgs}${scope}';
-//        var anonFnString = 'function(${scope}) {
-//          ${patternMatches.join('\n')}
-//        }';
-//        var ast = annaLang.parser.parseString(anonFnString);
-//        var interp = vm.Lang.getHaxeInterp();
-//        for(i in 0...patternMatches.length) {
-//          interp.variables.set('allOps${i}', operationGroups[i]);
-//        }
-//        var anonFn = new vm.SimpleFunction();
-//        anonFn.fn = interp.execute(ast);
-//        anonFn.args = paramNameStrings;
-//        anonFn.scope = vm.Process.self().processStack.getVariablesInScope();
-//        anonFn.apiFunc = Atom.create(macroContext.currentFunction);
-//        vm.Classes.defineFunction(Atom.create(currentModuleStr), Atom.create(anonFunctionName + paramsTypesString), anonFn);
+        patternTest += 'return null;';
+
+        var paramArgs: Array<String> = [];
+        for(funArg in funArgs) {
+          paramArgs.push(funArg.name);
+        }
+        var anonFnString = 'function(${paramArgs.join(', ')}) {
+          ${patternTest}
+        }';
+        var ast = annaLang.parser.parseString(anonFnString);
+        var interp = vm.Lang.getHaxeInterp();
+        for(i in 0...operationGroups.length) {
+          interp.variables.set('allOps${i}', operationGroups[i]);
+        }
+        var anonFn = new vm.SimpleFunction();
+        anonFn.fn = interp.execute(ast);
+        anonFn.args = paramNameStrings;
+        anonFn.scope = vm.Process.self().processStack.getVariablesInScope();
+        anonFn.apiFunc = Atom.create(macroContext.currentFunction);
+        vm.Classes.defineFunction(Atom.create(currentModuleStr), Atom.create(defined.internalFunctionName), anonFn);
         #end
         macroContext.lastFunctionReturnType = "vm_Function";
         return [buildDeclareAnonFunctionExpr(annaLang, currentModuleStr, defined.internalFunctionName, params)];

@@ -110,4 +110,10 @@ class ArgHelper {
     return value.clone();
   }
 
+  public static function __updateScope(match: Map<String, Dynamic>, scope: Map<String, Dynamic>): Void {
+    for(key in match.keys()) {
+      scope.set(key, match.get(key));
+    }
+  }
+
 }
