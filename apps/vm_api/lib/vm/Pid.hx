@@ -9,6 +9,7 @@ interface Pid extends BaseObject extends CustomType {
   public var children(get, null): Array<Pid>;
   public var ancestors(default, null): Array<Pid>;
   public var trapExit(default, null): Atom;
+  public var dictionary(default, null): MMap;
 
   function start(op: Operation): Void;
   function setState(state: ProcessState): Void;

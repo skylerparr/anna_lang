@@ -1,16 +1,13 @@
 package vm;
 import lang.EitherSupport;
-import lang.macros.MacroTools;
 import haxe.ds.ObjectMap;
 import haxe.CallStack;
 import hscript.Interp;
-import lang.macros.MacroTools;
 import lang.macros.AnnaLang;
 import vm.Operation;
 import haxe.macro.Printer;
 import haxe.macro.Expr;
 import hscript.Macro;
-import hscript.Parser;
 using lang.AtomSupport;
 class Lang {
 
@@ -29,7 +26,7 @@ class Lang {
     definedModules.set("MMap", MMap);
     definedModules.set("Std", Std);
     definedModules.set("Tuple", Tuple);
-    definedModules.set("vm", {Classes: vm.Classes, InterpMatch: vm.InterpMatch});
+    definedModules.set("vm", {Classes: vm.Classes, InterpMatch: vm.InterpMatch, Lang: vm.Lang});
     definedModules.set("lang", {EitherSupport: EitherSupport});
     definedModules.set("A", function(v) {
       return v;
@@ -123,6 +120,18 @@ class Lang {
 
   private inline function invokeBlock(expr: Expr): Void {
     var operations = resolveOperations(expr);
+    var op: InterpretedOperation = new InterpretedOperation(
+      Atom.create('__DefaultType__'),
+      Atom.create('__default__'),
+      1,
+      annaLang
+    );
+    operations.push(op);
+    var scope: Map<String, Dynamic> = MMap.haxeMap(Process.self().dictionary);
+    for(key in scope.keys()) {
+      var varKey = StringTools.replace(key, '"', '');
+      Process.self().processStack.getVariablesInScope().set(varKey, scope.get(key));
+    }
     Process.apply(Process.self(), operations);
   }
 }

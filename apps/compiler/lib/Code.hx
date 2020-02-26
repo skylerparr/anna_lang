@@ -689,6 +689,11 @@ import vm.Function;
     Assert.assert(cast(result, Atom));
   });
 
+//  @def test_should_create_tuple_with_function_calls_for_elements([Atom], {
+//    result = [get_ok(), get_error(), get_complete()];
+//    match([@_'ok', @_'error', 'complete'], result);
+//  });
+
   @def match({Tuple: [@_'ok', [@_'error', 'complete']]}, [Atom], {
     Assert.assert(@_'true');
   });
@@ -699,6 +704,18 @@ import vm.Function;
 
   @def match({Tuple: _}, [Atom], {
     Assert.assert(@_'false');
+  });
+
+  @def get_ok([Atom], {
+    @_'ok';
+  });
+
+  @def get_error([Atom], {
+    @_'error';
+  });
+
+  @def get_complete([String], {
+    'complete';
   });
 
 }))
@@ -1081,6 +1098,36 @@ import vm.Function;
     Assert.assert(cast(result, Atom));
     result = fun(@_'error');
     Assert.refute(cast(result, Atom));");
+  });
+
+  @def test_should_pattern_match_anonymous_function_head_strings([Atom], {
+    fun = @fn {
+      [{String: 'foo ' => bar}] => {
+        bar;
+      };
+      [{String: 'bar ' => nut}] => {
+        nut;
+      };
+    };
+    result = fun('foo bar');
+    Assert.assert(cast(result, String), 'bar');
+    result = fun('bar nut');
+    Assert.assert(cast(result, String), 'nut');
+  });
+
+  @def test_should_pattern_match_anonymous_function_head_strings_interp([Atom], {
+    @native Lang.eval("fun = @fn {
+      [{String: 'foo ' => bar}] => {
+        bar;
+      };
+      [{String: 'bar ' => nut}] => {
+        nut;
+      };
+    };
+    result = fun('foo bar');
+    Assert.assert(cast(result, String), 'bar');
+    result = fun('bar nut');
+    Assert.assert(cast(result, String), 'nut');");
   });
 
   @def single_arg({Atom: status}, [Atom], {

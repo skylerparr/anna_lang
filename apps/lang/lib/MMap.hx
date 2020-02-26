@@ -51,6 +51,10 @@ class MMap implements CustomType {
     return LList.create((cast map)._keys());
   }
 
+  public static function haxeMap(map: MMap): Map<String, Dynamic> {
+    return (cast map)._map;
+  }
+
   public function toAnnaString(): String {
     return '';
   }

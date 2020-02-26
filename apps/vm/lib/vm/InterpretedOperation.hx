@@ -1,19 +1,13 @@
 package vm;
-
 import lang.macros.AnnaLang;
-import ArgHelper;
-class PutInScope implements Operation {
-
-  private var value: Tuple;
+class InterpretedOperation implements Operation {
 
   public var hostModule: Atom;
   public var hostFunction: Atom;
   public var lineNumber: Int;
   public var annaLang: AnnaLang;
 
-  public function new(value: Tuple, hostModule: Atom, hostFunction: Atom, lineNumber: Int, annaLang: AnnaLang) {
-    this.value = value;
-
+  public function new(hostModule: Atom, hostFunction: Atom, lineNumber: Int, annaLang: AnnaLang) {
     this.hostModule = hostModule;
     this.hostFunction = hostFunction;
     this.lineNumber = lineNumber;
@@ -21,7 +15,14 @@ class PutInScope implements Operation {
   }
 
   public function execute(scopeVariables: Map<String, Dynamic>, processStack: ProcessStack): Void {
-    scopeVariables.set("$$$", ArgHelper.extractArgValue(value, scopeVariables, annaLang));
+    var currentPid: Pid = Process.self();
+    for(key in scopeVariables.keys()) {
+      if(key == "$$$" || key == "text") {
+        continue;
+      }
+      var dictionary = currentPid.dictionary;
+      MMap.put(dictionary, key, scopeVariables.get(key));
+    }
   }
 
   public function isRecursive(): Bool {

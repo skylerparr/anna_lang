@@ -23,6 +23,7 @@ class SimpleProcess extends AbstractCustomType implements Pid {
   public var ancestors(default, null): Array<Pid>;
   public var trapExit(default, null): Atom;
   public var children(get, null):Array<Pid>;
+  public var dictionary: MMap;
 
   function get_children():Array<Pid> {
     #if cppia
@@ -82,6 +83,7 @@ class SimpleProcess extends AbstractCustomType implements Pid {
   }
 
   public function start(op: Operation): Void {
+    dictionary = MMap.create([]);
     processStack = new DefaultProcessStack(this);
     processStack.add(new DefaultAnnaCallStack([op], new Map<String, Dynamic>()));
   }

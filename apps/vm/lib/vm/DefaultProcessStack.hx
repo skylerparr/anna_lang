@@ -53,6 +53,7 @@ class DefaultProcessStack implements ProcessStack {
     currentStack = allStacks.first();
     currentStack.execute(this);
     if(currentStack == null) {
+      // this means that the process was terminated and dispose was called
       return;
     }
     if(currentStack.finalCall()) {
