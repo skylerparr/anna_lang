@@ -104,6 +104,10 @@ class Lang {
 
   public inline function resolveOperations(expr: Expr): Array<Operation> {
     var exprs: Array<Expr> = annaLang.walkBlock(expr);
+    return parseOperations(exprs);
+  }
+
+  public function parseOperations(exprs: Array<Expr>): Array<Operation> {
     var operations: Array<Operation> = [];
     for(expr in exprs) {
       var codeString = printer.printExpr(expr);

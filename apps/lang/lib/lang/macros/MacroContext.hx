@@ -159,8 +159,10 @@ class MacroContext {
     return haxe.macro.Context.defineType(cls);
   }
   #else
-  public function defineType(cls: TypeDefinition):Void {
+  public var definedClass: TypeDefinition;
 
+  public function defineType(cls: TypeDefinition):Void {
+    this.definedClass = cls;
   }
   #end
 

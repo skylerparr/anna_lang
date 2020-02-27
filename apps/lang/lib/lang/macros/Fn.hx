@@ -1,6 +1,7 @@
 package lang.macros;
 
 import lang.macros.AnnaLang;
+import lang.macros.AnnaLang;
 import lang.macros.MacroTools;
 import haxe.macro.Printer;
 import hscript.plus.ParserPlus;
@@ -14,32 +15,49 @@ class Fn {
 
     var currentModule: TypeDefinition = macroContext.currentModule;
     var currentModuleStr: String = currentModule.name;
-    #if !macro
-    var patternTest = '';
-    var index: Int = 0;
-    var funArgs: Array<FunctionArg> = null;
-    var operationGroups: Array<Array<vm.Operation>> = [];
-    var paramNameStrings: Array<String> = [];
-    #end
+
     switch(params.expr) {
       case EBlock(exprs):
         var anonFunctionName: String = "_" + haxe.crypto.Sha256.encode('${Math.random()}');
         var defined = null;
         for(expr in exprs) {
-          var typesAndBody: Array<Dynamic> = switch(expr.expr) {
-            case EBinop(OpArrow, types, body):
-              var typesStr: String = annaLang.printer.printExpr(types);
-              [typesStr.substr(1, typesStr.length - 2), body];
-            case e:
-              MacroLogger.log(e, 'e');
-              MacroLogger.logExpr(params, 'params');
-              throw new ParsingException("AnnaLang: Expected parenthesis");
-          }
-          var haxeStr: String = '${anonFunctionName}(${typesAndBody[0]}, ${annaLang.printer.printExpr(typesAndBody[1])});';
-          var expr = annaLang.macros.haxeToExpr(haxeStr);
-          defined = Def.defineFunction(annaLang, expr);
+          defined = defineFunction(annaLang, anonFunctionName, expr);
           defined.varTypesInScope = macroContext.varTypesInScope;
-          #if !macro
+        }
+        #if !macro
+        var anonFn = buildFunction(annaLang, anonFunctionName, params);
+        vm.Classes.defineFunction(Atom.create(currentModuleStr), Atom.create(defined.internalFunctionName), anonFn);
+        #end
+        macroContext.lastFunctionReturnType = "vm_Function";
+        return [buildDeclareAnonFunctionExpr(annaLang, currentModuleStr, defined.internalFunctionName, params)];
+      case _:
+        MacroLogger.log(params, 'params');
+        MacroLogger.logExpr(params, 'params');
+        throw new ParsingException("AnnaLang: Expected block");
+    }
+  }
+
+  #if !macro
+  public static function buildFunction(annaLang: AnnaLang, functionName: String, params: Expr): vm.SimpleFunction {
+    var macroContext: MacroContext = annaLang.macroContext;
+    var macros: Macros = annaLang.macros;
+    var macroTools: MacroTools = annaLang.macroTools;
+
+    var currentModule: TypeDefinition = macroContext.currentModule;
+    var currentModuleStr: String = currentModule.name;
+
+    var patternTest = '';
+    var index: Int = 0;
+    var funArgs: Array<FunctionArg> = null;
+    var operationGroups: Array<Array<vm.Operation>> = [];
+    var paramNameStrings: Array<String> = [];
+    switch(params.expr) {
+      case EBlock(exprs):
+        var defined = null;
+        for(expr in exprs) {
+          defined = defineFunction(annaLang, functionName, expr);
+
+          var typesAndBody: Array<Dynamic> = getTypesAndBody(annaLang, expr);
           var paramsStr: String = typesAndBody[0];
           paramsStr = paramsStr.substr(1, paramsStr.length - 2);
           var paramsStrs = paramsStr.split(',');
@@ -65,9 +83,7 @@ class Fn {
             allOps = allOps.concat(operations);
           }
           operationGroups.push(allOps);
-          #end
         }
-        #if !macro
         patternTest += 'return null;';
 
         var paramArgs: Array<String> = [];
@@ -82,20 +98,37 @@ class Fn {
         for(i in 0...operationGroups.length) {
           interp.variables.set('allOps${i}', operationGroups[i]);
         }
-        var anonFn = new vm.SimpleFunction();
-        anonFn.fn = interp.execute(ast);
-        anonFn.args = paramNameStrings;
-        anonFn.scope = vm.Process.self().processStack.getVariablesInScope();
-        anonFn.apiFunc = Atom.create(macroContext.currentFunction);
-        vm.Classes.defineFunction(Atom.create(currentModuleStr), Atom.create(defined.internalFunctionName), anonFn);
-        #end
-        macroContext.lastFunctionReturnType = "vm_Function";
-        return [buildDeclareAnonFunctionExpr(annaLang, currentModuleStr, defined.internalFunctionName, params)];
+        var fun = new vm.SimpleFunction();
+        fun.fn = interp.execute(ast);
+        fun.args = paramNameStrings;
+        fun.scope = vm.Process.self().processStack.getVariablesInScope();
+        fun.apiFunc = Atom.create(macroContext.currentFunction);
+
+        return fun;
       case _:
         MacroLogger.log(params, 'params');
         MacroLogger.logExpr(params, 'params');
         throw new ParsingException("AnnaLang: Expected block");
     }
+  }
+  #end
+
+  private static function getTypesAndBody(annaLang: AnnaLang, expr: Expr): Array<Dynamic> {
+    return switch(expr.expr) {
+      case EBinop(OpArrow, types, body):
+        var typesStr: String = annaLang.printer.printExpr(types);
+        [typesStr.substr(1, typesStr.length - 2), body];
+      case e:
+        MacroLogger.log(e, 'e');
+        throw new ParsingException("AnnaLang: Expected =>");
+    }
+  }
+
+  private static function defineFunction(annaLang: AnnaLang, functionName: String, expr: Expr): Dynamic {
+    var typesAndBody: Array<Dynamic> = getTypesAndBody(annaLang, expr);
+    var haxeStr: String = '${functionName}(${typesAndBody[0]}, ${annaLang.printer.printExpr(typesAndBody[1])});';
+    var expr = annaLang.macros.haxeToExpr(haxeStr);
+    return Def.defineFunction(annaLang, expr);
   }
 
   public static function buildDeclareAnonFunctionExpr(annaLang: AnnaLang,

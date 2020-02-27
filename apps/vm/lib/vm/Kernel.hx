@@ -347,7 +347,7 @@ class Kernel {
 
   public static inline function apply(pid: Pid, fn: Function, args: LList, callback: Dynamic->Void = null): Void {
     if(fn == null) {
-      IO.inspect('Function not found ${fn.apiFunc}');
+      IO.inspect('Kernel: Function not found ${fn.apiFunc}');
       Kernel.crash(Process.self());
       return;
     }

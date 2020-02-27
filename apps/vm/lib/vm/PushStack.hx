@@ -35,8 +35,8 @@ class PushStack implements Operation {
   public function execute(scopeVariables: Map<String, Dynamic>, processStack: ProcessStack): Void {
     var fn: Function = Classes.getFunction(module, func);
     if(fn == null) {
-      Logger.inspect('Function not found ${module.toAnnaString()} ${func.toAnnaString()}:${lineNumber}');
-      IO.inspect('Function not found ${module.toAnnaString()} ${func.toAnnaString()}:${lineNumber}');
+      Logger.inspect('PushStack: Function not found ${module.toAnnaString()} ${func.toAnnaString()}:${lineNumber}');
+      IO.inspect('PushStack: Function not found ${module.toAnnaString()} ${func.toAnnaString()}:${lineNumber}');
       Kernel.crash(Process.self());
       return;
     }

@@ -1,5 +1,6 @@
 package vm;
 
+import lang.macros.ModuleDef;
 import lang.macros.AnnaLang;
 import lang.AtomSupport;
 using lang.AtomSupport;
@@ -8,32 +9,19 @@ using StringTools;
 @:build(lang.macros.ValueClassImpl.build())
 class Classes {
 
-  @field public static var classes: Map<Atom, Class<Dynamic>>;
   @field public static var functions: Map<Atom, Map<Atom, Function>>;
   @field public static var apiFunctions: Map<Atom, Map<Atom, Atom>>;
-  @field public static var instances: Map<Atom, Dynamic>;
 
-  private static inline var PREFIX: String = '___';
-  private static inline var SUFFIX: String = '_args';
-  private static inline var API_PREFIX: String = '__api_';
+  public static inline var PREFIX: String = '___';
+  public static inline var SUFFIX: String = '_args';
+  public static inline var API_PREFIX: String = '__api_';
 
   public static function clear(): Void {
-    classes = null;
     functions = null;
-    instances = null;
     apiFunctions = null;
   }
 
-  public static function getInstance(className: Atom): Dynamic {
-    return instances.get(className);
-  }
-
-  public static inline function define(className: Atom, classDef: Class<Dynamic>): Void {
-    if(classes == null) {
-      classes = new Map<Atom, Class<Dynamic>>();
-    }
-    classes.set(className, classDef);
-
+  public static function defineWithInstance(className: Atom, instance: Dynamic, funcs: Array<String>): Void {
     if(functions == null) {
       functions = new Map<Atom, Map<Atom, Function>>();
     }
@@ -41,15 +29,10 @@ class Classes {
     if(funMap == null) {
       funMap = new Map<Atom, Function>();
     }
-    var instance: Dynamic = Type.createInstance(classDef, []);
-    if(instances == null) {
-      instances = new Map<Atom, Dynamic>();
-    }
-    instances.set(className, instance);
     if(apiFunctions == null) {
       apiFunctions = new Map<Atom, Map<Atom, Atom>>();
     }
-    var funcs: Array<String> = Type.getInstanceFields(classDef);
+    Lang.definedModules.set(className.value, instance);
     var funIndex: Int = 0;
     for(fun in funcs) {
       if(StringTools.startsWith(fun, PREFIX)) {
@@ -65,8 +48,7 @@ class Classes {
         if(fn == null) {
           fn = new SimpleFunction();
         }
-        fn.cls = instance;
-        var args: Array<String> = Reflect.getProperty(instance, fun);
+        var args: Array<String> = Reflect.field(instance, fun);
         fn.args = args;
         classFunctions.set(origFnAtom, fn);
         functions.set(className, classFunctions);
@@ -94,7 +76,6 @@ class Classes {
         if(fn == null) {
           fn = new SimpleFunction();
         }
-        fn.cls = instance;
         fn.fn = Reflect.field(instance, fun);
         classFunctions.set(origFnAtom, fn);
         functions.set(className, classFunctions);
@@ -102,33 +83,34 @@ class Classes {
     }
   }
 
-  public static function defineFunction(className: Atom, funName: Atom, fun: Function): Void {
-    classes.set(className, Code);
+  public static inline function define(className: Atom, classDef: Class<Dynamic>): Void {
+    var instance: Dynamic = Type.createInstance(classDef, []);
+    var funcs: Array<String> = Type.getInstanceFields(classDef);
+    defineWithInstance(className, instance, funcs);
+  }
+
+  public static function defineFunction(moduleName: Atom, funName: Atom, fun: Function): Void {
     var funMap: Map<Atom, Function> = null;
-    if(functions.exists(className)) {
-      funMap = functions.get(className);
+    if(functions.exists(moduleName)) {
+      funMap = functions.get(moduleName);
     } else {
       funMap = new Map();
     }
 
     funMap.set(funName, fun);
-    functions.set(className, funMap);
+    functions.set(moduleName, funMap);
   }
 
-  public static inline function getClass(name: Atom): Class<Dynamic> {
-    return classes.get(name);
-  }
-
-  public static inline function getFunction(className: Atom, funName: Atom): Function {
-    var funMap: Map<Atom, Dynamic> = functions.get(className);
+  public static inline function getFunction(moduleName: Atom, funName: Atom): Function {
+    var funMap: Map<Atom, Dynamic> = functions.get(moduleName);
     if(funMap != null) {
       return funMap.get(funName);
     }
     return null;
   }
 
-  public static inline function getApiFunction(className: Atom, funName: Atom): Atom {
-    var funMap: Map<Atom, Atom> = apiFunctions.get(className);
+  public static inline function getApiFunction(moduleName: Atom, funName: Atom): Atom {
+    var funMap: Map<Atom, Atom> = apiFunctions.get(moduleName);
     if(funMap != null) {
       return funMap.get(funName);
     }
@@ -143,9 +125,9 @@ class Classes {
     return LList.create(cast modules);
   }
 
-  public static inline function getApiFunctions(className: Atom): LList {
+  public static inline function getApiFunctions(moduleName: Atom): LList {
     var retVal: Array<Atom> = [];
-    var funMap: Map<Atom, Atom> = apiFunctions.get(className);
+    var funMap: Map<Atom, Atom> = apiFunctions.get(moduleName);
     if(funMap == null) {
       return LList.create([]); 
     }

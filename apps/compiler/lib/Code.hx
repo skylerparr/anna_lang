@@ -1100,34 +1100,25 @@ import vm.Function;
     Assert.refute(cast(result, Atom));");
   });
 
-  @def test_should_pattern_match_anonymous_function_head_strings([Atom], {
-    fun = @fn {
-      [{String: 'foo ' => bar}] => {
-        bar;
-      };
-      [{String: 'bar ' => nut}] => {
-        nut;
-      };
-    };
-    result = fun('foo bar');
-    Assert.assert(cast(result, String), 'bar');
-    result = fun('bar nut');
-    Assert.assert(cast(result, String), 'nut');
-  });
+  @def test_should_create_new_module_interp([Atom], {
+    @native Lang.eval("
+    defmodule(Foo, {
 
-  @def test_should_pattern_match_anonymous_function_head_strings_interp([Atom], {
-    @native Lang.eval("fun = @fn {
-      [{String: 'foo ' => bar}] => {
-        bar;
-      };
-      [{String: 'bar ' => nut}] => {
-        nut;
-      };
-    };
-    result = fun('foo bar');
-    Assert.assert(cast(result, String), 'bar');
-    result = fun('bar nut');
-    Assert.assert(cast(result, String), 'nut');");
+      @def new_func({Atom: @_'ok'}, [Atom], {
+        @_'true';
+      });
+
+      @def new_func({Atom: @_'error'}, [Atom], {
+        @_'false';
+      });
+
+    });
+
+    result = Foo.new_func(@_'error');
+    Assert.refute(result);
+    result = Foo.new_func(@_'ok');
+    Assert.assert(result);
+    ");
   });
 
   @def single_arg({Atom: status}, [Atom], {
