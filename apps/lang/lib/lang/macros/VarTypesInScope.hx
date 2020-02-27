@@ -14,13 +14,23 @@ class VarTypesInScope {
   #else
   public function getTypes(name: String): Array<String> {
     var retVal: Array<String> = [];
+
+    var dictionary: Map<String, Dynamic> = MMap.haxeMap(vm.Process.self().dictionary);
     var varsInScope: Map<String, Dynamic> = vm.Process.self().processStack.getVariablesInScope();
+    for(key in dictionary.keys()) {
+      var varKey = StringTools.replace(key, '"', '');
+      varsInScope.set(varKey, dictionary.get(key));
+    }
+    varsInScope = vm.Process.self().processStack.getVariablesInScope();
 
     var value: Dynamic = varsInScope.get(name);
     var varType: String = '';
     var cls: Class<Dynamic> = Type.getClass(value);
     if(cls == null) {
       var types = varTypesInScope.get(name);
+      if(types == null) {
+        throw new FunctionClauseNotFound('Function ${name} does not exist.');
+      }
       for(type in types) {
         retVal.push(type);
       }

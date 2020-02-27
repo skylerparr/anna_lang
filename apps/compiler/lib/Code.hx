@@ -95,6 +95,11 @@ import vm.Function;
     @native vm.Process.self();
   });
 
+  @def pid_info([Tuple], {
+    dict = @native vm.Process.getDictionary();
+    [@_'ok', [@_'dictionary' => dict]];
+  });
+
   @def monitor({Pid: pid}, [Atom], {
     @native Kernel.monitor(pid);
   });

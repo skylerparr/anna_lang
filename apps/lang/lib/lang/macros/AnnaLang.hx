@@ -865,10 +865,17 @@ class AnnaLang {
       if(module != null) {
         declaredFunctions = module.declaredFunctions;
       }
+      if(declaredFunctions == null) {
+        throw new FunctionClauseNotFound("AnnaLang: No function found");
+      }
 
       var funDef: Dynamic = declaredFunctions.get(fqFunName);
       if(funDef == null) {
-        var varTypeInScope: String = macroContext.varTypesInScope.getTypes(funName)[0];
+        var types: Array<String> = macroContext.varTypesInScope.getTypes(funName);
+        if(types == null) {
+          throw new FunctionClauseNotFound("AnnaLang: No function found for ${moduleName}.${funName}");
+        }
+        var varTypeInScope: String = types[0];
         if(varTypeInScope == 'vm_Function' || varTypeInScope == 'vm.Function') {
           var haxeStr: String = 'ops.push(new vm.AnonymousFunction(${macroTools.getAtom(funName)}, ${macroTools.getList(funArgs)}, ${macroTools.getAtom(currentModuleStr)}, ${macroTools.getAtom(macroContext.currentFunction)}, ${lineNumber}, Code.annaLang))';
           retVal.push(macros.haxeToExpr(haxeStr));

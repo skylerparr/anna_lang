@@ -30,8 +30,11 @@ class Process {
   }
 
   public static function self(): Pid {
-    var pid: Pid = Kernel.currentScheduler.self();
-    return pid;
+    return Kernel.currentScheduler.self();
+  }
+
+  public static function getDictionary(): MMap {
+    return self().dictionary;
   }
 
   public static function sleep(milliseconds: Int): Atom {
