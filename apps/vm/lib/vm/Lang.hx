@@ -11,7 +11,7 @@ import hscript.Macro;
 using lang.AtomSupport;
 class Lang {
 
-  public static var definedModules: Map<String, Dynamic> = {
+    public static var definedModules: Map<String, Dynamic> = {
     definedModules = new Map<String, Dynamic>();
     definedModules.set("Anna", Anna);
     definedModules.set("ArgHelper", ArgHelper);
@@ -65,10 +65,14 @@ class Lang {
       invokeAst(ast, isList);
       return Tuple.create(['ok'.atom(), ast]);
     } catch(e: Dynamic) {
-      trace(e);
-      trace("call stack:", CallStack.callStack().join('\n'));
-      trace("exception stack:", CallStack.exceptionStack().join('\n'));
-      return Tuple.create(['error'.atom(), '${e}']);
+      if(StringTools.endsWith(e, '"<eof>"')) {
+        return Tuple.create(['ok'.atom(), 'continuation'.atom()]);
+      } else {
+        trace(e);
+        trace("call stack:", CallStack.callStack().join('\n'));
+        trace("exception stack:", CallStack.exceptionStack().join('\n'));
+        return Tuple.create(['error'.atom(), '${e}']);
+      }
     }
   }
 

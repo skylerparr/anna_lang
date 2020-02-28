@@ -213,11 +213,16 @@ class AnnaLang {
       if(associatedIface != null) {
         expr = macros.haxeToExpr('vm.Classes.define(Atom.create("${associatedIface}"), ${moduleDef.moduleName})');
         defineCodeBody.push(expr);
+
+        expr = macros.haxeToExpr('annaLang.macroContext.associatedInterfaces.set("${associatedIface}", "${moduleDef.moduleName}")');
+        defineCodeBody.push(expr);
       }
       expr = macros.haxeToExpr('vm.Classes.define(Atom.create("${moduleDef.moduleName}"), ${moduleDef.moduleName})');
       defineCodeBody.push(expr);
 
-      expr = macro var moduleDef: lang.macros.ModuleDef = new lang.macros.ModuleDef("$e{moduleNameExpr}");
+      expr = macro var moduleName: String = $e{moduleNameExpr};
+      defineCodeBody.push(expr);
+      expr = macro var moduleDef: lang.macros.ModuleDef = new lang.macros.ModuleDef(moduleName);
       defineCodeBody.push(expr);
 
       for(aliasKey in moduleDef.aliases.keys()) {
@@ -263,6 +268,11 @@ class AnnaLang {
         }
         expr = macros.haxeToExpr('moduleDef.declaredFunctions.set("${declaredFunctionsKey}", decFuns)');
         defineCodeBody.push(expr);
+
+        if(associatedIface != null) {
+          expr = macros.haxeToExpr('annaLang.macroContext.declaredInterfaces.set("${associatedIface}", moduleDef)');
+          defineCodeBody.push(expr);
+        }
       }
 
       expr = macros.haxeToExpr('annaLang.macroContext.declaredClasses.set("${moduleDef.moduleName}", moduleDef)');
