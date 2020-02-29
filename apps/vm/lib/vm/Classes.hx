@@ -1,5 +1,6 @@
 package vm;
 
+import lang.ModuleNotFoundException;
 import lang.macros.ModuleDef;
 import lang.macros.AnnaLang;
 import lang.AtomSupport;
@@ -99,6 +100,15 @@ class Classes {
 
     funMap.set(funName, fun);
     functions.set(moduleName, funMap);
+  }
+
+  public static function setIFace(interfaceModule: Atom, implModule: Atom): Void {
+    var funMap: Map<Atom, Function> = functions.get(implModule);
+    if(funMap == null) {
+      throw new ModuleNotFoundException('AnnaLang: Unable to map module. ${Anna.toAnnaString(implModule)} not found.');
+    }
+    functions.set(interfaceModule, funMap);
+    apiFunctions.set(interfaceModule, apiFunctions.get(implModule));
   }
 
   public static inline function getFunction(moduleName: Atom, funName: Atom): Function {

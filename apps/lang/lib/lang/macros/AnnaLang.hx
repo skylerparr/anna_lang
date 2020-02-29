@@ -82,12 +82,12 @@ class AnnaLang {
               moduleDef.declaredFunctions.set(def.internalFunctionName, arrayDef);
             case e:
               MacroLogger.log(e, 'e');
-              throw "AnnaLang defApi Prewalk: Not sure what to do here yet";
+              throw new ParsingException('AnnaLang defApi: expected function @def, got ${printer.printExpr(blockExpr)}');
           }
         }
       case e:
         MacroLogger.log(e, 'e');
-        throw "AnnaLang defApi Prewalk: Not sure what to do here yet";
+        throw new ParsingException('AnnaLang defApi: Expect block of function definitions got ${body}');
     }
     macroContext.declaredInterfaces.set(interfaceName, moduleDef);
 
@@ -516,8 +516,24 @@ class AnnaLang {
     var iface: String = macroTools.getIdent(ifaceName);
     var impl: String = macroTools.getIdent(implName);
     macroContext.associatedInterfaces.set(impl, iface);
+    var moduleDef: ModuleDef = macroContext.declaredClasses.get(impl);
+    if(moduleDef == null) {
+      throw new ModuleNotFoundException('AnnaLang: module ${impl} not found');
+    }
+    macroContext.declaredInterfaces.set(iface, moduleDef);
+    #if !macro
+    var code: Dynamic = getCodeModule();
+    code.annaLang.macroContext.associatedInterfaces.set(impl, iface);
+    code.annaLang.macroContext.declaredInterfaces.set(iface, moduleDef);
+    #end
     return AnnaLang.persistClassFields();
   }
+
+  #if !macro
+  private inline function getCodeModule(): Dynamic {
+    return Type.resolveClass("Code");
+  }
+  #end
 
   macro public static function defmodule(name: Expr, body: Expr): Array<Field> {
     return annaLangForMacro.defCls(name, body);
@@ -637,7 +653,7 @@ class AnnaLang {
               defCls(name, body);
               compileModule(macroContext.currentModuleDef.moduleName, macroContext.currentModuleDef);
               #if !macro
-              var code: Dynamic = Type.resolveClass("Code");
+              var code: Dynamic = getCodeModule();
               code.annaLang.macroContext.declaredClasses.set(macroContext.currentModuleDef.moduleName, macroContext.currentModuleDef);
               var instance: Dynamic = {};
               var functions: Map<String, Dynamic> = new Map();
@@ -680,6 +696,15 @@ class AnnaLang {
                   instance,
                   Reflect.fields(instance)
               );
+              #end
+            case ECall({ expr: EConst(CIdent('defapi'))}, params):
+              defApi(params[0], params[1]);
+            case ECall({ expr: EConst(CIdent('set_iface'))}, params):
+              setIface(params[0], params[1]);
+              #if !macro
+              var ifaceName: String = macroTools.getIdent(params[0]);
+              var moduleName: String = macroTools.getIdent(params[1]);
+              vm.Classes.setIFace(Atom.create(ifaceName), Atom.create(moduleName));
               #end
             case ECall({ expr: EField({ expr: EConst(CIdent(moduleName))}, funName) }, params):
               var args: Array<Expr> = macroTools.getFunBody(blockExpr);

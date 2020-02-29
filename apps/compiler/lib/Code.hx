@@ -227,31 +227,31 @@ import vm.Function;
   @def process_command({String: 'exit'}, [Atom], {
     System.println('exiting...');
     @native Kernel.stop();
-    @_'nil';
+    @_'exit';
   });
 
   @def process_command({String: 'recompile'}, [Atom], {
     @native Kernel.recompile();
     @native Kernel.stop();
-    @_'nil';
+    @_'exit';
   });
 
   @def process_command({String: 'r'}, [Atom], {
     @native Kernel.recompile();
     @native Kernel.stop();
-    @_'nil';
+    @_'exit';
   });
 
   @def process_command({String: 'compile_vm'}, [Atom], {
     @native Kernel.compileVM();
     @native Kernel.stop();
-    @_'nil';
+    @_'exit';
   });
 
   @def process_command({String: 'haxe'}, [Atom], {
     @native Kernel.switchToHaxe();
     @native Kernel.stop();
-    @_'nil';
+    @_'exit';
   });
 
   @def process_command({String: 'self'}, [String], {
@@ -308,7 +308,15 @@ import vm.Function;
 
   @def process_command({String: cmd}, [Atom], {
     History.push(cmd);
-    Repl.eval(cmd);
+    result = Repl.eval(cmd);
+    handle_result(result);
+  });
+
+  @def handle_result({Tuple: [@_'ok', @_'continuation']}, [Atom], {
+    @_'continuation';
+  });
+
+  @def handle_result({Tuple: _}, [Atom], {
     @_'ok';
   });
 }))
@@ -384,10 +392,22 @@ import vm.Function;
 @:build(lang.macros.AnnaLang.defmodule(Repl, {
   @alias vm.Lang;
 
-  @def eval({String: text}, [Atom], {
+  @def eval({String: text}, [Tuple], {
     result = @native Lang.eval(text);
+    handle_result(cast(result, Dynamic));
+  });
+
+  @def handle_result({Dynamic: [@_'ok', @_'continuation']}, [Tuple], {
+    [@_'ok', @_'continuation'];
+  });
+
+  @def handle_result({Dynamic: [@_'error', message]}, [Tuple], {
+    [@_'error', message];
+  });
+
+  @def handle_result({Dynamic: result}, [Tuple], {
     @native IO.inspect(result);
-    @_'ok';
+    [@_'ok', result];
   });
 
 }))
@@ -1126,6 +1146,32 @@ import vm.Function;
     ");
   });
 
+  @def test_should_call_api_function([Atom], {
+    Assert.assert(FooApi.go(@_'true'));
+    Assert.refute(FooApi.go(@_'false'));
+  });
+
+  @def test_should_call_api_function_interp([Atom], {
+    @native Lang.eval("Assert.assert(FooApi.go(@_'true'));
+    Assert.refute(FooApi.go(@_'false'));");
+  });
+
+  @def test_should_create_new_api_interp([Atom], {
+    @native Lang.eval("defapi(MyApi, {
+      @def fun({Atom: arg}, [Atom]);
+    });
+    defmodule(MyApiImpl, {
+      @impl MyApi;
+
+      @def fun({Atom: arg}, [Atom], {
+        arg;
+      });
+    });
+    set_iface(MyApi, MyApiImpl);
+    result = MyApi.fun(@_'true');
+    ModuleFunctionTest.single_arg(result)");
+  });
+
   @def single_arg({Atom: status}, [Atom], {
     Assert.refute(status, @_'false');
     Assert.assert(status, @_'true');
@@ -1133,6 +1179,17 @@ import vm.Function;
   });
 
 }))
+@:build(lang.macros.AnnaLang.defapi(FooApi, {
+  @def go({Atom: arg}, [Atom]);
+}))
+@:build(lang.macros.AnnaLang.defmodule(FooImpl, {
+  @impl FooApi;
+
+  @def go({Atom: arg}, [Atom], {
+    arg;
+  });
+}))
+@:build(lang.macros.AnnaLang.set_iface(FooApi, FooImpl))
 @:build(lang.macros.AnnaLang.defmodule(History, {
   @alias vm.Process;
   @alias vm.Kernel;
@@ -1290,7 +1347,7 @@ import vm.Function;
   @def prompt([Atom], {
     prompt_string = get_prompt();
     System.print(prompt_string);
-    collect_user_input('');
+    collect_user_input('', '');
   });
 
   @def get_prompt([String], {
@@ -1299,31 +1356,39 @@ import vm.Function;
     Str.concat(prefix, ')> ');
   });
 
-  @def collect_user_input({String: current_string}, [String], {
+  @def collect_user_input({String: current_string, String: full_string}, [String], {
     input = @native IO.getsCharCode();
-    handle_input(input, current_string);
+    handle_input(input, current_string, full_string);
   });
 
-  @def handle_result({Atom: @_'ok'}, [Atom], {
+  @def handle_result({Atom: @_'ok', String: _}, [Atom], {
+    History.increment_line();
     prompt();
   });
 
-  @def handle_result({Atom: _}, [Atom], {
+  @def handle_result({Atom: @_'continuation', String: current_string}, [Atom], {
+    continuation_prompt(current_string);
+  });
+
+  @def handle_result({Atom: @_'exit', String: _}, [Atom], {
     @_'nil';
   });
 
+  @def continuation_prompt({String: current_string}, [Atom], {
+    @_'ok';
+  });
+
   // enter
-  @def handle_input({Int: 13, String: current_string}, [String], {
+  @def handle_input({Int: 13, String: current_string, String: full_string}, [String], {
     System.println('');
-    History.increment_line();
     result = CommandHandler.process_command(current_string);
-    handle_result(result);
+    handle_result(result, current_string);
   });
 
   // ctrl+u
-  @def handle_input({Int: 21, String: _current_string}, [String], {
+  @def handle_input({Int: 21, String: _current_string, String: full_string}, [String], {
     clear_prompt('');
-    print_prompt('');
+    print_prompt('', full_string);
   });
 
   // ctrl+d
@@ -1335,54 +1400,54 @@ import vm.Function;
   });
 
   // backspace
-  @def handle_input({Int: 127, String: current_string}, [String], {
+  @def handle_input({Int: 127, String: current_string, String: full_string}, [String], {
     clear_prompt(current_string);
     len = Str.length(current_string);
     len = Kernel.subtract(len, 1);
     current_string = Str.substring(current_string, 0, len);
-    print_prompt(current_string);
+    print_prompt(current_string, full_string);
   });
 
   // up arrow
-  @def handle_input({Int: 27, String: current_string}, [String], {
+  @def handle_input({Int: 27, String: current_string, String: full_string}, [String], {
     @native IO.getsCharCode();
     @native IO.getsCharCode();
 
     clear_prompt(current_string);
     current_string = History.back();
-    print_prompt(current_string);
+    print_prompt(current_string, full_string);
   });
 
   // down arrow
-  @def handle_input({Int: 66, String: current_string}, [String], {
+  @def handle_input({Int: 66, String: current_string, String: full_string}, [String], {
     @native IO.getsCharCode();
     @native IO.getsCharCode();
     clear_prompt(current_string);
     current_string = History.forward();
-    print_prompt(current_string);
+    print_prompt(current_string, full_string);
   });
 
-  @def handle_input({Int: code, String: current_string}, [String], {
+  @def handle_input({Int: code, String: current_string, String: full_string}, [String], {
     str = Str.from_char_code(code);
     System.print(str);
     current_string = Str.concat(current_string, str);
-    collect_user_input(current_string);
+    collect_user_input(current_string, full_string);
   });
 
   @def clear_prompt({String: current_string}, {
     str_len = Str.length(current_string);
-    str_len = Kernel.add(str_len, 100);
+    str_len = Kernel.add(str_len, 10);
     clear_string = Str.rpad('\r', ' ', str_len);
     System.print(clear_string);
   });
 
-  @def print_prompt({String: current_string}, {
+  @def print_prompt({String: current_string, String: full_string}, {
     str_prompt = get_prompt();
     str_prompt = Str.concat(str_prompt, current_string);
     str_prompt = Str.concat('\r', str_prompt);
     str_prompt = Str.rpad(str_prompt, ' ', 7);
     System.print(str_prompt);
-    collect_user_input(current_string);
+    collect_user_input(current_string, full_string);
   });
 
 }))
