@@ -17,6 +17,7 @@ using lang.AtomSupport;
 import minject.Injector;
 
 @:build(lang.macros.ValueClassImpl.build())
+@:rtti
 class Kernel {
 
   @field public static var currentScheduler: Scheduler;

@@ -264,7 +264,7 @@ import vm.Function;
     @_'ok';
   });
 
-  @def process_command({String: 'v ' => number}, [String], {
+  @def process_command({String: 'v ' => number}, [Atom], {
     index = Str.string_to_int(number);
     index = Kernel.subtract(index, 1);
     command = History.get(cast(index, Int));
@@ -412,6 +412,7 @@ import vm.Function;
 
 }))
 @:build(lang.macros.AnnaLang.defmodule(Assert, {
+  @alias vm.Pid;
 
   @def assert({Atom: lhs, Atom: rhs}, [Atom], {
     result = Kernel.equal(cast(lhs, Dynamic), cast(rhs, Dynamic));
@@ -448,6 +449,11 @@ import vm.Function;
     assert(result);
   });
 
+  @def assert({Pid: lhs, Pid: rhs}, [Atom], {
+    result = Kernel.equal(cast(lhs, Dynamic), cast(rhs, Dynamic));
+    assert(result);
+  });
+
   @def refute({Atom: lhs, Atom: rhs}, [Atom], {
     result = Kernel.equal(cast(lhs, Dynamic), cast(rhs, Dynamic));
     refute(result);
@@ -479,6 +485,11 @@ import vm.Function;
   });
 
   @def refute({Int: lhs, Int: rhs}, [Atom], {
+    result = Kernel.equal(cast(lhs, Dynamic), cast(rhs, Dynamic));
+    refute(result);
+  });
+
+  @def refute({Pid: lhs, Pid: rhs}, [Atom], {
     result = Kernel.equal(cast(lhs, Dynamic), cast(rhs, Dynamic));
     refute(result);
   });
@@ -1172,6 +1183,16 @@ import vm.Function;
     ModuleFunctionTest.single_arg(result)");
   });
 
+  @def test_should_call_native_functions([Atom], {
+    pid = @native vm.Process.self();
+    Assert.assert(pid, Kernel.self());
+  });
+
+  @def test_should_call_native_functions_interp([Atom], {
+    @native Lang.eval("pid = @native vm.Process.self();
+      Assert.assert(pid, Kernel.self());");
+  });
+
   @def single_arg({Atom: status}, [Atom], {
     Assert.refute(status, @_'false');
     Assert.assert(status, @_'true');
@@ -1460,6 +1481,12 @@ import vm.Function;
 
   @def get_api({Atom: module}, [LList], {
     @native Classes.getApiFunctions(module);
+  });
+
+  @def compile({String: file_path}, [Tuple], {
+    content = File.get_content(file_path);
+    @native Lang.eval(content);
+    [@_'ok', file_path];
   });
 }))
 @:build(lang.macros.AnnaLang.defmodule(UnitTests, {
@@ -1851,68 +1878,68 @@ import vm.Function;
 //    [@_'ok', filename, result];
 //  });
 //}))
-//@:build(lang.macros.AnnaLang.defmodule(File, {
-//  @def get_content({String: file_path}, [String], {
-//    #if cpp
-//    @native sys.io.File.getContent(file_path);
-//    #else
-//    '';
-//    #end
-//  });
-//
-//  @def save_content({String: file_path, String: content}, [Tuple], {
-//    #if cpp
-//    @native sys.io.File.saveContent(file_path, content);
-//    [@_'ok', file_path];
-//    #else
-//    [@_'error', 'not supported'];
-//    #end
-//  });
-//
-//  @def mkdir_p({String: dir}, [Tuple], {
-//    #if cpp
-//    @native sys.FileSystem.createDirectory(dir);
-//    [@_'ok', dir];
-//    #else
-//    [@_'error', 'not supported'];
-//    #end
-//  });
-//
-//  @def rm_rf({String: dir}, [Tuple], {
-//    #if cpp
-//    @native util.File.removeAll(dir);
-//    #else
-//    [@_'error', 'not supported'];
-//    #end
-//  });
-//
-//  @def cp({String: src, String: dest}, [Tuple], {
-//    #if cpp
-//    @native sys.io.File.copy(src, dest);
-//    [@_'ok', file_path];
-//    #else
-//    [@_'error', 'not supported'];
-//    #end
-//  });
-//
-//  @def ls({String: dir}, [Tuple], {
-//    #if cpp
-//    files = @native util.File.readDirectory(dir);
-//    [@_'ok', files];
-//    #else
-//    [@_'error', 'not supported'];
-//    #end
-//  });
-//
-//  @def is_dir({String: dir}, [Tuple], {
-//    #if cpp
-//    result = @native util.File.isDirectory(dir);
-//    [@_'ok', result];
-//    #else
-//    [@_'error', 'not supported'];
-//    #end
-//  });
-//}))
+@:build(lang.macros.AnnaLang.defmodule(File, {
+  @def get_content({String: file_path}, [String], {
+    #if cpp
+    @native sys.io.File.getContent(file_path);
+    #else
+    '';
+    #end
+  });
+
+  @def save_content({String: file_path, String: content}, [Tuple], {
+    #if cpp
+    @native sys.io.File.saveContent(file_path, content);
+    [@_'ok', file_path];
+    #else
+    [@_'error', 'not supported'];
+    #end
+  });
+
+  @def mkdir_p({String: dir}, [Tuple], {
+    #if cpp
+    @native sys.FileSystem.createDirectory(dir);
+    [@_'ok', dir];
+    #else
+    [@_'error', 'not supported'];
+    #end
+  });
+
+  @def rm_rf({String: dir}, [Tuple], {
+    #if cpp
+    @native util.File.removeAll(dir);
+    #else
+    [@_'error', 'not supported'];
+    #end
+  });
+
+  @def cp({String: src, String: dest}, [Tuple], {
+    #if cpp
+    @native sys.io.File.copy(src, dest);
+    [@_'ok', file_path];
+    #else
+    [@_'error', 'not supported'];
+    #end
+  });
+
+  @def ls({String: dir}, [Tuple], {
+    #if cpp
+    files = @native util.File.readDirectory(dir);
+    [@_'ok', files];
+    #else
+    [@_'error', 'not supported'];
+    #end
+  });
+
+  @def is_dir({String: dir}, [Tuple], {
+    #if cpp
+    result = @native util.File.isDirectory(dir);
+    [@_'ok', result];
+    #else
+    [@_'error', 'not supported'];
+    #end
+  });
+}))
 //@:build(lang.macros.AnnaLang.defmodule(JSON, {
 //  @def parse({String: data}, [Tuple], {
 //    @native util.JSON.parse(data);

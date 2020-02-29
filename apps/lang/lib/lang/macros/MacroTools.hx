@@ -1,4 +1,5 @@
 package lang.macros;
+import haxe.CallStack;
 import haxe.macro.Printer;
 import hscript.plus.ParserPlus;
 import haxe.macro.Context;
@@ -220,6 +221,36 @@ class MacroTools {
         return name;
       case e:
         MacroLogger.log(e, 'e');
+        #if !macro
+        switch(e) {
+          case ECall(expr, _):
+            var acc: Array<String> = [];
+            resolveFieldIdent(expr, acc);
+            var funName: String = acc.pop();
+            var clazz: Class<Dynamic> = macroContext.varTypesInScope.resolveClass(acc.join('.'));
+            if(clazz == null) {
+              throw new ParsingException('AnnaLang: Unable to resolve class ${acc.join('.')}');
+            }
+
+            var returnType: String = macroContext.varTypesInScope.resolveReturnType(clazz, funName);
+            return returnType;
+          case _:
+            throw new ParsingException('AnnaLang: Expected variable identifier, got ${printer.printExpr(expr)}');
+        }
+        #end
+        throw new ParsingException('AnnaLang: Expected variable identifier, got ${printer.printExpr(expr)}');
+    }
+  }
+
+  public function resolveFieldIdent(expr: Expr, acc: Array<String>): Void {
+    switch(expr.expr) {
+      case EField({expr: EField(expr, pack1)}, pack2):
+        resolveFieldIdent(expr, acc);
+        acc.push(pack1);
+        acc.push(pack2);
+      case EConst(CIdent(name)):
+        acc.push(name);
+      case _:
         throw new ParsingException('AnnaLang: Expected variable identifier, got ${printer.printExpr(expr)}');
     }
   }

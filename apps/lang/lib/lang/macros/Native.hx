@@ -100,15 +100,16 @@ class Native {
       }
 
       var execBody: Expr = macros.haxeToExpr(executeBodyStr);
+      #if macro
       var cls: TypeDefinition = macro class NoClass extends vm.AbstractInvokeFunction {
 
           public function new(func: Dynamic, args: LList, hostModule: Atom, hostFunction: Atom, line: Int, annaLang: lang.macros.AnnaLang) {
             super(hostModule, hostFunction, line, annaLang);
             var counter: Int = 0;
             for(arg in LList.iterator(args)) {
-                var tuple: Tuple = lang.EitherSupport.getValue(arg);
-                Reflect.setField(this, "arg" + (counter++), tuple);
-              }
+              var tuple: Tuple = lang.EitherSupport.getValue(arg);
+              Reflect.setField(this, "arg" + (counter++), tuple);
+            }
           }
 
           override public function execute(scope: Map<String, Dynamic>, processStack: vm.ProcessStack): Void {
@@ -116,6 +117,11 @@ class Native {
             $e{assignReturnVar}
           }
       }
+      #else
+      var cls: TypeDefinition = macro class InvokeNativeFunctionOperation {
+
+      }
+      #end
 
       for(paramVar in paramVars) {
         macroTools.addFieldToClass(cls, paramVar);

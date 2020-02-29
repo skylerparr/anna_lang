@@ -26,8 +26,14 @@ class Lang {
     definedModules.set("MMap", MMap);
     definedModules.set("Std", Std);
     definedModules.set("Tuple", Tuple);
-    definedModules.set("vm", {Classes: vm.Classes, InterpMatch: vm.InterpMatch, Lang: vm.Lang});
-    definedModules.set("lang", {EitherSupport: EitherSupport});
+    definedModules.set("vm", {
+      Classes: vm.Classes,
+      InterpMatch: vm.InterpMatch,
+      Lang: vm.Lang,
+      Process: vm.Process,
+      InvokeNativeFunctionOperation: vm.InvokeNativeFunctionOperation
+    });
+    definedModules.set("lang", {EitherSupport: lang.EitherSupport});
     definedModules.set("A", function(v) {
       return v;
     });

@@ -48,6 +48,27 @@ class VarTypesInScope {
 
     return retVal;
   }
+
+  public function resolveClass(name: String): Class<Dynamic> {
+    return Type.resolveClass(name);
+  }
+
+  public function resolveReturnType(clazz: Class<Dynamic>, funName: String): String {
+    if(haxe.rtti.Rtti.hasRtti(clazz)) {
+      var clsDef: Classdef = haxe.rtti.Rtti.getRtti(clazz);
+      for(field in clsDef.statics) {
+        if(field.name == funName) {
+          switch(field.type) {
+            case CFunction(_, CClass(type, _)):
+              return type;
+            case _:
+              return 'Dynamic';
+          }
+        }
+      }
+    }
+    return 'Dynamic';
+  }
   #end
 
   public function set(name: String, value: String): Void {

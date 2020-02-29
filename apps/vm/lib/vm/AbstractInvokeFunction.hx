@@ -4,7 +4,6 @@ import lang.macros.AnnaLang;
 import lang.macros.MacroContext;
 import haxe.macro.Expr.TypeDefinition;
 class AbstractInvokeFunction implements Operation {
-//  public static var typeDef: TypeDefinition = {kind: TDStructure, pos: MacroContext.currentPos(), fields: [], pack: [], name: ''};
 
   public var hostModule: Atom;
   public var hostFunction: Atom;

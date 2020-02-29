@@ -1,6 +1,7 @@
 package vm;
 import vm.Pid;
 using lang.AtomSupport;
+@:rtti
 class Process {
   public static function putInMailbox(process: Pid, value: Dynamic): Void {
     process.mailbox.push(value);
