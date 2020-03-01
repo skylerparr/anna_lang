@@ -1,6 +1,7 @@
 package lang.macros;
 import haxe.rtti.Rtti;
 import haxe.macro.Expr;
+import haxe.macro.Type;
 
 class MacroContext {
 
@@ -31,6 +32,15 @@ class MacroContext {
     for(key in declaredInterfaces.keys()) {
       mc.declaredInterfaces.set(key, declaredInterfaces.get(key));
     }
+    for(type in declaredTypes) {
+      mc.declaredTypes.push(type);
+    }
+    for(key in definedTypes.keys()) {
+      mc.definedTypes.set(key, definedTypes.get(key));
+    }
+    for(key in typeFieldMap.keys()) {
+      mc.typeFieldMap.set(key, typeFieldMap.get(key));
+    }
     mc.currentModuleDef = this.currentModuleDef;
     return mc;
   }
@@ -42,6 +52,9 @@ class MacroContext {
   public var currentVar: String;
   public var aliases: Map<String, String> = new Map<String, String>();
   public var currentFunctionArgTypes: Array<String>;
+  public var definedTypes: Map<String, Class<Dynamic>> = new Map<String, Class<Dynamic>>();
+  public var typeFieldMap: Map<String, Map<String, String>> = new Map<String, Map<String, String>>();
+  public var declaredTypes: Array<String> = [];
 
   @:isVar
   public var varTypesInScope(get, set): VarTypesInScope;
@@ -175,6 +188,13 @@ class MacroContext {
     return macro{};
   }
   #end
+
+  public function getFieldType(name: String, fieldName: String): String {
+    MacroLogger.log(name, 'name fieldType');
+    MacroLogger.log(fieldName, 'fieldName');
+    var map: Map<String, String> = typeFieldMap.get(name);
+    return map.get(fieldName);
+  }
 
   public function getLine(): Expr {
     var lineStr = currentPos() + '';

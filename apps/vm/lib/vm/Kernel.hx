@@ -44,7 +44,26 @@ class Kernel {
 
     currentScheduler = scheduler;
     currentScheduler.start();
+
+    #if cppia
+    defineCode();
+    #else
+    Code.defineCode();
+    #end
+
     started = true;
+    return 'ok'.atom();
+  }
+
+  private static inline function defineCode(): Atom {
+    #if cppia
+      var cls: Class<Dynamic> = Type.resolveClass('Code');
+      if(cls == null) {
+        trace('Module Code was not found');
+        return 'error'.atom();
+      }
+      Reflect.callMethod(null, Reflect.field(cls, 'defineCode'), []);
+    #end
     return 'ok'.atom();
   }
 

@@ -298,6 +298,7 @@ import vm.Function;
     UnitTests.add_test(@_'MMapTest');
     UnitTests.add_test(@_'KeywordTest');
     UnitTests.add_test(@_'ModuleFunctionTest');
+    UnitTests.add_test(@_'CustomTypesTest');
 
     UnitTests.run_tests();
   });
@@ -1200,6 +1201,42 @@ import vm.Function;
   });
 
 }))
+@:build(lang.macros.AnnaLang.deftype(SampleType, {
+  var name: String;
+}))
+@:build(lang.macros.AnnaLang.defmodule(CustomTypesTest, {
+  @def test_should_pass_type_to_function([Atom], {
+    sample = SampleType%{name: 'Ellie'};
+    pass_type(sample);
+  });
+
+  @def test_should_pass_type_to_function_interp([Atom], {
+    @native Lang.eval("sample = SampleType%{name: 'Stink'};
+      CustomTypesTest.pass_type(sample);");
+  });
+
+  @def test_should_get_type_value([Atom], {
+    sample = SampleType%{name: 'Benus'};
+    Assert.assert('Benus', sample.name);
+  });
+
+  @def test_should_get_type_value_interp([Atom], {
+    @native Lang.eval("sample = SampleType%{name: 'Benus'};
+      Assert.assert('Benus', sample.name);");
+  });
+
+  @def test_should_create_a_new_custom_type_when_updating_a_value([Atom], {
+    sample1 = SampleType%{name: 'Ellie'};
+    sample2 = @native SampleType.set(sample1, @_'name', 'bear');
+    Assert.assert('Ellie', sample1.name);
+    Assert.assert('bear', sample2.name);
+    Assert.refute(sample1.name, sample2.name);
+  });
+
+  @def pass_type({SampleType: sample}, [Atom], {
+    Assert.assert(@_'true');
+  });
+}))
 @:build(lang.macros.AnnaLang.defapi(FooApi, {
   @def go({Atom: arg}, [Atom]);
 }))
@@ -1764,15 +1801,15 @@ import vm.Function;
   });
 
 }))
-//@:build(lang.macros.AnnaLang.deftype(SourceFile, {
-//  var module_name: String = '';
-//  var source_code: String = '';
-//  var module_type: String = '';
-//}))
-//@:build(lang.macros.AnnaLang.deftype(ProjectConfig, {
-//  var app_name: String = '';
-//  var src_files: LList = {};
-//}))
+@:build(lang.macros.AnnaLang.deftype(SourceFile, {
+  var module_name: String = '';
+  var source_code: String = '';
+  var module_type: String = '';
+}))
+@:build(lang.macros.AnnaLang.deftype(ProjectConfig, {
+  var app_name: String = '';
+  var src_files: LList = {};
+}))
 //@:build(lang.macros.AnnaLang.defmodule(AnnaCompiler, {
 //  @alias util.Template;
 //

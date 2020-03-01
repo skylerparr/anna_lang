@@ -99,44 +99,10 @@ class AnnaLang {
   }
 
   public function defType(name: Expr, body: Expr): Array<Field> {
+    var className: String = printer.printExpr(name);
+
     var cls: TypeDefinition = macro class NoClass extends lang.AbstractCustomType {
-      public function new(arg: Dynamic) {
-        if(arg == null) {
-          return;
-        }
-
-        var variablesInScope = vm.Process.self().processStack.getVariablesInScope();
-        for(field in Reflect.fields(arg)) {
-          var valueToAssign = Reflect.field(arg, field);
-          var tuple: Tuple = lang.EitherSupport.getValue(valueToAssign);
-          var retVal: Dynamic = arg;
-          if(Std.is(tuple, Tuple)) {
-            var argArray = tuple.asArray();
-            if(argArray.length == 2) {
-              var elem1 = argArray[0];
-              var elem2 = argArray[1];
-              retVal = switch(cast(lang.EitherSupport.getValue(elem1), Atom)) {
-                case {value: 'var'}:
-                  null;
-                case _:
-                  elem2;
-              }
-            }
-          }
-          Reflect.setField(this, field, valueToAssign);
-        }
-      }
-
-      override public function clone(): lang.AbstractCustomType {
-        var fields: Array<String> = Reflect.fields(this);
-        var obj: Dynamic = {};
-        for(field in fields) {
-          if(field == 'variables') {
-            continue;
-          }
-          Reflect.setField(obj, field, Reflect.field(this, field));
-        }
-        return create(obj);
+      public function new() {
       }
     };
     var fields: Array<Field> = [];
@@ -146,18 +112,12 @@ class AnnaLang {
         for(expression in block) {
           switch(expression.expr) {
             case EVars([{expr: expr, name: name, type: type}]):
-              if(expr != null) {
-                switch(expr.expr) {
-                  case EBinop(OpMod, e, params):
-                    expr = createCustomType(e, params);
-                  case e:
-                    var typeAndValue: Dynamic = macroTools.getTypeAndValue(expr);
-                    expr = macros.haxeToExpr(typeAndValue.rawValue);
-                }
+              var fieldMap: Map<String, String> = macroContext.typeFieldMap.get(className);
+              if(fieldMap == null) {
+                fieldMap = new Map<String, String>();
               }
-              var field: Field = {name: name, pos: macroContext.currentPos(), kind: FVar(type, expr), access: [APublic]};
-              fields.push(field);
-              exprs.push(expression);
+              fieldMap.set(name, macroTools.getType(type));
+              macroContext.typeFieldMap.set(className, fieldMap);
             case _:
               throw "AnnaLang: Unexpected code. You can only define var types. For Example: `var name: String;` or `var ellie: Bear;`";
           }
@@ -165,24 +125,30 @@ class AnnaLang {
       case _:
         throw "AnnaLang: Unexpected code. You can only define var types. For Example: `var name: String;` or `var ellie: Bear;`";
     }
-    cls.fields = cls.fields.concat(fields);
+    MacroLogger.log(macroContext.typeFieldMap, 'macroContext.typeFieldMap');
 
-    var className: String = printer.printExpr(name);
-
-    var str: String = 'return new ${className}(args)';
+    var str: String = 'return cast(lang.AbstractCustomType.set(obj, field, value), ${className});';
     var createBodyExpr = macros.haxeToExpr(str);
 
     var createField: Field = {
-      name: 'create',
+      name: 'set',
       pos: macroContext.currentPos(),
-      kind: FFun({args: [{name: 'args', type: macroTools.buildType('Dynamic')}], expr: createBodyExpr, ret: macroTools.buildType(className)}),
+      kind: FFun({
+        args: [
+          {name: 'obj', type: macroTools.buildType(className)},
+          {name: 'field', type: macroTools.buildType('Atom')},
+          {name: 'value', type: macroTools.buildType('Dynamic')}
+        ],
+        expr: createBodyExpr,
+        ret: macroTools.buildType(className)
+      }),
       access: [APublic, AStatic, AInline]
     };
     cls.fields.push(createField);
 
     cls.name = className;
-    Helpers.applyBuildMacro(this, cls);
     macroContext.defineType(cls);
+    macroContext.declaredTypes.push(className);
     MacroLogger.log(printer.printTypeDefinition(cls));
     return AnnaLang.persistClassFields();
   }
@@ -190,7 +156,7 @@ class AnnaLang {
   private inline function createCustomType(type: Expr, params: Expr): Expr {
     var typeAndValue: Dynamic = macroTools.getCustomTypeAndValue(params);
     typeAndValue.type = printer.printExpr(type);
-    var str: String = '${typeAndValue.type}.create(${typeAndValue.rawValue})';
+    var str: String = 'lang.AbstractCustomType.create(${typeAndValue.type}, ${typeAndValue.rawValue}, Code.annaLang)';
     var expr = macros.haxeToExpr(str);
     return expr;
   }
@@ -205,10 +171,33 @@ class AnnaLang {
       compileModule(moduleName, moduleDef);
     }
 
+    var expr: Expr = null;
     var defineCodeBody: Array<Expr> = [];
+    for(typeName in macroContext.declaredTypes) {
+      expr = macros.haxeToExpr('annaLang.macroContext.definedTypes.set("${typeName}", ${typeName})');
+      defineCodeBody.push(expr);
+
+      expr = macros.haxeToExpr('annaLang.macroContext.declaredTypes.push("${typeName}")');
+      defineCodeBody.push(expr);
+
+      expr = macros.haxeToExpr('vm.Lang.definedModules.set("${typeName}", ${typeName})');
+      defineCodeBody.push(expr);
+    }
+    for(typeName in macroContext.typeFieldMap.keys()) {
+      var haxeStr = 'var fieldMap: Map<String, String> = annaLang.macroContext.typeFieldMap.get("${typeName}");
+        if(fieldMap == null) {
+          fieldMap = new Map<String, String>();
+        }';
+      var fieldMap: Map<String, String> = macroContext.typeFieldMap.get(typeName);
+      for(fieldKey in fieldMap.keys()) {
+        haxeStr += 'fieldMap.set("${fieldKey}", "${fieldMap.get(fieldKey)}");';
+      }
+      haxeStr += 'annaLang.macroContext.typeFieldMap.set("${typeName}", fieldMap);';
+      expr = macros.haxeToExpr(haxeStr);
+      defineCodeBody.push(expr);
+    }
     for(moduleDef in macroContext.declaredClasses) {
       var associatedIface = macroContext.associatedInterfaces.get(moduleDef.moduleName);
-      var expr: Expr = null;
       var moduleNameExpr = macroTools.buildConst(CString(moduleDef.moduleName));
       if(associatedIface != null) {
         expr = macros.haxeToExpr('vm.Classes.define(Atom.create("${associatedIface}"), ${moduleDef.moduleName})');
@@ -871,6 +860,16 @@ class AnnaLang {
 
           types.push([Helpers.getType(StringTools.replace(macroContext.lastFunctionReturnType, '.', '_'), macroContext)]);
           funArgs.push(macroTools.getTuple([macroTools.getAtom("var"), '"__${funName}_${argCounter}"']));
+        case EField({expr: EConst(CIdent(obj))}, fieldName):
+          var typeAndValue = macroTools.getTypeAndValue(arg);
+          MacroLogger.log(typeAndValue, 'typeAndValue');
+          MacroLogger.log(fieldName, 'fieldName');
+          MacroLogger.log(macroContext.varTypesInScope.getTypes(obj), 'macroContext.varTypesInScope.getTypes(obj)');
+          MacroLogger.log(obj, 'obj');
+          var type: String = macroContext.varTypesInScope.getTypes(obj)[0];
+          type = macroContext.getFieldType(type, fieldName);
+          types.push([type]);
+          funArgs.push(typeAndValue.value);
         case _:
           var typeAndValue = macroTools.getTypeAndValue(arg);
           var typesForVar: Array<String> = getTypesForVar(typeAndValue, arg);
@@ -968,8 +967,6 @@ class AnnaLang {
     var args = macroTools.getFunBody(expr);
     var strArgs: Array<String> = [];
     for(arg in args) {
-//      MacroLogger.logExpr(arg, 'createPutIntoScope arg');
-//      MacroLogger.log(arg, 'arg');
       arg = switch(arg.expr) {
         case EArrayDecl(items):
           for(item in items) {

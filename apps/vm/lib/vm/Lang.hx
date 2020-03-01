@@ -33,7 +33,10 @@ class Lang {
       Process: vm.Process,
       InvokeNativeFunctionOperation: vm.InvokeNativeFunctionOperation
     });
-    definedModules.set("lang", {EitherSupport: lang.EitherSupport});
+    definedModules.set("lang", {
+      EitherSupport: lang.EitherSupport,
+      AbstractCustomType: lang.AbstractCustomType
+    });
     definedModules.set("A", function(v) {
       return v;
     });

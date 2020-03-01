@@ -48,6 +48,12 @@ class ArgHelper {
           case e:
             arg;
         }
+      } else if(argArray.length == 3) {
+        var elem2: String = argArray[1];
+        var elem3: String = argArray[2];
+
+        var customType: AbstractCustomType = scopeVariables.get(elem2);
+        retVal = customType.getField(elem3);
       }
     }
     return retVal;

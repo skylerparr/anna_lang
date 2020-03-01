@@ -27,7 +27,6 @@ class DevelopmentRunner {
     interp.variables.set("AnnaUnit", anna_unit.AnnaUnit);
     Reflect.field(anna_unit.AnnaUnit, "main")();
     compileAll(function() {
-      defineCode();
       var cls: Class<Dynamic> = Type.resolveClass('vm.Kernel');
       if(cls == null) {
         trace('Kernel is missing?');
@@ -41,25 +40,11 @@ class DevelopmentRunner {
     #else
     var annaProject: AnnaLangProject = Application.getProjectConfig('compiler'.atom());
     vm.Kernel.setProject(pc);
-    Code.defineCode();
     vm.Kernel.start();
     vm.Kernel.testCompiler();
     vm.Kernel.run();
     #end
 
-    return 'ok'.atom();
-  }
-
-  private static function defineCode(): Atom {
-    // not sure what to do with this yet. Going to save this here for now.
-    #if cppia
-      var cls: Class<Dynamic> = Type.resolveClass('Code');
-      if(cls == null) {
-        trace('Module Code was not found');
-        return 'error'.atom();
-      }
-      Reflect.callMethod(null, Reflect.field(cls, 'defineCode'), []);
-    #end
     return 'ok'.atom();
   }
 
@@ -126,7 +111,6 @@ class DevelopmentRunner {
     trace("Compiling Compiler");
     var annaProject: AnnaLangProject = Application.getProjectConfig('compiler'.atom());
     var files = Anna.compileProject(annaProject.getProjectConfig());
-    defineCode();
     if(onComplete != null) {
       onComplete();
     }

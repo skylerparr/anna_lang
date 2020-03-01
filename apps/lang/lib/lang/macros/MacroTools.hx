@@ -255,6 +255,15 @@ class MacroTools {
     }
   }
 
+  public function resolveFieldType(type: Type): String {
+    return switch(type) {
+      case TInst(strType, _):
+        strType.get().name;
+      case _:
+        throw new ParsingException('AnnaLang: Expected instance type, got ${type}');
+    }
+  }
+
   public function getValue(expr: Expr):Dynamic {
     return switch(expr.expr) {
       case EConst(CString(value)):
@@ -329,6 +338,10 @@ class MacroTools {
 
   public inline function getPinned(value):String {
     return 'Tuple.create([${getAtom("pinned")}, "${value}"])';
+  }
+
+  public inline function getField(object: String, field: String):String {
+    return 'Tuple.create([${getAtom("field")}, "${object}", "${field}"])';
   }
 
   public function getTypeAndValue(expr: Expr):Dynamic {
@@ -503,6 +516,8 @@ class MacroTools {
         {type: "LList", value: value, rawValue: value};
       case EUnop(OpNegBits, false, {expr: EConst(CIdent(pinnedVarName))}):
         {type: 'Variable', value: getPinned(pinnedVarName), rawValue: pinnedVarName};
+      case EField({expr: EConst(CIdent(typeVarName))}, name):
+        {type: 'Variable', value: getField(typeVarName, name), rawValue: '${typeVarName}.${name}'};
       case e:
         MacroLogger.log(expr, 'expr');
         MacroLogger.logExpr(expr, 'expr code');
