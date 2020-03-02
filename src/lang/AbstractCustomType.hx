@@ -21,17 +21,9 @@ class AbstractCustomType implements CustomType {
     if(arg == null) {
       return retVal;
     }
-    var variablesInScope: Map<String, Dynamic> = null;
-    if(vm.Process.self() == null) {
-      variablesInScope = new Map<String, Dynamic>();
-    } else {
-      variablesInScope = vm.Process.self().processStack.getVariablesInScope();
-    }
-
     for(field in Reflect.fields(arg)) {
       var valueToAssign = Reflect.field(arg, field);
-      var resolvedValue = ArgHelper.extractArgValue(valueToAssign, variablesInScope, annaLang);
-      Reflect.setField(retVal.__values, field, resolvedValue);
+      Reflect.setField(retVal.__values, field, valueToAssign);
     }
 
     return retVal;
@@ -40,7 +32,8 @@ class AbstractCustomType implements CustomType {
   public function toAnnaString(): String {
     var fieldPairs: Array<String> = [];
     for(field in Reflect.fields(__values)) {
-      fieldPairs.push('${StringTools.replace(Anna.toAnnaString(field), '"', '')}: ${Anna.toAnnaString(Reflect.field(__values, field))}');
+      var value = get(this, Atom.create(field));
+      fieldPairs.push('${StringTools.replace(Anna.toAnnaString(field), '"', '')}: ${Anna.toAnnaString(value)}');
     }
     var classType: ValueType = Type.typeof(this);
     var name: String = switch(classType) {
@@ -53,7 +46,13 @@ class AbstractCustomType implements CustomType {
   }
 
   public function getField(field: String): Dynamic {
-    return Reflect.field(__values, field);
+    var variablesInScope = vm.Process.self().processStack.getVariablesInScope();
+    var valueToAssign = Reflect.field(__values, field);
+    return ArgHelper.extractArgValue(valueToAssign, variablesInScope, __annaLang);
+  }
+
+  public static function get(obj: AbstractCustomType, field: Atom): Dynamic {
+    return obj.getField(field.value);
   }
 
   public static function set(obj: AbstractCustomType, field: Atom, value: Dynamic): AbstractCustomType {

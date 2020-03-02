@@ -5,7 +5,7 @@ import lang.EmptyAtomException;
 class Atom implements CustomType {
   public var variables: Map<String, String>;
 
-  public static function create(name: String): Atom {
+  public static inline function create(name: String): Atom {
     return HashTableAtoms.get(name);
   }
 

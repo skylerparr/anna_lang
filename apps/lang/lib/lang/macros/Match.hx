@@ -29,7 +29,6 @@ class Match {
       var currentModule: TypeDefinition = macroContext.currentModule;
       var currentModuleStr: String = currentModule.name;
 
-      MacroLogger.log(typeAndValue, 'match typeAndValue');
       var patternMatch: Expr = PatternMatch.match(annaLang, macros.haxeToExpr(typeAndValue.value), macros.haxeToExpr("scopeVariables.get(\"$$$\")"));
       #if macro
       var cls: TypeDefinition = macro class NoClass extends vm.AbstractMatch {

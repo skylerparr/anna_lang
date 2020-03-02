@@ -220,7 +220,6 @@ class MacroTools {
       case EConst(CIdent(name)):
         return name;
       case e:
-        MacroLogger.log(e, 'e');
         #if !macro
         switch(e) {
           case ECall(expr, _):
@@ -235,10 +234,10 @@ class MacroTools {
             var returnType: String = macroContext.varTypesInScope.resolveReturnType(clazz, funName);
             return returnType;
           case _:
-            throw new ParsingException('AnnaLang: Expected variable identifier, got ${printer.printExpr(expr)}');
+            throw new ParsingException('AnnaLang getIdent non macro: Expected variable identifier, got ${printer.printExpr(expr)}');
         }
         #end
-        throw new ParsingException('AnnaLang: Expected variable identifier, got ${printer.printExpr(expr)}');
+        throw new ParsingException('AnnaLang get Ident: Expected variable identifier, got ${printer.printExpr(expr)}');
     }
   }
 
@@ -248,10 +247,13 @@ class MacroTools {
         resolveFieldIdent(expr, acc);
         acc.push(pack1);
         acc.push(pack2);
+      case EField(expr, name):
+        resolveFieldIdent(expr, acc);
+        acc.push(name);
       case EConst(CIdent(name)):
         acc.push(name);
-      case _:
-        throw new ParsingException('AnnaLang: Expected variable identifier, got ${printer.printExpr(expr)}');
+      case e:
+        throw new ParsingException('AnnaLang resolveFieldIdent: Expected variable identifier, got ${printer.printExpr(expr)}');
     }
   }
 
@@ -717,6 +719,8 @@ class MacroTools {
         [expr];
       case EMeta(_, _) | EArrayDecl(_) | EBlock(_) | EBinop(OpArrow, _, _) | EObjectDecl(_):
         [expr];
+      case EField(_, _):
+        [expr];
       case e:
         MacroLogger.log(e, 'e');
         throw new ParsingException("AnnaLang: Expected function body definition");
@@ -744,7 +748,7 @@ class MacroTools {
   public function getType(tpath: ComplexType):String {
     return switch(tpath) {
       case TPath({name: name}):
-        name;
+        Helpers.getType(name, macroContext);
       case e:
         MacroLogger.log(e, 'e');
         throw new ParsingException("AnnaLang: Expected type");

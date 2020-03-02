@@ -125,7 +125,6 @@ class AnnaLang {
       case _:
         throw "AnnaLang: Unexpected code. You can only define var types. For Example: `var name: String;` or `var ellie: Bear;`";
     }
-    MacroLogger.log(macroContext.typeFieldMap, 'macroContext.typeFieldMap');
 
     var str: String = 'return cast(lang.AbstractCustomType.set(obj, field, value), ${className});';
     var createBodyExpr = macros.haxeToExpr(str);
@@ -138,6 +137,23 @@ class AnnaLang {
           {name: 'obj', type: macroTools.buildType(className)},
           {name: 'field', type: macroTools.buildType('Atom')},
           {name: 'value', type: macroTools.buildType('Dynamic')}
+        ],
+        expr: createBodyExpr,
+        ret: macroTools.buildType(className)
+      }),
+      access: [APublic, AStatic, AInline]
+    };
+    cls.fields.push(createField);
+
+    var str: String = 'return lang.AbstractCustomType.get(obj, field);';
+    var createBodyExpr = macros.haxeToExpr(str);
+    var createField: Field = {
+      name: 'get',
+      pos: macroContext.currentPos(),
+      kind: FFun({
+        args: [
+          {name: 'obj', type: macroTools.buildType(className)},
+          {name: 'field', type: macroTools.buildType('Atom')}
         ],
         expr: createBodyExpr,
         ret: macroTools.buildType(className)
@@ -794,6 +810,10 @@ class AnnaLang {
               var lineNumber = macroTools.getLineNumber(blockExpr);
               var assignOp: Expr = createPutIntoScope(blockExpr, lineNumber);
               retExprs.push(assignOp);
+            case EField(expr, fieldName):
+              var lineNumber = macroTools.getLineNumber(blockExpr);
+              var assignOp: Expr = createPutIntoScope(blockExpr, lineNumber);
+              retExprs.push(assignOp);
             case _:
               blockExpr;
           }
@@ -963,19 +983,9 @@ class AnnaLang {
   private function createPutIntoScope(expr: Expr, lineNumber: Int):Expr {
     var moduleName: String = macroTools.getModuleName(expr);
     moduleName = Helpers.getAlias(moduleName, macroContext);
-
     var args = macroTools.getFunBody(expr);
     var strArgs: Array<String> = [];
     for(arg in args) {
-      arg = switch(arg.expr) {
-        case EArrayDecl(items):
-          for(item in items) {
-            MacroLogger.log(item, 'item');
-          }
-          arg;
-        case _:
-          arg;
-      }
       var typeAndValue = macroTools.getTypeAndValue(arg);
       strArgs.push(typeAndValue.value);
     }
@@ -1002,8 +1012,7 @@ class AnnaLang {
         var typeAndValue: Dynamic = macroTools.getTypeAndValue(e);
         typeAndValue.type;
       case e:
-        MacroLogger.log(e, 'e');
-        throw "AnnaLang: Unexpected constant";
+        printer.printExpr(expr);
     }
   }
 
