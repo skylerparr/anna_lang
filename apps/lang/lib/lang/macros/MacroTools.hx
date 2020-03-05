@@ -127,10 +127,18 @@ class MacroTools {
   public function buildPublicFunction(name: String, params: Array<FunctionArg>, returnType: ComplexType): Field {
     var varName: String = '_${name}';
 
+    var finalParams: Array<FunctionArg> = [];
+    for(param in params) {
+      if(macroContext.typeFieldMap.exists(getType(param.type))) {
+        param.type = buildType("lang.UserDefinedType");
+      }
+      finalParams.push(param);
+    }
+
     return {
       access: [APublic],
       kind: FFun({
-        args: params,
+        args: finalParams,
         expr: null,
         ret: returnType
       }),
@@ -314,7 +322,7 @@ class MacroTools {
   }
 
   public function getCustomType(type: String, values: Array<String>): String {
-    return 'lang.AbstractCustomType.create(${type}, {${values.join(",")}})';
+    return 'lang.UserDefinedType.create("${type}", {${values.join(",")}})';
   }
 
   public inline function getMap(values: Array<String>):String {
@@ -510,7 +518,7 @@ class MacroTools {
           listValues.push('${field.field}: ${typeAndValue.value}');
         }
         var strValue: String = getCustomType(type, listValues);
-        {type: type, value: 'Tuple.create([${getAtom("const")}, ${strValue}])', rawValue: strValue};
+        {type: 'lang.UserDefinedType', value: 'Tuple.create([${getAtom("const")}, ${strValue}])', rawValue: strValue};
       case EParenthesis(e):
         getTypeAndValue(e);
       case EBinop(OpOr, lhs, rhs):
@@ -745,14 +753,19 @@ class MacroTools {
     return lineNo;
   }
 
-  public function getType(tpath: ComplexType):String {
+  public function getTypeString(tpath: ComplexType): String {
     return switch(tpath) {
       case TPath({name: name}):
-        Helpers.getType(name, macroContext);
+        name;
       case e:
         MacroLogger.log(e, 'e');
         throw new ParsingException("AnnaLang: Expected type");
     }
+
+  }
+
+  public function getType(tpath: ComplexType):String {
+    return Helpers.getType(getTypeString(tpath), macroContext);
   }
 
   public function extractFullFunCall(expr: Expr, acc: Array<String> = null):Array<String> {

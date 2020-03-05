@@ -528,6 +528,7 @@ import vm.Function;
 
 }))
 @:build(lang.macros.AnnaLang.defmodule(StringTest, {
+  @alias vm.Lang;
 
   @def test_should_create_strings([Atom], {
     Assert.assert('foo', 'foo');
@@ -589,6 +590,7 @@ import vm.Function;
 
 }))
 @:build(lang.macros.AnnaLang.defmodule(NumberTest, {
+  @alias vm.Lang;
 
   @def test_should_create_ints([Atom], {
     Assert.assert(123, 123);
@@ -652,11 +654,11 @@ import vm.Function;
 
 }))
 @:build(lang.macros.AnnaLang.defmodule(AtomTest, {
+  @alias vm.Lang;
 
   @def test_should_create_atoms([Atom], {
     Assert.assert(@_'ok', @_'ok');
   });
-
 
   @def test_should_not_match_atoms([Atom], {
     Assert.refute(@_'ok', @_'fail');
@@ -686,6 +688,7 @@ import vm.Function;
 
 }))
 @:build(lang.macros.AnnaLang.defmodule(TupleTest, {
+  @alias vm.Lang;
 
   @def test_should_create_tuple_with_all_constant_elements([Atom], {
     Assert.assert([@_'ok', 'message'], [@_'ok', 'message']);
@@ -757,6 +760,7 @@ import vm.Function;
 
 }))
 @:build(lang.macros.AnnaLang.defmodule(LListTest, {
+  @alias vm.Lang;
 
   @def test_should_create_llist_with_all_constant_elements([Atom], {
     Assert.assert({@_'ok'; 'message';}, {@_'ok'; 'message';});
@@ -857,6 +861,7 @@ import vm.Function;
 
 }))
 @:build(lang.macros.AnnaLang.defmodule(MMapTest, {
+  @alias vm.Lang;
 
   @def test_should_create_constant_map([Atom], {
     Assert.assert(['foo' => 'bar'], ['foo' => 'bar']);
@@ -955,6 +960,7 @@ import vm.Function;
 
 }))
 @:build(lang.macros.AnnaLang.defmodule(KeywordTest, {
+  @alias vm.Lang;
 
   @def test_should_create_static_keyword([Atom], {
     Assert.refute({beanus: 'bear'}, {ellie: 'bear'});
@@ -988,6 +994,7 @@ import vm.Function;
 }))
 @:build(lang.macros.AnnaLang.defmodule(ModuleFunctionTest, {
   @alias vm.Function;
+  @alias vm.Lang;
 
   @def test_should_invoke_function_with_static_arg([Atom], {
     single_arg(@_'true');
@@ -1206,103 +1213,104 @@ import vm.Function;
   var age: Int;
 }))
 @:build(lang.macros.AnnaLang.defmodule(CustomTypesTest, {
+  @alias vm.Lang;
   @def test_should_pass_type_to_function([Atom], {
     sample = SampleType%{name: 'Ellie', age: 3};
     pass_type(sample);
   });
 
-  @def test_should_pass_type_to_function_interp([Atom], {
-    @native Lang.eval("sample = SampleType%{name: 'Stink', age: 3};
-      CustomTypesTest.pass_type(sample);");
-  });
+//  @def test_should_pass_type_to_function_interp([Atom], {
+//    @native Lang.eval("sample = SampleType%{name: 'Stink', age: 3};
+//      CustomTypesTest.pass_type(sample);");
+//  });
+//
+//  @def test_should_get_type_value([Atom], {
+//    sample = SampleType%{name: 'Benus', age: 30};
+//    Assert.assert('Benus', sample.name);
+//  });
+//
+//  @def test_should_get_type_value_interp([Atom], {
+//    @native Lang.eval("sample = SampleType%{name: 'Benus', age: 30};
+//      Assert.assert('Benus', sample.name);");
+//  });
 
-  @def test_should_get_type_value([Atom], {
-    sample = SampleType%{name: 'Benus', age: 30};
-    Assert.assert('Benus', sample.name);
-  });
+//  @def test_should_create_a_new_custom_type_when_updating_a_value([Atom], {
+//    sample1 = SampleType%{name: 'Ellie', age: 3};
+//    sample2 = SampleType.set(sample1, @_'name', 'bear');
+//    Assert.assert('Ellie', sample1.name);
+//    Assert.assert('bear', sample2.name);
+//    Assert.refute(sample1.name, sample2.name);
+//  });
 
-  @def test_should_get_type_value_interp([Atom], {
-    @native Lang.eval("sample = SampleType%{name: 'Benus', age: 30};
-      Assert.assert('Benus', sample.name);");
-  });
-
-  @def test_should_create_a_new_custom_type_when_updating_a_value([Atom], {
-    sample1 = SampleType%{name: 'Ellie', age: 3};
-    sample2 = @native SampleType.set(sample1, @_'name', 'bear');
-    Assert.assert('Ellie', sample1.name);
-    Assert.assert('bear', sample2.name);
-    Assert.refute(sample1.name, sample2.name);
-  });
-
-  @def test_should_create_a_new_custom_type_when_updating_a_value_interp([Atom], {
-    @native Lang.eval("
-    sample1 = SampleType%{name: 'Ellie', age: 3};
-    sample2 = @native SampleType.set(sample1, @_'name', 'bear');
-    Assert.assert('Ellie', sample1.name);
-    Assert.assert('bear', sample2.name);
-    Assert.refute(sample1.name, sample2.name);
-    ");
-  });
-
-  @def test_should_pattern_match_on_assignment([Atom], {
-    sample1 = SampleType%{name: 'Ellie', age: 3};
-    SampleType%{name: name, age: age} = sample1;
-    Assert.assert('Ellie', cast(name, String));
-    Assert.assert(3, cast(age, Int));
-
-    sample2 = SampleType%{name: 'Bear', age: 5};
-    SampleType%{name: 'Bear', age: age} = sample2;
-    Assert.assert(5, cast(age, Int));
-  });
-
-  @def test_should_pattern_match_on_assignment_interp([Atom], {
-    @native Lang.eval("
-    sample1 = SampleType%{name: 'Ellie', age: 3};
-    SampleType%{name: name, age: age} = sample1;
-    Assert.assert('Ellie', cast(name, String));
-    Assert.assert(3, cast(age, Int));
-
-    sample2 = SampleType%{name: 'Bear', age: 5};
-    SampleType%{name: 'Bear', age: age} = sample2;
-    Assert.assert(5, cast(age, Int));
-    ");
-  });
-
-  @def test_should_create_custom_type_with_variable_values([Atom], {
-    name = 'Ellie';
-    age = 3;
-    sample1 = SampleType%{name: name, age: age};
-    Assert.assert('Ellie', sample1.name);
-    Assert.assert(3, sample1.age);
-  });
-
-  @def test_should_create_custom_type_with_variable_values_interp([Atom], {
-    @native Lang.eval("
-    name = 'Ellie';
-    age = 3;
-    sample1 = SampleType%{name: name, age: age};
-    Assert.assert('Ellie', sample1.name);
-    Assert.assert(3, sample1.age);
-    ");
-  });
-
-  @def test_should_use_dot_operator_to_fetch_field_value([Atom], {
-    sample1 = SampleType%{name: 'Ellie', age: 3};
-    name = sample1.name;
-    age = sample1.age;
-    Assert.assert('Ellie', cast(name, String));
-    Assert.assert(3, cast(age, Int));
-  });
-
-  @def test_should_use_dot_operator_to_fetch_field_value_interp([Atom], {
-    @native Lang.eval("
-    sample1 = SampleType%{name: 'Ellie', age: 3};
-    name = sample1.name;
-    age = sample1.age;
-    Assert.assert('Ellie', cast(name, String));
-    Assert.assert(3, cast(age, Int));
-    ");
-  });
+//  @def test_should_create_a_new_custom_type_when_updating_a_value_interp([Atom], {
+//    @native Lang.eval("
+//    sample1 = SampleType%{name: 'Ellie', age: 3};
+//    sample2 = @native SampleType.set(sample1, @_'name', 'bear');
+//    Assert.assert('Ellie', sample1.name);
+//    Assert.assert('bear', sample2.name);
+//    Assert.refute(sample1.name, sample2.name);
+//    ");
+//  });
+//
+//  @def test_should_pattern_match_on_assignment([Atom], {
+//    sample1 = SampleType%{name: 'Ellie', age: 3};
+//    SampleType%{name: name, age: age} = sample1;
+//    Assert.assert('Ellie', cast(name, String));
+//    Assert.assert(3, cast(age, Int));
+//
+//    sample2 = SampleType%{name: 'Bear', age: 5};
+//    SampleType%{name: 'Bear', age: age} = sample2;
+//    Assert.assert(5, cast(age, Int));
+//  });
+//
+//  @def test_should_pattern_match_on_assignment_interp([Atom], {
+//    @native Lang.eval("
+//    sample1 = SampleType%{name: 'Ellie', age: 3};
+//    SampleType%{name: name, age: age} = sample1;
+//    Assert.assert('Ellie', cast(name, String));
+//    Assert.assert(3, cast(age, Int));
+//
+//    sample2 = SampleType%{name: 'Bear', age: 5};
+//    SampleType%{name: 'Bear', age: age} = sample2;
+//    Assert.assert(5, cast(age, Int));
+//    ");
+//  });
+//
+//  @def test_should_create_custom_type_with_variable_values([Atom], {
+//    name = 'Ellie';
+//    age = 3;
+//    sample1 = SampleType%{name: name, age: age};
+//    Assert.assert('Ellie', sample1.name);
+//    Assert.assert(3, sample1.age);
+//  });
+//
+//  @def test_should_create_custom_type_with_variable_values_interp([Atom], {
+//    @native Lang.eval("
+//    name = 'Ellie';
+//    age = 3;
+//    sample1 = SampleType%{name: name, age: age};
+//    Assert.assert('Ellie', sample1.name);
+//    Assert.assert(3, sample1.age);
+//    ");
+//  });
+//
+//  @def test_should_use_dot_operator_to_fetch_field_value([Atom], {
+//    sample1 = SampleType%{name: 'Ellie', age: 3};
+//    name = sample1.name;
+//    age = sample1.age;
+//    Assert.assert('Ellie', cast(name, String));
+//    Assert.assert(3, cast(age, Int));
+//  });
+//
+//  @def test_should_use_dot_operator_to_fetch_field_value_interp([Atom], {
+//    @native Lang.eval("
+//    sample1 = SampleType%{name: 'Ellie', age: 3};
+//    name = sample1.name;
+//    age = sample1.age;
+//    Assert.assert('Ellie', cast(name, String));
+//    Assert.assert(3, cast(age, Int));
+//    ");
+//  });
 
   @def pass_type({SampleType: sample}, [Atom], {
     Assert.assert(@_'true');
@@ -1370,7 +1378,7 @@ import vm.Function;
       [{Tuple: [@_'get', index, respond]}, [Tuple]] => {
         [_, commands, _] = history;
         value = @native LList.getAt(commands, index);
-        @native Kernel.send(cast(respond, Pid), cast(value, String));
+        @native vm.Kernel.send(cast(respond, Pid), cast(value, String));
         history;
       };
     });
@@ -1582,6 +1590,7 @@ import vm.Function;
 }))
 @:build(lang.macros.AnnaLang.defmodule(AppCode, {
   @alias vm.Classes;
+  @alias vm.Lang;
 
   @def get_modules([LList], {
     @native Classes.getModules();
@@ -1601,6 +1610,7 @@ import vm.Function;
   @alias vm.Process;
   @alias vm.Kernel;
   @alias vm.Classes;
+  @alias vm.Pid;
 
   @const ALL_TESTS = @_'all_tests';
   @const TEST_RESULTS = @_'test_results';
@@ -1626,7 +1636,7 @@ import vm.Function;
         @native LList.add(all_tests, test_module);
       };
       [{Tuple: [@_'get', respond_pid]}] => {
-        @native Kernel.send(respond_pid, all_tests);
+        @native vm.Kernel.send(respond_pid, all_tests);
         @native LList.empty();
       };
     });

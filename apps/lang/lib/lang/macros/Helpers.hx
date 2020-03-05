@@ -15,6 +15,14 @@ class Helpers {
     }
   }
 
+  public static inline function getCustomType(type: String, macroContext: MacroContext): String {
+    if(macroContext.typeFieldMap.exists(type)) {
+      return "lang.UserDefinedType";
+    } else {
+      return type;
+    }
+  }
+
   public static function getAlias(str: String, macroContext: MacroContext):String {
     return switch(macroContext.aliases.get(str)) {
       case null:

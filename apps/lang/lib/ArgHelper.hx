@@ -1,5 +1,6 @@
 package ;
 
+import lang.UserDefinedType;
 import lang.macros.AnnaLang;
 import lang.macros.MacroContext;
 import vm.Process;
@@ -52,7 +53,7 @@ class ArgHelper {
         var elem2: String = argArray[1];
         var elem3: String = argArray[2];
 
-        var customType: AbstractCustomType = scopeVariables.get(elem2);
+        var customType: UserDefinedType = scopeVariables.get(elem2);
         retVal = customType.getField(elem3);
       }
     }
@@ -104,7 +105,7 @@ class ArgHelper {
     return Keyword.create(values);
   }
 
-  public static inline function resolveAbstractCustomTypeValues(value: AbstractCustomType, scopeVariables: Map<String, Dynamic>, annaLang: AnnaLang): AbstractCustomType {
+  public static inline function resolveAbstractCustomTypeValues(value: lang.UserDefinedType, scopeVariables: Map<String, Dynamic>, annaLang: AnnaLang): AbstractCustomType {
 //    if(value.variables != null) {
 //      var variables = value.variables;
 //      for(key in variables.keys()) {

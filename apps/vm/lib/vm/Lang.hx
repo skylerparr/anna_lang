@@ -35,7 +35,7 @@ class Lang {
     });
     definedModules.set("lang", {
       EitherSupport: lang.EitherSupport,
-      AbstractCustomType: lang.AbstractCustomType
+      UserDefinedType: lang.UserDefinedType
     });
     definedModules.set("A", function(v) {
       return v;

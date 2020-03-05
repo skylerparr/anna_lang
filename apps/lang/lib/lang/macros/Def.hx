@@ -18,19 +18,32 @@ class Def {
     var funName: String = macroTools.getCallFunName(params);
     var allTypes: Dynamic = macroTools.getArgTypesAndReturnTypes(params);
     var funArgsTypes: Array<Dynamic> = allTypes.argTypes;
+    var origTypes: Array<String> = [];
     var types: Array<String> = [];
     for(argType in funArgsTypes) {
       if(!argType.isPatternVar) {
-        var strType: String = macroTools.resolveType(annaLang.macros.haxeToExpr(argType.type));
+        var argTypeStr: String = argType.type;
+        argTypeStr = Helpers.getCustomType(argTypeStr, macroContext);
+        var strType: String = macroTools.resolveType(annaLang.macros.haxeToExpr(argTypeStr));
         strType = r.replace(strType, '');
-        types.push(Helpers.getType(strType, macroContext));
+        var origTypeStr: String = '';
+        try {
+          var funNameArgType = argType.type;
+          origTypeStr = Helpers.getType(macroTools.resolveType(annaLang.macros.haxeToExpr(argType.type)), macroContext);
+          origTypeStr = r.replace(origTypeStr, '');
+          origTypeStr = Helpers.getType(origTypeStr, macroContext);
+        } catch(e: Dynamic) {
+          origTypeStr = argType.type;
+        }
+        origTypes.push(origTypeStr);
+        types.push(Helpers.getType(Helpers.getCustomType(strType, macroContext), macroContext));
         argType.type = strType;
       }
     }
     var argTypes: String = Helpers.sanitizeArgTypeNames(types);
     var funBody: Array<Expr> = macroTools.getFunBody(params);
 
-    var internalFunctionName: String = Helpers.makeFqFunName(funName, types);
+    var internalFunctionName: String = Helpers.makeFqFunName(funName, origTypes);
 
     // add the functions to the context for reference later
     var funBodies: Array<Dynamic> = macroContext.currentModuleDef.declaredFunctions.get(internalFunctionName);

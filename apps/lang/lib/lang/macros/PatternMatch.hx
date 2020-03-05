@@ -161,13 +161,13 @@ class PatternMatch {
           }
           $e{individualMatchesBlock};
         }
-      case ECall({expr: EField({expr: EField({expr: EConst(CIdent('lang'))}, 'AbstractCustomType')}, 'create')}, params):
+      case ECall({expr: EField({expr: EField({expr: EConst(CIdent('lang'))}, 'UserDefinedType')}, 'create')}, params):
         var type = params.shift();
         var individualMatches: Array<Expr> = [];
         switch(params[0].expr) {
           case EObjectDecl(fields):
             for(field in fields) {
-              var expr = generatePatternMatch(annaLang, field.expr, macros.haxeToExpr('lang.AbstractCustomType.get(value, ${macroTools.getAtom(field.field)})'));
+              var expr = generatePatternMatch(annaLang, field.expr, macros.haxeToExpr('lang.UserDefinedType.get(value, ${macroTools.getAtom(field.field)})'));
               individualMatches.push(expr);
             }
           case _:
@@ -179,7 +179,7 @@ class PatternMatch {
         }
         var ast = macro {
           var value = $e{valueExpr}
-          if(value.__type != $e{type}) {
+          if(value.__type != "$e{type}") {
             scope == null;
             break;
           }

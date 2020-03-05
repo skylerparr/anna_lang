@@ -112,9 +112,6 @@ class ValueClassImpl {
       }
     }
 
-    MacroLogger.log("---------------------");
-    MacroLogger.printFields(fields);
-    MacroLogger.log("_____________________");
     return fields;
   }
 

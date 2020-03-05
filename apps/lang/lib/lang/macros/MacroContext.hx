@@ -35,9 +35,6 @@ class MacroContext {
     for(type in declaredTypes) {
       mc.declaredTypes.push(type);
     }
-    for(key in definedTypes.keys()) {
-      mc.definedTypes.set(key, definedTypes.get(key));
-    }
     for(key in typeFieldMap.keys()) {
       mc.typeFieldMap.set(key, typeFieldMap.get(key));
     }
@@ -52,7 +49,6 @@ class MacroContext {
   public var currentVar: String;
   public var aliases: Map<String, String> = new Map<String, String>();
   public var currentFunctionArgTypes: Array<String>;
-  public var definedTypes: Map<String, Class<Dynamic>> = new Map<String, Class<Dynamic>>();
   public var typeFieldMap: Map<String, Map<String, String>> = new Map<String, Map<String, String>>();
   public var declaredTypes: Array<String> = [];
 
@@ -190,8 +186,6 @@ class MacroContext {
   #end
 
   public function getFieldType(name: String, fieldName: String): String {
-    MacroLogger.log(name, 'name fieldType');
-    MacroLogger.log(fieldName, 'fieldName');
     var map: Map<String, String> = typeFieldMap.get(name);
     return map.get(fieldName);
   }
@@ -201,5 +195,15 @@ class MacroContext {
     var lineNo: Int = Std.parseInt(lineStr.split(':')[1]);
     return annaLang.macros.haxeToExpr('${lineNo}');
   }
+
+  #if !macro
+
+  public function saveType(typeName: String, obj: Dynamic, typeFieldMap: Map<String, String>): Void {
+//    this.declaredTypes.push(typeName);
+//    vm.Lang.definedModules(typeName, obj);
+//    this.typeFieldMap.set(typeName, typeFieldMap);
+  }
+
+  #end
 }
 

@@ -50,6 +50,12 @@ class Classes {
           fn = new SimpleFunction();
         }
         var args: Array<String> = Reflect.field(instance, fun);
+        if(className == Atom.create('CustomTypesTest')) {
+          trace(instance);
+          trace(fun);
+          trace(args);
+          trace(origFnName);
+        }
         fn.args = args;
         classFunctions.set(origFnAtom, fn);
         functions.set(className, classFunctions);
