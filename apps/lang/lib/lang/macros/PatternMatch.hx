@@ -163,10 +163,18 @@ class PatternMatch {
         }
       case ECall({expr: EField({expr: EField({expr: EConst(CIdent('lang'))}, 'UserDefinedType')}, 'create')}, params):
         var type = params.shift();
+        var customTypeStr: String = StringTools.replace(printer.printExpr(type), "\"", "");
         var individualMatches: Array<Expr> = [];
         switch(params[0].expr) {
           case EObjectDecl(fields):
             for(field in fields) {
+              switch(field.expr.expr) {
+                case ECall({ expr: EField({ expr: EConst(CIdent('Tuple')) },'create') },[{ expr: EArrayDecl([{ expr: ECall({ expr: EField({ expr: EConst(CIdent('Atom')) },'create') },[{ expr: EConst(CString('var')) }]) },{ expr: EConst(CString(name)) }]) }]):
+                  var fieldType: String = macroContext.getFieldType(customTypeStr, name);
+                  macroContext.varTypesInScope.set(name, fieldType);
+                case e:
+                  MacroLogger.log(e, 'e');
+              }
               var expr = generatePatternMatch(annaLang, field.expr, macros.haxeToExpr('lang.UserDefinedType.get(value, ${macroTools.getAtom(field.field)})'));
               individualMatches.push(expr);
             }

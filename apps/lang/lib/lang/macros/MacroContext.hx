@@ -196,14 +196,5 @@ class MacroContext {
     return annaLang.macros.haxeToExpr('${lineNo}');
   }
 
-  #if !macro
-
-  public function saveType(typeName: String, obj: Dynamic, typeFieldMap: Map<String, String>): Void {
-//    this.declaredTypes.push(typeName);
-//    vm.Lang.definedModules(typeName, obj);
-//    this.typeFieldMap.set(typeName, typeFieldMap);
-  }
-
-  #end
 }
 

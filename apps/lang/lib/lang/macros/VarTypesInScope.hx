@@ -21,7 +21,6 @@ class VarTypesInScope {
       var varKey = StringTools.replace(key, '"', '');
       varsInScope.set(varKey, dictionary.get(key));
     }
-    varsInScope = vm.Process.self().processStack.getVariablesInScope();
 
     var value: Dynamic = varsInScope.get(name);
     var varType: String = '';

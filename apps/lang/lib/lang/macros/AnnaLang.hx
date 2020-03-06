@@ -857,18 +857,15 @@ class AnnaLang {
           funArgs.push(macroTools.getTuple([macroTools.getAtom("var"), '"__${funName}_${argCounter}"']));
         case EField({expr: EConst(CIdent(obj))}, fieldName):
           var typeAndValue = macroTools.getTypeAndValue(arg);
-          MacroLogger.log(typeAndValue, 'typeAndValue');
-          MacroLogger.log(fieldName, 'fieldName');
-          MacroLogger.log(macroContext.varTypesInScope.getTypes(obj), 'macroContext.varTypesInScope.getTypes(obj)');
-          MacroLogger.log(obj, 'obj');
           var type: String = macroContext.varTypesInScope.getTypes(obj)[0];
           type = macroContext.getFieldType(type, fieldName);
+          type = Helpers.getType(type, macroContext);
           types.push([type]);
           funArgs.push(typeAndValue.value);
         case _:
           var typeAndValue = macroTools.getTypeAndValue(arg);
           var typesForVar: Array<String> = getTypesForVar(typeAndValue, arg);
-          
+
           var possibleTypes: Array<String> = [];
           for(typeForVar in typesForVar) {
             var type: String = Helpers.getType(typeForVar, macroContext);
@@ -922,7 +919,6 @@ class AnnaLang {
         return retVal;
       }
     }
-    MacroLogger.log(module, 'modu');
     throw new FunctionClauseNotFound('Function ${moduleName}.${funName} with args [${argStrings.join(', ')}] at line ${lineNumber} not found');
   }
 
@@ -987,6 +983,11 @@ class AnnaLang {
       case ECall({expr: EField({expr: EConst(CIdent("Tuple"))}, "create")}, [{expr: EArrayDecl([_, e])}]):
         var typeAndValue: Dynamic = macroTools.getTypeAndValue(e);
         typeAndValue.type;
+      case ECall({ expr: EField({ expr: EConst(CIdent('Tuple')) },'create') },[{ expr: EArrayDecl([{ expr: ECall({ expr: EField({ expr: EConst(CIdent('Atom')) },'create') },[{ expr: EConst(CString('field')) }]) },{ expr: EConst(CString(varObj)) },{ expr: EConst(CString(varField)) }]) }]):
+        var objType = macroContext.varTypesInScope.getTypes(varObj)[0];
+        var fieldType = macroContext.getFieldType(objType, varField);
+        Helpers.getType(fieldType, macroContext);
+
       case e:
         printer.printExpr(expr);
     }
