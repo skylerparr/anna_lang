@@ -1,6 +1,7 @@
 package vm;
 
 import lang.macros.AnnaLang;
+import lang.macros.AnnaLang;
 import hscript.Macro;
 import haxe.macro.Expr.TypeDefinition;
 import lang.macros.MacroContext;
@@ -10,8 +11,6 @@ import lang.EitherSupport;
 import vm.Function;
 import vm.Operation;
 class PushStack implements Operation {
-
-//  public static var typeDef: TypeDefinition = {kind: TDStructure, pos: Lang.annaLang.macroContext.currentPos(), fields: [], pack: [], name: ''};
 
   public var module: Atom;
   public var func: Atom;
@@ -43,27 +42,10 @@ class PushStack implements Operation {
     var counter: Int = 0;
     var callArgs: Array<Dynamic> = [];
     var nextScopeVariables: Map<String, Dynamic> = new Map<String, Dynamic>();
-    if(this.module == Atom.create('CustomTypesTest')) {
-      trace(args);
-    }
     for(arg in LList.iterator(args)) {
-      if(this.module == Atom.create('CustomTypesTest')) {
-        trace(arg);
-      }
       var value: Dynamic = ArgHelper.extractArgValue(arg, scopeVariables, annaLang);
-      if(this.module == Atom.create('CustomTypesTest')) {
-        trace(value);
-      }
       callArgs.push(value);
-      if(this.module == Atom.create('CustomTypesTest')) {
-        trace(callArgs);
-        trace(fn.apiFunc);
-        trace(fn.args);
-      }
       var argName: String = fn.args[counter++];
-      if(this.module == Atom.create('CustomTypesTest')) {
-        trace(argName);
-      }
       nextScopeVariables.set(argName, value);
     }
     callArgs.push(nextScopeVariables);

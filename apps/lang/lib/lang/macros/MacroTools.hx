@@ -127,18 +127,10 @@ class MacroTools {
   public function buildPublicFunction(name: String, params: Array<FunctionArg>, returnType: ComplexType): Field {
     var varName: String = '_${name}';
 
-    var finalParams: Array<FunctionArg> = [];
-    for(param in params) {
-      if(macroContext.typeFieldMap.exists(getType(param.type))) {
-        param.type = buildType("lang.UserDefinedType");
-      }
-      finalParams.push(param);
-    }
-
     return {
       access: [APublic],
       kind: FFun({
-        args: finalParams,
+        args: params,
         expr: null,
         ret: returnType
       }),
@@ -518,7 +510,7 @@ class MacroTools {
           listValues.push('${field.field}: ${typeAndValue.value}');
         }
         var strValue: String = getCustomType(type, listValues);
-        {type: 'lang.UserDefinedType', value: 'Tuple.create([${getAtom("const")}, ${strValue}])', rawValue: strValue};
+        {type: type, value: 'Tuple.create([${getAtom("const")}, ${strValue}])', rawValue: strValue};
       case EParenthesis(e):
         getTypeAndValue(e);
       case EBinop(OpOr, lhs, rhs):

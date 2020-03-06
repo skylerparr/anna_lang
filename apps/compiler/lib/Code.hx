@@ -1219,28 +1219,28 @@ import vm.Function;
     pass_type(sample);
   });
 
-//  @def test_should_pass_type_to_function_interp([Atom], {
-//    @native Lang.eval("sample = SampleType%{name: 'Stink', age: 3};
-//      CustomTypesTest.pass_type(sample);");
-//  });
-//
-//  @def test_should_get_type_value([Atom], {
-//    sample = SampleType%{name: 'Benus', age: 30};
-//    Assert.assert('Benus', sample.name);
-//  });
-//
-//  @def test_should_get_type_value_interp([Atom], {
-//    @native Lang.eval("sample = SampleType%{name: 'Benus', age: 30};
-//      Assert.assert('Benus', sample.name);");
-//  });
+  @def test_should_pass_type_to_function_interp([Atom], {
+    @native Lang.eval("sample = SampleType%{name: 'Stink', age: 3};
+      CustomTypesTest.pass_type(sample);");
+  });
 
-//  @def test_should_create_a_new_custom_type_when_updating_a_value([Atom], {
-//    sample1 = SampleType%{name: 'Ellie', age: 3};
-//    sample2 = SampleType.set(sample1, @_'name', 'bear');
-//    Assert.assert('Ellie', sample1.name);
-//    Assert.assert('bear', sample2.name);
-//    Assert.refute(sample1.name, sample2.name);
-//  });
+  @def test_should_get_type_value([Atom], {
+    sample = SampleType%{name: 'Benus', age: 30};
+    Assert.assert('Benus', sample.name);
+  });
+
+  @def test_should_get_type_value_interp([Atom], {
+    @native Lang.eval("sample = SampleType%{name: 'Benus', age: 30};
+      Assert.assert('Benus', sample.name);");
+  });
+
+  @def test_should_create_a_new_custom_type_when_updating_a_value([Atom], {
+    sample1 = SampleType%{name: 'Ellie', age: 3};
+    sample2 = SampleType.set(sample1, @_'name', 'bear');
+    Assert.assert('Ellie', sample1.name);
+    Assert.assert('bear', sample2.name);
+    Assert.refute(sample1.name, sample2.name);
+  });
 
 //  @def test_should_create_a_new_custom_type_when_updating_a_value_interp([Atom], {
 //    @native Lang.eval("
