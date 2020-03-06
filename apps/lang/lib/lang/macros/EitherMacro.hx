@@ -164,7 +164,6 @@ class EitherMacro {
           case CFloat(value):
             typeAndExprs.push({type: "Float", expr: vExpr});
           case CIdent(ident):
-//            var expr: Expr = Macros.haxeToExpr('Tuple.create([Atom.create("var"), "${ident}"])');
             var identExpr: Expr = {expr: EConst(CString(ident)), pos: macroContext.currentPos()}
             var expr: Expr = macro Tuple.create([Atom.create("var"), $e{identExpr}]);
             typeAndExprs.push({type: 'Dynamic', expr: expr});

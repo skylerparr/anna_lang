@@ -1312,6 +1312,22 @@ import vm.Function;
     ");
   });
 
+  @def test_should_pattern_match_function_signature([Atom], {
+    sample1 = SampleType%{name: 'Ellie', age: 3};
+    match_signature(sample1);
+  });
+
+  @def test_should_pattern_match_function_signature_interp([Atom], {
+    @native Lang.eval("
+    sample1 = SampleType%{name: 'Ellie', age: 3};
+    CustomTypesTest.match_signature(sample1);
+    ");
+  });
+
+  @def match_signature({SampleType: SampleType%{name: 'Ellie', age: age}}, [Atom], {
+    Assert.assert(3, age);
+  });
+
   @def pass_type({SampleType: sample}, [Atom], {
     Assert.assert(@_'true');
   });

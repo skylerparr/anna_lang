@@ -298,6 +298,7 @@ class AnnaLang {
 
           for(argType in cast(funDef.funArgsTypes, Array<Dynamic>)) {
             macroContext.varTypesInScope.set(argType.name, argType.type);
+            setScopeTypesForCustomType(macros.haxeToExpr(argType.pattern));
           }
 
           // Actual operations this function will be doing
@@ -920,6 +921,28 @@ class AnnaLang {
       }
     }
     throw new FunctionClauseNotFound('Function ${moduleName}.${funName} with args [${argStrings.join(', ')}] at line ${lineNumber} not found');
+  }
+
+  private function setScopeTypesForCustomType(expr: Expr): Void {
+    switch(expr.expr) {
+      case ECall({ expr:
+            EField({ expr:
+            EField({ expr: EConst(CIdent('lang')) },'UserDefinedType') },'create') },[
+              { expr: EConst(CString(typeTypeName)) },{ expr:
+              EObjectDecl(exprs) }]):
+      for(ex in exprs) {
+        switch(ex.expr.expr) {
+          case ECall({ expr: EField({ expr: EConst(CIdent('Tuple')) },'create') },[
+                    { expr: EArrayDecl([{ expr: ECall({ expr: EField({ expr: EConst(CIdent('Atom')) },'create') },
+                    [{ expr: EConst(CString('var')) }]) },{ expr: EConst(CString(fieldName)) }]) }]):
+            var type = macroContext.getFieldType(typeTypeName, fieldName);
+            type = Helpers.getType(type, macroContext);
+            macroContext.varTypesInScope.set(fieldName, type);
+          case _:
+        }
+      }
+      case _:
+    }
   }
 
   private inline function buildPushStackExpr(moduleName: String, fqFunName:
