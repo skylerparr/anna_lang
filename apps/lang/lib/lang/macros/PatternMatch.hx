@@ -179,7 +179,7 @@ class PatternMatch {
         }
         var ast = macro {
           var value = $e{valueExpr}
-          if(value.__type != "$e{type}") {
+          if(value.__type != $e{type}) {
             scope == null;
             break;
           }
