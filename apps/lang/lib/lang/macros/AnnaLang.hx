@@ -167,7 +167,6 @@ class AnnaLang {
       expr = macros.haxeToExpr('annaLang.macroContext.declaredTypes.push("${typeName}")');
       defineCodeBody.push(expr);
 
-//      expr = macros.haxeToExpr('vm.Lang.definedModules.set("${typeName}", lang.UserDefinedType)');
       expr = macros.haxeToExpr('vm.Lang.definedModules.set("${typeName}", ${typeName})');
       defineCodeBody.push(expr);
     }
@@ -929,7 +928,8 @@ class AnnaLang {
             EField({ expr:
             EField({ expr: EConst(CIdent('lang')) },'UserDefinedType') },'create') },[
               { expr: EConst(CString(typeTypeName)) },{ expr:
-              EObjectDecl(exprs) }]):
+              EObjectDecl(exprs) },
+              { expr: EField({ expr: EConst(CIdent('Code')) },'annaLang') }]):
       for(ex in exprs) {
         switch(ex.expr.expr) {
           case ECall({ expr: EField({ expr: EConst(CIdent('Tuple')) },'create') },[
@@ -1006,10 +1006,22 @@ class AnnaLang {
       case ECall({expr: EField({expr: EConst(CIdent("Tuple"))}, "create")}, [{expr: EArrayDecl([_, e])}]):
         var typeAndValue: Dynamic = macroTools.getTypeAndValue(e);
         typeAndValue.type;
-      case ECall({ expr: EField({ expr: EConst(CIdent('Tuple')) },'create') },[{ expr: EArrayDecl([{ expr: ECall({ expr: EField({ expr: EConst(CIdent('Atom')) },'create') },[{ expr: EConst(CString('field')) }]) },{ expr: EConst(CString(varObj)) },{ expr: EConst(CString(varField)) }]) }]):
-        var objType = macroContext.varTypesInScope.getTypes(varObj)[0];
-        var fieldType = macroContext.getFieldType(objType, varField);
-        Helpers.getType(fieldType, macroContext);
+      case ECall({ expr: EField({ expr: EConst(CIdent('Tuple')) },'create') },
+            [{ expr: EArrayDecl([{ expr: ECall({ expr: EField({ expr: EConst(CIdent('Atom')) },'create') },
+            [{ expr: EConst(CString('field')) }]) },{ expr: EConst(CString(varObj)) },{ expr: EConst(CString(varField)) }]) }]):
+        var objTypes = macroContext.varTypesInScope.getTypes(varObj);
+        var retVal: String = null;
+        for(objType in objTypes) {
+          var fieldType = macroContext.getFieldType(objType, varField);
+          retVal = Helpers.getType(fieldType, macroContext);
+          if(retVal != null) {
+            break;
+          }
+        }
+        if(retVal == null) {
+          retVal = 'Dynamic';
+        }
+        retVal;
 
       case e:
         printer.printExpr(expr);

@@ -314,7 +314,7 @@ class MacroTools {
   }
 
   public function getCustomType(type: String, values: Array<String>): String {
-    return 'lang.UserDefinedType.create("${type}", {${values.join(",")}})';
+    return 'lang.UserDefinedType.create("${type}", {${values.join(",")}}, Code.annaLang)';
   }
 
   public inline function getMap(values: Array<String>):String {

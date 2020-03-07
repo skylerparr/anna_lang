@@ -90,6 +90,7 @@ class VarTypesInScope {
     var retVal = new VarTypesInScope();
     for(key in varTypesInScope.keys()) {
       var types: Array<String> = retVal.getTypes(key);
+      types.concat(varTypesInScope.get(key));
       for(type in types) {
         retVal.set(key, type);
       }

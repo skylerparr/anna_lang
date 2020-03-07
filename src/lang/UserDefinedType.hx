@@ -32,14 +32,7 @@ class UserDefinedType extends AbstractCustomType {
       var value = get(this, Atom.create(field));
       fieldPairs.push('${StringTools.replace(Anna.toAnnaString(field), '"', '')}: ${Anna.toAnnaString(value)}');
     }
-    var classType: ValueType = Type.typeof(this);
-    var name: String = switch(classType) {
-      case TClass(name):
-        '${name}';
-      case _:
-        "CustomType";
-    }
-    return '${name}%{${fieldPairs.join(', ')}}';
+    return '${__type}%{${fieldPairs.join(', ')}}';
   }
 
   public function getField(field: String): Dynamic {

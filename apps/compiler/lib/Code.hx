@@ -1212,6 +1212,10 @@ import vm.Function;
   var name: String;
   var age: Int;
 }))
+@:build(lang.macros.AnnaLang.deftype(SampleComposeType, {
+  var name: String;
+  var sample: SampleType;
+}))
 @:build(lang.macros.AnnaLang.defmodule(CustomTypesTest, {
   @alias vm.Lang;
   @def test_should_pass_type_to_function([Atom], {
@@ -1321,6 +1325,24 @@ import vm.Function;
     @native Lang.eval("
     sample1 = SampleType%{name: 'Ellie', age: 3};
     CustomTypesTest.match_signature(sample1);
+    ");
+  });
+
+  @def test_should_handle_composable_types([Atom], {
+    obj = SampleComposeType%{name: 'foo', sample: SampleType%{name: 'bar', age: 43}};
+    sample = obj.sample;
+    Assert.assert('foo', obj.name);
+    Assert.assert('bar', sample.name);
+    Assert.assert(43, sample.age);
+  });
+
+  @def test_should_handle_composable_types_interp([Atom], {
+    @native Lang.eval("
+    obj = SampleComposeType%{name: 'foo', sample: SampleType%{name: 'bar', age: 43}};
+    sample = obj.sample;
+    Assert.assert('foo', obj.name);
+    Assert.assert('bar', sample.name);
+    Assert.assert(43, sample.age);
     ");
   });
 

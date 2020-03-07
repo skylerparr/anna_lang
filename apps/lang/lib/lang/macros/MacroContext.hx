@@ -187,6 +187,9 @@ class MacroContext {
 
   public function getFieldType(name: String, fieldName: String): String {
     var map: Map<String, String> = typeFieldMap.get(name);
+    if(map == null) {
+      return null;
+    }
     return map.get(fieldName);
   }
 
