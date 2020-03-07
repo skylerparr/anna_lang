@@ -1346,6 +1346,18 @@ import vm.Function;
     ");
   });
 
+  @def test_should_define_custom_type_interp([Atom], {
+    @native Lang.eval("
+      deftype(Pets, {
+        var cow: String;
+        var bird: String;
+      });
+      pets = Pets%{cow: 'Beatrice', bird: 'Ally'};
+      Assert.assert('Beatrice', pets.cow);
+      Assert.assert('Ally', pets.bird);
+    ");
+  });
+
   @def match_signature({SampleType: SampleType%{name: 'Ellie', age: age}}, [Atom], {
     Assert.assert(3, age);
   });

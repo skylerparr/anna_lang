@@ -233,8 +233,9 @@ class MacroTools {
 
             var returnType: String = macroContext.varTypesInScope.resolveReturnType(clazz, funName);
             return returnType;
+
           case _:
-            throw new ParsingException('AnnaLang getIdent non macro: Expected variable identifier, got ${printer.printExpr(expr)}');
+            return printer.printExpr(expr);
         }
         #end
         throw new ParsingException('AnnaLang get Ident: Expected variable identifier, got ${printer.printExpr(expr)}');
