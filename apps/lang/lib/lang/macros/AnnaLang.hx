@@ -919,6 +919,18 @@ class AnnaLang {
         return retVal;
       }
     }
+    var types: Array<String> = macroContext.varTypesInScope.getTypes(funName);
+    if(types == null) {
+      throw new FunctionClauseNotFound("AnnaLang: No function found for ${moduleName}.${funName}");
+    }
+    #if !macro
+    var fun = vm.Process.self().processStack.getVariablesInScope().get(funName);
+    if(Std.is(fun, vm.Function)) {
+      var haxeStr: String = 'ops.push(new vm.AnonymousFunction(${macroTools.getAtom(funName)}, ${macroTools.getList(funArgs)}, ${macroTools.getAtom(currentModuleStr)}, ${macroTools.getAtom(macroContext.currentFunction)}, ${lineNumber}, Code.annaLang))';
+      retVal.push(macros.haxeToExpr(haxeStr));
+      return retVal;
+    }
+    #end
     throw new FunctionClauseNotFound('Function ${moduleName}.${funName} with args [${argStrings.join(', ')}] at line ${lineNumber} not found');
   }
 

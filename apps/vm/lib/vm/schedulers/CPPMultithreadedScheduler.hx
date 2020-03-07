@@ -11,7 +11,7 @@ import minject.Injector;
 using lang.AtomSupport;
 
 class CPPMultithreadedScheduler implements Scheduler {
-  public var numberOfThreads: Int = 1;
+  public var numberOfThreads: Int = 8;
 
   @inject
   public var objectCreator: ObjectCreator;

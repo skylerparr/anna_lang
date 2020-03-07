@@ -1,5 +1,6 @@
 package vm;
 
+@:rtti
 class SimpleFunction implements Function {
   public var args: Array<Dynamic>;
   public var fn: Dynamic;

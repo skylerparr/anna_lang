@@ -1,4 +1,5 @@
 package lang.macros;
+import haxe.CallStack;
 import haxe.rtti.CType.Classdef;
 class VarTypesInScope {
   public var varTypesInScope: Map<String, Array<String>>;
@@ -38,7 +39,9 @@ class VarTypesInScope {
       for(iface in clsDef.interfaces) {
         retVal.push(iface.path);
       }
-      retVal.push(clsDef.superClass.path);
+      if(clsDef.superClass != null) {
+        retVal.push(clsDef.superClass.path);
+      }
     } else {
       var cls: Class<Dynamic> = Type.getClass(value);
       varType = '${cls}';
