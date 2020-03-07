@@ -391,7 +391,9 @@ class CPPMultithreadedScheduler implements Scheduler {
   }
 
   public function flag(pid: Pid, flag: Atom, value: Atom): Atom {
+    registeredPidsMutex.acquire();
     pid.setTrapExit(value);
+    registeredPidsMutex.release();
     return "ok".atom();
   }
 
