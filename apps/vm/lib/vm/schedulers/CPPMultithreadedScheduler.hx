@@ -50,6 +50,7 @@ class CPPMultithreadedScheduler implements Scheduler {
         objectFactory.injector = new Injector();
         objectFactory.injector.mapValue(ObjectCreator, objectFactory);
         objectFactory.injector.mapClass(Pid, SimpleProcess);
+        objectFactory.injector.mapClass(Port, SimplePort);
         scheduler.objectCreator = objectCreator;
 
         messages = {scheduler: scheduler, mutex: new Mutex(),

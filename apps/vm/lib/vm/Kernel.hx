@@ -4,6 +4,7 @@ import lang.macros.AnnaLang;
 import vm.schedulers.CPPMultithreadedMessagePassingScheduler;
 import project.ProjectConfig;
 import vm.Pid;
+import vm.Port;
 import ArgHelper;
 import lang.macros.MacroTools;
 import core.ObjectCreator;
@@ -39,6 +40,7 @@ class Kernel {
     objectFactory.injector = new Injector();
     objectFactory.injector.mapValue(ObjectCreator, objectFactory);
     objectFactory.injector.mapClass(Pid, SimpleProcess);
+    objectFactory.injector.mapClass(Port, SimplePort);
     scheduler.objectCreator = objectFactory;
     annaLang = new AnnaLang();
 

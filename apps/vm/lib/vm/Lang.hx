@@ -8,6 +8,8 @@ import vm.Operation;
 import haxe.macro.Printer;
 import haxe.macro.Expr;
 import hscript.Macro;
+import vm.Port;
+import vm.PortMan;
 using lang.AtomSupport;
 class Lang {
 
@@ -24,6 +26,8 @@ class Lang {
     definedModules.set("LList", LList);
     definedModules.set("Map", ObjectMap);
     definedModules.set("MMap", MMap);
+    definedModules.set("Port", SimplePort);
+    definedModules.set("PortMan", PortMan);
     definedModules.set("Std", Std);
     definedModules.set("Tuple", Tuple);
     definedModules.set("vm", {

@@ -6,7 +6,6 @@ import lang.macros.AnnaLang;
 import lang.AtomSupport;
 using lang.AtomSupport;
 using StringTools;
-
 @:build(lang.macros.ValueClassImpl.build())
 class Classes {
 
