@@ -181,13 +181,10 @@ class GenericScheduler implements Scheduler {
             if(pidMeta.callback != null) {
               pidMeta.callback(result);
             }
-          } else {
-            Logger.log('result is null');
           }
         });
         pids.add(pid);
         _allPids.push(pid);
-
       }
     }
   }
@@ -211,7 +208,7 @@ class GenericScheduler implements Scheduler {
       _allPids.push(currentPid);
       pids.add(currentPid);
     }
-    }
+  }
 
   public function hasSomethingToExecute(): Bool {
     scheduleSleeping();
@@ -300,8 +297,10 @@ class GenericScheduler implements Scheduler {
     args.push(scopeVariables);
     var operations: Array<Operation> = fn.invoke(args);
     if(operations == null) {
-      IO.inspect('Empty function body for ${Anna.toAnnaString(fn)}');
-      Kernel.crash(Process.self());
+      if(callback != null) {
+        callback(null);
+      }
+//      Kernel.crash(Process.self());
       return;
     }
     if(callback != null) {
