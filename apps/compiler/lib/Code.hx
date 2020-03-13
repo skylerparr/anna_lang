@@ -1592,11 +1592,18 @@ import vm.Function;
   @def handle_input({Int: 27, String: current_string, String: full_string, Port: port}, [String], {
     read_input(port);
     input = read_input(port);
-    handle_input(input, current_string, full_string, port);
+    handle_arrow_input(input, current_string, full_string, port);
+  });
+
+  @def handle_input({Int: code, String: current_string, String: full_string, Port: port}, [String], {
+    str = Str.from_char_code(code);
+    System.print(str);
+    current_string = Str.concat(current_string, str);
+    current_string;
   });
 
   // up arrow
-  @def handle_input({Int: 65, String: current_string, String: full_string, Port: port}, [String], {
+  @def handle_arrow_input({Int: 65, String: current_string, String: full_string, Port: port}, [String], {
     clear_prompt(current_string);
     current_string = History.back();
     print_prompt(current_string, full_string);
@@ -1604,17 +1611,10 @@ import vm.Function;
   });
 
   // down arrow
-  @def handle_input({Int: 66, String: current_string, String: full_string, Port: port}, [String], {
+  @def handle_arrow_input({Int: 66, String: current_string, String: full_string, Port: port}, [String], {
     clear_prompt(current_string);
     current_string = History.forward();
     print_prompt(current_string, full_string);
-    current_string;
-  });
-
-  @def handle_input({Int: code, String: current_string, String: full_string, Port: port}, [String], {
-    str = Str.from_char_code(code);
-    System.print(str);
-    current_string = Str.concat(current_string, str);
     current_string;
   });
 
