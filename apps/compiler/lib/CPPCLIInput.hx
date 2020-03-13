@@ -1,4 +1,6 @@
 package ;
+import haxe.io.Bytes;
+import haxe.io.Input;
 import cpp.vm.Thread;
 import vm.Port;
 import vm.SynchronizedInstance;
@@ -21,7 +23,7 @@ class CPPCLIInput implements SynchronizedInstance {
 
   public function onThreadCreated():Void {
     while(true) {
-      var msg = Thread.readMessage(false);
+      var msg = Thread.readMessage(true);
       if(msg == "exit") {
         break;
       }
@@ -31,7 +33,7 @@ class CPPCLIInput implements SynchronizedInstance {
   }
 
   public function receive(payload:Dynamic):Atom {
-    trace("This port doesn't handle received messages");
+    thread.sendMessage(null);
     return Atom.create('ok');
   }
 }

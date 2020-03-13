@@ -257,17 +257,22 @@ import vm.Function;
 
   @def process_command({String: 't'}, [Atom], {
     History.push('t');
-    UnitTests.add_test(@_'StringTest');
-    UnitTests.add_test(@_'NumberTest');
-    UnitTests.add_test(@_'AtomTest');
-    UnitTests.add_test(@_'TupleTest');
-    UnitTests.add_test(@_'LListTest');
-    UnitTests.add_test(@_'MMapTest');
-    UnitTests.add_test(@_'KeywordTest');
-    UnitTests.add_test(@_'ModuleFunctionTest');
-    UnitTests.add_test(@_'CustomTypesTest');
+    Kernel.spawn(@fn {
+      [{}] => {
+        UnitTests.add_test(@_'StringTest');
+        UnitTests.add_test(@_'NumberTest');
+        UnitTests.add_test(@_'AtomTest');
+        UnitTests.add_test(@_'TupleTest');
+        UnitTests.add_test(@_'LListTest');
+        UnitTests.add_test(@_'MMapTest');
+        UnitTests.add_test(@_'KeywordTest');
+        UnitTests.add_test(@_'ModuleFunctionTest');
+        UnitTests.add_test(@_'CustomTypesTest');
 
-    UnitTests.run_tests();
+        UnitTests.run_tests();
+      }
+    });
+    @_'ok';
   });
 
   @def process_command({String: ''}, [Atom], {
@@ -1506,7 +1511,7 @@ import vm.Function;
   @def prompt({Port: port}, [Atom], {
     prompt_string = get_prompt();
     System.print(prompt_string);
-    collect_user_input('', '');
+    collect_user_input(port, '', '');
   });
 
   @def get_prompt([String], {
@@ -1515,16 +1520,19 @@ import vm.Function;
     Str.concat(prefix, ')> ');
   });
 
-  @def collect_user_input({String: current_string, String: full_string}, [String], {
-    current_string = Kernel.receive(@fn {
+  @def read_input({Port: port}, [Int], {
+    @native PortMan.send(port, null);
+    Kernel.receive(@fn {
       [{Tuple: [@_'ok', input]}] => {
-        handle_input(cast(input, Int), current_string, full_string);
-      };
-      [{Tuple: _}] => {
-        current_string;
+        input;
       };
     });
-    collect_user_input(current_string, full_string);
+  });
+
+  @def collect_user_input({Port: port, String: current_string, String: full_string}, [String], {
+    input = read_input(port);
+    current_string = handle_input(input, current_string, full_string, port);
+    collect_user_input(port, current_string, full_string);
   });
 
   @def handle_result({Atom: @_'ok', String: current_string}, [Atom], {
@@ -1548,29 +1556,30 @@ import vm.Function;
   });
 
   // enter
-  @def handle_input({Int: 13, String: current_string, String: full_string}, [String], {
+  @def handle_input({Int: 13, String: current_string, String: full_string, Port: _}, [String], {
     System.println('');
     result = CommandHandler.process_command(current_string);
     handle_result(result, current_string);
     '';
   });
-/*
+
   // ctrl+u
-  @def handle_input({Int: 21, String: _current_string, String: full_string}, [String], {
-    clear_prompt('');
+  @def handle_input({Int: 21, String: current_string, String: full_string, Port: _}, [String], {
+    clear_prompt(current_string);
     print_prompt('', full_string);
+    '';
   });
 
   // ctrl+d
-  @def handle_input({Int: 4, String: current_string}, [String], {
+  @def handle_input({Int: 4, String: _, String: _, Port: port}, [String], {
     System.println('');
     System.println('exiting...');
     Kernel.stop();
-    @_'nil';
+    '';
   });
-*/
+
   // backspace
-  @def handle_input({Int: 127, String: current_string, String: full_string}, [String], {
+  @def handle_input({Int: 127, String: current_string, String: full_string, Port: port}, [String], {
     clear_prompt(current_string);
     len = Str.length(current_string);
     len = Kernel.subtract(len, 1);
@@ -1579,28 +1588,30 @@ import vm.Function;
     current_string;
   });
 
-  // up arrow
-  /*
-  @def handle_input({Int: 27, String: current_string, String: full_string}, [String], {
-    //@native IO.getsCharCode();
-    //@native IO.getsCharCode();
+  // arrow keys
+  @def handle_input({Int: 27, String: current_string, String: full_string, Port: port}, [String], {
+    read_input(port);
+    input = read_input(port);
+    handle_input(input, current_string, full_string, port);
+  });
 
+  // up arrow
+  @def handle_input({Int: 65, String: current_string, String: full_string, Port: port}, [String], {
     clear_prompt(current_string);
     current_string = History.back();
     print_prompt(current_string, full_string);
+    current_string;
   });
 
   // down arrow
-  @def handle_input({Int: 66, String: current_string, String: full_string}, [String], {
-    //@native IO.getsCharCode();
-    //@native IO.getsCharCode();
-    
+  @def handle_input({Int: 66, String: current_string, String: full_string, Port: port}, [String], {
     clear_prompt(current_string);
     current_string = History.forward();
     print_prompt(current_string, full_string);
+    current_string;
   });
-*/
-  @def handle_input({Int: code, String: current_string, String: full_string}, [String], {
+
+  @def handle_input({Int: code, String: current_string, String: full_string, Port: port}, [String], {
     str = Str.from_char_code(code);
     System.print(str);
     current_string = Str.concat(current_string, str);
@@ -1609,7 +1620,7 @@ import vm.Function;
 
   @def clear_prompt({String: current_string}, {
     str_len = Str.length(current_string);
-    str_len = Kernel.add(str_len, 10);
+    str_len = Kernel.add(str_len, 20);
     clear_string = Str.rpad('\r', ' ', str_len);
     System.print(clear_string);
   });
