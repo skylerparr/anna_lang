@@ -1,4 +1,5 @@
 package vm;
+import util.StringUtil;
 import lang.EitherSupport;
 import haxe.ds.ObjectMap;
 import haxe.CallStack;
@@ -65,6 +66,7 @@ class Lang {
   }
 
   public function doEval(string: String): Tuple {
+    string = StringUtil.removeWhitespace(string);
     string = StringTools.trim(string);
     string = StringTools.replace(string, "'", "\'");
     var isList: Bool = false;

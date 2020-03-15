@@ -45,6 +45,10 @@ import vm.Function;
   @def ends_with({String: str, String: other_str}, [Atom], {
     @native StringUtil.endsWith(str, other_str);
   });
+
+  @def remove_whitespace({String: str}, [String], {
+    @native StringUtil.removeWhitespace(str);
+  });
 }))
 @:build(lang.macros.AnnaLang.defmodule(Kernel, {
   @alias vm.Pid;
@@ -1558,6 +1562,7 @@ import vm.Function;
   // enter
   @def handle_input({Int: 13, String: current_string, String: full_string, Port: _}, [String], {
     System.println('');
+    current_string = Str.remove_whitespace(current_string);
     result = CommandHandler.process_command(current_string);
     handle_result(result, current_string);
     '';
@@ -1597,6 +1602,7 @@ import vm.Function;
 
   @def handle_input({Int: code, String: current_string, String: full_string, Port: port}, [String], {
     str = Str.from_char_code(code);
+    str = Str.remove_whitespace(str);
     System.print(str);
     current_string = Str.concat(current_string, str);
     current_string;

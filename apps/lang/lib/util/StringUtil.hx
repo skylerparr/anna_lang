@@ -88,4 +88,10 @@ class StringUtil {
       return Atom.create('false');
     }
   }
+
+  private static var stripWhiteSpaceRegex: EReg = ~/$\s*/;
+
+  public static function removeWhitespace(string: String):String {
+    return stripWhiteSpaceRegex.replace(string, "");
+  }
 }
