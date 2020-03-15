@@ -27,7 +27,7 @@ class InvokeNativeFunctionOperation extends vm.AbstractInvokeFunction {
     var invokeArgs: Array<Dynamic> = [];
     for(arg in arrayArgs) {
       var invokeArg: Dynamic = ArgHelper.extractArgValue(arg, scopeVariables, annaLang);
-      invokeArgs.push(arg);
+      invokeArgs.push(invokeArg);
     }
     var retVal: Dynamic = Reflect.callMethod(null, func, invokeArgs);
     scopeVariables.set("$$$", retVal);

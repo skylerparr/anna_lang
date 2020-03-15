@@ -1,0 +1,43 @@
+defmodule(Str, {
+  @alias util.StringUtil;
+
+  @def concat({String: lhs, String: rhs}, [String], {
+    @native util.StringUtil.concat(lhs, rhs);
+  });
+
+  @def from_char_code({Int: char_code}, [String], {
+    @native StringUtil.fromCharCode(char_code);
+  });
+
+  @def substring({String: string, Int: start, Int: end}, [String], {
+    @native StringUtil.substring(string, start, end);
+  });
+
+  @def length({String: string}, [Int], {
+    @native StringUtil.length(string);
+  });
+
+  @def rpad({String: string, String: c_string, Int: length}, [String], {
+    @native StringUtil.rpad(string, c_string, length);
+  });
+
+  @def string_to_int({String: s}, [Int], {
+    @native Std.int(s);
+  });
+
+  @def random({Int: length}, [String], {
+    @native StringUtil.random(length);
+  });
+
+  @def nameify({String: str}, [String], {
+    @native StringUtil.nameify(str);
+  });
+
+  @def ends_with({String: str, String: other_str}, [Atom], {
+    @native StringUtil.endsWith(str, other_str);
+  });
+
+  @def remove_whitespace({String: str}, [String], {
+    @native StringUtil.removeWhitespace(str);
+  });
+})

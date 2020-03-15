@@ -931,7 +931,7 @@ class AnnaLang {
       return retVal;
     }
     #end
-    throw new FunctionClauseNotFound('Function ${moduleName}.${funName} with args [${argStrings.join(', ')}] at line ${lineNumber} not found');
+    throw new FunctionClauseNotFound('AnnaLang: Function ${moduleName}.${funName} with args [${argStrings.join(', ')}] at line ${lineNumber} not found');
   }
 
   private function setScopeTypesForCustomType(expr: Expr): Void {

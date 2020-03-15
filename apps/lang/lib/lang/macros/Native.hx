@@ -58,7 +58,11 @@ class Native {
     var macroTools: MacroTools = annaLang.macroTools;
     var macros: Macros = annaLang.macros;
 
+    #if macro
     var className = 'InvokeFunction_${StringTools.replace(moduleName, '.', '_')}_${StringTools.replace(invokeFunName, '.', '_')}';
+    #else
+    var className = 'InvokeNativeFunctionOperation';
+    #end
 
     var assignments: Array<String> = [];
     var paramVars: Array<Field> = [];

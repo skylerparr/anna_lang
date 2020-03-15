@@ -44,4 +44,21 @@ class File {
       return Atom.create('false');
     }
   }
+
+  public static function getContent(path:String):String {
+    if(FileSystem.exists(path)) {
+      return File.getContent(path);
+    }
+    return 'FIXME: File does not exist';
+  }
+
+  public static function saveContent(path:String, content: String):Tuple {
+    trace("TODO: check to see if necessary directories exist");
+    return File.saveContent(path, content);
+  }
+
+  public static function copy(src:String, dest:String):Tuple {
+    File.copy(src, dest);
+    return Tuple.create([Atom.create('ok'), src, dest]);
+  }
 }

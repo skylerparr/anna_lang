@@ -1,4 +1,6 @@
 package vm;
+import lang.FunctionClauseNotFound;
+import lang.ParsingException;
 import util.StringUtil;
 import lang.EitherSupport;
 import haxe.ds.ObjectMap;
@@ -30,11 +32,19 @@ class Lang {
     definedModules.set("Port", SimplePort);
     definedModules.set("PortMan", PortMan);
     definedModules.set("Std", Std);
+    definedModules.set("Sys", Sys);
+    definedModules.set("sys", {FileSystem: sys.FileSystem});
+    definedModules.set("sys.io", {File: sys.io.File});
     definedModules.set("Tuple", Tuple);
+    definedModules.set("util", {
+      StringUtil: util.StringUtil,
+      File: util.File
+    });
     definedModules.set("vm", {
       Classes: vm.Classes,
       InterpMatch: vm.InterpMatch,
       Lang: vm.Lang,
+      Kernel: vm.Kernel,
       Process: vm.Process,
       InvokeNativeFunctionOperation: vm.InvokeNativeFunctionOperation
     });
@@ -70,25 +80,50 @@ class Lang {
     string = StringTools.trim(string);
     string = StringTools.replace(string, "'", "\'");
     var isList: Bool = false;
+    if(StringTools.startsWith(string, '{') && StringTools.endsWith(string, '}')) {
+      isList = true;
+    }
+    var pos = { max: 12, min: 0, file: null };
+    var ast: Dynamic = null;
+
     try {
-      if(StringTools.startsWith(string, '{') && StringTools.endsWith(string, '}')) {
-        isList = true;
-      }
-      var ast = annaLang.parser.parseString(string);
-      var pos = { max: 12, min: 0, file: null };
-      var ast: Expr = new Macro(pos).convert(ast);
-      invokeAst(ast, isList);
-      return Tuple.create(['ok'.atom(), ast]);
+      ast = annaLang.parser.parseString(string);
+    } catch(pe: ParsingException) {
+      return Tuple.create(['error'.atom(), '${pe.message}']);
     } catch(e: Dynamic) {
       if(StringTools.endsWith(e, '"<eof>"')) {
+        trace(e);
         return Tuple.create(['ok'.atom(), 'continuation'.atom()]);
       } else {
         trace(e);
-        trace("call stack:", CallStack.callStack().join('\n'));
-        trace("exception stack:", CallStack.exceptionStack().join('\n'));
         return Tuple.create(['error'.atom(), '${e}']);
       }
     }
+
+    try {
+      ast = new Macro(pos).convert(ast);
+    } catch(e: Dynamic) {
+      trace(e);
+      return Tuple.create(['error'.atom(), '${e}']);
+    }
+    try {
+      invokeAst(ast, isList);
+    } catch(e: ParsingException) {
+      trace(e);
+      return Tuple.create(['error'.atom(), '${e}']);
+    } catch(e: FunctionClauseNotFound) {
+      trace(e);
+      return Tuple.create(['error'.atom(), '${e}']);
+    } catch(e: Dynamic) {
+      trace("call stack:", CallStack.callStack().join('\n'));
+      trace("exception stack:", CallStack.exceptionStack().join('\n'));
+      trace("TODO: Handle this exception");
+//      trace(string);
+      trace(e);
+      IO.inspect(e);
+      return Tuple.create(['error'.atom(), '${e}']);
+    }
+    return Tuple.create(['ok'.atom(), ast]);
   }
 
   public inline static function eval(string:String):Tuple {

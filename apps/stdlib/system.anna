@@ -1,0 +1,47 @@
+defmodule(System, {
+  @def print({String: str}, [Atom], {
+    @native IO.print(str);
+  });
+
+  @def print({Int: str}, [Atom], {
+    @native IO.print(str);
+  });
+
+  @def print({Float: str}, [Atom], {
+    @native IO.print(str);
+  });
+
+  @def println({String: str}, [Atom], {
+    @native IO.println(str);
+  });
+
+  @def println({Int: str}, [Atom], {
+    @native IO.println(str);
+  });
+
+  @def println({Float: str}, [Atom], {
+    @native IO.println(str);
+  });
+
+  @def println({Atom: str}, [Atom], {
+    @native IO.println(str);
+  });
+
+  @def println({Tuple: str}, [Atom], {
+    @native IO.inspect(str);
+  });
+
+  @def println({Dynamic: d}, [Atom], {
+    @native IO.println(d);
+  });
+
+  @def set_cwd({String: str}, [Tuple], {
+    @native Sys.setCwd(str);
+    [@_'ok', str];
+  });
+
+  @def get_cwd([Tuple], {
+    cwd = @native Sys.getCwd();
+    [@_'ok', cwd];
+  });
+})

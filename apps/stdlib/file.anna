@@ -1,0 +1,37 @@
+defmodule(File, {
+  @alias util.File;
+  @alias sys.FileSystem;
+
+  @def get_content({String: file_path}, [String], {
+    @native File.getContent(file_path);
+  });
+
+  @def save_content({String: file_path, String: content}, [Tuple], {
+    @native File.saveContent(file_path, content);
+    [@_'ok', file_path];
+  });
+
+  @def mkdir_p({String: dir}, [Tuple], {
+    @native FileSystem.createDirectory(dir);
+    [@_'ok', dir];
+  });
+
+  @def rm_rf({String: dir}, [Tuple], {
+    @native File.removeAll(dir);
+  });
+
+  @def cp({String: src, String: dest}, [Tuple], {
+    @native File.copy(src, dest);
+    [@_'ok', file_path];
+  });
+
+  @def ls({String: dir}, [Tuple], {
+    files = @native File.readDirectory(dir);
+    [@_'ok', files];
+  });
+
+  @def is_dir({String: dir}, [Tuple], {
+    result = @native File.isDirectory(dir);
+    [@_'ok', result];
+  });
+})

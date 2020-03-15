@@ -1,0 +1,13 @@
+defmodule(BootMain, {
+  @alias vm.Lang;
+
+  @def start([Atom], {
+    @native IO.inspect('Booting main');
+    AppCode.compile('apps/stdlib/file.anna');
+    AppCode.compile('apps/stdlib/str.anna');
+    AppCode.compile('apps/stdlib/system.anna');
+    AppCode.compile('apps/stdlib/kernel.anna');
+    AppCode.compile('apps/stdlib/test_drive.anna');
+    @native Lang.eval('TestDrive.test()');
+  });
+});
