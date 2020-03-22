@@ -24,12 +24,11 @@ class Fn {
           defined = defineFunction(annaLang, anonFunctionName, expr);
           defined.varTypesInScope = macroContext.varTypesInScope;
         }
-        macroContext.lastFunctionReturnType = "vm_Function";
         #if !macro
         var anonFn = buildFunction(annaLang, anonFunctionName, params);
         vm.Classes.defineFunction(Atom.create(currentModuleStr), Atom.create(defined.internalFunctionName), anonFn);
-        return [];
         #end
+        macroContext.lastFunctionReturnType = "vm_Function"; // this must stay here or it'll break things
         return [buildDeclareAnonFunctionExpr(annaLang, currentModuleStr, defined.internalFunctionName, params)];
       case _:
         MacroLogger.log(params, 'params');

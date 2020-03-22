@@ -179,7 +179,7 @@ class Lang {
   private inline function invokeBlock(expr: Expr): Void {
     var operations = resolveOperations(expr);
     var op: InterpretedOperation = new InterpretedOperation(
-      Atom.create('__DefaultType__'),
+      Atom.create('__DefaultModule__'),
       Atom.create('__default__'),
       1,
       annaLang

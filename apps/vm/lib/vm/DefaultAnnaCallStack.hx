@@ -37,7 +37,13 @@ class DefaultAnnaCallStack implements AnnaCallStack {
       scope.set(key, scopeVariables.get(key));
     }
     scopeVariables = scope;
-    currentOperation.execute(scopeVariables, processStack);
+    try {
+      currentOperation.execute(scopeVariables, processStack);
+    } catch(e: Dynamic) {
+      trace(e);
+      Kernel.crash(Process.self());
+      return;
+    }
   }
 
   public inline function finalCall(): Bool {
