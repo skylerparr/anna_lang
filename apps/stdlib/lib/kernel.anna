@@ -1,0 +1,128 @@
+defmodule(Kernel, {
+  @alias vm.Pid;
+  @alias vm.Kernel;
+  @alias vm.Function;
+  @alias vm.Process;
+
+  @def stop({
+    @native Kernel.stop();
+  });
+
+  @def flush([Atom], {
+    data = Kernel.receive(@fn {
+      [{Tuple: result}] => {
+        result;
+      };
+    });
+    @_'ok';
+  });
+
+  @def receive({Function: fun}, [Dynamic], {
+    @native Kernel.receive(fun);
+  });
+
+  @def receive({Function: fun, Int: timeout}, [Dynamic], {
+    @native Kernel.receive(fun, timeout);
+  });
+
+  @def send({Pid: pid, Tuple: value}, [Atom], {
+    @native Kernel.send(pid, value);
+  @_'ok';
+  });
+
+  @def send({Pid: pid, Atom: value}, [Atom], {
+    @native Kernel.send(pid, value);
+    @_'ok';
+  });
+
+  @def send({Pid: pid, MMap: value}, [Atom], {
+    @native Kernel.send(pid, value);
+    @_'ok';
+  });
+
+  @def sleep({Int: milliseconds}, [Atom], {
+    @native Process.sleep(milliseconds);
+  });
+
+  @def self([Pid], {
+    @native vm.Process.self();
+  });
+
+  @def pid_info([Tuple], {
+    dict = @native vm.Process.getDictionary();
+    [@_'ok', [@_'dictionary' => dict]];
+  });
+
+  @def monitor({Pid: pid}, [Atom], {
+    @native Kernel.monitor(pid);
+  });
+
+  @def demonitor({Pid: pid}, [Atom], {
+    @native Kernel.demonitor(pid);
+  });
+
+  @def spawn({Atom: module, Atom: func}, [Pid], {
+    @native Kernel.spawn(module, func, @tuple[], {});
+  });
+
+  @def spawn({Function: fun}, [Pid], {
+    @native Kernel.spawnFn(fun, {});
+  });
+
+  @def spawn({Atom: module, Atom: func, Tuple: types, LList: args}, [Pid], {
+    @native Kernel.spawn(module, func, types, args);
+  });
+
+  @def spawn_link({Function: fun}, [Pid], {
+    @native Kernel.spawn_linkFn(fun, {});
+  });
+
+  @def spawn_link({Atom: module, Atom: func}, [Pid], {
+    @native Kernel.spawn_link(module, func, @tuple[], {});
+  });
+
+  @def spawn_link({Atom: module, Atom: func, Tuple: types, LList: args}, [Pid], {
+    @native Kernel.spawn_link(module, func, types, args);
+  });
+
+  @def add({Float: a, Float: b}, [Float], {
+    @native Kernel.add(a, b);
+  });
+
+  @def subtract({Float: a, Float: b}, [Float], {
+    @native Kernel.subtract(a, b);
+  });
+
+  @def same({Dynamic: a, Dynamic: b}, [Atom], {
+    @native Kernel.same(a, b);
+  });
+
+  @def equal({Dynamic: a, Dynamic: b}, [Atom], {
+    @native Kernel.equal(a, b);
+  });
+
+  @def exit({Pid: pid}, [Atom], {
+    @native Kernel.exit(pid);
+  });
+
+  @def crash({Pid: pid}, [Atom], {
+    @native Kernel.crash(pid);
+  });
+
+  @def register_pid({Pid: pid, Atom: name}, [Atom], {
+    @native Process.registerPid(pid, name);
+  });
+
+  @def get_pid_by_name({Atom: name}, [Pid], {
+    @native Process.getPidByName(name);
+  });
+
+  @def apply({Function: fun, LList: args}, [Dynamic], {
+    @native Kernel.apply(self(), fun, args);
+  });
+
+  @def apply({Atom: module, Atom: fun, Tuple: types, LList: args}, [Dynamic], {
+    @native Kernel.applyMFA(self(), module, fun, types, args);
+  });
+
+})

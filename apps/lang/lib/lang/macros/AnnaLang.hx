@@ -1,5 +1,6 @@
 package lang.macros;
 
+import haxe.CallStack;
 import hscript.Interp;
 import util.StringUtil;
 import lang.macros.MacroTools;
@@ -931,7 +932,7 @@ class AnnaLang {
       return retVal;
     }
     #end
-    throw new FunctionClauseNotFound('AnnaLang: Function ${moduleName}.${funName} with args [${argStrings.join(', ')}] at line ${lineNumber} not found');
+    throw new FunctionClauseNotFound('AnnaLang: Function ${moduleName}.${funName} with args [${argStrings.join(', ')}] types: [${types.join(', ')}] at line ${lineNumber} not found');
   }
 
   private function setScopeTypesForCustomType(expr: Expr): Void {

@@ -3,11 +3,35 @@ defmodule(BootMain, {
 
   @def start([Atom], {
     @native IO.inspect('Booting main');
-    AppCode.compile('apps/stdlib/file.anna');
-    AppCode.compile('apps/stdlib/str.anna');
-    AppCode.compile('apps/stdlib/system.anna');
-    AppCode.compile('apps/stdlib/kernel.anna');
-    AppCode.compile('apps/stdlib/test_drive.anna');
-    @native Lang.eval('TestDrive.test()');
+    files = {
+      'apps/stdlib/lib/system.anna';
+      'apps/stdlib/lib/str.anna';
+      'apps/stdlib/lib/file.anna';
+      'apps/stdlib/lib/kernel.anna';
+      'apps/stdlib/lib/test_drive.anna';
+    };
+    compile_files(cast(files, LList));
+    @_'ok';
   });
-});
+
+  @def compile_files({LList: {}}, [Tuple], {
+    @native Lang.eval('TestDrive.test()');
+    [@_'ok', 'success'];
+  });
+
+  @def compile_files({LList: {file | files;}}, [Tuple], {
+    @native IO.inspect(file);
+    @native IO.inspect(files);
+    result = AppCode.compile(cast(file, String));
+    handle_compile_result(result, cast(files, LList));
+  });
+
+  @def handle_compile_result({Tuple: [@_'error', message], LList: _}, [Tuple], {
+    @native IO.inspect(message);
+    [@_'error', message];
+  });
+
+  @def handle_compile_result({Tuple: _, LList: files}, [Tuple], {
+    compile_files(cast(files, LList));
+  });
+})

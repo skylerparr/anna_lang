@@ -46,7 +46,9 @@ class Lang {
       Lang: vm.Lang,
       Kernel: vm.Kernel,
       Process: vm.Process,
-      InvokeNativeFunctionOperation: vm.InvokeNativeFunctionOperation
+      InvokeNativeFunctionOperation: vm.InvokeNativeFunctionOperation,
+      DeclareAnonFunction: vm.DeclareAnonFunction,
+      AnonymousFunction: vm.AnonymousFunction,
     });
     definedModules.set("lang", {
       EitherSupport: lang.EitherSupport,
@@ -112,13 +114,11 @@ class Lang {
       trace(e);
       return Tuple.create(['error'.atom(), '${e}']);
     } catch(e: FunctionClauseNotFound) {
-      trace(e);
-      return Tuple.create(['error'.atom(), '${e}']);
+      return Tuple.create(['error'.atom(), 'FunctionClauseNotFound: ${e}']);
     } catch(e: Dynamic) {
       trace("call stack:", CallStack.callStack().join('\n'));
       trace("exception stack:", CallStack.exceptionStack().join('\n'));
       trace("TODO: Handle this exception");
-//      trace(string);
       trace(e);
       IO.inspect(e);
       return Tuple.create(['error'.atom(), '${e}']);
@@ -133,10 +133,6 @@ class Lang {
 
   public inline function invokeAst(ast: Expr, isList: Bool): Atom {
     switch(ast.expr) {
-      // handle defines here
-      // ex: case "defCls":
-      // ex: case "defType":
-      // etc.
       case EBlock(exprs) if(!isList):
         var expr = annaLang.macroTools.buildBlock(exprs);
         invokeBlock(expr);

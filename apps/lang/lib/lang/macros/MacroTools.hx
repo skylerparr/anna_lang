@@ -596,6 +596,11 @@ class MacroTools {
                   case EConst(CInt(pattern)) | EConst(CString(pattern)) | EConst(CFloat(pattern)):
                     var name = util.StringUtil.random();
                     {name: name, pattern: pattern, isPatternVar: false};
+                  case EObjectDecl([]):
+                    var name = util.StringUtil.random();
+                    var items: Array<String> = [];
+                    var haxeStr: String = getList(items);
+                    {name: name, pattern: haxeStr, isPatternVar: false};
                   case EObjectDecl(values):
                     var name = util.StringUtil.random();
                     var items: Array<String> = [];

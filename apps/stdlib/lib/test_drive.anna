@@ -6,6 +6,15 @@ defmodule(TestDrive, {
     @native IO.inspect(str);
     result = AppCode.get_api(@_'Kernel');
     @native IO.inspect(result);
+
+    self = Kernel.self();
+    @native IO.inspect(self);
+    pid = Kernel.start(@fn {
+      [{}] => {
+        @native IO.inspect("side job");
+        Kernel.send(self, @_'success');
+      };
+    });
   });
 
 });
