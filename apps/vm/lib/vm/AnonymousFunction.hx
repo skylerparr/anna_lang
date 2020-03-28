@@ -26,10 +26,10 @@ class AnonymousFunction implements Operation {
     var fn: Function = scopeVariables.get(varName);
     if(fn == null) {
       IO.inspect('AnonymousFunction: Function not found ${func.toAnnaString()} ${Anna.toAnnaString(args)}:${lineNumber}');
-      Kernel.crash(Process.self());
+      NativeKernel.crash(Process.self());
       return;
     }
-    Kernel.apply(Process.self(), fn, args);
+    NativeKernel.apply(Process.self(), fn, args);
   }
 
   public function isRecursive(): Bool {

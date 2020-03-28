@@ -54,7 +54,7 @@ using lang.AtomSupport;
   });
 }))
 @:build(lang.macros.AnnaLang.defCls(FunctionPatternMatching, {
-  @alias vm.Kernel;
+  @alias vm.NativeKernel;
 
   @def start([Atom], {
     @native IO.inspect("testing function head pattern matching");
@@ -79,7 +79,7 @@ using lang.AtomSupport;
 
   @def count_down({Int: count}, [Int], {
     @native IO.inspect(count);
-    count = @native Kernel.subtract(count, 1);
+    count = @native NativeKernel.subtract(count, 1);
     count_down(count);
   });
 
@@ -138,7 +138,7 @@ using lang.AtomSupport;
 @:build(lang.macros.AnnaLang.defCls(Boot, {
   @alias vm.Process;
   @alias vm.Pid;
-  @alias vm.Kernel;
+  @alias vm.NativeKernel;
   @alias vm.Function;
 
   @const VALUE = "A constant value";
@@ -159,8 +159,8 @@ using lang.AtomSupport;
   });
 
   @def test_monitor([Atom], {
-    waiter = @native Kernel.spawn(@_'Boot', @_'start_wait', [], {});
-    @native Kernel.monitor(waiter);
+    waiter = @native NativeKernel.spawn(@_'Boot', @_'start_wait', [], {});
+    @native NativeKernel.monitor(waiter);
     @native IO.inspect("sleeping");
     @native Process.sleep(1000);
     @native IO.inspect("telling waiter to exit");
@@ -187,39 +187,39 @@ using lang.AtomSupport;
   });
 
   @def kernel_receive({Function: fun}, [Dynamic], {
-    @native Kernel.receive(fun);
+    @native NativeKernel.receive(fun);
   });
 
   @def kernel_send({Pid: pid, Tuple: value2}, [Atom], {
-    @native Kernel.send(pid, value2);
+    @native NativeKernel.send(pid, value2);
     @_'ok';
   });
 
   @def kernel_send({Pid: pid, String: value3}, [Atom], {
-    @native Kernel.send(pid, value3);
+    @native NativeKernel.send(pid, value3);
     @_'ok';
   });
 
   @def kernel_send({Pid: pid, Int: value4}, [Atom], {
-    @native Kernel.send(pid, value4);
+    @native NativeKernel.send(pid, value4);
     @_'ok';
   });
 
   @def exit({Pid: pid}, [Atom], {
-    @native Kernel.exit(pid);
+    @native NativeKernel.exit(pid);
   });
 
   @def trap_exit({Pid: pid}, [Atom], {
-    @native Kernel.trapExit(pid);
+    @native NativeKernel.trapExit(pid);
   });
 
   @def untrap_exit({Pid: pid}, [Atom], {
-    @native Kernel.untrapExit(pid);
+    @native NativeKernel.untrapExit(pid);
   });
 
   @def count_forever([Atom], {
-    pid = @native Kernel.spawn(@_'Boot', @_'start_state', [], {});
-    @native Kernel.saveState(pid);
+    pid = @native NativeKernel.spawn(@_'Boot', @_'start_state', [], {});
+    @native NativeKernel.saveState(pid);
     loop_increment_state(pid);
   });
 
@@ -236,7 +236,7 @@ using lang.AtomSupport;
   @def state_loop({Int: value5}, [Int], {
     received = kernel_receive(@fn {
       ([{Tuple: [@_'inc']}, [Int]] => {
-        @native Kernel.add(1, value5);
+        @native NativeKernel.add(1, value5);
       });
       ([{Tuple: [@_'get', pid]}, [Int]] => {
         kernel_send(cast(pid, Pid), cast(value5, Int));
@@ -274,7 +274,7 @@ using lang.AtomSupport;
 
   @def infinite_loop({Int: counter}, [Atom], {
     @native Process.sleep(100);
-    counter = @native Kernel.add(counter, 1);
+    counter = @native NativeKernel.add(counter, 1);
     infinite_loop(counter);
   });
 
@@ -309,16 +309,16 @@ using lang.AtomSupport;
 
   @def start([Int], {
     print(get_string(), return_num(get_one()), get_two());
-    result = @native Kernel.add(get_one(), get_two());
+    result = @native NativeKernel.add(get_one(), get_two());
     @native IO.inspect(result);
-    result = @native Kernel.add(result, get_one());
+    result = @native NativeKernel.add(result, get_one());
     @native IO.inspect(result);
     one_hundred = "100";
     @native IO.inspect("getting self");
     pid = @native Process.self();
     @native IO.inspect("sleeping");
     @native Process.sleep(1000);
-    counter = @native Kernel.add(23, 491);
+    counter = @native NativeKernel.add(23, 491);
     @native IO.inspect(counter);
     @native IO.inspect(null);
     @native IO.inspect(pid);
@@ -434,7 +434,7 @@ using lang.AtomSupport;
     name = get_api_name();
     @native IO.inspect(name);
 
-    spawn_pid = @native Kernel.spawn(@_'Boot', @_'test_exit', [], {});
+    spawn_pid = @native NativeKernel.spawn(@_'Boot', @_'test_exit', [], {});
     @native Process.registerPid(spawn_pid, @_'spawn_pid');
     @native Process.sleep(1200);
     status = @native Process.isAlive(spawn_pid);
@@ -451,13 +451,13 @@ using lang.AtomSupport;
   });
 
   @def test_exit([Atom], {
-    child_pid = @native Kernel.spawn_link(@_'Boot', @_'spawn_child', [], {});
+    child_pid = @native NativeKernel.spawn_link(@_'Boot', @_'spawn_child', [], {});
     @native IO.inspect('child pid');
     @native IO.inspect(child_pid);
     @native Process.registerPid(child_pid, @_'linked_pid');
     status = @native Process.isAlive(child_pid);
     @native Process.sleep(1000);
-    @native Kernel.exit(child_pid);
+    @native NativeKernel.exit(child_pid);
     @native IO.inspect('should not see this');
     @_'ok';
   });

@@ -66,15 +66,15 @@ class SimpleProcess extends AbstractCustomType implements Pid {
           case _:
             'UNKNOWN';
         }
-        Kernel.send(pid, Tuple.create([Atom.create('DOWN'), this, Atom.create(reason)]));
+        NativeKernel.send(pid, Tuple.create([Atom.create('DOWN'), this, Atom.create(reason)]));
       }
       monitors = null;
     }
     for(childPid in _children) {
-      Kernel.exit(childPid, 'kill'.atom());
+      NativeKernel.exit(childPid, 'kill'.atom());
     }
     if(parent != null) {
-      Kernel.exit(parent, 'kill'.atom());
+      NativeKernel.exit(parent, 'kill'.atom());
     }
     mailbox = null;
     parent = null;

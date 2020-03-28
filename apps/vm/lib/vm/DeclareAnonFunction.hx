@@ -29,7 +29,7 @@ class DeclareAnonFunction implements Operation {
     var fn: Function = Classes.getFunction(module.atom(), fun.atom());
     if(fn == null) {
       IO.inspect('Anonymous function ${module} ${fun} not found.');
-      Kernel.crash(Process.self());
+      NativeKernel.crash(Process.self());
       return;
     }
     var anonFn: Function = new SimpleFunction();

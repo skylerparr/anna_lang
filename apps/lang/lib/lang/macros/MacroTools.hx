@@ -454,6 +454,12 @@ class MacroTools {
       case EMeta({name: '__stringMatch'}, expr):
         var value: String = printer.printExpr(expr);
         {type: "String", value: value, rawValue: value};
+      case EObjectDecl([]):
+        var listValues: Array<String> = [];
+        var strValue: String = getList(listValues);
+
+        {type: "List", value: getConstant(strValue), rawValue: strValue};
+
       case EObjectDecl(args):
         var listValues: Array<String> = [];
         for(arg in args) {
@@ -579,7 +585,7 @@ class MacroTools {
     return {type: "MMap", value: getTuple([getAtom("const"), '${strValue}']), rawValue: strValue};
   }
 
-  public function getArgTypesAndReturnTypes(expr: Expr):Dynamic {
+  public function getArgTypesAndReturnTypes(expr: Expr, macroContext: MacroContext):Dynamic {
     return switch(expr.expr) {
       case ECall(f, params):
         var retVal: Dynamic = {argTypes: [], returnTypes: [], patterns: []};

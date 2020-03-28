@@ -52,16 +52,16 @@ import vm.Function;
 //}))
 //@:build(lang.macros.AnnaLang.defmodule(Kernel, {
 //  @alias vm.Pid;
-//  @alias vm.Kernel;
+//  @alias vm.NativeKernel;
 //  @alias vm.Function;
 //  @alias vm.Process;
 //
 //  @def stop({
-//    @native Kernel.stop();
+//    @native NativeKernel.stop();
 //  });
 //
 //  @def flush([Atom], {
-//    data = Kernel.receive(@fn {
+//    data = receive(@fn {
 //        [{Tuple: result}] => {
 //        result;
 //      };
@@ -70,25 +70,25 @@ import vm.Function;
 //  });
 //
 //  @def receive({Function: fun}, [Dynamic], {
-//    @native Kernel.receive(fun);
+//    @native NativeKernel.receive(fun);
 //  });
 //
 //  @def receive({Function: fun, Int: timeout}, [Dynamic], {
-//    @native Kernel.receive(fun, timeout);
+//    @native NativeKernel.receive(fun, timeout);
 //  });
 //
 //  @def send({Pid: pid, Tuple: value}, [Atom], {
-//    @native Kernel.send(pid, value);
+//    @native NativeKernel.send(pid, value);
 //    @_'ok';
 //  });
 //
 //  @def send({Pid: pid, Atom: value}, [Atom], {
-//    @native Kernel.send(pid, value);
+//    @native NativeKernel.send(pid, value);
 //    @_'ok';
 //  });
 //
 //  @def send({Pid: pid, MMap: value}, [Atom], {
-//    @native Kernel.send(pid, value);
+//    @native NativeKernel.send(pid, value);
 //    @_'ok';
 //  });
 //
@@ -106,59 +106,59 @@ import vm.Function;
 //  });
 //
 //  @def monitor({Pid: pid}, [Atom], {
-//    @native Kernel.monitor(pid);
+//    @native NativeKernel.monitor(pid);
 //  });
 //
 //  @def demonitor({Pid: pid}, [Atom], {
-//    @native Kernel.demonitor(pid);
+//    @native NativeKernel.demonitor(pid);
 //  });
 //
 //  @def spawn({Atom: module, Atom: func}, [Pid], {
-//    @native Kernel.spawn(module, func, @tuple[], {});
+//    @native NativeKernel.spawn(module, func, @tuple[], {});
 //  });
 //
 //  @def spawn({Function: fun}, [Pid], {
-//    @native Kernel.spawnFn(fun, {});
+//    @native NativeKernel.spawnFn(fun, {});
 //  });
 //
 //  @def spawn({Atom: module, Atom: func, Tuple: types, LList: args}, [Pid], {
-//    @native Kernel.spawn(module, func, types, args);
+//    @native NativeKernel.spawn(module, func, types, args);
 //  });
 //
 //  @def spawn_link({Function: fun}, [Pid], {
-//    @native Kernel.spawn_linkFn(fun, {});
+//    @native NativeKernel.spawn_linkFn(fun, {});
 //  });
 //
 //  @def spawn_link({Atom: module, Atom: func}, [Pid], {
-//    @native Kernel.spawn_link(module, func, @tuple[], {});
+//    @native NativeKernel.spawn_link(module, func, @tuple[], {});
 //  });
 //
 //  @def spawn_link({Atom: module, Atom: func, Tuple: types, LList: args}, [Pid], {
-//    @native Kernel.spawn_link(module, func, types, args);
+//    @native NativeKernel.spawn_link(module, func, types, args);
 //  });
 //
 //  @def add({Float: a, Float: b}, [Float], {
-//    @native Kernel.add(a, b);
+//    @native NativeKernel.add(a, b);
 //  });
 //
 //  @def subtract({Float: a, Float: b}, [Float], {
-//    @native Kernel.subtract(a, b);
+//    @native NativeKernel.subtract(a, b);
 //  });
 //
 //  @def same({Dynamic: a, Dynamic: b}, [Atom], {
-//    @native Kernel.same(a, b);
+//    @native NativeKernel.same(a, b);
 //  });
 //
 //  @def equal({Dynamic: a, Dynamic: b}, [Atom], {
-//    @native Kernel.equal(a, b);
+//    @native NativeKernel.equal(a, b);
 //  });
 //
 //  @def exit({Pid: pid}, [Atom], {
-//    @native Kernel.exit(pid);
+//    @native NativeKernel.exit(pid);
 //  });
 //
 //  @def crash({Pid: pid}, [Atom], {
-//    @native Kernel.crash(pid);
+//    @native NativeKernel.crash(pid);
 //  });
 //
 //  @def register_pid({Pid: pid, Atom: name}, [Atom], {
@@ -170,11 +170,11 @@ import vm.Function;
 //  });
 //
 //  @def apply({Function: fun, LList: args}, [Dynamic], {
-//    @native Kernel.apply(self(), fun, args);
+//    @native NativeKernel.apply(self(), fun, args);
 //  });
 //
 //  @def apply({Atom: module, Atom: fun, Tuple: types, LList: args}, [Dynamic], {
-//    @native Kernel.applyMFA(self(), module, fun, types, args);
+//    @native NativeKernel.applyMFA(self(), module, fun, types, args);
 //  });
 //
 //}))
@@ -226,18 +226,18 @@ import vm.Function;
 //  });
 //}))
 //@:build(lang.macros.AnnaLang.defmodule(CommandHandler, {
-//  @alias vm.Kernel;
+//  @alias vm.NativeKernel;
 //  @const PROJECT_SRC_PATH = 'project/';
 //
 //  @def process_command({String: 'exit'}, [Atom], {
 //    System.println('exiting...');
-//    @native Kernel.stop();
+//    @native NativeKernel.stop();
 //    @_'exit';
 //  });
 //
 //  @def process_command({String: 'r'}, [Atom], {
-//    @native Kernel.recompile();
-//    @native Kernel.stop();
+//    @native NativeKernel.recompile();
+//    @native NativeKernel.stop();
 //    @_'exit';
 //  });
 //
@@ -1200,19 +1200,24 @@ import vm.Function;
 //
 //  @def test_should_handle_message_passing_interp([Atom], {
 //    @native Lang.eval("
-//    me = Kernel.self();
-//    pid = Kernel.spawn(@fn {
-//      [{}] => {
-//        Kernel.send(me, @_'success');
-//      };
-//    });
-//    result = Kernel.receive(@fn {
-//      [{Atom: status}] => {
-//        status;
-//      };
-//    });
-//    Assert.assert(cast(result, Atom), @_'success');
+//      defmodule(TestDrive, {
+//        @def test([String], {
+//          me = Kernel.self();
+//          pid = Kernel.spawn(@fn {
+//            [{}] => {
+//              Kernel.send(me, @_'success');
+//            };
+//          });
+//          result = Kernel.receive(@fn {
+//            [{Atom: status}] => {
+//              status;
+//            };
+//          });
+//          Assert.assert(cast(result, Atom), @_'success');
+//        });
+//      });
 //    ");
+//    @native Lang.eval('TestDrive.test()');
 //  });
 //
 //  @def single_arg({Atom: status}, [Atom], {
@@ -1393,13 +1398,13 @@ import vm.Function;
 //@:build(lang.macros.AnnaLang.set_iface(FooApi, FooImpl))
 //@:build(lang.macros.AnnaLang.defmodule(History, {
 //  @alias vm.Process;
-//  @alias vm.Kernel;
+//  @alias vm.NativeKernel;
 //  @alias vm.Pid;
 //
 //  @const PID_HISTORY = @_'history';
 //
 //  @def start([Tuple], {
-//    history_pid = @native Kernel.spawn_link(@_'History', @_'start_history', @tuple[], {});
+//    history_pid = @native NativeKernel.spawn_link(@_'History', @_'start_history', @tuple[], {});
 //    Kernel.register_pid(history_pid, PID_HISTORY);
 //
 //    [@_'ok', history_pid];
@@ -1418,7 +1423,7 @@ import vm.Function;
 //      };
 //        [{Tuple: [@_'current_line', @_'get', pid]}] => {
 //        [current_line, _, _] = history;
-//        @native Kernel.send(pid, current_line);
+//        @native NativeKernel.send(pid, current_line);
 //        history;
 //      };
 //        [{Tuple: [@_'scroll', @_'back', pid]}] => {
@@ -1442,7 +1447,7 @@ import vm.Function;
 //        [{Tuple: [@_'get', index, respond]}, [Tuple]] => {
 //        [_, commands, _] = history;
 //        value = @native LList.getAt(commands, index);
-//        @native Kernel.send(cast(respond, Pid), cast(value, String));
+//        @native NativeKernel.send(cast(respond, Pid), cast(value, String));
 //        history;
 //      };
 //    });
@@ -1450,13 +1455,13 @@ import vm.Function;
 //  });
 //
 //  @def handle_history({LList: {}, Pid: pid, Int: _}, [Atom], {
-//    @native Kernel.send(pid, '');
+//    @native NativeKernel.send(pid, '');
 //  });
 //
 //  @def handle_history({LList: commands, Pid: pid, Int: scroll_pos}, [Atom], {
 //    total_commands = @native LList.length(commands);
 //    command = @native LList.getAt(commands, scroll_pos);
-//    @native Kernel.send(pid, command);
+//    @native NativeKernel.send(pid, command);
 //  });
 //
 //  @def increment_line([Atom], {
@@ -1697,7 +1702,7 @@ import vm.Function;
 //}))
 //@:build(lang.macros.AnnaLang.defmodule(UnitTests, {
 //  @alias vm.Process;
-//  @alias vm.Kernel;
+//  @alias vm.NativeKernel;
 //  @alias vm.Classes;
 //  @alias vm.Pid;
 //
@@ -1725,7 +1730,7 @@ import vm.Function;
 //        @native LList.add(all_tests, test_module);
 //      };
 //        [{Tuple: [@_'get', respond_pid]}] => {
-//        @native vm.Kernel.send(respond_pid, all_tests);
+//        @native NativeKernel.send(respond_pid, all_tests);
 //        @native LList.empty();
 //      };
 //    });
@@ -2147,15 +2152,15 @@ import vm.Function;
 //    #end
 //  });
 //}))
-//@:build(lang.macros.AnnaLang.defmodule(JSON, {
-//  @def parse({String: data}, [Tuple], {
-//    @native util.JSON.parse(data);
-//  });
-//
-//  @def stringify({Tuple: [@_'ok', data]}, [Tuple], {
-//    @native util.JSON.stringify(data);
-//  });
-//}))
+////@:build(lang.macros.AnnaLang.defmodule(JSON, {
+////  @def parse({String: data}, [Tuple], {
+////    @native util.JSON.parse(data);
+////  });
+////
+////  @def stringify({Tuple: [@_'ok', data]}, [Tuple], {
+////    @native util.JSON.stringify(data);
+////  });
+////}))
 
 
 
@@ -2232,24 +2237,24 @@ import vm.Function;
   });
 }))
 @:build(lang.macros.AnnaLang.defmodule(CompilerMain, {
-  @alias vm.Kernel;
+  @alias vm.NativeKernel;
   @alias vm.Lang;
 
   @def start([Atom], {
-    list({3;2;1;});
+    countdown({3;2;1;});
     main = 'apps/bootstrap/boot_main.anna';
     AppCode.compile(main);
     @native Lang.eval('BootMain.start()');
     @_'ok';
   });
 
-  @def list({LList: {}}, [Atom], {
+  @def countdown({LList: {}}, [Atom], {
     @native IO.inspect('go');
   });
 
-  @def list({LList: {hd | tl;}}, [Atom], {
+  @def countdown({LList: {hd | tl;}}, [Atom], {
     @native IO.inspect(hd);
-    list(cast(tl, LList));
+    countdown(cast(tl, LList));
   });
 }))
 

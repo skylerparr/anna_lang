@@ -1,20 +1,22 @@
 defmodule(TestDrive, {
-
   @def test([String], {
-    str = Str.random(10);
-    @native IO.inspect('I made a simple random string');
-    @native IO.inspect(str);
-    result = AppCode.get_api(@_'Kernel');
-    @native IO.inspect(result);
-
-    self = Kernel.self();
-    @native IO.inspect(self);
-    pid = Kernel.start(@fn {
+    System.println('starting test drive');
+    me = Kernel.self();
+    pid = Kernel.spawn(@fn {
       [{}] => {
-        @native IO.inspect("side job");
-        Kernel.send(self, @_'success');
+        @native IO.inspect('me');
+        @native IO.inspect(me);
+        @native IO.inspect('self()');
+        @native IO.inspect(Kernel.self());
+        Kernel.send(me, @_'success');
       };
     });
+    @native IO.inspect(pid);
+    result = Kernel.receive(@fn {
+      [{Atom: status}] => {
+        status;
+      };
+    });
+    @native IO.inspect(result);
   });
-
 });

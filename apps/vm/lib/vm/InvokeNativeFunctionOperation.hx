@@ -21,7 +21,7 @@ class InvokeNativeFunctionOperation extends vm.AbstractInvokeFunction {
     if(func == null) {
       Logger.inspect('InvokeNativeFunctionOperation: Function not found ${func}:${lineNumber}');
       IO.inspect('InvokeNativeFunctionOperation: Function not found ${func}:${lineNumber}');
-      Kernel.crash(Process.self());
+      NativeKernel.crash(Process.self());
       return;
     }
     var invokeArgs: Array<Dynamic> = [];

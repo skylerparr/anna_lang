@@ -75,6 +75,7 @@ class VarTypesInScope {
 
   public function set(name: String, value: String): Void {
     var types: Array<String> = getVarsInScopeInstance(name);
+    types.remove(value);
     types.push(value);
     varTypesInScope.set(name, types);
   }

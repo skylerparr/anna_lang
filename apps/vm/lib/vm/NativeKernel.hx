@@ -19,7 +19,7 @@ import minject.Injector;
 
 @:build(lang.macros.ValueClassImpl.build())
 @:rtti
-class Kernel {
+class NativeKernel {
 
   @field public static var currentScheduler: Scheduler;
   @field public static var statePid: Pid;
@@ -290,26 +290,26 @@ class Kernel {
   public static function spawn(module: Atom, func: Atom, types: Tuple, args: LList): Pid {
     func = resolveApiFuncWithTypes(func, types);
     return currentScheduler.spawn(function() {
-      return new PushStack(module, func, args, "Kernel".atom(), "spawn".atom(), MacroTools.line(), annaLang);
+      return new PushStack(module, func, args, "NativeKernel".atom(), "spawn".atom(), MacroTools.line(), annaLang);
     });
   }
 
   public static function spawnFn(fn: Function, args: LList): Pid {
     return currentScheduler.spawn(function() {
-      return new InvokeAnonFunction(fn, args, 'Kernel'.atom(), 'spawnFn'.atom(), MacroTools.line(), annaLang);
+      return new InvokeAnonFunction(fn, args, 'NativeKernel'.atom(), 'spawnFn'.atom(), MacroTools.line(), annaLang);
     });
   }
 
   public static function spawn_linkFn(fn: Function, args: LList): Pid {
      return currentScheduler.spawnLink(Process.self(), function() {
-      return new InvokeAnonFunction(fn, args, 'Kernel'.atom(), 'spawn_linkFn'.atom(), MacroTools.line(), annaLang);
+      return new InvokeAnonFunction(fn, args, 'NativeKernel'.atom(), 'spawn_linkFn'.atom(), MacroTools.line(), annaLang);
     });
   }
 
   public static function spawn_link(module: Atom, func: Atom, types: Tuple, args: LList): Pid {
     func = resolveApiFuncWithTypes(func, types);
     return currentScheduler.spawnLink(Process.self(), function() {
-      return new PushStack(module, func, args, "Kernel".atom(), "spawn_link".atom(), MacroTools.line(), annaLang);
+      return new PushStack(module, func, args, "NativeKernel".atom(), "spawn_link".atom(), MacroTools.line(), annaLang);
     });
   }
 
@@ -369,13 +369,13 @@ class Kernel {
 
   public static inline function apply(pid: Pid, fn: Function, args: LList, callback: Dynamic->Void = null): Void {
     if(fn == null) {
-      IO.inspect('Kernel: Function not found ${fn.apiFunc}');
-      Kernel.crash(Process.self());
+      IO.inspect('NativeKernel: Function not found ${fn.apiFunc}');
+      NativeKernel.crash(Process.self());
       return;
     }
     if(pid.state == ProcessState.KILLED || pid.state == ProcessState.COMPLETE) {
       IO.inspect('Pid ${Anna.toAnnaString(pid)} is not alive.');
-      Kernel.crash(Process.self());
+      NativeKernel.crash(Process.self());
       return;
     }
     var scopeVariables = pid.processStack.getVariablesInScope();
@@ -400,7 +400,7 @@ class Kernel {
     var anonFn: vm.Function = Classes.getFunction(module, fun);
     if(anonFn == null) {
       IO.inspect('Function not found ${module.toAnnaString()}${fun.toAnnaString()} with args ${args.toAnnaString()}');
-      Kernel.crash(Process.self());
+      NativeKernel.crash(Process.self());
       return;
     }
     anonFn.scope = new Map<String, Dynamic>();
@@ -409,7 +409,7 @@ class Kernel {
     //todo: dry?
     if(pid.state == ProcessState.KILLED || pid.state == ProcessState.COMPLETE) {
       IO.inspect('Pid ${Anna.toAnnaString(pid)} is not alive.');
-      Kernel.crash(Process.self());
+      NativeKernel.crash(Process.self());
       return;
     }
     var scopeVariables = pid.processStack.getVariablesInScope();

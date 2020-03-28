@@ -20,7 +20,7 @@ class InvokeAnonFunction implements Operation {
   }
 
   public function execute(scopeVariables:Map<String,Dynamic>, processStack:ProcessStack):Void {
-    Kernel.apply(Process.self(), fun, args);
+    NativeKernel.apply(Process.self(), fun, args);
   }
 
   public function isRecursive():Bool {

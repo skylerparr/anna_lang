@@ -37,7 +37,7 @@ class UserDefinedType extends AbstractCustomType {
 
   public function getField(field: String): Dynamic {
     var variablesInScope: Map<String, Dynamic> = null;
-    if(vm.Kernel.started) {
+    if(vm.NativeKernel.started) {
       variablesInScope = vm.Process.self().processStack.getVariablesInScope();
     } else {
       variablesInScope = new Map<String, Dynamic>();

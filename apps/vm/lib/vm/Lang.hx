@@ -44,7 +44,7 @@ class Lang {
       Classes: vm.Classes,
       InterpMatch: vm.InterpMatch,
       Lang: vm.Lang,
-      Kernel: vm.Kernel,
+      NativeKernel: vm.NativeKernel,
       Process: vm.Process,
       InvokeNativeFunctionOperation: vm.InvokeNativeFunctionOperation,
       DeclareAnonFunction: vm.DeclareAnonFunction,
@@ -114,6 +114,7 @@ class Lang {
       trace(e);
       return Tuple.create(['error'.atom(), '${e}']);
     } catch(e: FunctionClauseNotFound) {
+      trace('FunctionClauseNotFound: ${e}');
       return Tuple.create(['error'.atom(), 'FunctionClauseNotFound: ${e}']);
     } catch(e: Dynamic) {
       trace("call stack:", CallStack.callStack().join('\n'));

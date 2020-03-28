@@ -16,7 +16,7 @@ class Def {
     var macroTools: MacroTools = annaLang.macroTools;
     var r = ~/[A-Za-z]*<|>/g;
     var funName: String = macroTools.getCallFunName(params);
-    var allTypes: Dynamic = macroTools.getArgTypesAndReturnTypes(params);
+    var allTypes: Dynamic = macroTools.getArgTypesAndReturnTypes(params, macroContext);
     var funArgsTypes: Array<Dynamic> = allTypes.argTypes;
     var origTypes: Array<String> = [];
     var types: Array<String> = [];
@@ -35,6 +35,7 @@ class Def {
         } catch(e: Dynamic) {
           origTypeStr = argType.type;
         }
+        origTypeStr = Helpers.getAlias(origTypeStr, macroContext);
         origTypes.push(origTypeStr);
         types.push(Helpers.getType(Helpers.getCustomType(strType, macroContext), macroContext));
         argType.type = strType;

@@ -36,7 +36,7 @@ class PushStack implements Operation {
     if(fn == null) {
       Logger.inspect('PushStack: Function not found ${module.toAnnaString()} ${func.toAnnaString()}:${lineNumber}');
       IO.inspect('PushStack: Function not found ${module.toAnnaString()} ${func.toAnnaString()}:${lineNumber}');
-      Kernel.crash(Process.self());
+      NativeKernel.crash(Process.self());
       return;
     }
     var counter: Int = 0;
@@ -52,7 +52,7 @@ class PushStack implements Operation {
     var operations: Array<Operation> = fn.invoke(callArgs);
     if(operations == null) {
       IO.inspect('Function ${module.toAnnaString()} ${func.toAnnaString()}:${lineNumber} has no body.');
-      Kernel.crash(Process.self());
+      NativeKernel.crash(Process.self());
       return;
     }
     var annaCallStack: AnnaCallStack = new DefaultAnnaCallStack(operations, nextScopeVariables);

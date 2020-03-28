@@ -38,10 +38,10 @@ class Match {
 
           override public function execute(scopeVariables: Map<String, Dynamic>, processStack: vm.ProcessStack): Void {
             var matched: Map<String, Dynamic> = $e{patternMatch};
-            if(Kernel.isNull(matched)) {
+            if(NativeKernel.isNull(matched)) {
               Logger.inspect('BadMatch: ${currentModuleStr}.${macroContext.currentFunction}():${macroTools.getLineNumber(params)} => ${printer.printExpr(params)}');
               IO.inspect('BadMatch: ${currentModuleStr}.${macroContext.currentFunction}():${macroTools.getLineNumber(params)} => ${printer.printExpr(params)}');
-              vm.Kernel.crash(vm.Process.self());
+              vm.NativeKernel.crash(vm.Process.self());
               return;
             }
             for(key in matched.keys()) {

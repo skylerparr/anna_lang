@@ -29,9 +29,9 @@ class InterpMatch implements Operation {
       var interp = Lang.getHaxeInterp();
       interp.variables.set("scopeVariables", scopeVariables);
       var matched: Map<String, Dynamic> = interp.execute(ast);
-      if(Kernel.isNull(matched)) {
+      if(NativeKernel.isNull(matched)) {
         IO.inspect('BadMatch: ${annaLang.macroContext.currentModule.name}.eval()');
-        vm.Kernel.crash(vm.Process.self());
+        vm.NativeKernel.crash(vm.Process.self());
         return;
       }
       for(key in matched.keys()) {
@@ -39,7 +39,7 @@ class InterpMatch implements Operation {
       }
     } catch(e: Dynamic) {
       IO.inspect('BadMatch: ${annaLang.macroContext.currentModule.name}.eval() with error ${e}');
-      vm.Kernel.crash(vm.Process.self());
+      vm.NativeKernel.crash(vm.Process.self());
     }
   }
 

@@ -27,7 +27,7 @@ class DevelopmentRunner {
     interp.variables.set("AnnaUnit", anna_unit.AnnaUnit);
     Reflect.field(anna_unit.AnnaUnit, "main")();
     compileAll(function() {
-      var cls: Class<Dynamic> = Type.resolveClass('vm.Kernel');
+      var cls: Class<Dynamic> = Type.resolveClass('vm.NativeKernel');
       if(cls == null) {
         trace('Kernel is missing?');
         return;
@@ -39,10 +39,10 @@ class DevelopmentRunner {
     });
     #else
     var annaProject: AnnaLangProject = Application.getProjectConfig('compiler'.atom());
-    vm.Kernel.setProject(pc);
-    vm.Kernel.start();
-    vm.Kernel.testCompiler();
-    vm.Kernel.run();
+    vm.NativeKernel.setProject(pc);
+    vm.NativeKernel.start();
+    vm.NativeKernel.testCompiler();
+    vm.NativeKernel.run();
     #end
 
     return 'ok'.atom();

@@ -289,11 +289,16 @@ class AnnaLang {
 
       var declaredFunctions: Map<String, Array<Dynamic>> = getUndefinedFunctions(definedFunctions);
       for(key in declaredFunctions.keys()) {
-        definedFunctions.set(key, key);
         for(funDef in declaredFunctions.get(key)) {
           macroContext.currentFunction = funDef.name;
           macroContext.currentFunctionArgTypes = [];
+          #if macro
           macroContext.varTypesInScope = new VarTypesInScope();
+          #else
+          if(definedFunctions.exists(key)) {
+            macroContext.varTypesInScope = new VarTypesInScope();
+          }
+          #end
           macroContext.lastFunctionReturnType = "";
 
           for(argType in cast(funDef.funArgsTypes, Array<Dynamic>)) {
@@ -360,6 +365,7 @@ class AnnaLang {
           var argFun = macroTools.buildPublicVar('___${funDef.internalFunctionName}_${index}_args', varType, exprs);
           macroTools.addFieldToClass(macroContext.currentModule, argFun);
         }
+        definedFunctions.set(key, key);
       }
 
       validateImplementedInterfaces(moduleDef);
@@ -629,6 +635,7 @@ class AnnaLang {
             case ECall({ expr: EConst(CIdent('defmodule'))}, params):
               var name: Expr = params.shift();
               var body: Expr = params.shift();
+              var moduleName: String = macroTools.getIdent(name);
               defCls(name, body);
               compileModule(macroContext.currentModuleDef.moduleName, macroContext.currentModuleDef);
               #if !macro

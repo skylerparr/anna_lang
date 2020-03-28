@@ -1,5 +1,7 @@
 defmodule(BootMain, {
   @alias vm.Lang;
+  @alias vm.NativeKernel;
+  @alias vm.Pid;
 
   @def start([Atom], {
     @native IO.inspect('Booting main');
@@ -14,8 +16,16 @@ defmodule(BootMain, {
     @_'ok';
   });
 
+  @def self([Pid], {
+    @native vm.Process.self();
+  });
+
   @def compile_files({LList: {}}, [Tuple], {
-    @native Lang.eval('TestDrive.test()');
+    @native IO.inspect('all files compiled');
+    api = AppCode.get_api(@_'TestDrive');
+    @native IO.inspect(api);
+    @native IO.inspect('invoking test drive');
+    @native NativeKernel.applyMFA(self(), @_'TestDrive', @_'test', @tuple[], {});
     [@_'ok', 'success'];
   });
 

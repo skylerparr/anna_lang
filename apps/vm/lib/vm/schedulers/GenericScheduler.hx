@@ -116,7 +116,7 @@ class GenericScheduler implements Scheduler {
       pids.add(pid);
       _allPids.push(pid);
     } else {
-      Kernel.exit(Process.self(), 'crashed'.atom());
+      NativeKernel.exit(Process.self(), 'crashed'.atom());
     }
     return "ok".atom();
   }
@@ -298,7 +298,7 @@ class GenericScheduler implements Scheduler {
     var operations: Array<Operation> = fn.invoke(args);
     if(operations == null) {
       IO.inspect('Empty function body for ${Anna.toAnnaString(fn)}');
-      Kernel.crash(Process.self());
+      NativeKernel.crash(Process.self());
       return;
     }
     if(callback != null) {

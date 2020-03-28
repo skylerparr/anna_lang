@@ -39,7 +39,7 @@ class SimplePort extends AbstractCustomType implements Port {
       dispose();
       return;
     }
-    Kernel.send(pid, payload);
+    NativeKernel.send(pid, payload);
   }
 
   override public function toAnnaString():String {

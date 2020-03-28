@@ -26,12 +26,12 @@ class Process {
   }
 
   public static function complete(pid: Pid): Atom {
-    Kernel.currentScheduler.complete(pid);
+    NativeKernel.currentScheduler.complete(pid);
     return 'ok'.atom();
   }
 
   public static function self(): Pid {
-    return Kernel.currentScheduler.self();
+    return NativeKernel.currentScheduler.self();
   }
 
   public static function getDictionary(): MMap {
@@ -39,7 +39,7 @@ class Process {
   }
 
   public static function sleep(milliseconds: Int): Atom {
-    Kernel.currentScheduler.sleep(self(), milliseconds);
+    NativeKernel.currentScheduler.sleep(self(), milliseconds);
     return 'ok'.atom();
   }
 
@@ -49,14 +49,14 @@ class Process {
   }
 
   public static function registerPid(pid: Pid, name: Atom): Atom {
-    return Kernel.currentScheduler.registerPid(pid, name);
+    return NativeKernel.currentScheduler.registerPid(pid, name);
   }
 
   public static function unregisterPid(name: Atom): Atom {
-    return Kernel.currentScheduler.unregisterPid(name);
+    return NativeKernel.currentScheduler.unregisterPid(name);
   }
 
   public static function getPidByName(name: Atom): Pid {
-    return Kernel.currentScheduler.getPidByName(name);
+    return NativeKernel.currentScheduler.getPidByName(name);
   }
 }
