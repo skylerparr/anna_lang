@@ -1,6 +1,5 @@
 defmodule(TestDrive, {
   @def test([String], {
-    System.println('starting test drive');
     me = Kernel.self();
     pid = Kernel.spawn(@fn {
       [{}] => {

@@ -1,5 +1,6 @@
 package lang.macros;
 
+import lang.macros.opgen.CreatePushStack;
 import haxe.CallStack;
 import hscript.Interp;
 import util.StringUtil;
@@ -68,6 +69,9 @@ class AnnaLang {
       case EBlock(exprs):
         for(blockExpr in exprs) {
           switch(blockExpr.expr) {
+            case EMeta({name: 'alias'}, params):
+              var fun = keywordMap.get('alias');
+              fun(this, params);
             case EMeta({name: 'def'}, params):
               var def: Dynamic = Def.defineFunction(this, params);
               var arrayDef: Array<Dynamic> = moduleDef.declaredFunctions.get(def.internalFunctionName);
@@ -86,6 +90,9 @@ class AnnaLang {
         throw new ParsingException('AnnaLang defApi: Expect block of function definitions got ${body}');
     }
     macroContext.declaredInterfaces.set(interfaceName, moduleDef);
+    #if !macro
+    annaLangForMacro.macroContext.declaredInterfaces.set(interfaceName, moduleDef);
+    #end
 
     return AnnaLang.persistClassFields();
   }
@@ -561,9 +568,19 @@ class AnnaLang {
   }
   #end
 
+  private function getIface(iface: String): ModuleDef {
+    var interfaceDef: ModuleDef = macroContext.declaredInterfaces.get(iface);
+    #if !macro
+    if(interfaceDef == null) {
+      interfaceDef = annaLangForMacro.macroContext.declaredInterfaces.get(iface);
+    }
+    #end
+    return interfaceDef;
+  }
+
   private function validateImplementedInterfaces(moduleDef: ModuleDef):Void {
     for(iface in moduleDef.interfaces) {
-      var interfaceDef: ModuleDef = macroContext.declaredInterfaces.get(iface);
+      var interfaceDef: ModuleDef = getIface(iface);
       if(interfaceDef == null) {
         throw 'AnnaLang: interface ${iface} is not defined.';
       }
@@ -571,7 +588,6 @@ class AnnaLang {
       for(internalFunctionName in interfaceDef.declaredFunctions.keys()) {
         var fun = moduleDef.declaredFunctions.get(internalFunctionName);
         if(fun == null) {
-          MacroLogger.log(moduleDef.declaredFunctions, 'moduleDef.declaredFunctions');
           throw 'AnnaLang: ${moduleDef.moduleName} missing interface function ${internalFunctionName} as specified in ${interfaceDef.moduleName}.';
         }
       }
@@ -712,7 +728,7 @@ class AnnaLang {
                     pushStackArgs.push(arg);
                 }
               }
-              var exprs: Array<Expr> = createPushStack(moduleName, funName, pushStackArgs, lineNumber);
+              var exprs: Array<Expr> = CreatePushStack.gen(moduleName, funName, pushStackArgs, lineNumber, this);
               for(expr in exprs) {
                 retExprs.push(expr);
               }
@@ -738,7 +754,7 @@ class AnnaLang {
               var currentModule: TypeDefinition = macroContext.currentModule;
               var currentModuleStr: String = currentModule.name;
 
-              var exprs: Array<Expr> = createPushStack(currentModuleStr, funName, pushStackArgs, lineNumber);
+              var exprs: Array<Expr> = CreatePushStack.gen(currentModuleStr, funName, pushStackArgs, lineNumber, this);
               for(expr in exprs) {
                 retExprs.push(expr);
               }
@@ -812,136 +828,6 @@ class AnnaLang {
     return retExprs;
   }
 
-  private function generatePermutations(lists:Array<Array<String>>, result: Array<Array<String>>, depth: Int, current: Array<String>):Void {
-    var solutions: Int = 1;
-    for(i in 0...lists.length) {
-      solutions *= lists[i].length;
-    }
-    for(i in 0...solutions) {
-      var j: Int = 1;
-      var items: Array<String> = [];
-      for(item in lists) {
-        items.push(item[Std.int(i/j) % item.length]);
-        j *= item.length;
-      }
-      result.push(items);
-    }
-  }
-
-  private function createPushStack(currentModuleStr: String, funName: String, args: Array<Expr>, lineNumber: Int):Array<Expr> {
-    var moduleName: String = currentModuleStr;
-    if(moduleName == "") {
-      var moduleDef: ModuleDef = macroContext.currentModuleDef;
-      moduleName = moduleDef.moduleName;
-    }
-    var module: ModuleDef = macroContext.declaredClasses.get(moduleName);
-    if(module == null) {
-      module = macroContext.declaredInterfaces.get(moduleName);
-    }
-
-    var fqFunNameTypeMap: Map<String, String> = new Map();
-    var types: Array<Array<String>> = [];
-    var funArgs: Array<String> = [];
-    var argCounter: Int = 0;
-    var retVal: Array<Expr> = [];
-    var argStrings: Array<String> = [];
-
-    for(arg in args) {
-      argStrings.push(printer.printExpr(arg));
-
-      switch(arg.expr) {
-        case ECall(_, _):
-          var argString = '__${funName}_${argCounter} = ${printer.printExpr(arg)};';
-          #if !macro
-          vm.Process.self().processStack.getVariablesInScope().set('__${funName}_${argCounter}', 'Unknown');
-          #end
-          arg = macros.haxeToExpr(argString);
-          var exprs: Array<Expr> = walkBlock(macroTools.buildBlock([arg]));
-          for(expr in exprs) {
-            retVal.push(expr);
-          }
-
-          types.push([Helpers.getType(StringTools.replace(macroContext.lastFunctionReturnType, '.', '_'), macroContext)]);
-          funArgs.push(macroTools.getTuple([macroTools.getAtom("var"), '"__${funName}_${argCounter}"']));
-        case EField({expr: EConst(CIdent(obj))}, fieldName):
-          var typeAndValue = macroTools.getTypeAndValue(arg);
-          var type: String = macroContext.varTypesInScope.getTypes(obj)[0];
-          type = macroContext.getFieldType(type, fieldName);
-          type = Helpers.getType(type, macroContext);
-          types.push([type]);
-          funArgs.push(typeAndValue.value);
-        case _:
-          var typeAndValue = macroTools.getTypeAndValue(arg);
-          var typesForVar: Array<String> = getTypesForVar(typeAndValue, arg);
-
-          var possibleTypes: Array<String> = [];
-          for(typeForVar in typesForVar) {
-            var type: String = Helpers.getType(typeForVar, macroContext);
-            type = StringTools.replace(type, '.', '_');
-            possibleTypes.remove(type);
-            possibleTypes.push(type);
-          }
-          types.push(possibleTypes);
-          funArgs.push(typeAndValue.value);
-      }
-    }
-
-    var perms: Array<Array<String>> = [];
-    generatePermutations(types, perms, 0, []);
-    var possibleSignatures: Array<String> = [];
-
-    for(typeArgs in perms) {
-      var fqFunName: String = Helpers.makeFqFunName(funName, typeArgs);
-      MacroLogger.log(fqFunName, 'fqFunName');
-      var frags: Array<String> = fqFunName.split('.');
-      fqFunName = frags.pop();
-      var declaredFunctions: Map<String, Array<Dynamic>> = new Map<String, Array<Dynamic>>();
-      if(module != null) {
-        declaredFunctions = module.declaredFunctions;
-      }
-      if(declaredFunctions == null) {
-        throw new FunctionClauseNotFound("AnnaLang: No function found");
-      }
-
-      var funDef: Dynamic = declaredFunctions.get(fqFunName);
-      if(funDef == null) {
-        var types: Array<String> = macroContext.varTypesInScope.getTypes(funName);
-        if(types == null) {
-          throw new FunctionClauseNotFound("AnnaLang: No function found for ${moduleName}.${funName}");
-        }
-        var varTypeInScope: String = types[0];
-        if(varTypeInScope == 'vm_Function' || varTypeInScope == 'vm.Function') {
-          var haxeStr: String = 'ops.push(new vm.AnonymousFunction(${macroTools.getAtom(funName)}, ${macroTools.getList(funArgs)}, ${macroTools.getAtom(currentModuleStr)}, ${macroTools.getAtom(macroContext.currentFunction)}, ${lineNumber}, Code.annaLang))';
-          retVal.push(macros.haxeToExpr(haxeStr));
-          return retVal;
-        }
-      } else {
-        #if macro
-        macroContext.lastFunctionReturnType = funDef[0].funReturnTypes[0];
-        #else
-        var returnTypes: String = funDef[0].funReturnTypes;
-        macroContext.lastFunctionReturnType = returnTypes.substr(1, returnTypes.length - 2);
-        #end
-        var expr = buildPushStackExpr(moduleName, fqFunName, funArgs, currentModuleStr, macroContext.currentFunction, lineNumber);
-        retVal.push(expr);
-        return retVal;
-      }
-    }
-    var types: Array<String> = macroContext.varTypesInScope.getTypes(funName);
-    if(types == null) {
-      throw new FunctionClauseNotFound("AnnaLang: No function found for ${moduleName}.${funName}");
-    }
-    #if !macro
-    var fun = vm.Process.self().processStack.getVariablesInScope().get(funName);
-    if(Std.is(fun, vm.Function)) {
-      var haxeStr: String = 'ops.push(new vm.AnonymousFunction(${macroTools.getAtom(funName)}, ${macroTools.getList(funArgs)}, ${macroTools.getAtom(currentModuleStr)}, ${macroTools.getAtom(macroContext.currentFunction)}, ${lineNumber}, Code.annaLang))';
-      retVal.push(macros.haxeToExpr(haxeStr));
-      return retVal;
-    }
-    #end
-    throw new FunctionClauseNotFound('AnnaLang: Function ${moduleName}.${funName} with args [${argStrings.join(', ')}] types: [${types.join(', ')}] at line ${lineNumber} not found');
-  }
-
   private function setScopeTypesForCustomType(expr: Expr): Void {
     switch(expr.expr) {
       case ECall({ expr:
@@ -965,36 +851,6 @@ class AnnaLang {
     }
   }
 
-  private inline function buildPushStackExpr(moduleName: String, fqFunName:
-        String, funArgs:Array<String>, currentModuleStr: String,
-        currentFunction, lineNumber: Int): Expr {
-    var annaLangArg: Expr = macro Code.annaLang;
-
-    return macro ops.push(new vm.PushStack($e{macroTools.getAtomExpr(moduleName)},
-          $e{macroTools.getAtomExpr(fqFunName)},
-          $e{macroTools.getListExpr(funArgs)},
-          $e{macroTools.getAtomExpr(currentModuleStr)},
-          $e{macroTools.getAtomExpr(currentFunction)},
-          $e{macroTools.buildConst(CInt(lineNumber + ''))},
-          $e{annaLangArg}));
-  }
-
-  private function getTypesForVar(typeAndValue: Dynamic, arg: Expr):Array<String> {
-    return switch(arg.expr) {
-      case EConst(CIdent(varName)):
-        if(typeAndValue.rawValue == "vm_Function") {
-          return ["vm_Function"];
-        }
-        if(macroContext.currentModuleDef.constants.get(varName) == null) {
-          macroContext.varTypesInScope.getTypes(varName);
-        } else {
-          [typeAndValue.type];
-        }
-      case _:
-        [typeAndValue.type];
-    }
-  }
-  
   private function createPutIntoScope(expr: Expr, lineNumber: Int):Expr {
     var moduleName: String = macroTools.getModuleName(expr);
     moduleName = Helpers.getAlias(moduleName, macroContext);

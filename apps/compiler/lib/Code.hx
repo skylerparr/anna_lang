@@ -2241,20 +2241,10 @@ import vm.Function;
   @alias vm.Lang;
 
   @def start([Atom], {
-    countdown({3;2;1;});
     main = 'apps/bootstrap/boot_main.anna';
     AppCode.compile(main);
     @native Lang.eval('BootMain.start()');
     @_'ok';
-  });
-
-  @def countdown({LList: {}}, [Atom], {
-    @native IO.inspect('go');
-  });
-
-  @def countdown({LList: {hd | tl;}}, [Atom], {
-    @native IO.inspect(hd);
-    countdown(cast(tl, LList));
   });
 }))
 

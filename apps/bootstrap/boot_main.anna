@@ -4,12 +4,14 @@ defmodule(BootMain, {
   @alias vm.Pid;
 
   @def start([Atom], {
-    @native IO.inspect('Booting main');
     files = {
       'apps/stdlib/lib/system.anna';
       'apps/stdlib/lib/str.anna';
       'apps/stdlib/lib/file.anna';
       'apps/stdlib/lib/kernel.anna';
+      'apps/stdlib/lib/eenum.anna';
+      'apps/stdlib/lib/default_enum.anna';
+      'apps/stdlib/lib/map_apis.anna';
       'apps/stdlib/lib/test_drive.anna';
     };
     compile_files(cast(files, LList));
@@ -21,17 +23,11 @@ defmodule(BootMain, {
   });
 
   @def compile_files({LList: {}}, [Tuple], {
-    @native IO.inspect('all files compiled');
-    api = AppCode.get_api(@_'TestDrive');
-    @native IO.inspect(api);
-    @native IO.inspect('invoking test drive');
     @native NativeKernel.applyMFA(self(), @_'TestDrive', @_'test', @tuple[], {});
     [@_'ok', 'success'];
   });
 
   @def compile_files({LList: {file | files;}}, [Tuple], {
-    @native IO.inspect(file);
-    @native IO.inspect(files);
     result = AppCode.compile(cast(file, String));
     handle_compile_result(result, cast(files, LList));
   });

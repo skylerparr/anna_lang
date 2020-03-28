@@ -1,0 +1,63 @@
+defmodule(DefaultEnum, {
+  @impl EEnum;
+
+  @alias vm.Function;
+
+  // all LList
+  // ---------------------------------------------------------
+  @def all({LList: {}, Function: _}, [Atom], {
+    @_'true';
+  });
+
+  @def all({LList: {head | rest;}, Function: callback}, [Atom], {
+    result = callback(cast(head, Dynamic));
+    is_all(cast(result, Atom), cast(rest, LList), callback);
+  });
+
+  @def is_all({Atom: @_'true', LList: list, Function: callback}, [Atom], {
+    all(list, callback);
+  });
+
+  @def is_all({Atom: _, LList: _, Function: _}, [Atom], {
+    @_'false';
+  });
+
+  //======================================================
+  // all MMap
+  // ---------------------------------------------------------
+  @def all({MMap: map, Function: callback}, [Atom], {
+    keys = @native MMap.keys(map);
+    iterate_keys(keys, map, callback);
+  });
+
+  @def iterate_keys({LList: {}, MMap: _, Function: _}, [Atom], {
+    @_'true';
+  });
+
+  @def iterate_keys({LList: {key | rest;}, MMap: map, Function: callback}, [Atom], {
+    value = @native MMap.get(map, key);
+    result = callback(cast(value, Dynamic));
+    is_all(cast(result, Atom), cast(rest, LList), map, callback);
+  });
+
+  @def is_all({Atom: @_'true', LList: keys, MMap: map, Function: callback}, [Atom], {
+    iterate_keys(keys, map, callback);
+  });
+
+  @def is_all({Atom: _, LList: _, MMap: map, Function: _}, [Atom], {
+    @_'false';
+  });
+  //======================================================
+
+  // reduce
+  // --------------------------------------------------------
+  @def reduce({LList: {}, LList: acc, Function: _}, [LList], {
+    acc;
+  });
+
+  @def reduce({LList: {head | rest;}, LList: acc, Function: callback}, [LList], {
+    result = callback(cast(head, LList), acc);
+    reduce(cast(rest, LList), acc, callback);
+  });
+  //==========================================================
+})

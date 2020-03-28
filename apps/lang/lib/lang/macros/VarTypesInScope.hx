@@ -29,7 +29,7 @@ class VarTypesInScope {
     if(cls == null) {
       var types = varTypesInScope.get(name);
       if(types == null) {
-        throw new FunctionClauseNotFound('AnnaLang: Function ${name} does not exist.');
+        return null;
       }
       for(type in types) {
         retVal.push(type);
@@ -47,7 +47,6 @@ class VarTypesInScope {
       varType = '${cls}';
       retVal.push(varType);
     }
-
     return retVal;
   }
 
