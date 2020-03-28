@@ -186,7 +186,7 @@ class EitherMacro {
           findTypesAndExprs(annaLang, typeAndExprs, expr);
         }
       case {expr: EMeta(_)}:
-        var typesAndValues = annaLang.macroTools.getTypeAndValue(vExpr);
+        var typesAndValues = annaLang.macroTools.getTypeAndValue(vExpr, macroContext);
         var expr = annaLang.macros.haxeToExpr(typesAndValues.value);
         findTypesAndExprs(annaLang, typeAndExprs, expr);
       case {expr: expr}:

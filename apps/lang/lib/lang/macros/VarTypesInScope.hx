@@ -16,8 +16,8 @@ class VarTypesInScope {
   public function getTypes(name: String): Array<String> {
     var retVal: Array<String> = [];
 
-    var dictionary: Map<String, Dynamic> = MMap.haxeMap(vm.Process.self().dictionary);
     var varsInScope: Map<String, Dynamic> = vm.Process.self().processStack.getVariablesInScope();
+    var dictionary: Map<String, Dynamic> = MMap.haxeMap(vm.Process.self().dictionary);
     for(key in dictionary.keys()) {
       var varKey = StringTools.replace(key, '"', '');
       varsInScope.set(varKey, dictionary.get(key));
@@ -62,7 +62,7 @@ class VarTypesInScope {
           switch(field.type) {
             case CFunction(_, CClass(type, _)):
               return type;
-            case _:
+            case e:
               return 'Dynamic';
           }
         }

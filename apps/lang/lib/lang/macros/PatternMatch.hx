@@ -292,7 +292,7 @@ class PatternMatch {
         MacroLogger.logExpr(expr, 'expr');
         expr;
       case EMeta(_):
-        var typeAndValue = macroTools.getTypeAndValue(pattern);
+        var typeAndValue = macroTools.getTypeAndValue(pattern, macroContext);
         var expr = macros.haxeToExpr(typeAndValue.value);
         generatePatternMatch(annaLang, expr, valueExpr);
       case EBinop(OpArrow, base, suffix):

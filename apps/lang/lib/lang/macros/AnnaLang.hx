@@ -857,7 +857,7 @@ class AnnaLang {
     var args = macroTools.getFunBody(expr);
     var strArgs: Array<String> = [];
     for(arg in args) {
-      var typeAndValue = macroTools.getTypeAndValue(arg);
+      var typeAndValue = macroTools.getTypeAndValue(arg, macroContext);
       strArgs.push(typeAndValue.value);
     }
     macroContext.lastFunctionReturnType = getAnnaVarConstType(macros.haxeToExpr(strArgs.join(";")));
@@ -877,10 +877,10 @@ class AnnaLang {
   private function getAnnaVarConstType(expr):String {
     return switch(expr.expr) {
       case EMeta({name: 'tuple'}, {expr: EArrayDecl([_, e])}):
-        var typeAndValue: Dynamic = macroTools.getTypeAndValue(e);
+        var typeAndValue: Dynamic = macroTools.getTypeAndValue(e, macroContext);
         typeAndValue.type;
       case ECall({expr: EField({expr: EConst(CIdent("Tuple"))}, "create")}, [{expr: EArrayDecl([_, e])}]):
-        var typeAndValue: Dynamic = macroTools.getTypeAndValue(e);
+        var typeAndValue: Dynamic = macroTools.getTypeAndValue(e, macroContext);
         typeAndValue.type;
       case ECall({ expr: EField({ expr: EConst(CIdent('Tuple')) },'create') },
             [{ expr: EArrayDecl([{ expr: ECall({ expr: EField({ expr: EConst(CIdent('Atom')) },'create') },

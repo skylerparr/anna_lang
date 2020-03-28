@@ -49,6 +49,7 @@ class Lang {
       InvokeNativeFunctionOperation: vm.InvokeNativeFunctionOperation,
       DeclareAnonFunction: vm.DeclareAnonFunction,
       AnonymousFunction: vm.AnonymousFunction,
+      PortMan: vm.PortMan,
     });
     definedModules.set("lang", {
       EitherSupport: lang.EitherSupport,

@@ -347,14 +347,14 @@ class MacroTools {
     return 'Tuple.create([${getAtom("field")}, "${object}", "${field}"])';
   }
 
-  public function getTypeAndValue(expr: Expr):Dynamic {
+  public function getTypeAndValue(expr: Expr, macroContext: MacroContext):Dynamic {
     return switch(expr.expr) {
       case EConst(CIdent(varName)):
         var const: String = macroContext.currentModuleDef.constants.get(varName);
         if(const == null) {
           {type: 'Variable', value: getVar(varName), rawValue: varName};
         } else {
-          getTypeAndValue(macros.haxeToExpr(const));
+          getTypeAndValue(macros.haxeToExpr(const), macroContext);
         }
       case EConst(CString(value)):
         value = StringTools.replace(value, '"', '\\"');
@@ -369,7 +369,7 @@ class MacroTools {
       case EMeta({name: "tuple"}, {expr: EArrayDecl(values)}):
         var finalValues: Array<String> = [];
         for(value in values) {
-          var typeAndValue: Dynamic = getTypeAndValue(value);
+          var typeAndValue: Dynamic = getTypeAndValue(value, macroContext);
           finalValues.push(typeAndValue.value);
         }
         var strValue: String = getTuple(finalValues);
@@ -377,7 +377,7 @@ class MacroTools {
       case EMeta({name: "list"}, {expr: EArrayDecl(args)}):
         var listValues: Array<String> = [];
         for(arg in args) {
-          var typeAndValue: Dynamic = getTypeAndValue(arg);
+          var typeAndValue: Dynamic = getTypeAndValue(arg, macroContext);
           listValues.push(typeAndValue.value);
         }
         var strValue: String = getList(listValues);
@@ -385,7 +385,7 @@ class MacroTools {
       case EMeta({name: "keyword"}, {expr: EObjectDecl(args)}):
         var listValues: Array<String> = [];
         for(arg in args) {
-          var typeAndValue: Dynamic = getTypeAndValue(arg.expr);
+          var typeAndValue: Dynamic = getTypeAndValue(arg.expr, macroContext);
           listValues.push('${getAtom(arg.field)}, ${typeAndValue.value}');
         }
         var strValue: String = getKeyword(listValues);
@@ -396,8 +396,8 @@ class MacroTools {
         for(arg in args) {
           switch(arg.expr) {
             case EBinop(OpArrow, key, value):
-              var keyType = getTypeAndValue(key);
-              var valueType = getTypeAndValue(value);
+              var keyType = getTypeAndValue(key, macroContext);
+              var valueType = getTypeAndValue(value, macroContext);
               listValues.push('${keyType.value} => ${valueType.value}');
             case _:
               throw new ParsingException('AnnaLang: Expected =>, received ${printer.printExpr(arg)}');
@@ -408,7 +408,7 @@ class MacroTools {
       case EBlock(args):
         var listValues: Array<String> = [];
         for(arg in args) {
-          var typeAndValue: Dynamic = getTypeAndValue(arg);
+          var typeAndValue: Dynamic = getTypeAndValue(arg, macroContext);
           listValues.push(typeAndValue.value);
         }
         var strValue: String = getList(listValues);
@@ -419,11 +419,11 @@ class MacroTools {
         for(arg in args) {
           switch(arg.expr) {
             case EBinop(OpArrow, key, value):
-              var keyType = getTypeAndValue(key);
-              var valueType = getTypeAndValue(value);
+              var keyType = getTypeAndValue(key, macroContext);
+              var valueType = getTypeAndValue(value, macroContext);
               listValues.push('${keyType.value} => ${valueType.value}');
             case EMeta({name: "atom" | "_"}, {expr: EBinop(OpArrow, {expr: EConst(CString(key))}, valExpr)}):
-              var valueType = getTypeAndValue(valExpr);
+              var valueType = getTypeAndValue(valExpr, macroContext);
               listValues.push('${getAtom(key)} => ${valueType.value}');
             case _:
               try {
@@ -431,7 +431,7 @@ class MacroTools {
                 listValues.push(typeAndValue.value);
               } catch(e: Dynamic) {
                 isTuple = true;
-                var typeAndValue = getTypeAndValue(arg);
+                var typeAndValue = getTypeAndValue(arg, macroContext);
                 listValues.push(typeAndValue.value);
               }
           }
@@ -447,8 +447,8 @@ class MacroTools {
         var strConst: String = printer.printExpr(pattern);
         {type: "String", value: getTuple([getAtom("var"), '${strConst}']), rawValue: printer.printExpr(expr)};
       case EBinop(OpArrow, lhs, rhs):
-        var lhsType = getTypeAndValue(lhs);
-        var rhsType = getTypeAndValue(rhs);
+        var lhsType = getTypeAndValue(lhs, macroContext);
+        var rhsType = getTypeAndValue(rhs, macroContext);
         var rawValue: String = getMap(['${lhsType.value} => ${rhsType.value}']);
         {type: "MMap", value: rawValue, rawValue: rawValue};
       case EMeta({name: '__stringMatch'}, expr):
@@ -463,21 +463,21 @@ class MacroTools {
       case EObjectDecl(args):
         var listValues: Array<String> = [];
         for(arg in args) {
-          var typeAndValue: Dynamic = getTypeAndValue(arg.expr);
+          var typeAndValue: Dynamic = getTypeAndValue(arg.expr, macroContext);
           listValues.push('["${arg.field}", ${typeAndValue.value}]');
         }
         var strValue: String = getKeyword(listValues);
 
         {type: "Keyword", value: getConstant(strValue), rawValue: strValue};
       case ECast(expr, TPath({ name: type })):
-        var typeAndValue = getTypeAndValue(expr);
+        var typeAndValue = getTypeAndValue(expr, macroContext);
         {type: Helpers.getAlias(type, macroContext), value: typeAndValue.value, rawValue: typeAndValue.value};
       case ECall({expr: EField({expr: EConst(CIdent("Atom"))}, "create")}, [{expr: EConst(CString(atom))}]):
         {type: "Atom", value: 'Tuple.create([Atom.create("const"), ${atom}])', rawValue: atom};
       case ECall({expr: EField({expr: EConst(CIdent("Tuple"))}, "create")}, [{expr: EArrayDecl(args)}]):
         var listValues: Array<String> = [];
         for(arg in args) {
-          var typeAndValue = getTypeAndValue(arg);
+          var typeAndValue = getTypeAndValue(arg, macroContext);
           listValues.push(typeAndValue.value);
         }
         var strValue: String = 'Tuple.create([${listValues.join(",")}])';
@@ -485,7 +485,7 @@ class MacroTools {
       case ECall({expr: EField({expr: EConst(CIdent("LList"))}, "create")}, [{expr: EArrayDecl(args)}]):
         var listValues: Array<String> = [];
         for(arg in args) {
-          var typeAndValue: Dynamic = getTypeAndValue(arg);
+          var typeAndValue: Dynamic = getTypeAndValue(arg, macroContext);
           listValues.push(typeAndValue.value);
         }
         var strValue: String = 'LList.create([${listValues.join(",")}])';
@@ -497,7 +497,7 @@ class MacroTools {
           switch(arg.expr) {
             case EArrayDecl(args):
               for(arg in args) {
-                var typeAndValue: Dynamic = getTypeAndValue(arg);
+                var typeAndValue: Dynamic = getTypeAndValue(arg, macroContext);
                 innerValues.push(typeAndValue.value);
               }
             case _:
@@ -513,13 +513,13 @@ class MacroTools {
       case EBinop(OpMod, {expr: EConst(CIdent(type))}, {expr: EObjectDecl(fields)}):
         var listValues: Array<String> = [];
         for(field in fields) {
-          var typeAndValue: Dynamic = getTypeAndValue(field.expr);
+          var typeAndValue: Dynamic = getTypeAndValue(field.expr, macroContext);
           listValues.push('${field.field}: ${typeAndValue.value}');
         }
         var strValue: String = getCustomType(type, listValues);
         {type: type, value: 'Tuple.create([${getAtom("const")}, ${strValue}])', rawValue: strValue};
       case EParenthesis(e):
-        getTypeAndValue(e);
+        getTypeAndValue(e, macroContext);
       case EBinop(OpOr, lhs, rhs):
         var value = printer.printExpr(expr);
         {type: "LList", value: value, rawValue: value};
@@ -539,7 +539,7 @@ class MacroTools {
       case EObjectDecl(items):
         var keyValues: Array<String> = [];
         for(item in items) {
-          var typeAndValue = getTypeAndValue(item.expr);
+          var typeAndValue = getTypeAndValue(item.expr, macroContext);
           var rawValue = switch(item.expr.expr) {
             case EConst(CIdent(_)):
               typeAndValue.value;
@@ -559,17 +559,17 @@ class MacroTools {
     var listValues: Array<String> = [];
     switch(arg.expr) {
       case EBinop(OpArrow, key, value):
-        var keyType = getTypeAndValue(key);
-        var valueType = getTypeAndValue(value);
+        var keyType = getTypeAndValue(key, macroContext);
+        var valueType = getTypeAndValue(value, macroContext);
         listValues.push('${keyType.rawValue} => ${valueType.rawValue}');
       case EMeta({name: "atom"}, e) | EMeta({name: "tuple"}, e) | EMeta({name: "list"}, e):
         // special case for when map has atom, tuple, or list keys
-        var typeAndValue: Dynamic = getTypeAndValue(e);
+        var typeAndValue: Dynamic = getTypeAndValue(e, macroContext);
         listValues.push(typeAndValue.value);
       case EMeta({name: "map"}, {expr: EBinop(OpArrow, key, value)}):
         // special case for when map has map keys
-        var keyType = getTypeAndValue(key);
-        var valueType = getTypeAndValue(value);
+        var keyType = getTypeAndValue(key, macroContext);
+        var valueType = getTypeAndValue(value, macroContext);
         listValues.push('${keyType.rawValue} => ${valueType.rawValue}');
       case EMeta({name: "map"}, {expr: EArrayDecl(values)}):
         var typeAndValues: Array<Dynamic> = [];
@@ -611,7 +611,7 @@ class MacroTools {
                     var name = util.StringUtil.random();
                     var items: Array<String> = [];
                     for(value in values) {
-                      var typeAndValue = getTypeAndValue(value.expr);
+                      var typeAndValue = getTypeAndValue(value.expr, macroContext);
                       items.push('[${getAtom(value.field)}, ${getConstant(typeAndValue.value)}]');
                     }
                     {name: name, pattern: getKeyword(items), isPatternVar: false};
@@ -623,8 +623,8 @@ class MacroTools {
                       switch(value.expr) {
                         case EBinop(OpArrow, key, value):
                           type = 'map';
-                          var lhsType = getTypeAndValue(key);
-                          var rhsType = getTypeAndValue(value);
+                          var lhsType = getTypeAndValue(key, macroContext);
+                          var rhsType = getTypeAndValue(value, macroContext);
                           items.push('${lhsType.value} => ${rhsType.value}');
                         case _:
                           items.push(printer.printExpr(value));
@@ -656,7 +656,7 @@ class MacroTools {
                   case EBinop(OpMod, {expr: EConst(CIdent(name))}, {expr: EObjectDecl(customValueTypes)}):
                     var items: Array<String> = [];
                     for(value in customValueTypes) {
-                      var typeAndValue = getTypeAndValue(value.expr);
+                      var typeAndValue = getTypeAndValue(value.expr, macroContext);
                       items.push('${value.field}: ${typeAndValue.value}');
                     }
                     {name: name, pattern: getCustomType(name, items), isPatternVar: false};

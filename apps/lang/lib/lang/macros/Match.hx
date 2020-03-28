@@ -13,7 +13,7 @@ class Match {
     var macros: Macros = annaLang.macros;
     var printer: Printer = annaLang.printer;
 
-    var typeAndValue = macroTools.getTypeAndValue(params);
+    var typeAndValue = macroTools.getTypeAndValue(params, macroContext);
     if(typeAndValue.type == "Variable") {
       var moduleName: String = macroTools.getModuleName(params);
       moduleName = Helpers.getAlias(moduleName, macroContext);

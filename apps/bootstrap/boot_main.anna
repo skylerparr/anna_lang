@@ -12,7 +12,11 @@ defmodule(BootMain, {
       'apps/stdlib/lib/eenum.anna';
       'apps/stdlib/lib/default_enum.anna';
       'apps/stdlib/lib/map_apis.anna';
-      'apps/stdlib/lib/test_drive.anna';
+
+      'apps/ia/lib/history.anna';
+      'apps/ia/lib/repl.anna';
+      'apps/ia/lib/command_handler.anna';
+      'apps/ia/lib/ia_main.anna';
     };
     compile_files(cast(files, LList));
     @_'ok';
@@ -23,7 +27,7 @@ defmodule(BootMain, {
   });
 
   @def compile_files({LList: {}}, [Tuple], {
-    @native NativeKernel.applyMFA(self(), @_'TestDrive', @_'test', @tuple[], {});
+    @native NativeKernel.applyMFA(self(), @_'IAMain', @_'start', @tuple[], {});
     [@_'ok', 'success'];
   });
 

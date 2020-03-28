@@ -36,7 +36,7 @@ class Native {
 
           strArgs.push(macroTools.getTuple([macroTools.getAtom('var'), '"__${invokeFunName}_${argCounter}"']));
         case _:
-          var typeAndValue = macroTools.getTypeAndValue(arg);
+          var typeAndValue = macroTools.getTypeAndValue(arg, macroContext);
           strArgs.push(typeAndValue.value);
       }
       argCounter++;

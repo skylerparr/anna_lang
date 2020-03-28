@@ -39,20 +39,18 @@ class CreatePushStack {
           for(expr in exprs) {
             retVal.push(expr);
           }
-
           types.push([Helpers.getType(StringTools.replace(macroContext.lastFunctionReturnType, '.', '_'), macroContext)]);
           funArgs.push(macroTools.getTuple([macroTools.getAtom("var"), '"__${funName}_${argCounter}"']));
         case EField({expr: EConst(CIdent(obj))}, fieldName):
-          var typeAndValue = macroTools.getTypeAndValue(arg);
+          var typeAndValue = macroTools.getTypeAndValue(arg, macroContext);
           var type: String = macroContext.varTypesInScope.getTypes(obj)[0];
           type = macroContext.getFieldType(type, fieldName);
           type = Helpers.getType(type, macroContext);
           types.push([type]);
           funArgs.push(typeAndValue.value);
         case _:
-          var typeAndValue = macroTools.getTypeAndValue(arg);
+          var typeAndValue = macroTools.getTypeAndValue(arg, macroContext);
           var typesForVar: Array<String> = getTypesForVar(typeAndValue, arg, macroContext);
-
           var possibleTypes: Array<String> = [];
           for(typeForVar in typesForVar) {
             var type: String = Helpers.getType(typeForVar, macroContext);
@@ -87,7 +85,7 @@ class CreatePushStack {
       if(funDef == null) {
         var types: Array<String> = macroContext.varTypesInScope.getTypes(funName);
         if(types == null) {
-          throw new FunctionClauseNotFound('AnnaLang: No function found for ${moduleName}.${funName}(${typeArgs.join(', ')})');
+          continue;
         }
         var varTypeInScope: String = types[0];
         if(varTypeInScope == 'vm_Function' || varTypeInScope == 'vm.Function') {
@@ -109,7 +107,7 @@ class CreatePushStack {
     }
     var types: Array<String> = macroContext.varTypesInScope.getTypes(funName);
     if(types == null) {
-      throw new FunctionClauseNotFound("AnnaLang: No function found for ${moduleName}.${funName}");
+      throw new FunctionClauseNotFound('AnnaLang: No function found for ${moduleName}.${funName}(${argStrings.join(', ')})');
     }
     #if !macro
     var fun = vm.Process.self().processStack.getVariablesInScope().get(funName);

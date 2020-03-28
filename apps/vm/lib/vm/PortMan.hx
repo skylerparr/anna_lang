@@ -1,6 +1,7 @@
 package vm;
 import vm.Port;
 import vm.SimplePort;
+@:rtti
 class PortMan {
 
   public static function create(haxeClass: String):Port {

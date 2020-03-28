@@ -1,0 +1,123 @@
+defmodule(History, {
+  @alias vm.Process;
+  @alias vm.NativeKernel;
+  @alias vm.Pid;
+
+  @const PID_HISTORY = @_'history';
+
+  @def start([Tuple], {
+    history_pid = @native NativeKernel.spawn_link(@_'History', @_'start_history', @tuple[], {});
+    Kernel.register_pid(history_pid, PID_HISTORY);
+
+    [@_'ok', history_pid];
+  });
+
+  @def start_history([Tuple], {
+    history_loop([1, {}, 0]);
+  });
+
+  @def history_loop({Tuple: history}, [Tuple], {
+    received = Kernel.receive(@fn {
+        [{Tuple: [@_'current_line', @_'inc']}] => {
+        [current_line, commands, scroll_pos] = history;
+        current_line = Kernel.add(cast(current_line, Int), 1);
+        [current_line, commands, scroll_pos];
+      };
+        [{Tuple: [@_'current_line', @_'get', pid]}] => {
+        [current_line, _, _] = history;
+        @native NativeKernel.send(pid, current_line);
+        history;
+      };
+        [{Tuple: [@_'scroll', @_'back', pid]}] => {
+        [current_line, commands, scroll_pos] = history;
+        scroll_pos = Kernel.subtract(cast(scroll_pos, Int), 1);
+        handle_history(cast(commands, LList), cast(pid, Pid), scroll_pos);
+        [current_line, commands, scroll_pos];
+      };
+        [{Tuple: [@_'scroll', @_'forward', pid]}] => {
+        [current_line, commands, scroll_pos] = history;
+        scroll_pos = Kernel.add(cast(scroll_pos, Int), 1);
+        handle_history(cast(commands, LList), cast(pid, Pid), scroll_pos);
+        [current_line, commands, scroll_pos];
+      };
+        [{Tuple: [@_'push', val]}, [Tuple]] => {
+        [current_line, commands, scroll_pos] = history;
+        commands = @native LList.add(commands, val);
+        scroll_pos = @native LList.length(commands);
+        [current_line, commands, scroll_pos];
+      };
+        [{Tuple: [@_'get', index, respond]}, [Tuple]] => {
+        [_, commands, _] = history;
+        value = @native LList.getAt(commands, index);
+        @native NativeKernel.send(cast(respond, Pid), cast(value, String));
+        history;
+      };
+    });
+    history_loop(cast(received, Tuple));
+  });
+
+  @def handle_history({LList: {}, Pid: pid, Int: _}, [Atom], {
+    @native NativeKernel.send(pid, '');
+  });
+
+  @def handle_history({LList: commands, Pid: pid, Int: scroll_pos}, [Atom], {
+    total_commands = @native LList.length(commands);
+    command = @native LList.getAt(commands, scroll_pos);
+    @native NativeKernel.send(pid, command);
+  });
+
+  @def increment_line([Atom], {
+    pid = Kernel.get_pid_by_name(PID_HISTORY);
+    Kernel.send(pid, [@_'current_line', @_'inc']);
+  });
+
+  @def get_counter([Int], {
+    pid = Kernel.get_pid_by_name(PID_HISTORY);
+    self = Kernel.self();
+    Kernel.send(pid, [@_'current_line', @_'get', self]);
+    Kernel.receive(@fn {
+        [{Int: line}, [Int]] => {
+        line;
+      };
+    });
+  });
+
+  @def push({String: command}, [Atom], {
+    pid = Kernel.get_pid_by_name(PID_HISTORY);
+    Kernel.send(pid, [@_'push', command]);
+    @_'ok';
+  });
+
+  @def get({Int: index}, [String], {
+    pid = Kernel.get_pid_by_name(PID_HISTORY);
+    self = Kernel.self();
+    Kernel.send(pid, [@_'get', index, self]);
+    Kernel.receive(@fn {
+        [{String: command}, [String]] => {
+        command;
+      };
+    });
+  });
+
+  @def back([String], {
+    pid = Kernel.get_pid_by_name(PID_HISTORY);
+    self = Kernel.self();
+    Kernel.send(pid, [@_'scroll', @_'back', self]);
+    Kernel.receive(@fn {
+        [{String: command}, [String]] => {
+        command;
+      };
+    });
+  });
+
+  @def forward([String], {
+    pid = Kernel.get_pid_by_name(PID_HISTORY);
+    self = Kernel.self();
+    Kernel.send(pid, [@_'scroll', @_'forward', self]);
+    Kernel.receive(@fn {
+        [{String: command}, [String]] => {
+        command;
+      };
+    });
+  });
+})

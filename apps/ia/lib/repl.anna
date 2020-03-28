@@ -1,0 +1,22 @@
+defmodule(Repl, {
+  @alias vm.Lang;
+
+  @def eval({String: text}, [Tuple], {
+    result = @native Lang.eval(text);
+    handle_result(cast(result, Dynamic));
+  });
+
+  @def handle_result({Dynamic: [@_'ok', @_'continuation']}, [Tuple], {
+    [@_'ok', @_'continuation'];
+  });
+
+  @def handle_result({Dynamic: [@_'error', message]}, [Tuple], {
+    [@_'error', message];
+  });
+
+  @def handle_result({Dynamic: result}, [Tuple], {
+    @native IO.inspect(result);
+    [@_'ok', result];
+  });
+
+})
