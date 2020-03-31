@@ -10,6 +10,7 @@ import lang.EitherSupport;
 
 using StringTools;
 
+@:rtti
 class MMap implements CustomType {
 
   public static function create(vals: Array<Tuple>): MMap {

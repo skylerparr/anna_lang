@@ -458,7 +458,7 @@ class MacroTools {
         var listValues: Array<String> = [];
         var strValue: String = getList(listValues);
 
-        {type: "List", value: getConstant(strValue), rawValue: strValue};
+        {type: "LList", value: getConstant(strValue), rawValue: strValue};
 
       case EObjectDecl(args):
         var listValues: Array<String> = [];

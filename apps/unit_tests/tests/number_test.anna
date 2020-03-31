@@ -1,0 +1,64 @@
+defmodule(NumberTest, {
+  @alias vm.Lang;
+
+  @def test_should_create_ints([Atom], {
+    Assert.assert(123, 123);
+  });
+
+  @def test_should_create_ints_interp([Atom], {
+    result = @native Lang.eval('4738');
+    Assert.assert(4738, cast(result, Number));
+  });
+
+  @def test_should_not_match_ints([Atom], {
+    Assert.refute(321, 123);
+  });
+
+  @def test_should_match_function_head_ints([Atom], {
+    match(123, 456);
+  });
+
+  @def test_should_match_function_head_ints_interp([Atom], {
+    result = @native Lang.eval('456');
+    match(123, cast(result, Number));
+  });
+
+  @def test_should_create_floats([Atom], {
+    Assert.assert(43.3245, 43.3245);
+  });
+
+  @def test_should_create_floats_interp([Atom], {
+    result = @native Lang.eval('43.3245');
+    Assert.assert(43.3245, cast(result, Number));
+  });
+
+  @def test_should_not_match_floats([Atom], {
+    Assert.refute(43.3245, 293.2094);
+  });
+
+  @def test_should_match_function_head_floats([Atom], {
+    match(43.3245, 89435.349);
+  });
+
+  @def test_should_match_function_head_floats_interp([Atom], {
+    result = @native Lang.eval('89435.349');
+    match(43.3245, cast(result, Number));
+  });
+
+  @def match({Float: 43.3245, Float: 89435.349}, [Atom], {
+    Assert.assert(@_'true');
+  });
+
+  @def match({Int: 123, Int: 456}, [Atom], {
+    Assert.assert(@_'true');
+  });
+
+  @def match({Float: 43.3245, Float: 89435.349}, [Atom], {
+    Assert.assert(@_'true');
+  });
+
+  @def match({Float: _, Float: _}, [Atom], {
+    Assert.assert(@_'false');
+  });
+
+})

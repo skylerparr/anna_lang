@@ -17,6 +17,7 @@ class CreatePushStack {
     if(module == null) {
       module = macroContext.declaredInterfaces.get(moduleName);
     }
+    moduleName = module.moduleName;
 
     var fqFunNameTypeMap: Map<String, String> = new Map();
     var types: Array<Array<String>> = [];
@@ -70,7 +71,6 @@ class CreatePushStack {
 
     for(typeArgs in perms) {
       var fqFunName: String = Helpers.makeFqFunName(funName, typeArgs);
-      MacroLogger.log(fqFunName, 'fqFunName');
       var frags: Array<String> = fqFunName.split('.');
       fqFunName = frags.pop();
       var declaredFunctions: Map<String, Array<Dynamic>> = new Map<String, Array<Dynamic>>();

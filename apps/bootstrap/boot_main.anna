@@ -4,6 +4,20 @@ defmodule(BootMain, {
   @alias vm.Pid;
 
   @def start([Atom], {
+    result = compile_all();
+    start_app(result);
+    @_'ok';
+  });
+
+  @def start_app({Tuple: [@_'error', message]}, [Atom], {
+    @_'error';
+  });
+
+  @def start_app({Tuple: _}, [Atom], {
+    @native NativeKernel.applyMFA(self(), @_'IAMain', @_'start', @tuple[], {});
+  });
+
+  @def compile_all([Tuple], {
     files = {
       'apps/stdlib/lib/system.anna';
       'apps/stdlib/lib/str.anna';
@@ -13,13 +27,18 @@ defmodule(BootMain, {
       'apps/stdlib/lib/default_enum.anna';
       'apps/stdlib/lib/map_apis.anna';
 
+      'apps/unit_tests/lib/unit_tests.anna';
+      'apps/unit_tests/lib/assert.anna';
+
       'apps/ia/lib/history.anna';
       'apps/ia/lib/repl.anna';
       'apps/ia/lib/command_handler.anna';
       'apps/ia/lib/ia_main.anna';
+
+      'apps/unit_tests/tests/string_test.anna';
+      'apps/unit_tests/tests/number_test.anna';
     };
     compile_files(cast(files, LList));
-    @_'ok';
   });
 
   @def self([Pid], {
@@ -27,7 +46,6 @@ defmodule(BootMain, {
   });
 
   @def compile_files({LList: {}}, [Tuple], {
-    @native NativeKernel.applyMFA(self(), @_'IAMain', @_'start', @tuple[], {});
     [@_'ok', 'success'];
   });
 

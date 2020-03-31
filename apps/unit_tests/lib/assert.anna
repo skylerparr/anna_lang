@@ -1,0 +1,115 @@
+defmodule(Assert, {
+  @alias vm.Pid;
+
+  @def assert({Atom: lhs, Atom: rhs}, [Atom], {
+    result = Kernel.equal(cast(lhs, Dynamic), cast(rhs, Dynamic));
+    assert(result);
+  });
+
+  @def assert({Tuple: lhs, Tuple: rhs}, [Atom], {
+    result = Kernel.equal(cast(lhs, Dynamic), cast(rhs, Dynamic));
+    assert(result);
+  });
+
+  @def assert({LList: lhs, LList: rhs}, [Atom], {
+    result = Kernel.equal(cast(lhs, Dynamic), cast(rhs, Dynamic));
+    assert(result);
+  });
+
+  @def assert({MMap: lhs, MMap: rhs}, [Atom], {
+    result = Kernel.equal(cast(lhs, Dynamic), cast(rhs, Dynamic));
+    assert(result);
+  });
+
+  @def assert({Keyword: lhs, Keyword: rhs}, [Atom], {
+    result = Kernel.equal(cast(lhs, Dynamic), cast(rhs, Dynamic));
+    assert(result);
+  });
+
+  @def assert({String: lhs, String: rhs}, [Atom], {
+    result = Kernel.equal(cast(lhs, Dynamic), cast(rhs, Dynamic));
+    assert(result);
+  });
+
+  @def assert({Int: lhs, Int: rhs}, [Atom], {
+    result = Kernel.equal(cast(lhs, Dynamic), cast(rhs, Dynamic));
+    assert(result);
+  });
+
+  @def assert({Pid: lhs, Pid: rhs}, [Atom], {
+    result = Kernel.equal(cast(lhs, Dynamic), cast(rhs, Dynamic));
+    assert(result);
+  });
+
+  @def refute({Atom: lhs, Atom: rhs}, [Atom], {
+    result = Kernel.equal(cast(lhs, Dynamic), cast(rhs, Dynamic));
+    refute(result);
+  });
+
+  @def refute({Tuple: lhs, Tuple: rhs}, [Atom], {
+    result = Kernel.equal(cast(lhs, Dynamic), cast(rhs, Dynamic));
+    refute(result);
+  });
+
+  @def refute({LList: lhs, LList: rhs}, [Atom], {
+    result = Kernel.equal(cast(lhs, Dynamic), cast(rhs, Dynamic));
+    refute(result);
+  });
+
+  @def refute({MMap: lhs, MMap: rhs}, [Atom], {
+    result = Kernel.equal(cast(lhs, Dynamic), cast(rhs, Dynamic));
+    refute(result);
+  });
+
+  @def refute({Keyword: lhs, Keyword: rhs}, [Atom], {
+    result = Kernel.equal(cast(lhs, Dynamic), cast(rhs, Dynamic));
+    refute(result);
+  });
+
+  @def refute({String: lhs, String: rhs}, [Atom], {
+    result = Kernel.equal(cast(lhs, Dynamic), cast(rhs, Dynamic));
+    refute(result);
+  });
+
+  @def refute({Int: lhs, Int: rhs}, [Atom], {
+    result = Kernel.equal(cast(lhs, Dynamic), cast(rhs, Dynamic));
+    refute(result);
+  });
+
+  @def refute({Pid: lhs, Pid: rhs}, [Atom], {
+    result = Kernel.equal(cast(lhs, Dynamic), cast(rhs, Dynamic));
+    refute(result);
+  });
+
+  @def assert({Atom: @_'true'}, [Atom], {
+    record_status(@_'pass');
+    @_'ok';
+  });
+
+  @def assert({Atom: _}, [Atom], {
+    record_status(@_'fail');
+    @_'error';
+  });
+
+  @def refute({Atom: @_'false'}, [Atom], {
+    record_status(@_'pass');
+    @_'ok';
+  });
+
+  @def refute({Atom: _}, [Atom], {
+    record_status(@_'fail');
+    @_'error';
+  });
+
+  @def record_status({Atom: status}, [Atom], {
+    self = Kernel.self();
+    UnitTests.update_status(self, status);
+    ret_val = Kernel.receive(@fn {
+        [{Atom: msg}] => {
+        msg;
+      };
+    });
+    ret_val;
+  });
+
+})

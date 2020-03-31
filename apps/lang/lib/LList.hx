@@ -5,6 +5,7 @@ import lang.EitherSupport;
 
 using StringTools;
 
+@rtti
 class LList implements CustomType {
 
   public static function create(vals: Array<Any>): LList {

@@ -1,6 +1,7 @@
 package ;
 import lang.CustomType;
 using lang.AtomSupport;
+@:rtti
 class Keyword implements CustomType {
   private var __annaString: String;
   private var data: Array<Tuple>;

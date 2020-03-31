@@ -1,0 +1,62 @@
+defmodule(StringTest, {
+  @alias vm.Lang;
+
+  @def test_should_create_strings([Atom], {
+    Assert.assert('foo', 'foo');
+  });
+
+  @def test_should_create_strings_interp([Atom], {
+    result = @native Lang.eval('"foo"');
+    Assert.assert('foo', cast(result, String));
+  });
+
+  @def test_should_not_match_strings([Atom], {
+    Assert.refute('foo', 'bar');
+  });
+
+  @def test_should_pattern_match_assignment([Atom], {
+      'foo ' => bar = 'foo bar';
+    Assert.assert('bar', cast(bar, String));
+
+      'foo ' => bar = 'foo bar';
+    Assert.refute('bar1', cast(bar, String));
+  });
+
+  @def test_should_pattern_match_assignment_interp([Atom], {
+    @native Lang.eval("'foo ' => bar = 'foo bar';
+    Assert.assert('bar', cast(bar, String));");
+
+    @native Lang.eval("'foo ' => bar = 'foo bar';
+    Assert.refute('bar1', cast(bar, String));");
+  });
+
+  @def test_should_pattern_match_function_string([Atom], {
+    match('foo bar');
+  });
+
+  @def test_should_match_function_head_strings([Atom], {
+    match('foo', 'bar');
+  });
+
+  @def test_should_match_function_head_strings_interp([Atom], {
+    result = @native Lang.eval('"bar"');
+    match('foo', cast(result, String));
+  });
+
+  @def match({String: 'foo', String: 'bar'}, [Atom], {
+    Assert.assert(@_'true');
+  });
+
+  @def match({String: _, String: _}, [Atom], {
+    Assert.assert(@_'false');
+  });
+
+  @def match({String: 'foo ' => bar}, [Atom], {
+    Assert.assert('bar', bar);
+  });
+
+  @def match({String: _}, [Atom], {
+    Assert.assert(@_'false');
+  });
+
+})

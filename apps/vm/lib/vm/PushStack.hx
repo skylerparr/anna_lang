@@ -21,6 +21,8 @@ class PushStack implements Operation {
   public var lineNumber: Int;
   public var annaLang: AnnaLang;
 
+  private var mutex: cpp.vm.Mutex = new cpp.vm.Mutex();
+
   public function new(module: Atom, func: Atom, args: LList, hostModule: Atom, hostFunction: Atom, line: Int, annaLang: AnnaLang) {
     this.module = module;
     this.func = func;
@@ -49,7 +51,9 @@ class PushStack implements Operation {
       nextScopeVariables.set(argName, value);
     }
     callArgs.push(nextScopeVariables);
+    mutex.acquire();
     var operations: Array<Operation> = fn.invoke(callArgs);
+    mutex.release();
     if(operations == null) {
       IO.inspect('Function ${module.toAnnaString()} ${func.toAnnaString()}:${lineNumber} has no body.');
       NativeKernel.crash(Process.self());

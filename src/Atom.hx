@@ -2,6 +2,7 @@ package ;
 import lang.CustomType;
 import lang.HashTableAtoms;
 import lang.EmptyAtomException;
+@:rtti
 class Atom implements CustomType {
   public var variables: Map<String, String>;
 

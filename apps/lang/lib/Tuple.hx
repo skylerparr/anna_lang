@@ -4,6 +4,7 @@ import lang.AmbiguousFunctionException;
 import lang.CustomType;
 import lang.EitherSupport;
 using lang.AtomSupport;
+@:rtti
 class Tuple implements CustomType {
 
   public static function elem(t: Tuple, index: Int): Any {
