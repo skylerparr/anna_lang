@@ -1,0 +1,72 @@
+defmodule(TupleTest, {
+  @alias vm.Lang;
+
+  @def test_should_create_tuple_with_all_constant_elements([Atom], {
+    Assert.assert([@_'ok', 'message'], [@_'ok', 'message']);
+  });
+
+  @def test_should_create_tuple_with_all_constant_elements_interp([Atom], {
+    result = @native Lang.eval("[@_'ok', 'message']");
+    Assert.assert([@_'ok', 'message'], cast(result, Tuple));
+  });
+
+  @def test_should_create_tuple_with_all_variable_elements([Atom], {
+    status = @_'ok';
+    message = 'message';
+    Assert.assert([@_'ok', 'message'], [status, message]);
+  });
+
+  @def test_should_create_tuple_with_all_variable_elements_interp([Atom], {
+    result = @native Lang.eval("status = @_'ok'; message = 'message'; [status, message]");
+    Assert.assert([@_'ok', 'message'], cast(result, Tuple));
+  });
+
+  @def test_should_create_tuple_within_a_tuple([Atom], {
+    status = @_'ok';
+    Assert.assert([@_'ok', [@_'error', 'complete']], [status, [@_'error', 'complete']]);
+  });
+
+  @def test_should_create_tuple_within_a_tuple_interp([Atom], {
+    result = @native Lang.eval("status = @_'ok'; [status, [@_'error', 'complete']]");
+    Assert.assert([@_'ok', [@_'error', 'complete']], cast(result, Tuple));
+  });
+
+//  @def test_should_match_tuple_on_function_head([Atom], {
+//    match([@_'ok', [@_'error', 'complete']]);
+//  });
+//
+//  @def test_should_match_tuple_on_function_head_interp([Atom], {
+//    result = @native Lang.eval("TupleTest.match([@_'eval', [@_'error', 'complete']]);");
+//    Assert.assert(cast(result, Atom));
+//  });
+
+//  @def test_should_create_tuple_with_function_calls_for_elements([Atom], {
+//    result = [get_ok(), get_error(), get_complete()];
+//    match([@_'ok', @_'error', 'complete'], result);
+//  });
+
+  @def match({Tuple: [@_'ok', [@_'error', 'complete']]}, [Atom], {
+    Assert.assert(@_'true');
+  });
+
+  @def match({Tuple: [@_'eval', [@_'error', 'complete']]}, [Atom], {
+    @_'true';
+  });
+
+  @def match({Tuple: _}, [Atom], {
+    Assert.assert(@_'false');
+  });
+
+  @def get_ok([Atom], {
+    @_'ok';
+  });
+
+  @def get_error([Atom], {
+    @_'error';
+  });
+
+  @def get_complete([String], {
+    'complete';
+  });
+
+})

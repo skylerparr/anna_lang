@@ -1,0 +1,33 @@
+defmodule(KeywordTest, {
+  @alias vm.Lang;
+
+  @def test_should_create_static_keyword([Atom], {
+    Assert.refute({beanus: 'bear'}, {ellie: 'bear'});
+    Assert.assert({ellie: 'bear'}, {ellie: 'bear'});
+  });
+
+  @def test_should_create_static_keyword_interp([Atom], {
+    @native Lang.eval("Assert.refute({beanus: 'bear'}, {ellie: 'bear'});
+    Assert.assert({ellie: 'bear'}, {ellie: 'bear'});");
+  });
+
+  @def test_should_create_keyword_with_variable_values([Atom], {
+    bear = 'bear';
+    Assert.refute({beanus: 'bear'}, {ellie: bear});
+    Assert.assert({ellie: 'bear'}, {ellie: bear});
+  });
+
+  @def test_should_create_keyword_with_variable_values_interp([Atom], {
+    @native Lang.eval("bear = 'bear';
+    Assert.refute({beanus: 'bear'}, {ellie: bear});
+    Assert.assert({ellie: 'bear'}, {ellie: bear});");
+  });
+
+  @def test_should_create_keyword_with_complex_values([Atom], {
+    beanus = 'be-anus';
+    Assert.refute({ellie: 'beanus', beanus: {@_'cat'; 'strange';}}, {ellie: beanus, beanus: {@_'cat'; 'strange';}});
+    beanus = 'beanus';
+    Assert.assert({ellie: 'beanus', beanus: {@_'cat'; 'strange';}}, {ellie: beanus, beanus: {@_'cat'; 'strange';}});
+  });
+
+})

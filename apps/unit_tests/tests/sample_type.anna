@@ -1,0 +1,4 @@
+deftype(SampleType, {
+  var name: String;
+  var age: Int;
+})

@@ -1,0 +1,101 @@
+defmodule(LListTest, {
+  @alias vm.Lang;
+
+  @def test_should_create_llist_with_all_constant_elements([Atom], {
+    Assert.assert({@_'ok'; 'message';}, {@_'ok'; 'message';});
+  });
+
+  @def test_should_create_llist_with_all_constant_elements_interp([Atom], {
+    result = @native Lang.eval("{@_'ok'; 'message';}");
+    Assert.assert({@_'ok'; 'message';}, cast(result, LList));
+  });
+
+  @def test_should_create_llist_with_all_variable_elements([Atom], {
+    status = @_'ok';
+    message = 'message';
+    Assert.assert({@_'ok'; 'message';}, {status; message;});
+  });
+
+  @def test_should_create_llist_with_all_variable_elements_interp([Atom], {
+    result = @native Lang.eval("status = @_'ok'; message = 'message'; {status; message;}");
+    Assert.assert({@_'ok'; 'message';}, cast(result, LList));
+  });
+
+  @def test_should_create_llist_within_llist([Atom], {
+    Assert.assert({@_'ok'; {"nice"; "little"; ["list"];}}, {@_'ok'; {"nice"; "little"; ["list"];}});
+  });
+
+  @def test_should_create_llist_within_llist_interp([Atom], {
+    result = @native Lang.eval("{@_'ok'; {'nice'; 'little'; ['list'];}}");
+    Assert.assert({@_'ok'; {"nice"; "little"; ["list"];}}, cast(result, LList));
+  });
+
+  @def test_should_assign_head_and_tail([Atom], {
+    ({head | tail;}) = {1; 2; 3; 4;};
+    Assert.assert(1, cast(head, Int));
+    Assert.assert({2; 3; 4;}, cast(tail, LList));
+  });
+
+  @def test_should_assign_head_and_tail_interp([Atom], {
+    @native Lang.eval('({head | tail;}) = {1; 2; 3; 4;}; Assert.assert(1, cast(head, Int));
+    Assert.assert({2; 3; 4;}, cast(tail, LList));');
+  });
+
+  @def test_should_assign_to_individual_elements([Atom], {
+    ({one; two; three; four;}) = {1; 2; 3; 4;};
+    Assert.assert(1, cast(one, Int));
+    Assert.assert(2, cast(two, Int));
+    Assert.assert(3, cast(three, Int));
+    Assert.assert(4, cast(four, Int));
+  });
+
+  @def test_should_assign_to_individual_elements_interp([Atom], {
+    @native Lang.eval('({one; two; three; four;}) = {1; 2; 3; 4;};
+    Assert.assert(1, cast(one, Int));
+    Assert.assert(2, cast(two, Int));
+    Assert.assert(3, cast(three, Int));
+    Assert.assert(4, cast(four, Int));');
+  });
+
+  @def test_function_pattern_match_llist_with_head_and_tail([Atom], {
+    match({1; 2; 3; 4;});
+  });
+
+  @def test_function_pattern_match_llist_with_head_and_tail_interp([Atom], {
+    @native Lang.eval('LListTest.match({1; 2; 3; 4;});');
+  });
+
+  @def test_should_pattern_match_function_elements([Atom], {
+    match({1; 2; 3; 4; 5;});
+  });
+
+  @def test_should_pattern_match_function_elements_interp([Atom], {
+    @native Lang.eval('LListTest.match({1; 2; 3; 4; 5;})');
+  });
+
+  @def test_should_create_list_with_atoms([Atom], {
+    Assert.assert({@_'ok'; @_'error';}, {@_'ok'; @_'error';});
+  });
+
+  @def test_should_create_list_with_atoms_interp([Atom], {
+    @native Lang.eval("Assert.assert({@_'ok'; @_'error';}, {@_'ok'; @_'error';});");
+  });
+
+  @def match({LList: {a; b; c; d; e;}}, [Atom], {
+    Assert.assert(1, cast(a, Int));
+    Assert.assert(2, cast(b, Int));
+    Assert.assert(3, cast(c, Int));
+    Assert.assert(4, cast(d, Int));
+    Assert.assert(5, cast(e, Int));
+  });
+
+  @def match({LList: {head | tail;}}, [Atom], {
+    Assert.assert(1, cast(head, Int));
+    Assert.assert({2; 3; 4;}, cast(tail, LList));
+  });
+
+  @def match({LList: _}, [Atom], {
+    Assert.assert(@_'false');
+  });
+
+})

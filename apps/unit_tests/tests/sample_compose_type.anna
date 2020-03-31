@@ -1,0 +1,4 @@
+deftype(SampleComposeType, {
+  var name: String;
+  var sample: SampleType;
+})

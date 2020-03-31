@@ -1,0 +1,99 @@
+defmodule(MMapTest, {
+  @alias vm.Lang;
+
+  @def test_should_create_constant_map([Atom], {
+    Assert.assert(['foo' => 'bar'], ['foo' => 'bar']);
+  });
+
+  @def test_should_create_constant_map_interp([Atom], {
+    result = @native Lang.eval("['foo' => 'bar']");
+    Assert.assert(['foo' => 'bar'], cast(result, MMap));
+  });
+
+  @def test_should_create_map_with_variable_value([Atom], {
+    bar = 'bar';
+    Assert.assert(['foo' => 'bar'], ['foo' => bar]);
+  });
+
+  @def test_should_create_map_with_variable_value_interp([Atom], {
+    @native Lang.eval("bar = 'bar'; Assert.assert(['foo' => 'bar'], ['foo' => bar]);");
+  });
+
+  @def test_should_create_map_with_variable_key([Atom], {
+    bar = 'foo';
+    Assert.assert(['foo' => 'bar'], [bar => 'bar']);
+  });
+
+  @def test_should_create_map_with_variable_key_interp([Atom], {
+    @native Lang.eval("foo = 'foo'; Assert.assert(['foo' => 'bar'], [foo => 'bar']);");
+  });
+
+  @def test_should_create_map_with_variable_key_and_variable_value([Atom], {
+    foo = 'foo';
+    bar = 'bar';
+    Assert.assert(['foo' => 'bar'], [foo => bar]);
+  });
+
+  @def test_should_create_map_with_variable_key_and_variable_value_interp([Atom], {
+    @native Lang.eval("foo = 'foo';
+    bar = 'bar';
+    Assert.assert(['foo' => 'bar'], [foo => bar]);");
+  });
+
+  @def test_should_create_map_with_multiple_types([Atom], {
+    foo = 'foo';
+    bar = @_'bar';
+    Assert.assert(['baz' => {'foo';}, 'cat' => [@_'bar']], ['baz' => {foo;}, 'cat' => [bar]]);
+  });
+
+  @def test_should_create_map_with_multiple_types_interp([Atom], {
+    @native Lang.eval("foo = 'foo';
+    bar = @_'bar';
+    Assert.assert(['baz' => {'foo';}, 'cat' => [@_'bar']], ['baz' => {foo;}, 'cat' => [bar]]);");
+  });
+
+  @def test_should_assign_map_values_to_pattern_match([Atom], {
+    ['foo' => bar, 'baz' => 'cat'] = ['foo' => 'bar', 'baz' => 'cat'];
+    Assert.assert('bar', cast(bar, String));
+  });
+
+  @def test_should_assign_map_values_to_pattern_match_interp([Atom], {
+    @native Lang.eval("['foo' => bar, 'baz' => 'cat'] = ['foo' => 'bar', 'baz' => 'cat'];
+    Assert.assert('bar', cast(bar, String));");
+  });
+
+  @def test_should_match_on_map_with_mismatched_number_of_keys([Atom], {
+    ['foo' => bar] = ['foo' => 'bar', 'baz' => 'cat'];
+    Assert.assert('bar', cast(bar, String));
+  });
+
+  @def test_should_match_on_map_with_mismatched_number_of_keys_interp([Atom], {
+    @native Lang.eval("['foo' => bar] = ['foo' => 'bar', 'baz' => 'cat'];
+    Assert.assert('bar', cast(bar, String));");
+  });
+
+  @def test_should_create_map_with_atom_keys([Atom], {
+    foo = 'foo';
+    bar = 'bar';
+    Assert.assert([@_'success' => 'foo', @_'fail' => 'bar'], [@_'success' => foo, @_'fail' => bar]);
+  });
+
+  @def test_should_create_map_with_atom_keys_interp([Atom], {
+    @native Lang.eval("foo = 'foo';
+    bar = 'bar';
+    Assert.assert([@_'success' => 'foo', @_'fail' => 'bar'], [@_'success' => foo, @_'fail' => bar]);");
+  });
+
+  @def test_should_create_map_with_atom_keys_and_atom_values([Atom], {
+    foo = @_'foo';
+    bar = @_'bar';
+    Assert.assert([@_'success' => @_'foo', @_'fail' => @_'bar'], [@_'success' => foo, @_'fail' => bar]);
+  });
+
+  @def test_should_create_map_with_atom_keys_and_atom_values_interp([Atom], {
+    @native Lang.eval("foo = @_'foo';
+    bar = @_'bar';
+    Assert.assert([@_'success' => @_'foo', @_'fail' => @_'bar'], [@_'success' => foo, @_'fail' => bar]);");
+  });
+
+})

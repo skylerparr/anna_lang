@@ -1377,7 +1377,7 @@ import vm.Function;
 //    ");
 //  });
 //
-//  @def match_signature({SampleType: SampleType % {name: 'Ellie', age: age}}, [Atom], {
+//  @def match_signature({SampleType: SampleType%{name: 'Ellie', age: age}}, [Atom], {
 //    Assert.assert(3, age);
 //  });
 //

@@ -1,0 +1,7 @@
+defmodule(FooImpl, {
+  @impl FooApi;
+
+  @def go({Atom: arg}, [Atom], {
+    arg;
+  });
+})

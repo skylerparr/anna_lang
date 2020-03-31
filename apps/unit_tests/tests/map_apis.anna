@@ -1,0 +1,1 @@
+set_iface(FooApi, FooImpl)

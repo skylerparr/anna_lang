@@ -35,8 +35,23 @@ defmodule(BootMain, {
       'apps/ia/lib/command_handler.anna';
       'apps/ia/lib/ia_main.anna';
 
+      'apps/unit_tests/tests/foo_api.anna';
+      'apps/unit_tests/tests/foo_impl.anna';
+
+      'apps/unit_tests/tests/sample_compose_type.anna';
+      'apps/unit_tests/tests/sample_compose_type.anna';
+
+      'apps/unit_tests/tests/map_apis.anna';
+
       'apps/unit_tests/tests/string_test.anna';
       'apps/unit_tests/tests/number_test.anna';
+      'apps/unit_tests/tests/atom_test.anna';
+      'apps/unit_tests/tests/tuple_test.anna';
+      'apps/unit_tests/tests/list_test.anna';
+      'apps/unit_tests/tests/mmap_test.anna';
+      'apps/unit_tests/tests/keyword_test.anna';
+      'apps/unit_tests/tests/module_function_test.anna';
+      'apps/unit_tests/tests/custom_types_test.anna';
     };
     compile_files(cast(files, LList));
   });

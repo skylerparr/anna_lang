@@ -37,25 +37,25 @@ defmodule(CommandHandler, {
 //    @_'ok';
 //  });
 
-//  @def process_command({String: 't'}, [Atom], {
-//    History.push('t');
-//    Kernel.spawn(@fn {
-//        [{}] => {
-//        UnitTests.add_test(@_'StringTest');
-//        UnitTests.add_test(@_'NumberTest');
-//        UnitTests.add_test(@_'AtomTest');
-//        UnitTests.add_test(@_'TupleTest');
-//        UnitTests.add_test(@_'LListTest');
-//        UnitTests.add_test(@_'MMapTest');
-//        UnitTests.add_test(@_'KeywordTest');
-//        UnitTests.add_test(@_'ModuleFunctionTest');
-//        UnitTests.add_test(@_'CustomTypesTest');
-//
-//        UnitTests.run_tests();
-//      }
-//    });
-//    @_'ok';
-//  });
+  @def process_command({String: 't'}, [Atom], {
+    History.push('t');
+    Kernel.spawn(@fn {
+        [{}] => {
+        UnitTests.add_test(@_'StringTest');
+        UnitTests.add_test(@_'NumberTest');
+        UnitTests.add_test(@_'AtomTest');
+        UnitTests.add_test(@_'TupleTest');
+        UnitTests.add_test(@_'LListTest');
+        UnitTests.add_test(@_'MMapTest');
+        UnitTests.add_test(@_'KeywordTest');
+        UnitTests.add_test(@_'ModuleFunctionTest');
+        UnitTests.add_test(@_'CustomTypesTest');
+
+        UnitTests.run_tests();
+      }
+    });
+    @_'ok';
+  });
 
   @def process_command({String: ''}, [Atom], {
     @_'ok';
