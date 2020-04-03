@@ -4,9 +4,13 @@ import lang.macros.AnnaLang;
 class InvokeNativeFunctionOperation extends vm.AbstractInvokeFunction {
   private var func: Dynamic;
   private var args: LList;
+  private var classString: String;
+  private var funString: String;
   private var arrayArgs: Array<Dynamic>;
-  public function new(fun: Dynamic, args: LList, hostModule: Atom, hostFunction: Atom, lineNumber: Int, annaLang: AnnaLang) {
+  public function new(fun: Dynamic, args: LList, classString: String, funString: String, hostModule: Atom, hostFunction: Atom, lineNumber: Int, annaLang: AnnaLang) {
     super(hostModule, hostFunction, lineNumber, annaLang);
+    this.classString = classString;
+    this.funString = funString;
     this.func = fun;
     this.args = args;
 
@@ -30,6 +34,10 @@ class InvokeNativeFunctionOperation extends vm.AbstractInvokeFunction {
       invokeArgs.push(invokeArg);
     }
     var retVal: Dynamic = Reflect.callMethod(null, func, invokeArgs);
-    scopeVariables.set("$$$", retVal);
+    if (retVal == null) {
+      scopeVariables.set("$$$", lang.HashTableAtoms.get("nil"));
+    } else {
+      scopeVariables.set("$$$", retVal);
+    };
   }
 }

@@ -63,7 +63,7 @@ class UserDefinedType extends AbstractCustomType {
     return create(obj.__type, arg, obj.__annaLang);
   }
 
-  public function clone(): lang.AbstractCustomType {
+  public inline function clone(): lang.AbstractCustomType {
     return create(__type, __values, __annaLang);
   }
 }

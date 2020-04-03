@@ -46,7 +46,7 @@ class Native {
 
     var invokeClass: TypeDefinition = createOperationClass(annaLang, moduleName, invokeFunName, strArgs);
 
-    var haxeString = '${funName}.push(new vm.${invokeClass.name}(${moduleName}.${invokeFunName}, ${macroTools.getList(strArgs)},
+    var haxeString = '${funName}.push(new vm.${invokeClass.name}(${moduleName}.${invokeFunName}, ${macroTools.getList(strArgs)}, "${moduleName}", "${invokeFunName}",
       ${macroTools.getAtom(currentModuleStr)}, ${macroTools.getAtom(macroContext.currentFunction)}, ${macroTools.getLineNumber(params)}, Code.annaLang))';
     MacroLogger.log(haxeString, 'haxeString');
     retVal.push(macros.haxeToExpr(haxeString));
@@ -107,7 +107,7 @@ class Native {
       #if macro
       var cls: TypeDefinition = macro class NoClass extends vm.AbstractInvokeFunction {
 
-          public function new(func: Dynamic, args: LList, hostModule: Atom, hostFunction: Atom, line: Int, annaLang: lang.macros.AnnaLang) {
+          public function new(func: Dynamic, args: LList, classString: String, funString: String, hostModule: Atom, hostFunction: Atom, line: Int, annaLang: lang.macros.AnnaLang) {
             super(hostModule, hostFunction, line, annaLang);
             var counter: Int = 0;
             for(arg in LList.iterator(args)) {

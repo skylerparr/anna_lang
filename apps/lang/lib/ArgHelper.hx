@@ -106,14 +106,6 @@ class ArgHelper {
   }
 
   public static inline function resolveAbstractCustomTypeValues(value: lang.UserDefinedType, scopeVariables: Map<String, Dynamic>, annaLang: AnnaLang): AbstractCustomType {
-//    if(value.variables != null) {
-//      var variables = value.variables;
-//      for(key in variables.keys()) {
-//        var arg: String = variables.get(key);
-//        var fetched = extractArgValue(Tuple.create([Atom.create('var'), arg]), scopeVariables);
-//        Reflect.setField(value, key, fetched);
-//      }
-//    }
     return value.clone();
   }
 
