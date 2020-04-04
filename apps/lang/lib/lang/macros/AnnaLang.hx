@@ -135,6 +135,11 @@ class AnnaLang {
               }
               fieldMap.set(name, strType);
               macroContext.typeFieldMap.set(className, fieldMap);
+              #if !macro
+              var code = getCodeModule();
+              code.annaLang.macroContext.typeFieldMap.set(className, fieldMap);
+              code.annaLang.macroContext.declaredTypes.push(className);
+              #end
             case _:
               throw "AnnaLang: Unexpected code. You can only define var types. For Example: `var name: String;` or `var ellie: Bear;`";
           }
@@ -146,7 +151,6 @@ class AnnaLang {
     var helperBody: Expr = macroTools.buildBlock(utilFuncs);
     MacroLogger.logExpr(helperBody, 'helperBody');
     defCls(name, helperBody);
-    var moduleDef: ModuleDef = new ModuleDef(className);
 
     return AnnaLang.persistClassFields();
   }
@@ -374,7 +378,6 @@ class AnnaLang {
         }
         definedFunctions.set(key, key);
       }
-
       validateImplementedInterfaces(moduleDef);
 
       var fieldMap: Map<String, String> = new Map<String, String>();
@@ -549,6 +552,10 @@ class AnnaLang {
       pos: macroContext.currentPos() });
 
     macroContext.declaredClasses.set(moduleName, moduleDef);
+    #if !macro
+    var code: Dynamic = getCodeModule();
+    code.annaLang.macroContext.declaredClasses.set(moduleName, moduleDef);
+    #end
     moduleDef.aliases = macroContext.aliases;
 
     return AnnaLang.persistClassFields();
@@ -655,49 +662,7 @@ class AnnaLang {
               defCls(name, body);
               compileModule(macroContext.currentModuleDef.moduleName, macroContext.currentModuleDef);
               #if !macro
-              var code: Dynamic = getCodeModule();
-              code.annaLang.macroContext.declaredClasses.set(macroContext.currentModuleDef.moduleName, macroContext.currentModuleDef);
-              var instance: Dynamic = {};
-              var functions: Map<String, Dynamic> = new Map();
-              for(field in macroContext.definedClass.fields) {
-                switch(field.kind) {
-                  case FVar(t, expr):
-                    var ast = parser.parseString(printer.printExpr(expr));
-                    var operations: Array<vm.Operation> = vm.Lang.getHaxeInterp().execute(ast);
-                    Reflect.setField(instance, field.name, operations);
-                  case FFun(f):
-                    functions.set(field.name, f);
-                  case _:
-                    throw new ParsingException("AnnaLang walkBlock: Unexpect field type FProp");
-                }
-              }
-              var instanceFields: Array<String> = Reflect.fields(instance);
-              for(funcKey in functions.keys()) {
-                var interp: Interp = vm.Lang.getHaxeInterp();
-                for(field in instanceFields) {
-                  interp.variables.set(field, Reflect.field(instance, field));
-                }
-                var func = functions.get(funcKey);
-                var args: Array<String> = {
-                  var retVal: Array<String> = [];
-                  for(funArg in cast(func.args, Array<Dynamic>)) {
-                    retVal.push('${funArg.name}: ${macroTools.getType(funArg.type)}');
-                  }
-                  retVal;
-                }
-                var bodyString: String = printer.printExpr(func.expr);
-                var anonFuncString: String = 'function(${args.join(', ')}) {
-                  ${bodyString}
-                }';
-                var ast = parser.parseString(anonFuncString);
-                var anonFunc = interp.execute(ast);
-                Reflect.setField(instance, funcKey, anonFunc);
-              }
-              vm.Classes.defineWithInstance(
-                  Atom.create(macroContext.currentModuleDef.moduleName),
-                  instance,
-                  Reflect.fields(instance)
-              );
+              defineRuntimeModule();
               #end
             case ECall({ expr: EConst(CIdent('defapi'))}, params):
               defApi(params[0], params[1]);
@@ -710,6 +675,10 @@ class AnnaLang {
               #end
             case ECall({ expr: EConst(CIdent('deftype'))}, params):
               defType(params[0], params[1]);
+              compileModule(macroContext.currentModuleDef.moduleName, macroContext.currentModuleDef);
+              #if !macro
+              defineRuntimeModule();
+              #end
             case ECall({ expr: EField({ expr: EConst(CIdent(moduleName))}, funName) }, params):
               var args: Array<Expr> = macroTools.getFunBody(blockExpr);
               var lineNumber: Int = macroTools.getLineNumber(expr);
@@ -827,6 +796,54 @@ class AnnaLang {
     }
     return retExprs;
   }
+
+  #if !macro
+  private inline function defineRuntimeModule(): Void {
+    var code: Dynamic = getCodeModule();
+    code.annaLang.macroContext.declaredClasses.set(macroContext.currentModuleDef.moduleName, macroContext.currentModuleDef);
+    var instance: Dynamic = {};
+    var functions: Map<String, Dynamic> = new Map();
+    for(field in macroContext.definedClass.fields) {
+      switch(field.kind) {
+        case FVar(t, expr):
+          var ast = parser.parseString(printer.printExpr(expr));
+          var operations: Array<vm.Operation> = vm.Lang.getHaxeInterp().execute(ast);
+          Reflect.setField(instance, field.name, operations);
+        case FFun(f):
+          functions.set(field.name, f);
+        case _:
+          throw new ParsingException("AnnaLang walkBlock: Unexpect field type FProp");
+      }
+    }
+    var instanceFields: Array<String> = Reflect.fields(instance);
+    for(funcKey in functions.keys()) {
+      var interp: Interp = vm.Lang.getHaxeInterp();
+      for(field in instanceFields) {
+        interp.variables.set(field, Reflect.field(instance, field));
+      }
+      var func = functions.get(funcKey);
+      var args: Array<String> = {
+        var retVal: Array<String> = [];
+        for(funArg in cast(func.args, Array<Dynamic>)) {
+          retVal.push('${funArg.name}: ${macroTools.getType(funArg.type)}');
+        }
+        retVal;
+      }
+      var bodyString: String = printer.printExpr(func.expr);
+      var anonFuncString: String = 'function(${args.join(', ')}) {
+                  ${bodyString}
+                }';
+      var ast = parser.parseString(anonFuncString);
+      var anonFunc = interp.execute(ast);
+      Reflect.setField(instance, funcKey, anonFunc);
+    }
+    vm.Classes.defineWithInstance(
+      Atom.create(macroContext.currentModuleDef.moduleName),
+      instance,
+      Reflect.fields(instance)
+    );
+  }
+  #end
 
   private function setScopeTypesForCustomType(expr: Expr): Void {
     switch(expr.expr) {

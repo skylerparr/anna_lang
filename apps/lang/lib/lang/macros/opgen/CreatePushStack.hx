@@ -44,10 +44,14 @@ class CreatePushStack {
           funArgs.push(macroTools.getTuple([macroTools.getAtom("var"), '"__${funName}_${argCounter}"']));
         case EField({expr: EConst(CIdent(obj))}, fieldName):
           var typeAndValue = macroTools.getTypeAndValue(arg, macroContext);
-          var type: String = macroContext.varTypesInScope.getTypes(obj)[0];
-          type = macroContext.getFieldType(type, fieldName);
-          type = Helpers.getType(type, macroContext);
-          types.push([type]);
+          var finalTypes: Array<String> = [];
+          var varTypes: Array<String> = macroContext.varTypesInScope.getTypes(obj);
+          for(type in varTypes) {
+            type = macroContext.getFieldType(type, fieldName);
+            type = Helpers.getType(type, macroContext);
+            finalTypes.push(type);
+          }
+          types.push(finalTypes);
           funArgs.push(typeAndValue.value);
         case _:
           var typeAndValue = macroTools.getTypeAndValue(arg, macroContext);

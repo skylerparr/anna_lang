@@ -38,7 +38,7 @@ defmodule(BootMain, {
       'apps/unit_tests/tests/foo_api.anna';
       'apps/unit_tests/tests/foo_impl.anna';
 
-      'apps/unit_tests/tests/sample_compose_type.anna';
+      'apps/unit_tests/tests/sample_type.anna';
       'apps/unit_tests/tests/sample_compose_type.anna';
 
       'apps/unit_tests/tests/map_apis.anna';
