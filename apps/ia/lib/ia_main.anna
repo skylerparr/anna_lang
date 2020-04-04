@@ -6,13 +6,31 @@ defmodule(IAMain, {
 
   @const VSN = '0.0.0';
   @const PREFIX = 'ia(';
+  @const IA_PID = @_'ia';
 
   @def start({
     History.start();
     UnitTests.start();
 
     pid = Kernel.spawn(@_'IAMain', @_'start_interactive_anna');
+    Kernel.register_pid(pid, IA_PID);
     supervise(cast(pid, Pid));
+  });
+
+  @def recompile([Atom], {
+    result = BootMain.compile_all();
+    restart_ia(result);
+  });
+
+  @def restart_ia({Tuple: [@_'ok', _]}, [Atom], {
+    pid = Kernel.get_pid_by_name(IA_PID);
+    Kernel.exit(pid);
+  });
+
+  @def restart_ia({Tuple: [@_'error', message]}, [Atom], {
+    System.println('compilation failure');
+    System.println(cast(message, String));
+    @_'error';
   });
 
   @def supervise({Pid: pid}, [Atom], {

@@ -722,7 +722,6 @@ class AnnaLang {
               }
               var currentModule: TypeDefinition = macroContext.currentModule;
               var currentModuleStr: String = currentModule.name;
-
               var exprs: Array<Expr> = CreatePushStack.gen(currentModuleStr, funName, pushStackArgs, lineNumber, this);
               for(expr in exprs) {
                 retExprs.push(expr);
@@ -792,7 +791,7 @@ class AnnaLang {
       case EObjectDecl(_) | EArrayDecl(_):
       case e:
         MacroLogger.log(e, 'e');
-        throw "AnnaLang: Not sure what to do here yet";
+        throw new FunctionClauseNotFound('AnnaLang: unable to invoke ${printer.printExpr(expr)}');
     }
     return retExprs;
   }

@@ -26,10 +26,8 @@ class CreatePushStack {
     var funArgs: Array<String> = [];
     var argCounter: Int = 0;
     var retVal: Array<Expr> = [];
-    var argStrings: Array<String> = [];
 
     for(arg in args) {
-      argStrings.push(printer.printExpr(arg));
 
       switch(arg.expr) {
         case ECall(_, _):
@@ -58,6 +56,11 @@ class CreatePushStack {
         case _:
           var typeAndValue = macroTools.getTypeAndValue(arg, macroContext);
           var typesForVar: Array<String> = getTypesForVar(typeAndValue, arg, macroContext);
+
+          if(typesForVar == null) {
+            throw new FunctionClauseNotFound('AnnaLang: No function found for ${moduleName}.${funName}(${getArgsNames(args, printer).join(', ')}) with unabled to resolve type for var: `${printer.printExpr(arg)}`. You probably need to cast.');
+          }
+
           var possibleTypes: Array<String> = [];
           for(typeForVar in typesForVar) {
             var type: String = Helpers.getType(typeForVar, macroContext);
@@ -113,7 +116,7 @@ class CreatePushStack {
     }
     var types: Array<String> = macroContext.varTypesInScope.getTypes(funName);
     if(types == null) {
-      throw new FunctionClauseNotFound('AnnaLang: No function found for ${moduleName}.${funName}(${argStrings.join(', ')})');
+      throw new FunctionClauseNotFound('AnnaLang: No function found for ${moduleName}.${funName}(${getArgsNames(args, printer).join(', ')})');
     }
     #if !macro
     var fun = vm.Process.self().processStack.getVariablesInScope().get(funName);
@@ -131,7 +134,15 @@ class CreatePushStack {
       }
     }
     #end
-    throw new FunctionClauseNotFound('AnnaLang: Function ${moduleName}.${funName} with args [${argStrings.join(', ')}] types: [${types.join(', ')}] at line ${lineNumber} not found');
+    throw new FunctionClauseNotFound('AnnaLang: Function ${moduleName}.${funName} with args [${getArgsNames(args, printer).join(', ')}] types: [${types.join(', ')}] at line ${lineNumber} not found');
+  }
+
+  private static function getArgsNames(args: Array<Expr>, printer: Printer): Array<String> {
+    var argStrings: Array<String> = [];
+    for(arg in args) {
+      argStrings.push(printer.printExpr(arg));
+    }
+    return argStrings;
   }
 
   private static inline function generatePermutations(lists:Array<Array<String>>, result: Array<Array<String>>, depth: Int, current: Array<String>):Void {
