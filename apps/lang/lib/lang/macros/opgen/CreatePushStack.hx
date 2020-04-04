@@ -16,8 +16,10 @@ class CreatePushStack {
     var module: ModuleDef = macroContext.declaredClasses.get(moduleName);
     if(module == null) {
       module = macroContext.declaredInterfaces.get(moduleName);
+      if(module != null) {
+        moduleName = module.moduleName;
+      }
     }
-    moduleName = module.moduleName;
 
     var fqFunNameTypeMap: Map<String, String> = new Map();
     var types: Array<Array<String>> = [];
