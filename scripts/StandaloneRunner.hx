@@ -16,7 +16,7 @@ class StandaloneRunner {
     #if !scriptable
     var annaProject: AnnaLangProject = Application.getProjectConfig('main'.atom());
     vm.NativeKernel.setProject(pc);
-    main.Code.defineCode();
+    Code.defineCode();
     vm.NativeKernel.start();
     vm.NativeKernel.runApplication(annaProject.autoStart);
     vm.NativeKernel.run();

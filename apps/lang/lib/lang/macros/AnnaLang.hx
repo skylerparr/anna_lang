@@ -149,7 +149,6 @@ class AnnaLang {
     }
 
     var helperBody: Expr = macroTools.buildBlock(utilFuncs);
-    MacroLogger.logExpr(helperBody, 'helperBody');
     defCls(name, helperBody);
 
     return AnnaLang.persistClassFields();

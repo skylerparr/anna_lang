@@ -38,6 +38,7 @@ class Lang {
     definedModules.set("Tuple", Tuple);
     definedModules.set("util", {
       AST: util.AST,
+      Compiler: util.Compiler,
       JSON: util.JSON,
       File: util.File,
       StringUtil: util.StringUtil,

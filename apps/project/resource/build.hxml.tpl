@@ -1,7 +1,6 @@
--cp apps
+-cp apps/main
 -cp ../../src
 -cp ../../scripts
--cp ../../apps/compiler/lib
 -cp ../../apps/lang/lib
 -cp ../../apps/vm/lib
 -cp ../../apps/vm_api/lib

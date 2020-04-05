@@ -32,9 +32,9 @@ class AST {
 
   private static function getModuleType(type:String):String {
     return switch type {
-      case "defCls":
+      case "defmodule":
         'module';
-      case "defType":
+      case "deftype":
         'type';
       case "defApi":
         'api';

@@ -13,7 +13,7 @@ class Compiler {
     var output: Bytes = stdout.readAll();
     var exitCode = p.exitCode(true);
     if (exitCode == 1) {
-      Logger.log(output.getString(0, output.length));
+      trace(output.getString(0, output.length));
     }
     Sys.setCwd('..');
     return Tuple.create([Atom.create('ok'), '${exitCode}']);
