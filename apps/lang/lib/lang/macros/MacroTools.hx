@@ -295,7 +295,6 @@ class MacroTools {
   }
 
   public inline function getList(values: Array<String>):String {
-    MacroLogger.log(getListExpr(values), 'getListExpr(values)');
     return 'LList.create([${values.join(', ')}])';
   }
 

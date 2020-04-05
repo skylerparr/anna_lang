@@ -35,7 +35,7 @@ class PatternMatch {
         var value = { expr: EConst(CIdent(varName)), pos: macroContext.currentPos() }
         generatePatternMatch(annaLang, value, valueExpr);
       case ECall({expr: EField({expr: EConst(CIdent("Tuple"))}, "create")}, [{expr: EArrayDecl([{expr: ECall({ expr: EField({ expr: EConst(CIdent('Atom')) },'create') }, [{ expr: EConst(CString('pinned')) }]) }, { expr: EConst(CString(varName)) }])}]):
-        var haxeStr: String = 'arrayTuple[${counter}] = scopeVariables.get("${varName}"); lang.EitherSupport.getValue(arrayTuple[${counter}]);';
+        var haxeStr: String = 'arrayTuple[${counter}] = ____scopeVariables.get("${varName}"); lang.EitherSupport.getValue(arrayTuple[${counter}]);';
         macros.haxeToExpr(haxeStr);
       case EConst(CIdent(v)):
         var varName: Dynamic = v;

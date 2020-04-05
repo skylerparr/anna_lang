@@ -50,6 +50,14 @@ defmodule(MMapTest, {
     match_tuple([@_'ok', map]);
   });
 
+  @def test_should_pattern_match_map_within_tuple([Atom], {
+    map = ['foo' => 'bar', 'baz' => 'cat'];
+    tup = [@_'ok', map];
+    [@_'ok', ['foo' => foo, 'baz' => baz]] = tup;
+    Assert.assert('bar', cast(foo, String));
+    Assert.assert('cat', cast(baz, String));
+  });
+
   @def match_map({MMap: ['foo' => foo, 'baz' => baz]}, [Atom], {
     Assert.assert('bar', cast(foo, String));
     Assert.assert('cat', cast(baz, String));
@@ -59,5 +67,4 @@ defmodule(MMapTest, {
     Assert.assert('bar', cast(foo, String));
     Assert.assert('cat', cast(baz, String));
   });
-
 })

@@ -29,14 +29,14 @@ class Match {
       var currentModule: TypeDefinition = macroContext.currentModule;
       var currentModuleStr: String = currentModule.name;
 
-      var patternMatch: Expr = PatternMatch.match(annaLang, macros.haxeToExpr(typeAndValue.value), macros.haxeToExpr("scopeVariables.get(\"$$$\")"));
+      var patternMatch: Expr = PatternMatch.match(annaLang, macros.haxeToExpr(typeAndValue.value), macros.haxeToExpr("____scopeVariables.get(\"$$$\")"));
       #if macro
       var cls: TypeDefinition = macro class NoClass extends vm.AbstractMatch {
           public function new(hostModule: Atom, hostFunction: Atom, line: Int, annaLang: lang.macros.AnnaLang) {
             super(hostModule, hostFunction, line, annaLang);
           }
 
-          override public function execute(scopeVariables: Map<String, Dynamic>, processStack: vm.ProcessStack): Void {
+          override public function execute(____scopeVariables: Map<String, Dynamic>, processStack: vm.ProcessStack): Void {
             var matched: Map<String, Dynamic> = $e{patternMatch};
             if(NativeKernel.isNull(matched)) {
               Logger.inspect('BadMatch: ${currentModuleStr}.${macroContext.currentFunction}():${macroTools.getLineNumber(params)} => ${printer.printExpr(params)}');
@@ -45,7 +45,7 @@ class Match {
               return;
             }
             for(key in matched.keys()) {
-              scopeVariables.set(key, matched.get(key));
+              ____scopeVariables.set(key, matched.get(key));
             }
           }
       }

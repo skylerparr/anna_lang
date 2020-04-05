@@ -27,7 +27,7 @@ class InterpMatch implements Operation {
   public function execute(scopeVariables: Map<String, Dynamic>, processStack: ProcessStack): Void {
     try {
       var interp = Lang.getHaxeInterp();
-      interp.variables.set("scopeVariables", scopeVariables);
+      interp.variables.set("____scopeVariables", scopeVariables);
       var matched: Map<String, Dynamic> = interp.execute(ast);
       if(NativeKernel.isNull(matched)) {
         IO.inspect('BadMatch: ${annaLang.macroContext.currentModule.name}.eval()');
