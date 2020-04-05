@@ -37,8 +37,11 @@ class Lang {
     definedModules.set("sys.io", {File: sys.io.File});
     definedModules.set("Tuple", Tuple);
     definedModules.set("util", {
+      AST: util.AST,
+      JSON: util.JSON,
+      File: util.File,
       StringUtil: util.StringUtil,
-      File: util.File
+      Template: util.Template,
     });
     definedModules.set("vm", {
       Classes: vm.Classes,

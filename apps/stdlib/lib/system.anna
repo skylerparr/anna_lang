@@ -31,6 +31,14 @@ defmodule(System, {
     @native IO.inspect(str);
   });
 
+  @def println({LList: str}, [Atom], {
+    @native IO.inspect(str);
+  });
+
+  @def println({MMap: str}, [Atom], {
+    @native IO.inspect(str);
+  });
+
   @def println({Dynamic: d}, [Atom], {
     @native IO.println(d);
   });

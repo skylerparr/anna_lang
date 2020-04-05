@@ -1,0 +1,9 @@
+defmodule(JSON, {
+  @def parse({String: data}, [Tuple], {
+    @native util.JSON.parse(data);
+  });
+
+  @def stringify({Tuple: [@_'ok', data]}, [Tuple], {
+    @native util.JSON.stringify(data);
+  });
+})

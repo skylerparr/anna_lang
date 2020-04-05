@@ -82,7 +82,6 @@ defmodule(IAMain, {
     History.increment_line();
     prompt_string = get_prompt();
     System.print(prompt_string);
-    //prompt();
     current_string;
   });
 
@@ -160,6 +159,16 @@ defmodule(IAMain, {
     clear_prompt(current_string);
     current_string = History.forward();
     print_prompt(current_string, full_string);
+    current_string;
+  });
+
+  // right arrow
+  @def handle_arrow_input({Int: 67, String: current_string, String: full_string, Port: port}, [String], {
+    current_string;
+  });
+
+  // left arrow
+  @def handle_arrow_input({Int: 68, String: current_string, String: full_string, Port: port}, [String], {
     current_string;
   });
 

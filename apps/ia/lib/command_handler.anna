@@ -1,6 +1,5 @@
 defmodule(CommandHandler, {
   @alias vm.NativeKernel;
-  @const PROJECT_SRC_PATH = 'project/';
 
   @def process_command({String: 'exit'}, [Atom], {
     System.println('exiting...');
@@ -26,16 +25,6 @@ defmodule(CommandHandler, {
     System.println(command);
     @_'ok';
   });
-
-//  @def process_command({String: 'build'}, [Atom], {
-//    System.set_cwd(PROJECT_SRC_PATH);
-//    System.println('building project');
-//    [@_'ok', cwd] = System.get_cwd();
-//    System.println(cast(cwd, String));
-//    AnnaCompiler.build_project();
-//    System.set_cwd('..');
-//    @_'ok';
-//  });
 
   @def process_command({String: 't'}, [Atom], {
     History.push('t');

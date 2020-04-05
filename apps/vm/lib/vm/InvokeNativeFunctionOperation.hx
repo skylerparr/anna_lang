@@ -38,6 +38,6 @@ class InvokeNativeFunctionOperation extends vm.AbstractInvokeFunction {
       scopeVariables.set("$$$", lang.HashTableAtoms.get("nil"));
     } else {
       scopeVariables.set("$$$", retVal);
-    };
+    }
   }
 }

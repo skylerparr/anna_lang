@@ -45,20 +45,21 @@ class File {
     }
   }
 
-  public static function getContent(path:String):String {
+  public static function getContent(path:String):Tuple {
     if(FileSystem.exists(path)) {
-      return File.getContent(path);
+      return Tuple.create([Atom.create('ok'), sys.io.File.getContent(path)]);
     }
-    return 'FIXME: File does not exist';
+    return Tuple.create([Atom.create('error'), 'FIXME: File does not exist']);
   }
 
   public static function saveContent(path:String, content: String):Tuple {
     trace("TODO: check to see if necessary directories exist");
-    return File.saveContent(path, content);
+    sys.io.File.saveContent(path, content);
+    return Tuple.create([Atom.create('ok'), path]);
   }
 
   public static function copy(src:String, dest:String):Tuple {
-    File.copy(src, dest);
+    sys.io.File.copy(src, dest);
     return Tuple.create([Atom.create('ok'), src, dest]);
   }
 }

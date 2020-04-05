@@ -132,14 +132,14 @@ class PatternMatch {
             case EVars([v]):
               if(isKey) {
                 key = printer.printExpr(v.expr);
-                var strExpr: String = 'MMap.hasKey(${printer.printExpr(valueExpr)}, ArgHelper.extractArgValue(${key}, scopeVariables, Code.annaLang))';
+                var strExpr: String = 'MMap.hasKey(${printer.printExpr(valueExpr)}, ArgHelper.extractArgValue(${key}, ____scopeVariables, Code.annaLang))';
                 var expr: Expr = generatePatternMatch(annaLang, macros.haxeToExpr('Atom.create("true")'), macros.haxeToExpr(strExpr));
                 individualMatches.push(expr);
               } else {
                 var value = printer.printExpr(v.expr);
                 MacroLogger.log(value, 'value');
                 MacroLogger.log(key, 'key');
-                var strExpr: String = 'lang.EitherSupport.getValue(MMap.get(${printer.printExpr(valueExpr)}, ArgHelper.extractArgValue(${key}, scopeVariables, Code.annaLang)))';
+                var strExpr: String = 'lang.EitherSupport.getValue(MMap.get(${printer.printExpr(valueExpr)}, ArgHelper.extractArgValue(${key}, ____scopeVariables, Code.annaLang)))';
                 var expr: Expr = generatePatternMatch(annaLang, v.expr, macros.haxeToExpr(strExpr));
                 individualMatches.push(expr);
               }

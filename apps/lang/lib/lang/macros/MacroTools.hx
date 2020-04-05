@@ -290,8 +290,8 @@ class MacroTools {
         pos: macroContext.currentPos() }
   }
 
-  public inline function getTuple(value: Array<String>):String {
-    return 'Tuple.create([${value.join(', ')}])';
+  public inline function getTuple(values: Array<String>):String {
+    return 'Tuple.create([${values.join(', ')}])';
   }
 
   public inline function getList(values: Array<String>):String {
@@ -530,7 +530,7 @@ class MacroTools {
       case e:
         MacroLogger.log(expr, 'expr');
         MacroLogger.logExpr(expr, 'expr code');
-        throw new ParsingException("AnnaLang: Expected type and value or variable name");
+        throw new ParsingException('AnnaLang: Expected type and value or variable name, got ${annaLang.printer.printExpr(expr)}');
     }
   }
 
@@ -626,8 +626,9 @@ class MacroTools {
                           var lhsType = getTypeAndValue(key, macroContext);
                           var rhsType = getTypeAndValue(value, macroContext);
                           items.push('${lhsType.value} => ${rhsType.value}');
-                        case _:
-                          items.push(printer.printExpr(value));
+                        case expr:
+                          var valueType = getTypeAndValue(value, macroContext);
+                          items.push(valueType.value);
                       }
                     }
                     if(type == 'tuple') {

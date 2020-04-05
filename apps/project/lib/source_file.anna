@@ -1,0 +1,5 @@
+deftype(SourceFile, {
+  var module_name: String = '';
+  var source_code: String = '';
+  var module_type: String = '';
+})

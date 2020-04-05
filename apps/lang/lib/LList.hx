@@ -227,7 +227,7 @@ class AnnaList<T> extends LList {
         if(first) {
           first = false;
         } else {
-          s.add(', ');
+          s.add('; ');
         }
         s.add(Anna.toAnnaString(l.item));
         l = l.next;

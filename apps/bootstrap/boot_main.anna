@@ -21,6 +21,7 @@ defmodule(BootMain, {
     files = {
       'apps/stdlib/lib/system.anna';
       'apps/stdlib/lib/str.anna';
+      'apps/stdlib/lib/json.anna';
       'apps/stdlib/lib/file.anna';
       'apps/stdlib/lib/kernel.anna';
       'apps/stdlib/lib/eenum.anna';
@@ -52,6 +53,11 @@ defmodule(BootMain, {
       'apps/unit_tests/tests/keyword_test.anna';
       'apps/unit_tests/tests/module_function_test.anna';
       'apps/unit_tests/tests/custom_types_test.anna';
+
+      // project builder
+      'apps/project/lib/source_file.anna';
+      'apps/project/lib/project_config.anna';
+      'apps/project/lib/project_compiler.anna';
     };
     compile_files(cast(files, LList));
   });
