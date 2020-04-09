@@ -93,5 +93,5 @@ class StringUtil {
 
   public static function removeWhitespace(string: String):String {
     return stripWhiteSpaceRegex.replace(string, "");
-  }
+  } 
 }

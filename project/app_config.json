@@ -2,7 +2,7 @@
   "application": "my_app",
   "autoStart": "MyApp",
   "apps": [],
-  "libs": [],
+  "libs": ["stdlib"],
   "tests": [],
   "haxelibs": []
 }

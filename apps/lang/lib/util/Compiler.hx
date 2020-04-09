@@ -9,8 +9,9 @@ class Compiler {
     #if !scriptable
     Sys.setCwd('_build');
     var p: Process = new Process("haxe", ['build.hxml']);
-    var stdout = p.stderr;
-    var output: Bytes = stdout.readAll();
+    Sys.setCwd('..');
+    var stderr = p.stderr;
+    var output: Bytes = stderr.readAll();
     var exitCode = p.exitCode(true);
     if (exitCode == 1) {
       trace(output.getString(0, output.length));

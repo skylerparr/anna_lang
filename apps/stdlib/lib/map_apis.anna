@@ -1,1 +1,1 @@
-set_iface(EEnum, DefaultEnum);
+set_iface(EEnum, DefaultEnum)

@@ -1,13 +1,12 @@
 defmodule(ProjectCompiler, {
   @alias util.Template;
 
-  @const PROJECT_SRC_PATH = 'project/';
   @const ANNA_LANG_SUFFIX = '.anna';
   @const HAXE_SUFFIX = '.hx';
   @const BUILD_DIR = '_build/';
   @const LIB_DIR = 'lib/';
   @const OUTPUT_DIR = '_build/apps/main/';
-  @const RESOURCE_DIR = '../apps/project/resource/';
+  @const RESOURCE_DIR = 'apps/project/resource/';
   @const CONFIG_FILE = 'app_config.json';
   @const BUILD_FILE = 'build.hxml';
   @const CLASS_TEMPLATE_FILE = 'ClassTemplate.tpl';
@@ -15,41 +14,70 @@ defmodule(ProjectCompiler, {
   @const HAXE_BUILD_MACRO_START = '@:build(lang.macros.AnnaLang.';
   @const HAXE_BUILD_MACRO_END = ')';
 
+  @const STDLIB_DIR = 'apps/';
+
   @def build_project({String: project_dir}, [Tuple], {
-    [@_'ok', old_cwd] = System.get_cwd();
-    System.set_cwd(project_dir);
-    clean();
-    config = get_config();
-    handle_config(config);
-    System.set_cwd(cast(old_cwd, String));
+    project_dir = Str.concat(project_dir, '/');
+
+    output_dir = Str.concat(project_dir, OUTPUT_DIR);
+    File.mkdir_p(output_dir);
+
+    config = get_config(project_dir);
+    handle_config(project_dir, config);
+    [@_'ok', config];
   });
 
-  @def clean([Atom], {
-    result = File.rm_rf(BUILD_DIR);
-    result = File.mkdir_p(OUTPUT_DIR);
+  @def clean({String: project_dir}, [Atom], {
+    build_dir = Str.concat(project_dir, BUILD_DIR);
+    File.rm_rf(BUILD_DIR);
     @_'ok';
   });
 
-  @def get_config([Tuple], {
-    [@_'ok', content] = File.get_content(CONFIG_FILE);
+  @def get_config({String: project_dir}, [Tuple], {
+    config_path = Str.concat(project_dir, CONFIG_FILE);
+    [@_'ok', content] = File.get_content(config_path);
     JSON.parse(content);
   });
 
-  @def handle_config({Tuple: [@_'ok', ["application" => app_name]]}, [Tuple], {
-    [@_'ok', files] = gather_source_files(LIB_DIR, {});
-    generate_template(cast(files, LList));
-    compile_app(cast(app_name, String));
+  @def handle_config({String: project_root, Tuple: [@_'ok', [
+      'application' => app_name,
+      'libs' => libs
+  ]]}, [Tuple], {
+    lib_dir = Str.concat(project_root, LIB_DIR);
+    [@_'ok', files] = get_app_source_files(lib_dir);
+    [@_'ok', files] = gather_lib_files(cast(files, LList), cast(libs, LList));
+    generate_template(project_root, cast(files, LList));
+    compile_app(project_root, cast(app_name, String));
   });
 
-  @def handle_config({Tuple: [@_'error', config]}, [Tuple], {
+  @def handle_config({String: _, Tuple: [@_'error', config]}, [Tuple], {
     System.println('error');
     System.println(config);
     error;
   });
 
-  @def gather_source_files({String: dir, LList: ret_val}, [Tuple], {
+  @def get_app_source_files({String: dir}, [Tuple], {
     [@_'ok', files] = File.ls(dir);
-    result = EEnum.reduce(cast(files, LList), {}, @fn {
+    result = gather_source_files(dir, {}, cast(files, LList));
+    [@_'ok', result];
+  });
+
+  @def gather_lib_files({LList: acc_files, LList: libs}, [Tuple], {
+    acc_files = EEnum.reduce(libs, acc_files, @fn {
+      [{String: lib_name, LList: acc}] => {
+        lib_root = Str.concat(STDLIB_DIR, lib_name);
+        lib_root = Str.concat(lib_root, '/');
+        [@_'ok', ["application" => application]] = get_config(lib_root);
+        lib_dir = Str.concat(lib_root, LIB_DIR);
+        [@_'ok', files] = File.ls(lib_dir);
+        gather_source_files(lib_dir, acc, cast(files, LList));
+      };
+    });
+    [@_'ok', acc_files];
+  });
+
+  @def gather_source_files({String: dir, LList: acc_files, LList: paths_to_load}, [LList], {
+    EEnum.reduce(cast(paths_to_load, LList), acc_files, @fn {
       [{String: file, LList: acc}] => {
         fun = @fn{
           [{Atom: @_'true'}] => {
@@ -61,11 +89,10 @@ defmodule(ProjectCompiler, {
             content = Str.concat(HAXE_BUILD_MACRO_START, content);
             content = Str.concat(content, HAXE_BUILD_MACRO_END);
 
-            // todo: figure this out
+            // todo: figure out why this fields are nil after they're added to the list
             // src_file = SourceFile%{source_code: content, module_name: module_name, module_type: module_type};
             src_file = ['source_code' => content, 'module_name' => module_name, 'module_type' => module_type];
             @native LList.add(acc, src_file);
-            acc;
           };
           [{Atom: @_'false'}] => {
             acc;
@@ -74,10 +101,9 @@ defmodule(ProjectCompiler, {
         fun(Str.ends_with(file, ANNA_LANG_SUFFIX));
       };
     });
-    [@_'ok', result];
   });
 
-  @def generate_template({LList: source_files}, [Tuple], {
+  @def generate_template({String: project_root, LList: source_files}, [Tuple], {
     template_file = Str.concat(RESOURCE_DIR, CLASS_TEMPLATE_FILE);
     [@_'ok', template] = File.get_content(template_file);
     [@_'ok', result] = @native Template.execute(template, ['source_files' => source_files]);
@@ -85,16 +111,19 @@ defmodule(ProjectCompiler, {
     filename = 'Code';
     filename = Str.concat(OUTPUT_DIR, filename);
     filename = Str.concat(filename, HAXE_SUFFIX);
+    filename = Str.concat(project_root, filename);
 
     File.save_content(filename, cast(result, String));
 
     [@_'ok', result];
   });
 
-  @def compile_app({String: app_name}, [Tuple], {
+  @def compile_app({String: project_root, String: app_name}, [Tuple], {
     //copy the app_config
-    app_config_destination = Str.concat(OUTPUT_DIR, CONFIG_FILE);
-    File.cp(CONFIG_FILE, app_config_destination);
+    app_config_destination = Str.concat(project_root, OUTPUT_DIR);
+    app_config_destination = Str.concat(app_config_destination, CONFIG_FILE);
+    config_file = Str.concat(project_root, CONFIG_FILE);
+    File.cp(config_file, app_config_destination);
 
     //update the haxe build file
     template_file = Str.concat(RESOURCE_DIR, BUILD_TEMPLATE_FILE);
@@ -102,10 +131,10 @@ defmodule(ProjectCompiler, {
 
     [@_'ok', result] = @native Template.execute(template, ["app_name" => app_name]);
     template_file = Str.concat(BUILD_DIR, BUILD_FILE);
+    template_file = Str.concat(project_root, template_file);
     File.save_content(template_file, cast(result, String));
 
     status = @native util.Compiler.compileProject();
-    @native IO.inspect(status);
 
     [@_'ok', filename, result];
   });

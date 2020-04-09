@@ -7,13 +7,25 @@ import vm.Port;
 import IO;
 import vm.Function;
 @:build(lang.macros.AnnaLang.init())
-@:build(lang.macros.AnnaLang.defmodule(System, {
-  @def print({String: str}, [Atom], {
-    @native IO.print(str);
+@:build(lang.macros.AnnaLang.defmodule(AppCode, {
+  @alias vm.Classes;
+  @alias vm.Lang;
+
+  @def get_modules([LList], {
+    @native Classes.getModules();
   });
 
-  @def println({String: str}, [Atom], {
-    @native IO.println(str);
+  @def get_api({Atom: module}, [LList], {
+    @native Classes.getApiFunctions(module);
+  });
+
+  @def compile({String: file_path}, [Tuple], {
+    #if cpp
+    content = @native sys.io.File.getContent(file_path);
+    #else
+    content = '';
+    #end
+    @native Lang.eval(content);
   });
 }))
 ::foreach source_files::

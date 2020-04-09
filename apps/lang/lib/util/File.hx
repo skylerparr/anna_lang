@@ -27,6 +27,11 @@ class File {
     }
   }
 
+  public static function remove(file:String):Tuple {
+    FileSystem.deleteFile(file);
+    return Tuple.create([Atom.create('ok'), file]);
+  }
+
   public static inline function readDirectory(path:String):LList {
     var files = FileSystem.readDirectory(path);
     var retVal: LList = LList.create([]);
@@ -45,21 +50,37 @@ class File {
     }
   }
 
-  public static function getContent(path:String):Tuple {
+  public static inline function getContent(path:String):Tuple {
     if(FileSystem.exists(path)) {
       return Tuple.create([Atom.create('ok'), sys.io.File.getContent(path)]);
+    } else {
+      return Tuple.create([Atom.create('error'), 'File does not exist']);
     }
-    return Tuple.create([Atom.create('error'), 'FIXME: File does not exist']);
   }
 
-  public static function saveContent(path:String, content: String):Tuple {
+  public static inline function saveContent(path:String, content: String):Tuple {
     trace("TODO: check to see if necessary directories exist");
     sys.io.File.saveContent(path, content);
     return Tuple.create([Atom.create('ok'), path]);
   }
 
-  public static function copy(src:String, dest:String):Tuple {
+  public static inline function copy(src:String, dest:String):Tuple {
     sys.io.File.copy(src, dest);
     return Tuple.create([Atom.create('ok'), src, dest]);
+  }
+
+  public static inline function exists(fileName:String):Atom {
+    if(FileSystem.exists(fileName)) {
+      return Atom.create('true');
+    } else {
+      return Atom.create('false');
+    }
+  }
+
+  public static inline function append(fileName: String, data: String):Tuple {
+    var output: haxe.io.Output = sys.io.File.append(fileName);
+    output.writeString(data);
+    output.close();
+    return Tuple.create([Atom.create('ok'), fileName]);
   }
 }

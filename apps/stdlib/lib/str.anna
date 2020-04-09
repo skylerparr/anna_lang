@@ -40,4 +40,8 @@ defmodule(Str, {
   @def remove_whitespace({String: str}, [String], {
     @native StringUtil.removeWhitespace(str);
   });
+
+  @def split({String: str, String: delimiter}, [LList], {
+    @native StringUtil.split(str, delimiter);
+  });
 })

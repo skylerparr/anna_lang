@@ -36,8 +36,10 @@ class AST {
         'module';
       case "deftype":
         'type';
-      case "defApi":
+      case "defapi":
         'api';
+      case "set_iface":
+        'iface';
       case _:
         null;
     }
