@@ -5,17 +5,14 @@ class Compiler {
   public function new() {
   }
 
-  public static inline function compileProject(): Tuple {
+  public static inline function compileProject(project: String): Tuple {
     #if !scriptable
-    Sys.setCwd('_build');
+    Sys.setCwd('${project}/_build');
     var p: Process = new Process("haxe", ['build.hxml']);
-    Sys.setCwd('..');
-    var stderr = p.stderr;
+    var stderr = p.stdout;
     var output: Bytes = stderr.readAll();
     var exitCode = p.exitCode(true);
-    if (exitCode == 1) {
-      trace(output.getString(0, output.length));
-    }
+    trace(output.getString(0, output.length));
     Sys.setCwd('..');
     return Tuple.create([Atom.create('ok'), '${exitCode}']);
     #else

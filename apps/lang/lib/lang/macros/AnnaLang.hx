@@ -171,6 +171,11 @@ class AnnaLang {
       var moduleDef: ModuleDef = macroContext.declaredClasses.get(moduleName);
       compileModule(moduleName, moduleDef);
     }
+    for(impl in macroContext.associatedInterfaces.keys()) {
+      var iface = macroContext.associatedInterfaces.get(impl);
+      var moduleDef: ModuleDef = macroContext.declaredClasses.get(impl);
+      macroContext.declaredInterfaces.set(iface, moduleDef);
+    }
 
     var expr: Expr = null;
     var defineCodeBody: Array<Expr> = [];
@@ -509,13 +514,14 @@ class AnnaLang {
     var iface: String = macroTools.getIdent(ifaceName);
     var impl: String = macroTools.getIdent(implName);
     macroContext.associatedInterfaces.set(impl, iface);
+    #if !macro
+    var code: Dynamic = getCodeModule();
+
     var moduleDef: ModuleDef = macroContext.declaredClasses.get(impl);
     if(moduleDef == null) {
       throw new ModuleNotFoundException('AnnaLang: module ${impl} not found');
     }
-    macroContext.declaredInterfaces.set(iface, moduleDef);
-    #if !macro
-    var code: Dynamic = getCodeModule();
+
     code.annaLang.macroContext.associatedInterfaces.set(impl, iface);
     code.annaLang.macroContext.declaredInterfaces.set(iface, moduleDef);
     #end

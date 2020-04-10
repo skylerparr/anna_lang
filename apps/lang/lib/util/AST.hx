@@ -16,7 +16,7 @@ class AST {
         var moduleExpr = args[0];
         switch(moduleExpr.expr) {
           case EConst(CIdent(moduleName)):
-            var moduleType: String = getModuleType(type);
+            var moduleType: String = getType(type);
             if(moduleType == null) {
               Tuple.create([Atom.create('error'), 'Invalid module type']);
             } else {
@@ -30,7 +30,7 @@ class AST {
     }
   }
 
-  private static function getModuleType(type:String):String {
+  private static inline function getType(type:String):String {
     return switch type {
       case "defmodule":
         'module';

@@ -134,8 +134,8 @@ defmodule(ProjectCompiler, {
     template_file = Str.concat(project_root, template_file);
     File.save_content(template_file, cast(result, String));
 
-    status = @native util.Compiler.compileProject();
+    status = @native util.Compiler.compileProject(project_root);
 
-    [@_'ok', filename, result];
+    [@_'ok', filename, status];
   });
 })
