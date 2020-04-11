@@ -22,10 +22,10 @@ defmodule(BootMain, {
       'apps/stdlib/lib/system.anna';
       'apps/stdlib/lib/str.anna';
       'apps/stdlib/lib/json.anna';
-      'apps/stdlib/lib/file.anna';
       'apps/stdlib/lib/kernel.anna';
       'apps/stdlib/lib/eenum.anna';
       'apps/stdlib/lib/default_enum.anna';
+      'apps/stdlib/lib/file.anna';
       'apps/stdlib/lib/map_apis.anna';
 
       'apps/unit_tests/lib/unit_tests.anna';

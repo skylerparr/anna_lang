@@ -60,4 +60,17 @@ defmodule(DefaultEnum, {
     reduce(cast(rest, LList), acc, callback);
   });
   //==========================================================
+
+  // each
+  // --------------------------------------------------------
+  @def each({LList: {}, Function: callback}, [Atom], {
+    @_'ok';
+  });
+
+  @def each({LList: {head | rest;}, Function: callback}, [Atom], {
+    callback(cast(head, LList));
+    each(cast(rest, LList), callback);
+  });
+
+  //==========================================================
 })

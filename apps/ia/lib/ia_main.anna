@@ -18,11 +18,6 @@ defmodule(IAMain, {
     supervise(cast(pid, Pid));
   });
 
-  @def recompile([Atom], {
-    result = BootMain.compile_all();
-    restart_ia(result);
-  });
-
   @def restart_ia({Tuple: [@_'ok', _]}, [Atom], {
     pid = Kernel.get_pid_by_name(IA_PID);
     Kernel.exit(pid);

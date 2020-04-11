@@ -1,4 +1,5 @@
 -cp apps/main
+-cp ports
 -cp ../../src
 -cp ../../scripts
 -cp ../../apps/lang/lib

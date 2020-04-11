@@ -1,0 +1,9 @@
+{
+  "application": "unit_tests",
+  "autoStart": null,
+  "apps": [],
+  "libs": [],
+  "tests": [],
+  "haxelibs": [],
+  "sourceDir": "lib/"
+}

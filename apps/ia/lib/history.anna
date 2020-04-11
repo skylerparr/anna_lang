@@ -5,7 +5,7 @@ defmodule(History, {
 
   @const PID_HISTORY = @_'history';
   @const HISTORY_FILE = '.ia_history';
-  @const HISTORY_DELIMITER = "\n";
+  @const HISTORY_DELIMITER = '\n';
 
   @def start([Tuple], {
     history_pid = @native NativeKernel.spawn_link(@_'History', @_'start_history', @tuple[], {});

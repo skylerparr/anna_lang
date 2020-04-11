@@ -13,6 +13,7 @@ defmodule(ProjectCompiler, {
   @const BUILD_TEMPLATE_FILE = 'build.hxml.tpl';
   @const HAXE_BUILD_MACRO_START = '@:build(lang.macros.AnnaLang.';
   @const HAXE_BUILD_MACRO_END = ')';
+  @const PORTS_DIR = 'ports/';
 
   @const STDLIB_DIR = 'apps/';
 
@@ -22,9 +23,17 @@ defmodule(ProjectCompiler, {
     output_dir = Str.concat(project_dir, OUTPUT_DIR);
     File.mkdir_p(output_dir);
 
+    ports_dir = ports_dir(project_dir);
+    File.mkdir_p(ports_dir);
+
     config = get_config(project_dir);
     handle_config(project_dir, config);
     [@_'ok', config];
+  });
+
+  @def ports_dir({String: project_dir}, [String], {
+    ports_dir = Str.concat(project_dir, BUILD_DIR);
+    Str.concat(ports_dir, PORTS_DIR);
   });
 
   @def clean({String: project_dir}, [Atom], {
@@ -45,8 +54,9 @@ defmodule(ProjectCompiler, {
   ]]}, [Tuple], {
     lib_dir = Str.concat(project_root, LIB_DIR);
     [@_'ok', files] = get_app_source_files(lib_dir);
-    [@_'ok', files] = gather_lib_files(cast(files, LList), cast(libs, LList));
+    [@_'ok', files] = gather_lib_files(project_root, cast(files, LList), cast(libs, LList));
     generate_template(project_root, cast(files, LList));
+    //copy_ports() //todo:
     compile_app(project_root, cast(app_name, String));
   });
 
@@ -62,7 +72,7 @@ defmodule(ProjectCompiler, {
     [@_'ok', result];
   });
 
-  @def gather_lib_files({LList: acc_files, LList: libs}, [Tuple], {
+  @def gather_lib_files({String: project_root, LList: acc_files, LList: libs}, [Tuple], {
     acc_files = EEnum.reduce(libs, acc_files, @fn {
       [{String: lib_name, LList: acc}] => {
         lib_root = Str.concat(STDLIB_DIR, lib_name);
@@ -70,6 +80,12 @@ defmodule(ProjectCompiler, {
         [@_'ok', ["application" => application]] = get_config(lib_root);
         lib_dir = Str.concat(lib_root, LIB_DIR);
         [@_'ok', files] = File.ls(lib_dir);
+
+        port_root = Str.concat(lib_name, '/');
+        port_root = Str.concat(STDLIB_DIR, port_root);
+        port_root = Str.concat(port_root, PORTS_DIR);
+        copy_ports(project_root, port_root);
+
         gather_source_files(lib_dir, acc, cast(files, LList));
       };
     });
@@ -103,6 +119,21 @@ defmodule(ProjectCompiler, {
     });
   });
 
+  @def copy_ports({String: project_root, String: root}, [Tuple], {
+    ports_dir = ports_dir(project_root);
+
+    get_files_fun = @fn {
+      [{Atom: @_'true'}] => {
+        File.cp_rf(root, ports_dir);
+      };
+      [{Atom: @_'false'}] => {
+      };
+    };
+    get_files_fun(File.exists(root));
+
+    [@_'fail'];
+  });
+
   @def generate_template({String: project_root, LList: source_files}, [Tuple], {
     template_file = Str.concat(RESOURCE_DIR, CLASS_TEMPLATE_FILE);
     [@_'ok', template] = File.get_content(template_file);
@@ -134,8 +165,7 @@ defmodule(ProjectCompiler, {
     template_file = Str.concat(project_root, template_file);
     File.save_content(template_file, cast(result, String));
 
-    status = @native util.Compiler.compileProject(project_root);
-
+//    status = @native util.Compiler.compileProject(project_root);
     [@_'ok', filename, status];
   });
 })

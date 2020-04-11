@@ -1,0 +1,9 @@
+{
+  "application": "ia",
+  "autoStart": null,
+  "apps": [],
+  "libs": [],
+  "tests": [],
+  "haxelibs": [],
+  "sourceDir": "lib/"
+}

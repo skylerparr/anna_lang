@@ -1,0 +1,9 @@
+{
+  "application": "project",
+  "autoStart": null,
+  "apps": [],
+  "libs": [],
+  "tests": [],
+  "haxelibs": [],
+  "sourceDir": "lib/"
+}

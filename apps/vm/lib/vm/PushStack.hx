@@ -47,7 +47,7 @@ class PushStack implements Operation {
     var operations: Array<Operation> = fn.invoke(callArgs);
 
     if(operations == null) {
-      IO.inspect('Function ${module.toAnnaString()} ${func.toAnnaString()}:${lineNumber} has no body.');
+      IO.inspect('Function ${module.toAnnaString()}${func.toAnnaString()}:${lineNumber} has no body.');
       NativeKernel.crash(Process.self());
       return;
     }

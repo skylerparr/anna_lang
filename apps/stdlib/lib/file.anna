@@ -26,7 +26,30 @@ defmodule(File, {
 
   @def cp({String: src, String: dest}, [Tuple], {
     @native File.copy(src, dest);
-    [@_'ok', file_path];
+    [@_'ok', src];
+  });
+
+  @def cp_rf({String: path, String: dest}, [Tuple], {
+    [@_'ok', is_directory] = is_dir(path);
+    _copy_files(cast(is_directory, Atom), path, dest);
+    [@_'ok', path, dest];
+  });
+
+  @def _copy_files({Atom: @_'true', String: path, String: dest}, [Tuple], {
+    mkdir_p(dest);
+    [@_'ok', files] = ls(path);
+    DefaultEnum.each(cast(files, LList), @fn {
+      [{String: file_or_dir}] => {
+        path = Str.concat(path, file_or_dir);
+        dest = Str.concat(dest, file_or_dir);
+        [@_'ok', is_directory] = is_dir(path);
+        _copy_files(cast(is_directory, Atom), path, dest);
+      };
+    });
+  });
+
+  @def _copy_files({Atom: @_'false', String: path, String: dest}, [Tuple], {
+    cp(path, dest);
   });
 
   @def ls({String: dir}, [Tuple], {

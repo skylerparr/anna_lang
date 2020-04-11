@@ -4,4 +4,5 @@ defapi(EEnum, {
   @def all({LList: list, Function: callback}, [Atom]);
   @def all({MMap: map, Function: callback}, [Atom]);
   @def reduce({LList: list, LList: acc, Function: callback}, [List]);
+  @def each({LList: list, Function: callback}, [Atom]);
 })
