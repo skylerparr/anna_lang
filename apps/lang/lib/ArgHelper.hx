@@ -61,13 +61,14 @@ class ArgHelper {
   }
 
   public static inline function resolveTupleValues(tuple: Tuple, scopeVariables: Map<String, Dynamic>, annaLang: AnnaLang): Tuple {
-    var items: Array<Any> = Tuple.array(tuple).copy();
-    for(i in 0...items.length) {
-      var newValue = items[i];
+    var retVal: Array<Any> = [];
+    var tupArr = Tuple.array(tuple);
+    for(i in 0...tupArr.length) {
+      var newValue = tupArr[i];
       var fetched = extractArgValue(newValue, scopeVariables, annaLang);
-      items[i] = fetched;
+      retVal[i] = fetched;
     }
-    return Tuple.create(items);
+    return Tuple.create(retVal);
   }
 
   public static inline function resolveListValues(list: LList, scopeVariables: Map<String, Dynamic>, annaLang: AnnaLang): LList {
