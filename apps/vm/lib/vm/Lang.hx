@@ -29,6 +29,7 @@ class Lang {
     definedModules.set("LList", LList);
     definedModules.set("Map", ObjectMap);
     definedModules.set("MMap", MMap);
+    definedModules.set("Perf", Perf);
     definedModules.set("Port", SimplePort);
     definedModules.set("PortMan", PortMan);
     definedModules.set("Std", Std);

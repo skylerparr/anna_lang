@@ -1,24 +1,21 @@
 package ;
 
-import lang.UserDefinedType;
-import lang.macros.AnnaLang;
-import lang.macros.MacroContext;
-import vm.Process;
-import EitherEnums.Either3;
-import EitherEnums.Either2;
-import EitherEnums.Either1;
 import lang.AbstractCustomType;
-import lang.CustomType;
-import haxe.ds.EnumValueMap;
 import lang.EitherSupport;
+import lang.macros.AnnaLang;
+import lang.UserDefinedType;
 class ArgHelper {
 
   public static inline function extractArgValue(arg: Dynamic, scopeVariables: Map<String, Dynamic>, annaLang: AnnaLang): Dynamic {
-    var tuple: Tuple = EitherSupport.getValue(arg);
+    var argValue = EitherSupport.getValue(arg);
     var retVal: Dynamic = arg;
 
-    if(Std.is(tuple, Tuple)) {
-      var argArray = Tuple.array(tuple);
+    #if scriptable
+    if(Std.is(argValue, Tuple)) {
+    #else
+    if(cast(argValue, Tuple) != null) {
+    #end
+      var argArray = Tuple.array(argValue);
       if(argArray.length == 2) {
         var elem1 = argArray[0];
         var elem2 = argArray[1];
@@ -26,6 +23,7 @@ class ArgHelper {
         retVal = switch(cast(EitherSupport.getValue(elem1), Atom)) {
           case {value: 'const'}:
             var value = EitherSupport.getValue(elem2);
+          #if scriptable
             if(Std.is(value, Tuple)) {
               resolveTupleValues(cast value, scopeVariables, annaLang);
             } else if(Std.is(value, LList)) {
@@ -39,6 +37,36 @@ class ArgHelper {
             } else {
               value;
             }
+          #else
+            // Going for speed here. Minimizing the casts as best as possible
+            var t: Tuple = cast value;
+            if(t != null) {
+              resolveTupleValues(t, scopeVariables, annaLang);
+            } else {
+              var l: LList = cast value;
+              if(l != null) {
+                resolveListValues(l, scopeVariables, annaLang);
+              } else {
+                var m: MMap = cast value;
+                if(m != null) {
+                  resolveMapValues(m, scopeVariables, annaLang);
+                } else {
+                  var k: Keyword = cast value;
+                  if(k != null) {
+                    resolveKeywordValues(k, scopeVariables, annaLang);
+                  } else {
+                    var u: UserDefinedType = cast value;
+                    if(u != null) {
+                      resolveAbstractCustomTypeValues(u, scopeVariables, annaLang);
+                    } else {
+                      value;
+                    }
+                  }
+                }
+              }
+            }
+
+          #end
           case {value: 'var'}:
             var varName: String = EitherSupport.getValue(elem2);
             var value: Dynamic = scopeVariables.get(varName);
