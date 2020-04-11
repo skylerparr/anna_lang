@@ -72,34 +72,33 @@ class ArgHelper {
   }
 
   public static inline function resolveListValues(list: LList, scopeVariables: Map<String, Dynamic>, annaLang: AnnaLang): LList {
-    var values: Array<Any> = [];
+    var retVal: LList = LList.create([]);
     for(item in LList.iterator(list)) {
       var fetched = extractArgValue(item, scopeVariables, annaLang);
-      values.push(fetched);
+      LList.add(retVal, fetched);
     }
-    return LList.create(values);
+    return retVal;
   }
 
   public static inline function resolveMapValues(map: MMap, scopeVariables: Map<String, Dynamic>, annaLang: AnnaLang): MMap {
-    var retMap: Array<Tuple> = [];
+    var retMap: MMap = MMap.create([]);
     for(key in LList.iterator(MMap.keys(map))) {
       var item = MMap.get(map, key);
       var fetched: Dynamic = extractArgValue(item, scopeVariables, annaLang);
       var newKey: Dynamic = extractArgValue(key, scopeVariables, annaLang);
-      retMap.push(newKey);
-      retMap.push(fetched);
+      MMap.put(retMap, newKey, fetched);
     }
-    return MMap.create(retMap);
+    return retMap;
   }
 
   public static inline function resolveKeywordValues(keyword: Keyword, scopeVariables: Map<String, Dynamic>, annaLang: AnnaLang): Keyword {
-    var values: Array<Array<Any>> = [];
+    var retKey: Keyword = Keyword.create([]);
     for(kvPair in keyword.asArray()) {
       var key: Atom = cast Tuple.elem(kvPair, 0);
       var value = extractArgValue(Tuple.elem(kvPair, 1), scopeVariables, annaLang);
-      values.push([key.value, value]);
+      Keyword.add(retKey, key, value);
     }
-    return Keyword.create(values);
+    return retKey;
   }
 
   public static inline function resolveAbstractCustomTypeValues(value: lang.UserDefinedType, scopeVariables: Map<String, Dynamic>, annaLang: AnnaLang): AbstractCustomType {
