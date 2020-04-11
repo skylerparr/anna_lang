@@ -6,6 +6,9 @@ class Template {
   }
 
   public static function execute(str: String, params: MMap): Tuple {
+    if(params == null) {
+      return Tuple.create([Atom.create('error'), 'params was nil']);
+    }
     try {
       var template: haxe.Template = new haxe.Template(str);
       var args: Dynamic = DSUtil.mmapToDynamic(params);

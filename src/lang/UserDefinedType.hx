@@ -1,7 +1,6 @@
 package lang;
+import haxe.CallStack;
 import lang.macros.AnnaLang;
-import Type.ValueType;
-import lang.CustomType;
 class UserDefinedType extends AbstractCustomType {
   public var __annaLang: AnnaLang;
   public var __type: String;
@@ -14,16 +13,16 @@ class UserDefinedType extends AbstractCustomType {
     var retVal: UserDefinedType = Type.createInstance(UserDefinedType, []);
     retVal.__annaLang = annaLang;
     retVal.__type = type;
-    retVal.__values = {};
+    retVal.__values = arg;
 
     if(arg == null) {
       return retVal;
     }
-    for(field in Reflect.fields(arg)) {
-      var valueToAssign = Reflect.field(arg, field);
-      Reflect.setField(retVal.__values, field, valueToAssign);
-    }
     return retVal;
+  }
+
+  public static function fields(type:UserDefinedType):Array<String> {
+    return Reflect.fields(type.__values);
   }
 
   override public function toAnnaString(): String {
@@ -60,7 +59,8 @@ class UserDefinedType extends AbstractCustomType {
         Reflect.setField(arg, valueKey, Reflect.field(values, valueKey));
       }
     }
-    return create(obj.__type, arg, obj.__annaLang);
+    var retVal = create(obj.__type, arg, obj.__annaLang);
+    return retVal;
   }
 
   public inline function clone(): lang.AbstractCustomType {

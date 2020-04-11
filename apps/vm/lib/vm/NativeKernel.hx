@@ -316,7 +316,7 @@ class NativeKernel {
   private static function resolveApiFuncWithTypes(func: Atom, types: Tuple): Atom {
     var funString: String = func.value;
     var funTypes: Array<String> = [];
-    for(funType in types.asArray()) {
+    for(funType in Tuple.array(types)) {
       funTypes.push(cast(funType, Atom).value);
     }
     if(funTypes.length > 0) {

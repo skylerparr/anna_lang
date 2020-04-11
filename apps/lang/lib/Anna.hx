@@ -1,5 +1,6 @@
 package ;
 
+import Tuple.TupleInstance;
 import EitherEnums;
 import util.TimeUtil;
 import haxe.Timer;
@@ -78,7 +79,7 @@ class Anna {
         case TClass(String):
           '"${StringTools.replace(val, '"', '\\\\"')}"';
         case TClass(Tuple):
-          (val : Tuple).toAnnaString();
+          (val : TupleInstance).toAnnaString();
         case TClass(MMap):
           (val : MMap).toAnnaString();
         case TClass(LList):

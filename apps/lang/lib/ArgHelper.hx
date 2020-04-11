@@ -18,7 +18,7 @@ class ArgHelper {
     var retVal: Dynamic = arg;
 
     if(Std.is(tuple, Tuple)) {
-      var argArray = tuple.asArray();
+      var argArray = Tuple.array(tuple);
       if(argArray.length == 2) {
         var elem1 = argArray[0];
         var elem2 = argArray[1];
@@ -61,11 +61,7 @@ class ArgHelper {
   }
 
   public static inline function resolveTupleValues(tuple: Tuple, scopeVariables: Map<String, Dynamic>, annaLang: AnnaLang): Tuple {
-    var items: Array<Any> = tuple.asArray();
-    return buildTuple(items, scopeVariables, annaLang);
-  }
-
-  public static inline function buildTuple(items: Array<Any>, scopeVariables: Map<String, Dynamic>, annaLang: AnnaLang): Tuple {
+    var items: Array<Any> = Tuple.array(tuple).copy();
     for(i in 0...items.length) {
       var newValue = items[i];
       var fetched = extractArgValue(newValue, scopeVariables, annaLang);
@@ -95,7 +91,7 @@ class ArgHelper {
     return MMap.create(retMap);
   }
 
-  public static function resolveKeywordValues(keyword: Keyword, scopeVariables: Map<String, Dynamic>, annaLang: AnnaLang): Keyword {
+  public static inline function resolveKeywordValues(keyword: Keyword, scopeVariables: Map<String, Dynamic>, annaLang: AnnaLang): Keyword {
     var values: Array<Array<Any>> = [];
     for(kvPair in keyword.asArray()) {
       var key: Atom = cast Tuple.elem(kvPair, 0);
@@ -106,10 +102,14 @@ class ArgHelper {
   }
 
   public static inline function resolveAbstractCustomTypeValues(value: lang.UserDefinedType, scopeVariables: Map<String, Dynamic>, annaLang: AnnaLang): AbstractCustomType {
-    return value.clone();
+    var obj = {};
+    for(field in UserDefinedType.fields(value)) {
+      Reflect.setField(obj, field, extractArgValue(value.getField(field), scopeVariables, annaLang));
+    }
+    return UserDefinedType.create(value.__type, obj, annaLang);
   }
 
-  public static function __updateScope(match: Map<String, Dynamic>, scope: Map<String, Dynamic>): Void {
+  public static inline function __updateScope(match: Map<String, Dynamic>, scope: Map<String, Dynamic>): Void {
     for(key in match.keys()) {
       scope.set(key, match.get(key));
     }

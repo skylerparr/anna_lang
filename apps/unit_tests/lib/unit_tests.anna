@@ -24,10 +24,10 @@ defmodule(UnitTests, {
 
   @def tests_store_loop({LList: all_tests}, [LList], {
     received = Kernel.receive(@fn {
-        [{Tuple: [@_'store', test_module]}] => {
+      [{Tuple: [@_'store', test_module]}] => {
         @native LList.add(all_tests, test_module);
       };
-        [{Tuple: [@_'get', respond_pid]}] => {
+      [{Tuple: [@_'get', respond_pid]}] => {
         @native NativeKernel.send(respond_pid, all_tests);
         @native LList.empty();
       };
@@ -47,39 +47,39 @@ defmodule(UnitTests, {
 
   @def test_results_store_loop({Tuple: [all_tests, test_results, all_tests_registered]}, [Tuple], {
     received = Kernel.receive(@fn {
-        [{Tuple: [@_'save', test_pid, test_name, module, func, status, payload]}] => {
+      [{Tuple: [@_'save', test_pid, test_name, module, func, status, payload]}] => {
         test_results = @native MMap.put(test_results, test_pid, [test_name, module, func, status, payload]);
         [all_tests, test_results, all_tests_registered];
       };
-        [{Tuple: [@_'update_status', test_pid, new_status]}] => {
+      [{Tuple: [@_'update_status', test_pid, new_status]}] => {
         test_status = [test_name, module, func, ~new_status, payload] = @native MMap.get(test_results, test_pid);
         test_results = @native MMap.put(test_results, test_pid, test_status);
         [all_tests, test_results, all_tests_registered];
       };
-        [{Tuple: [@_'start_test', test_name]}] => {
+      [{Tuple: [@_'start_test', test_name]}] => {
         all_tests = @native MMap.put(all_tests, test_name, @_'running');
         [all_tests, test_results, all_tests_registered];
       };
-        [{Tuple: [@_'end_test', test_name]}] => {
+      [{Tuple: [@_'end_test', test_name]}] => {
         all_tests = @native MMap.put(all_tests, test_name, @_'finished');
         [all_tests, test_results, all_tests_registered];
       };
-        [{Tuple: [@_'suite_finished']}] => {
+      [{Tuple: [@_'suite_finished']}] => {
         [all_tests, test_results, @_'true'];
       };
-        [{Tuple: [@_'get_result', respond_pid, test_pid]}] => {
+      [{Tuple: [@_'get_result', respond_pid, test_pid]}] => {
         test_result = @native MMap.get(test_results, test_pid);
         Kernel.send(cast(respond_pid, Pid), cast(test_result, Tuple));
         [all_tests, test_results, all_tests_registered];
       };
-        [{Tuple: [@_'get', receive_pid]}] => {
+      [{Tuple: [@_'get', receive_pid]}] => {
         Kernel.send(cast(receive_pid, Pid), cast([all_tests, test_results, all_tests_registered], Tuple));
         [all_tests, test_results, all_tests_registered];
       };
-        [{Tuple: [@_'reset']}] => {
+      [{Tuple: [@_'reset']}] => {
         DEFAULT_RESULTS;
       };
-        [{Tuple: fallthrough}] => {
+      [{Tuple: fallthrough}] => {
         @native IO.inspect(fallthrough);
         [all_tests, test_results, all_tests_registered];
       };
@@ -98,7 +98,7 @@ defmodule(UnitTests, {
     self = Kernel.self();
     Kernel.send(pid, [@_'get', self]);
     Kernel.receive(@fn {
-        [{Tuple: result}] => {
+      [{Tuple: result}] => {
         result;
       };
     });
@@ -137,7 +137,7 @@ defmodule(UnitTests, {
     self = Kernel.self();
     Kernel.send(pid, [@_'get_result', self, test_pid]);
     [test_name, module, func, new_status, payload] = Kernel.receive(@fn {
-        [{Tuple: results}, [Tuple]] => {
+      [{Tuple: results}, [Tuple]] => {
         results;
       };
     });
@@ -162,7 +162,7 @@ defmodule(UnitTests, {
     self = Kernel.self();
     Kernel.send(all_tests_pid, [@_'get', self]);
     all_tests = Kernel.receive(@fn {
-        [{LList: all_tests}] => {
+      [{LList: all_tests}] => {
         all_tests;
       };
     });
@@ -198,7 +198,7 @@ defmodule(UnitTests, {
 
   @def did_all_tests_run({MMap: all_tests, Atom: @_'true'}, [Atom], {
     all_finished = EEnum.all(cast(all_tests, MMap), @fn {
-        [{Atom: @_'finished'}] => {
+      [{Atom: @_'finished'}] => {
         @_'true';
       };
         [{Atom: _}] => {
@@ -206,7 +206,7 @@ defmodule(UnitTests, {
       };
     });
     do_sleep = @fn {
-        [{Atom: @_'false'}] => {
+      [{Atom: @_'false'}] => {
         Kernel.sleep(10);
         @_'false';
       };
@@ -238,7 +238,7 @@ defmodule(UnitTests, {
     test_fun = @native Atom.create(test_name);
     start_test(test_name);
     pid = Kernel.spawn(@fn {
-        [{}] => {
+      [{}] => {
         module = cast(module, Atom);
         test_fun = cast(test_fun, Atom);
         self_pid = Kernel.self();
@@ -250,10 +250,10 @@ defmodule(UnitTests, {
     });
     Kernel.monitor(pid);
     Kernel.receive(@fn {
-        [{Tuple: [@_"DOWN", pid, @_'crashed']}] => {
+      [{Tuple: [@_"DOWN", pid, @_'crashed']}] => {
         update_status(pid, @_'fail');
       };
-        [{Tuple: status}] => {
+      [{Tuple: status}] => {
         System.print(".");
       };
     }, 60000);

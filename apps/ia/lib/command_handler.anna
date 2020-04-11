@@ -29,7 +29,7 @@ defmodule(CommandHandler, {
   @def process_command({String: 't'}, [Atom], {
     History.push('t');
     Kernel.spawn(@fn {
-        [{}] => {
+      [{}] => {
         UnitTests.add_test(@_'StringTest');
         UnitTests.add_test(@_'NumberTest');
         UnitTests.add_test(@_'AtomTest');
