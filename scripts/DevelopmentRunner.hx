@@ -14,16 +14,12 @@ using haxe.EnumTools.EnumValueTools;
 
 @:build(lang.macros.ValueClassImpl.build())
 class DevelopmentRunner {
-  @field public static var parser: Parser;
-  @field public static var interp: Interp;
   @field public static var project: ProjectConfig;
 
   public static function start(pc: ProjectConfig):Atom {
     project = pc;
 
     #if cppia
-    parser = Native.callStaticField('Main', 'parser');
-    interp = Native.callStaticField('Main', 'interp');
     compileAll(function() {
       var cls: Class<Dynamic> = Type.resolveClass('vm.NativeKernel');
       if(cls == null) {

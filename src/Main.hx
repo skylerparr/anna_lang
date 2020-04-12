@@ -18,15 +18,11 @@ import hscript.Interp;
 import hscript.Parser;
 #if scriptable
 import cpp.vm.Thread;
-import ihx.HScriptEval;
 #end
 
 using lang.AtomSupport;
 @:rtti
 class Main {
-  public static var parser: Parser = new ParserPlus();
-  public static var interp: Interp;         
-
   #if scriptable
   private static var mainThread: Thread;
   #end
@@ -74,38 +70,6 @@ class Main {
       ['${basePath}src/', '${basePath}apps/anna_unit/lib', '${basePath}apps/lang/lib'], ['hscript-plus', 'mockatoo', 'minject', 'sepia']);
 
     #if scriptable
-    parser.allowMetadata = true;
-    parser.allowTypes = true;
-    interp = HScriptEval.interp;
-    var variables = interp.variables;
-    variables.set("s", function(o: Dynamic): Bool {
-      o.parser = parser;
-      o.interp = interp;
-      return true;
-    });
-    variables.set("hxeval", function(string: String): Dynamic {
-      return hxeval(string);
-    });
-    variables.set('interp', interp);
-    variables.set("macro", function(string: String): Dynamic {
-      var ast = parser.parseString(string);
-      var pos = { max: 12, min: 0, file: null };
-      return new Macro(pos).convert(ast);
-    });
-    variables.set("ast", function(string: String): Dynamic {
-      return parser.parseString(string);
-    });
-    variables.set("Main", Main);
-    variables.set("fields", function(o: Dynamic): Dynamic {
-      return Reflect.fields(o);
-    });
-    variables.set("rc", function() {
-      Runtime.compileProject(project);
-    });
-    variables.set("clean", function() {
-      Runtime.clean(project);
-    });
-    
     mainThread = Thread.current();
     Thread.create(function() {
       var loaded: Bool = false;
@@ -145,7 +109,6 @@ class Main {
             if(f == "start") {
               continue;
             }
-            interp.variables.set(f, Reflect.field(clazz, f));
           }
           if(!ready) {
             var fun = Reflect.field(clazz, "start");
@@ -160,10 +123,5 @@ class Main {
     }
   }
   #end
-
-  public static function hxeval(string: String) {
-    var ast = parser.parseString(string);
-    return interp.execute(ast);
-  }
 
 }
