@@ -1,13 +1,11 @@
 package vm.schedulers;
 import vm.schedulers.CPPMultithreadedScheduler.SchedulerMessages;
-import core.ObjectFactory;
 import vm.Scheduler;
 import cpp.vm.Mutex;
 import haxe.ds.ObjectMap;
 import cpp.vm.Thread;
 import util.UniqueList;
 import core.ObjectCreator;
-import minject.Injector;
 using lang.AtomSupport;
 
 class CPPMultithreadedScheduler implements Scheduler {
@@ -45,13 +43,6 @@ class CPPMultithreadedScheduler implements Scheduler {
       var messages: SchedulerMessages;
       for(i in 0...numberOfThreads) {
         var scheduler: GenericScheduler = new GenericScheduler();
-
-        var objectFactory: ObjectFactory = new ObjectFactory();
-        objectFactory.injector = new Injector();
-        objectFactory.injector.mapValue(ObjectCreator, objectFactory);
-        objectFactory.injector.mapClass(Pid, SimpleProcess);
-        objectFactory.injector.mapClass(Port, SimplePort);
-        scheduler.objectCreator = objectCreator;
 
         messages = {scheduler: scheduler, mutex: new Mutex(),
           listUsedByScheduler: new List<MTSchedMessage>(), list: new List<MTSchedMessage>()};

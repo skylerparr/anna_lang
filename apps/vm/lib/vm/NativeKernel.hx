@@ -1,21 +1,18 @@
 package vm;
 
 import lang.macros.AnnaLang;
-import vm.schedulers.CPPMultithreadedMessagePassingScheduler;
 import project.ProjectConfig;
 import vm.Pid;
 import vm.Port;
 import ArgHelper;
 import lang.macros.MacroTools;
 import core.ObjectCreator;
-import core.ObjectFactory;
 import EitherEnums.Either2;
 import lang.EitherSupport;
 import vm.Function;
 import vm.schedulers.GenericScheduler;
 
 using lang.AtomSupport;
-import minject.Injector;
 
 @:build(lang.macros.ValueClassImpl.build())
 @:rtti
@@ -36,12 +33,6 @@ class NativeKernel {
     Logger.init();
     var scheduler: vm.schedulers.CPPMultithreadedScheduler = new vm.schedulers.CPPMultithreadedScheduler();
 
-    var objectFactory: ObjectFactory = new ObjectFactory();
-    objectFactory.injector = new Injector();
-    objectFactory.injector.mapValue(ObjectCreator, objectFactory);
-    objectFactory.injector.mapClass(Pid, SimpleProcess);
-    objectFactory.injector.mapClass(Port, SimplePort);
-    scheduler.objectCreator = objectFactory;
     annaLang = new AnnaLang();
 
     currentScheduler = scheduler;

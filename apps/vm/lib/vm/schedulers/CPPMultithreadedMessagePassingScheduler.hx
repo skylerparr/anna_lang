@@ -7,15 +7,11 @@ import util.UniqueList;
 import core.ObjectCreator;
 import vm.schedulers.GenericScheduler.PidMetaData;
 import haxe.ds.ObjectMap;
-import core.ObjectFactory;
 
 using lang.AtomSupport;
 
 class CPPMultithreadedMessagePassingScheduler implements Scheduler {
   public var numberOfThreads: Int = 8;
-
-  @inject
-  public var objectCreator: ObjectCreator;
 
   public var pids: UniqueList<Pid>;
   public var paused: Bool;
@@ -43,7 +39,6 @@ class CPPMultithreadedMessagePassingScheduler implements Scheduler {
       threadSchedulerMap = new ObjectMap<ThreadHandle, GenericScheduler>();
       for(i in 0...numberOfThreads) {
         var scheduler: GenericScheduler = new GenericScheduler();
-        scheduler.objectCreator = objectCreator;
 
         var thread: Thread = Thread.create(function() {
           scheduler.start();

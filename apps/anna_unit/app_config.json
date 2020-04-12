@@ -1,8 +1,0 @@
-{
-  "application": "anna_unit",
-  "autoStart": null,
-  "apps": ["lang"],
-  "libs": [],
-  "tests": [],
-  "haxelibs": ["mockatoo"]
-}

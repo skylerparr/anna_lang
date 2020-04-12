@@ -24,8 +24,6 @@ class DevelopmentRunner {
     #if cppia
     parser = Native.callStaticField('Main', 'parser');
     interp = Native.callStaticField('Main', 'interp');
-    interp.variables.set("AnnaUnit", anna_unit.AnnaUnit);
-    Reflect.field(anna_unit.AnnaUnit, "main")();
     compileAll(function() {
       var cls: Class<Dynamic> = Type.resolveClass('vm.NativeKernel');
       if(cls == null) {
@@ -78,27 +76,6 @@ class DevelopmentRunner {
     trace("Compiling lang");
     var annaProject: AnnaLangProject = Application.getProjectConfig('lang'.atom());
     var files = Anna.compileProject(annaProject.getProjectConfig());
-    return 'ok'.atom();
-  }
-
-  public static function compileAcceptanceTests(): Array<String> {
-    trace("Compiling AcceptanceTests");
-    var annaProject: AnnaLangProject = Application.getProjectConfig('acceptance_tests'.atom());
-    var files = Anna.compileProject(annaProject.getProjectConfig());
-    return files;
-  }
-
-  public static function langTests(): Atom {
-    trace("Running lang tests");
-    var annaProject: AnnaLangProject = Application.getProjectConfig('lang'.atom());
-    anna_unit.AnnaUnit.start(annaProject.getProjectTestsConfig());
-    return 'ok'.atom();
-  }
-
-  public static function vmTests(): Atom {
-    trace("Running vm tests");
-    var annaProject: AnnaLangProject = Application.getProjectConfig('vm'.atom());
-    anna_unit.AnnaUnit.start(annaProject.getProjectTestsConfig());
     return 'ok'.atom();
   }
 

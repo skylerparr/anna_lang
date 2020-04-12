@@ -12,4 +12,3 @@
 -main Main
 -lib sepia
 -lib hscript-plus
--lib minject

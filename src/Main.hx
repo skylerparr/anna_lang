@@ -4,7 +4,6 @@ import sys.io.File;
 import sys.FileSystem;
 import project.DefaultProjectConfig;
 import project.ProjectConfig;
-import core.InjectionSettings;
 import hscript.plus.ParserPlus;
 import lang.HashTableAtoms;
 import haxe.ds.ObjectMap;
@@ -20,7 +19,6 @@ import hscript.Parser;
 #if scriptable
 import cpp.vm.Thread;
 import ihx.HScriptEval;
-using mockatoo.Mockatoo;
 #end
 
 using lang.AtomSupport;
@@ -67,7 +65,6 @@ class Main {
     new Date(2018, 1, 1, 0, 0, 0).getTime();
     new Printer().printExpr(macro 'foo');
     GlobalStore.start();
-    new InjectionSettings();
     new Main();
   }
 
@@ -77,7 +74,6 @@ class Main {
       ['${basePath}src/', '${basePath}apps/anna_unit/lib', '${basePath}apps/lang/lib'], ['hscript-plus', 'mockatoo', 'minject', 'sepia']);
 
     #if scriptable
-    Random; // for anna_unit
     parser.allowMetadata = true;
     parser.allowTypes = true;
     interp = HScriptEval.interp;

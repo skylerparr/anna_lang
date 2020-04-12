@@ -4,7 +4,6 @@ import haxe.CallStack;
 import util.TimeUtil;
 import lang.macros.MacroTools;
 import util.UniqueList;
-import core.ObjectCreator;
 using lang.AtomSupport;
 
 class GenericScheduler implements Scheduler {
@@ -15,9 +14,6 @@ class GenericScheduler implements Scheduler {
   function get_id(): Int {
     return id;
   }
-
-  @inject
-  public var objectCreator: ObjectCreator;
 
   public var pids: UniqueList<Pid>;
   public var paused: Bool;
