@@ -1,4 +1,4 @@
-package
+package;
 import haxe.io.Bytes;
 import haxe.io.Input;
 import cpp.vm.Thread;

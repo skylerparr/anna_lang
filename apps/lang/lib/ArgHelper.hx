@@ -82,7 +82,7 @@ class ArgHelper {
         var elem3: String = argArray[2];
 
         var customType: UserDefinedType = scopeVariables.get(elem2);
-        retVal = customType.getField(elem3);
+        retVal = customType.getField(Atom.create(elem3));
       }
     }
     return retVal;
@@ -130,9 +130,9 @@ class ArgHelper {
   }
 
   public static inline function resolveAbstractCustomTypeValues(value: lang.UserDefinedType, scopeVariables: Map<String, Dynamic>, annaLang: AnnaLang): AbstractCustomType {
-    var obj = {};
+    var obj = new Map<Atom, Dynamic>();
     for(field in UserDefinedType.fields(value)) {
-      Reflect.setField(obj, field, extractArgValue(value.getField(field), scopeVariables, annaLang));
+      obj.set(field, extractArgValue(value.getField(field), scopeVariables, annaLang));
     }
     return UserDefinedType.create(value.__type, obj, annaLang);
   }

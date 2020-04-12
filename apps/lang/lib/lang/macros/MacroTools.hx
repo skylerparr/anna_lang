@@ -314,7 +314,7 @@ class MacroTools {
   }
 
   public function getCustomType(type: String, values: Array<String>): String {
-    return 'lang.UserDefinedType.create("${type}", {${values.join(",")}}, Code.annaLang)';
+    return 'lang.UserDefinedType.create("${type}", [${values.join(",")}], Code.annaLang)';
   }
 
   public inline function getMap(values: Array<String>):String {
@@ -513,7 +513,7 @@ class MacroTools {
         var listValues: Array<String> = [];
         for(field in fields) {
           var typeAndValue: Dynamic = getTypeAndValue(field.expr, macroContext);
-          listValues.push('${field.field}: ${typeAndValue.value}');
+          listValues.push('${getAtom(field.field)} => ${typeAndValue.value}');
         }
         var strValue: String = getCustomType(type, listValues);
         {type: type, value: 'Tuple.create([${getAtom("const")}, ${strValue}])', rawValue: strValue};
@@ -545,9 +545,9 @@ class MacroTools {
             case _:
               typeAndValue.value;
           }
-          keyValues.push('${item.field}: ${rawValue}');
+          keyValues.push('${getAtom(item.field)} => ${rawValue}');
         }
-        var strValue: String = '{${keyValues.join(', ')}}';
+        var strValue: String = '[${keyValues.join(', ')}]';
         {type: "CustomType", value: getTuple([getAtom("const"), '${strValue}']), rawValue: strValue};
       case _:
         throw new ParsingException('AnnaLang: Attempting to create CustomType with incorrect declaration. Expects: YourType%{foo: "bar", baz: "cat"}');
@@ -657,7 +657,7 @@ class MacroTools {
                     var items: Array<String> = [];
                     for(value in customValueTypes) {
                       var typeAndValue = getTypeAndValue(value.expr, macroContext);
-                      items.push('${value.field}: ${typeAndValue.value}');
+                      items.push('${getAtom(value.field)} => ${typeAndValue.value}');
                     }
                     {name: name, pattern: getCustomType(name, items), isPatternVar: false};
                   case e:
