@@ -646,6 +646,9 @@ class AnnaLang {
 
   public function walkBlock(expr: Expr): Array<Expr> {
     var retExprs: Array<Expr> = [];
+    #if !macro
+    macroContext.currentPosition = expr.pos;
+    #end
     switch(expr.expr) {
       case EBlock(exprs):
         for(blockExpr in exprs) {

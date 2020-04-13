@@ -91,7 +91,6 @@ class Lang {
     if(StringTools.startsWith(string, '{') && StringTools.endsWith(string, '}')) {
       isList = true;
     }
-    var pos = { max: 12, min: 0, file: null };
     var ast: Dynamic = null;
 
     try {
@@ -109,6 +108,7 @@ class Lang {
     }
 
     try {
+      var pos = { max: ast.pmax, min: ast.pmin, file: ':${ast.line}' };
       ast = new Macro(pos).convert(ast);
     } catch(e: Dynamic) {
       trace(e);

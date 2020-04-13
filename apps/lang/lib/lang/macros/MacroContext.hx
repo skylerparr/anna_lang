@@ -146,8 +146,13 @@ class MacroContext {
     return haxe.macro.Context.currentPos();
   }
   #else
+  public var currentPosition: Dynamic;
   public function currentPos():Position {
-    return {file: "none:0", min: 0, max: 0};
+    if(currentPosition == null) {
+      return {file: "none:0", min: 0, max: 0};
+    } else {
+      return {file: currentPosition.file, min: currentPosition.pmin, max: currentPosition.pmax};
+    }
   }
   #end
 
