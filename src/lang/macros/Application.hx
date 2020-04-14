@@ -18,6 +18,7 @@ class Application {
   private static inline var APP_DIR: String = 'apps/';
   private static inline var CONFIG_FILE: String = 'app_config.json';
 
+
   macro public static function getProjectConfig(appAtomName: Expr): Expr {
     var annaLang: AnnaLang = AnnaLang.annaLangForMacro;
     var macros: Macros = annaLang.macros;
@@ -39,7 +40,7 @@ class Application {
       haxelibsStr += ', "${lib}"';
     }
 
-    var haxeLibs: Expr = macros.haxeToExpr('["hscript-plus", "sepia", "mockatoo"${haxelibsStr}]');
+    var haxeLibs: Expr = macros.haxeToExpr('["hscript-plus", "sepia"${haxelibsStr}]');
     var includeClasses: Array<String> = [];
     #if !scriptable
     includeClasses = getClassesToInclude(appDir(appName + '/lib/'));
@@ -55,8 +56,18 @@ class Application {
   }
 
   #if macro
+  private static inline var ANNA_HOME: String = 'ANNA_HOME';
+
+  public static function annaLangHome(): String {
+    var annaLangHome: String = Sys.environment().get(ANNA_HOME);
+    if(annaLangHome == null) {
+      annaLangHome = '';
+    }
+    return annaLangHome;
+  }
+
   private static function appDir(appName: String): String {
-    return '${APP_DIR}${appName}';
+    return '${annaLangHome()}/${APP_DIR}${appName}';
   }
 
   private static function fetchAppConfigByName(appName: String): Dynamic {

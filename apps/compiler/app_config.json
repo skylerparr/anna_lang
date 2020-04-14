@@ -1,6 +1,6 @@
 {
   "application": "compiler",
-  "autoStart": null,
+  "autoStart": "CompilerMain",
   "apps": ["vm_api", "vm", "lang"],
   "libs": [],
   "tests": [],

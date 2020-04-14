@@ -9,6 +9,6 @@
 -D dev_anna
 -D HXCPP_M64
 -cpp anna_static
--main Main
+-main StandaloneMain
 -lib sepia
 -lib hscript-plus

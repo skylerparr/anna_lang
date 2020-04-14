@@ -6,6 +6,7 @@ import vm.Pid;
 import vm.Port;
 import IO;
 import vm.Function;
+import CPPCLIInput;
 @:build(lang.macros.AnnaLang.init())
 //@:build(lang.macros.AnnaLang.defmodule(Str, {
 //  @alias util.StringUtil;
@@ -2218,6 +2219,7 @@ import vm.Function;
 @:build(lang.macros.AnnaLang.defmodule(AppCode, {
   @alias vm.Classes;
   @alias vm.Lang;
+  @alias util.StringUtil;
 
   @def get_modules([LList], {
     @native Classes.getModules();
@@ -2235,13 +2237,20 @@ import vm.Function;
     #end
     @native Lang.eval(content);
   });
+
+  @def anna_lang_home([String], {
+    home = @native Lang.annaLangHome();
+    home = @native StringUtil.concat(home, '/');
+    home;
+  });
 }))
 @:build(lang.macros.AnnaLang.defmodule(CompilerMain, {
   @alias vm.NativeKernel;
   @alias vm.Lang;
+  @alias util.StringUtil;
 
   @def start([Atom], {
-    main = 'apps/bootstrap/boot_main.anna';
+    main = @native StringUtil.concat(AppCode.anna_lang_home(), 'apps/bootstrap/boot_main.anna');
     AppCode.compile(main);
     @native Lang.eval('BootMain.start()');
     @_'ok';

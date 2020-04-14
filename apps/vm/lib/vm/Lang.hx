@@ -75,6 +75,16 @@ class Lang {
   public var annaLang: AnnaLang;
   private var printer: Printer;
 
+  private static inline var ANNA_HOME: String = 'ANNA_HOME';
+
+  public static function annaLangHome(): String {
+    var annaLangHome: String = Sys.environment().get(ANNA_HOME);
+    if(annaLangHome == null) {
+      annaLangHome = '';
+    }
+    return annaLangHome;
+  }
+
   public function new() {
     annaLang = new AnnaLang();
     var code: Dynamic = Type.resolveClass("Code");

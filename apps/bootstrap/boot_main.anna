@@ -2,6 +2,7 @@ defmodule(BootMain, {
   @alias vm.Lang;
   @alias vm.NativeKernel;
   @alias vm.Pid;
+  @alias util.StringUtil;
 
   @def start([Atom], {
     result = compile_all();
@@ -71,6 +72,9 @@ defmodule(BootMain, {
   });
 
   @def compile_files({LList: {file | files;}}, [Tuple], {
+    home = AppCode.anna_lang_home();
+    file = @native StringUtil.concat(home, file);
+
     result = AppCode.compile(cast(file, String));
     handle_compile_result(result, cast(files, LList));
   });

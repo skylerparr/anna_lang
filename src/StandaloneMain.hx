@@ -22,7 +22,7 @@ import cpp.vm.Thread;
 
 using lang.AtomSupport;
 @:rtti
-class Main {
+class StandaloneMain {
   #if scriptable
   private static var mainThread: Thread;
   #end
@@ -36,8 +36,8 @@ class Main {
     Native;
     EitherEnums;
     HashTableAtoms;
-    Rtti.hasRtti(Main);
-    Rtti.getRtti(Main);
+    Rtti.hasRtti(StandaloneMain);
+    Rtti.getRtti(StandaloneMain);
     FileSystem.createDirectory(".tmp");
     File.copy(".tmp", ".tmp2");
     FileSystem.deleteDirectory(".tmp");
@@ -46,6 +46,7 @@ class Main {
     CallStack.callStack();
     Sys.setCwd('.');
     Sys.getCwd();
+    Sys.environment();
     haxe.crypto.Sha256.encode('');
     var t = new haxe.Template("");
     t.execute({});
@@ -61,13 +62,13 @@ class Main {
     new Date(2018, 1, 1, 0, 0, 0).getTime();
     new Printer().printExpr(macro 'foo');
     GlobalStore.start();
-    new Main();
+    new StandaloneMain();
   }
 
   public function new() {
     var basePath: String = PathSettings.applicationBasePath;
     project = new DefaultProjectConfig('AnnaLang', '${basePath}scripts', '${basePath}out/',
-      ['${basePath}src/', '${basePath}apps/anna_unit/lib', '${basePath}apps/lang/lib'], ['hscript-plus', 'mockatoo', 'minject', 'sepia']);
+      ['${basePath}src/', '${basePath}apps/anna_unit/lib', '${basePath}apps/lang/lib'], ['hscript-plus', 'sepia']);
 
     #if scriptable
     mainThread = Thread.current();

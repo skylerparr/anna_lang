@@ -14,7 +14,7 @@ class StandaloneRunner {
 
   public static function start(pc: ProjectConfig): Atom {
     #if !scriptable
-    var annaProject: AnnaLangProject = Application.getProjectConfig('main'.atom());
+    var annaProject: AnnaLangProject = Application.getProjectConfig('compiler'.atom());
     vm.NativeKernel.setProject(pc);
     Code.defineCode();
     vm.NativeKernel.start();
