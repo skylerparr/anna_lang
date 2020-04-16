@@ -27,17 +27,30 @@ defmodule(Kernel, {
 
   @def send({Pid: pid, Tuple: value}, [Atom], {
     @native NativeKernel.send(pid, value);
-  @_'ok';
   });
 
   @def send({Pid: pid, Atom: value}, [Atom], {
     @native NativeKernel.send(pid, value);
-    @_'ok';
+  });
+
+  @def send({Pid: pid, String: value}, [Atom], {
+    @native NativeKernel.send(pid, value);
+  });
+
+  @def send({Pid: pid, Int: value}, [Atom], {
+    @native NativeKernel.send(pid, value);
+  });
+
+  @def send({Pid: pid, Float: value}, [Atom], {
+    @native NativeKernel.send(pid, value);
   });
 
   @def send({Pid: pid, MMap: value}, [Atom], {
     @native NativeKernel.send(pid, value);
-    @_'ok';
+  });
+
+  @def send({Pid: pid, Dynamic: value}, [Atom], {
+    @native NativeKernel.send(pid, value);
   });
 
   @def sleep({Int: milliseconds}, [Atom], {

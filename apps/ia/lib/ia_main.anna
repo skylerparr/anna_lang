@@ -9,7 +9,6 @@ defmodule(IAMain, {
   @const IA_PID = @_'ia';
 
   @def start({
-    System.set_cwd('/home/skyler/programming/anna_lang');
     History.start();
     UnitTests.start();
 

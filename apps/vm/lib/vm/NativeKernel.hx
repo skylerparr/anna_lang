@@ -308,7 +308,13 @@ class NativeKernel {
     var funString: String = func.value;
     var funTypes: Array<String> = [];
     for(funType in Tuple.array(types)) {
-      funTypes.push(cast(funType, Atom).value);
+      var strValue = cast(funType, Atom).value;
+      if(strValue == 'Int' || strValue == 'Float') {
+        strValue = 'Number';
+      } else if(strValue == 'Function') {
+        strValue = 'vm_Function';
+      }
+      funTypes.push(strValue);
     }
     if(funTypes.length > 0) {
       funString += '_';
@@ -382,7 +388,6 @@ class NativeKernel {
       var argName: String = fn.args[counter++];
       nextScopeVariables.set(argName, value);
     }
-    Logger.log(pid, 'apply pid');
     currentScheduler.apply(pid, fn, callArgs, nextScopeVariables, callback);
   }
 
@@ -407,7 +412,12 @@ class NativeKernel {
     var counter: Int = 0;
     var callArgs: Array<Dynamic> = [];
     var nextScopeVariables: Map<String, Dynamic> = new Map<String, Dynamic>();
-    Logger.log(pid, 'apply pid');
+    for(arg in LList.iterator(args)) {
+      var value: Dynamic = ArgHelper.extractArgValue(arg, scopeVariables, annaLang);
+      callArgs.push(value);
+      var argName: String = anonFn.args[counter++];
+      nextScopeVariables.set(argName, value);
+    }
     currentScheduler.apply(pid, anonFn, callArgs, nextScopeVariables, callback);
   }
 

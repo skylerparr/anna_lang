@@ -600,7 +600,7 @@ class AnnaLang {
       for(internalFunctionName in interfaceDef.declaredFunctions.keys()) {
         var fun = moduleDef.declaredFunctions.get(internalFunctionName);
         if(fun == null) {
-          throw 'AnnaLang: ${moduleDef.moduleName} missing interface function ${internalFunctionName} as specified in ${interfaceDef.moduleName}.';
+          throw new MissingApiFunctionException('AnnaLang: ${moduleDef.moduleName} missing interface function ${internalFunctionName} as specified in ${interfaceDef.moduleName}.');
         }
       }
     }
@@ -635,12 +635,12 @@ class AnnaLang {
               fun(this, params);
             case e:
               MacroLogger.log(e, 'e');
-              throw "AnnaLang Prewalk: Not sure what to do here yet";
+              throw new ParsingException("AnnaLang Prewalk: Not sure what to do here yet");
           }
         }
       case e:
         MacroLogger.log(e, 'e');
-        throw "AnnaLang Prewalk: Not sure what to do here yet";
+        throw new ParsingException("AnnaLang Prewalk: Not sure what to do here yet");
     }
   }
 

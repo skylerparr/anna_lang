@@ -82,7 +82,9 @@ class ArgHelper {
         var elem3: String = argArray[2];
 
         var customType: UserDefinedType = scopeVariables.get(elem2);
-        retVal = customType.getField(Atom.create(elem3));
+        if(customType != null) {
+          retVal = customType.getField(Atom.create(elem3));
+        }
       }
     }
     return retVal;
