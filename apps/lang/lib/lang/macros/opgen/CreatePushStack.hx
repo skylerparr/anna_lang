@@ -76,7 +76,6 @@ class CreatePushStack {
 
     var perms: Array<Array<String>> = [];
     generatePermutations(types, perms, 0, []);
-    var possibleSignatures: Array<String> = [];
 
     for(typeArgs in perms) {
       var fqFunName: String = Helpers.makeFqFunName(funName, typeArgs);

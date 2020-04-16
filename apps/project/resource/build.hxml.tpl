@@ -9,6 +9,7 @@
 -D hscriptPos
 -D HXCPP_M64
 -cpp ../::app_name::
--main Main
+-main StandaloneMain
 -lib sepia
 -lib hscript-plus
+--macro keep("CPPCLIInput")

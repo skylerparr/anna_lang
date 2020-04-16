@@ -157,74 +157,6 @@ class NativeKernel {
     Sys.sleep(0.2);
     return start();
   }
-
-  public static function testGenericScheduler(): Pid {
-    return testSpawn('Boot', 'start', []);
-  }
-
-  public static function testFunctionPatternMatching(): Pid {
-    return testSpawn('FunctionPatternMatching', 'start', []);
-  }
-
-  public static function testReceiveMessage(): Pid {
-    return testSpawn('Boot', 'test_receive', []);
-  }
-
-  public static function testInfiniteLoop(): Pid {
-    return testSpawn('Boot', 'start_infinite_loop', []);
-  }
-
-  public static function testStoreState(): Pid {
-    return testSpawn('Boot', 'start_state', []);
-  }
-
-  public static function testDSWithVars(): Pid {
-    return testSpawn('Boot', 'test_ds_with_vars', []);
-  }
-
-  public static function testCountForever(): Pid {
-    return testSpawn('Boot', 'count_forever', []);
-  }
-
-  public static function incrementState(pid: Pid): Pid {
-    return testSpawn('Boot', 'increment_state_vm_Pid', [pid]);
-  }
-
-  public static function testExitPid(pid: Pid): Pid {
-    return testSpawn('Boot', 'exit_vm_Pid', [pid]);
-  }
-
-  public static function testTrapExit(pid: Pid): Pid {
-    return testSpawn('Boot', 'trap_exit_vm_Pid', [pid]);
-  }
-
-  public static function testUntrapExit(pid: Pid): Pid {
-    return testSpawn('Boot', 'untrap_exit_vm_Pid', [pid]);
-  }
-
-  public static function getPidState(pid: Pid): Pid {
-    return testSpawn('Boot', 'get_state_vm_Pid', [pid]);
-  }
-
-  public static function testMonitor(): Pid {
-    return testSpawn('Boot', 'test_monitor', []);
-  }
-
-  public static function testApi(): Pid {
-    return testSpawn('Boot', 'get_api_name', []);
-  }
-
-  public static function saveState(pid: Pid): Pid {
-    statePid = pid;
-    return pid;
-  }
-
-  public static function defineAcceptanceTests():Void {
-    Classes.define("Boot".atom(), Type.resolveClass("Boot"));
-    Classes.define("FunctionPatternMatching".atom(), Type.resolveClass("FunctionPatternMatching"));
-    Classes.define("SampleApi".atom(), Type.resolveClass("SampleImpl"));
-    Classes.define("SampleApi2".atom(), Type.resolveClass("SampleImpl"));
-  }
   #end
 
   public static function recompile(): Atom {
@@ -232,33 +164,6 @@ class NativeKernel {
     Reflect.callMethod(null, Reflect.field(Type.resolveClass('DevelopmentRunner'), 'compileCompiler'), [function() {
       switchToIA();
     }]);
-    return 'ok'.atom();
-    #end
-    return 'not_available'.atom();
-  }
-
-  public static function compileVM(): Atom {
-    #if cppia
-    Reflect.callMethod(null, Reflect.field(Type.resolveClass('DevelopmentRunner'), 'compileVMProject'), [function() {
-      recompile();
-    }]);
-    return 'ok'.atom();
-    #end
-    return 'not_available'.atom();
-  }
-
-  public static function switchToHaxe(): Atom {
-    #if cppia
-    stop();
-    Sys.sleep(0.1);
-    cpp.vm.Thread.create(function() {
-      Reflect.callMethod(null, Reflect.field(Type.resolveClass('Runtime'), 'start'), []);
-    });
-
-    Sys.sleep(0.1);
-    start();
-    defineAcceptanceTests();
-    run();
     return 'ok'.atom();
     #end
     return 'not_available'.atom();
@@ -460,10 +365,6 @@ class NativeKernel {
     return Atom.create('false');
   }
 
-  public static inline function concat(lhs: String, rhs: String): String {
-    return lhs + rhs;
-  }
-  
   private static inline function structuresAreEqual(args: Array<Dynamic>): Bool {
     return (Anna.inspect(args[0])) == (Anna.inspect(args[1]));
   }
