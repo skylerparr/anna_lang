@@ -1,0 +1,11 @@
+defapi(StateHandler, {
+  @alias vm.Pid;
+
+  @def init({Dynamio: initial_state}, [Tuple]);
+  @def handle_sync({Tuple: message, Pid: from_pid, Dynamic: state}, [Tuple]);
+  @def handle_async({Tuple: message, Pid: from_pid, Dynamic: state}, [Tuple]);
+  @def handle_unmatched({Dynamic: message, Dynamic: state}, [Tuple]);
+  @def terminate({Tuple: message, Dynamic: state}, [Tuple]);
+  @def code_change({Dynamic: state}, [Tuple]);
+
+})

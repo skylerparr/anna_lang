@@ -1,0 +1,74 @@
+defmodule(StateServer, {
+  @alias vm.Pid;
+
+  @def start({Atom: module, Dynamic: state}, [Tuple], {
+    pid = Kernel.spawn(
+      @_'StateServer',
+      @_'main_loop',
+      [@_'Atom', @_'Dynamic'],
+      {module; state;}
+    );
+    [@_'ok', pid];
+  });
+
+  @def start_link({Atom: module, Dynamic: state}, [Tuple], {
+    pid = Kernel.spawn_link(
+      @_'StateServer',
+      @_'main_loop',
+      [@_'Atom', @_'Dynamic'],
+      {module; state;}
+    );
+    [@_'ok', pid];
+  });
+
+  @def main_loop({Atom: module, Dynamic: state}, [Atom], {
+    state = Kernel.receive(@fn {
+      [{Tuple: [@_'async', from_pid, message]}] => {
+        [@_'noreply', state] =
+          Kernel.apply(
+            module,
+            @_'handle_async',
+            [@_'Tuple', @_'vm_Pid', @_'Dynamic'],
+            {message; from_pid; state;}
+          );
+        state;
+      };
+      [{Tuple: [@_'sync', from_pid, message]}] => {
+        [@_'reply', ret_val, state] =
+          Kernel.apply(
+            module,
+            @_'handle_sync',
+            [@_'Tuple', @_'vm_Pid', @_'Dynamic'],
+            {message; from_pid; state;}
+          );
+        Kernel.send(cast(from_pid, Pid), [@_'reply', ret_val]);
+        state;
+      };
+      [{Tuple: random_message}] => {
+        Kernel.apply(
+          module,
+          @_'handle_unmatched',
+          [@_'Dynamic', @_'Dynamic'],
+          {random_message; state;}
+        );
+        state;
+      };
+    });
+    main_loop(module, cast(state, Dynamic));
+  });
+
+  @def send_async({Pid: pid, Tuple: message}, [Atom], {
+    self = Kernel.self();
+    Kernel.send(pid, [@_'async', self, message]);
+  });
+
+  @def send_sync({Pid: pid, Tuple: message}, [Dynamic], {
+    self = Kernel.self();
+    Kernel.send(pid, [@_'sync', self, message]);
+    Kernel.receive(@fn {
+      [{Tuple: [@_'reply', state]}] => {
+        state;
+      };
+    });
+  });
+})

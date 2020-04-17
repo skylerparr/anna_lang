@@ -74,6 +74,14 @@ defmodule(Kernel, {
     @native NativeKernel.demonitor(pid);
   });
 
+  @def trap_exit({Pid: pid}, [Atom], {
+    @native NativeKernel.trapExit(pid);
+  });
+
+  @def untrap_exit({Pid: pid}, [Atom], {
+    @native NativeKernel.untrapExit(pid);
+  });
+
   @def spawn({Atom: module, Atom: func}, [Pid], {
     @native NativeKernel.spawn(module, func, @tuple[], {});
   });
