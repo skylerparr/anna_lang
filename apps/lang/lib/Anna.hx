@@ -52,9 +52,6 @@ class Anna {
     return files;
   }
   #end
-  public static function createInstance(type: Class<Dynamic>, constructorArgs: Array<Dynamic>): Dynamic {
-    return Type.createInstance(type, constructorArgs);
-  }
 
   public static function or(val: Dynamic, val2: Dynamic): Dynamic {
     if(val == 'nil'.atom()) {

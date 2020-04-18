@@ -110,6 +110,6 @@ class VarTypesInScope {
   }
 
   public function toString(): String {
-    return Anna.inspect(varTypesInScope);
+    return Anna.toAnnaString(varTypesInScope);
   }
 }

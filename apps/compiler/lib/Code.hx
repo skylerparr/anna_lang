@@ -2269,8 +2269,7 @@ import CPPCLIInput;
 
   @def anna_lang_home([String], {
     home = @native Lang.annaLangHome();
-    home = @native StringUtil.concat(home, '/');
-    home;
+    @native StringUtil.concat(home, '/');
   });
 }))
 @:build(lang.macros.AnnaLang.defmodule(CompilerMain, {

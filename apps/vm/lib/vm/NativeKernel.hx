@@ -66,7 +66,6 @@ class NativeKernel {
     #end
     #if (cpp || scriptable)
     while(started) {
-      Sys.sleep(0.0001);
       if(currentScheduler.hasSomethingToExecute()) {
         for(i in 0...1000) {
           if(currentScheduler.hasSomethingToExecute() && started) {
@@ -366,7 +365,7 @@ class NativeKernel {
   }
 
   private static inline function structuresAreEqual(args: Array<Dynamic>): Bool {
-    return (Anna.inspect(args[0])) == (Anna.inspect(args[1]));
+    return (Anna.toAnnaString(args[0])) == (Anna.toAnnaString(args[1]));
   }
 
   private static inline function areSameDataTypesEqual(args: Array<Dynamic>): Bool {

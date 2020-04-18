@@ -1,5 +1,6 @@
 package ;
 
+import lang.AbstractCustomType;
 import haxe.ds.ObjectMap;
 import haxe.CallStack;
 import LList;
@@ -75,8 +76,6 @@ class AnnaMap<K, V> extends MMap implements CustomType {
   public function new() {
     _map = new Map<String, V>();
     map = new Map<String, K>();
-
-    var keyTypeSet: Bool = false;
 
     keyType = '';
     valueType = '';
