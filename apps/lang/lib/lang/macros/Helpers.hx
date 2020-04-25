@@ -53,4 +53,20 @@ class Helpers {
     var metaData = macroTools.buildMeta(':build', [metaCall]);
     macroTools.addMetaToClass(cls, metaData);
   }
+
+  public static inline function generatePermutations(lists:Array<Array<String>>, result: Array<Array<String>>, depth: Int, current: Array<String>):Void {
+    var solutions: Int = 1;
+    for(i in 0...lists.length) {
+      solutions *= lists[i].length;
+    }
+    for(i in 0...solutions) {
+      var j: Int = 1;
+      var items: Array<String> = [];
+      for(item in lists) {
+        items.push(item[Std.int(i/j) % item.length]);
+        j *= item.length;
+      }
+      result.push(items);
+    }
+  }
 }

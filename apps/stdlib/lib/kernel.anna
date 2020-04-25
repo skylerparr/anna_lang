@@ -134,6 +134,10 @@ defmodule(Kernel, {
     @native Process.registerPid(pid, name);
   });
 
+  @def unregister_pid({Atom: name}, [Atom], {
+    @native Process.unregisterPid(name);
+  });
+
   @def get_pid_by_name({Atom: name}, [Pid], {
     @native Process.getPidByName(name);
   });
@@ -144,6 +148,38 @@ defmodule(Kernel, {
 
   @def apply({Atom: module, Atom: fun, Tuple: types, LList: args}, [Dynamic], {
     @native NativeKernel.applyMFA(self(), module, fun, types, args);
+  });
+
+  @def case({Int: input, Function: handler}, [Dynamic], {
+    handler(input);
+  });
+
+  @def case({Float: input, Function: handler}, [Dynamic], {
+    handler(input);
+  });
+
+  @def case({String: input, Function: handler}, [Dynamic], {
+    handler(input);
+  });
+
+  @def case({Tuple: input, Function: handler}, [Dynamic], {
+    handler(input);
+  });
+
+  @def case({LList: input, Function: handler}, [Dynamic], {
+    handler(input);
+  });
+
+  @def case({MMap: input, Function: handler}, [Dynamic], {
+    handler(input);
+  });
+
+  @def case({Pid: input, Function: handler}, [Dynamic], {
+    handler(input);
+  });
+
+  @def case({Dynamic: input, Function: handler}, [Dynamic], {
+    handler(input);
   });
 
 })

@@ -148,7 +148,7 @@ class CPPMultithreadedScheduler implements Scheduler {
         Sys.sleep(0.016);
       }
     }
-    }
+  }
 
   private inline function handleMessages(schedulerMessages: SchedulerMessages): Bool {
     var running: Bool = true;

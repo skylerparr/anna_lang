@@ -1,4 +1,5 @@
 package lang.macros;
+import Tuple.TupleInstance;
 import haxe.CallStack;
 import haxe.rtti.CType.Classdef;
 class VarTypesInScope {
@@ -46,6 +47,42 @@ class VarTypesInScope {
       var cls: Class<Dynamic> = Type.getClass(value);
       varType = '${cls}';
       retVal.push(varType);
+    }
+    return retVal;
+  }
+
+  public static function resolveTypes(value: Dynamic):Array<String> {
+    var retVal: Array<String> = [];
+    var varType: String = '';
+    switch(Type.typeof(value)) {
+      case TClass(Atom) | TNull | TBool:
+        retVal.push('Atom');
+      case TInt | TFloat:
+        retVal.push('Number');
+      case TClass(String):
+        retVal.push('String');
+      case TClass(AnnaList_Any):
+        retVal.push('LList');
+      case TClass(TupleInstance):
+        retVal.push('Tuple');
+      case TClass(AnnaMap_Any_Any):
+        retVal.push('MMap');
+      case TClass(cls):
+        if(haxe.rtti.Rtti.hasRtti(cls)) {
+          var clsDef: Classdef = haxe.rtti.Rtti.getRtti(cls);
+          for(iface in clsDef.interfaces) {
+            retVal.push(iface.path);
+          }
+          if(clsDef.superClass != null) {
+            retVal.push(clsDef.superClass.path);
+          }
+        } else {
+          var cls: Class<Dynamic> = Type.getClass(value);
+          varType = '${cls}';
+          retVal.push(varType);
+        }
+      case _:
+        retVal.push('Dynamic');
     }
     return retVal;
   }

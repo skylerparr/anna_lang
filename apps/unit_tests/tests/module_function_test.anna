@@ -161,7 +161,7 @@ defmodule(ModuleFunctionTest, {
     };
     result = fun(@_'ok');
     Assert.assert(cast(result, Atom));
-    result = fun(cast('foo', Dynamic));
+    result = fun('foo');
     Assert.refute(cast(result, Atom));
   });
 

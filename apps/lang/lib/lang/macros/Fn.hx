@@ -29,7 +29,7 @@ class Fn {
         vm.Classes.defineFunction(Atom.create(currentModuleStr), Atom.create(defined.internalFunctionName), anonFn);
         #end
         macroContext.lastFunctionReturnType = "vm_Function"; // this must stay here or it'll break things
-        return [buildDeclareAnonFunctionExpr(annaLang, currentModuleStr, defined.internalFunctionName, params)];
+        return [buildDeclareAnonFunctionExpr(annaLang, currentModuleStr, anonFunctionName, params)];
       case _:
         MacroLogger.log(params, 'params');
         MacroLogger.logExpr(params, 'params');

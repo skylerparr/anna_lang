@@ -28,7 +28,6 @@ class CreatePushStack {
     var retVal: Array<Expr> = [];
 
     for(arg in args) {
-
       switch(arg.expr) {
         case ECall(_, _):
           var argString = '__${funName}_${argCounter} = ${printer.printExpr(arg)};';
@@ -58,7 +57,7 @@ class CreatePushStack {
           var typesForVar: Array<String> = getTypesForVar(typeAndValue, arg, macroContext);
 
           if(typesForVar == null) {
-            throw new FunctionClauseNotFound('AnnaLang: No function found for ${moduleName}.${funName}(${getArgsNames(args, printer).join(', ')}) was unable to resolve type for var: `${printer.printExpr(arg)}`. You probably need to cast.');
+            throw new FunctionClauseNotFound('AnnaLang: No function found for ${moduleName}.${funName}(${getArgsNames(args, printer).join(', ')}) with unabled to resolve type for var: `${printer.printExpr(arg)}`. You probably need to cast.');
           }
 
           var possibleTypes: Array<String> = [];
@@ -75,7 +74,7 @@ class CreatePushStack {
     }
 
     var perms: Array<Array<String>> = [];
-    generatePermutations(types, perms, 0, []);
+    Helpers.generatePermutations(types, perms, 0, []);
 
     for(typeArgs in perms) {
       var fqFunName: String = Helpers.makeFqFunName(funName, typeArgs);
@@ -142,22 +141,6 @@ class CreatePushStack {
       argStrings.push(printer.printExpr(arg));
     }
     return argStrings;
-  }
-
-  private static inline function generatePermutations(lists:Array<Array<String>>, result: Array<Array<String>>, depth: Int, current: Array<String>):Void {
-    var solutions: Int = 1;
-    for(i in 0...lists.length) {
-      solutions *= lists[i].length;
-    }
-    for(i in 0...solutions) {
-      var j: Int = 1;
-      var items: Array<String> = [];
-      for(item in lists) {
-        items.push(item[Std.int(i/j) % item.length]);
-        j *= item.length;
-      }
-      result.push(items);
-    }
   }
 
   private static inline function getTypesForVar(typeAndValue: Dynamic, arg: Expr, macroContext: MacroContext):Array<String> {

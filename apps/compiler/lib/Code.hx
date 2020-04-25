@@ -1126,18 +1126,34 @@ import CPPCLIInput;
 //    result = fun(@_'error');
 //    Assert.refute(cast(result, Atom));");
 //  });
+//
 //  @def test_should_pattern_match_anonymous_function_with_catchall([Atom], {
 //    fun = @fn {
 //      [{Atom: @_'ok'}] => {
 //        @_'true';
 //      };
-//      [{Atom: catch_all}] => {
+//      [{String: catch_all}] => {
 //        @_'false';
 //      };
 //    };
 //    result = fun(@_'ok');
 //    Assert.assert(cast(result, Atom));
-//    result = fun(cast('foo', Dynamic));
+//    result = fun('foo');
+//    Assert.refute(cast(result, Atom));
+//  });
+//
+//  @def test_should_pattern_match_anonymous_function_with_overloaded_types([Atom], {
+//    fun = @fn {
+//      [{Atom: @_'ok'}] => {
+//        @_'true';
+//      };
+//      [{String: catch_all}] => {
+//        @_'false';
+//      };
+//    };
+//    result = fun(@_'ok');
+//    Assert.assert(cast(result, Atom));
+//    result = fun('foo');
 //    Assert.refute(cast(result, Atom));
 //  });
 //

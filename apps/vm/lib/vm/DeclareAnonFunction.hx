@@ -26,15 +26,12 @@ class DeclareAnonFunction implements Operation {
     var frags = varName.split('.');
     var fun = frags.pop();
     var module = frags.join('.');
-    var fn: Function = Classes.getFunction(module.atom(), fun.atom());
-    if(fn == null) {
-      IO.inspect('Anonymous function ${module} ${fun} not found.');
-      NativeKernel.crash(Process.self());
-      return;
-    }
-    var anonFn: Function = new SimpleFunction();
-    anonFn.fn = fn.fn;
-    anonFn.args = fn.args;
+
+    var anonFn: AnonFn = new AnonFn();
+    anonFn.module = module.atom();
+    anonFn.func = fun;
+    anonFn.args = [];
+    anonFn.annaLang = annaLang;
     anonFn.scope = scopeVariables;
     anonFn.apiFunc = hostFunction;
 

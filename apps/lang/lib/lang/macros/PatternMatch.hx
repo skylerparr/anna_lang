@@ -178,33 +178,14 @@ class PatternMatch {
               var expr = generatePatternMatch(annaLang, field.expr, macros.haxeToExpr('lang.UserDefinedType.get(value, ${macroTools.getAtom(field.field)})'));
               individualMatches.push(expr);
             }
-          case EArrayDecl(fields):
-            for(field in fields) {
-              switch(field.expr) {
-                case EBinop(OpArrow, key, value):
-                  switch(key.expr) {
-                    case ECall({expr: EField({expr: EConst(CIdent('Atom')) },'create') },[{ expr: EConst(CString(name)) }]):
-                      var fieldType: String = macroContext.getFieldType(customTypeStr, name);
-                      macroContext.varTypesInScope.set(name, fieldType);
-
-                      var expr = generatePatternMatch(annaLang, value, macros.haxeToExpr('lang.UserDefinedType.get(value, ${macroTools.getAtom(name)})'));
-                      individualMatches.push(expr);
-                    case _:
-                      throw new ParsingException('AnnaLang: expected custom type declaration values, got ${printer.printExpr(params[0])}');
-                  }
-                case _:
-                  throw new ParsingException('AnnaLang: expected custom type declaration values, got ${printer.printExpr(params[0])}');
-              }
-            }
-          case e:
-            trace(e);
+          case _:
             throw new ParsingException('AnnaLang: expected custom type declaration values, got ${printer.printExpr(params[0])}');
         }
         var individualMatchesBlock: Expr = macroTools.buildBlock(individualMatches);
         if(individualMatchesBlock == null) {
           individualMatchesBlock = macro {};
         }
-        macro {
+        var ast = macro {
           var value = $e{valueExpr}
           if(value.__type != $e{type}) {
             scope == null;
@@ -212,6 +193,7 @@ class PatternMatch {
           }
           $e{individualMatchesBlock}
         }
+        ast;
       case EBinop(OpMod, type, {expr: EObjectDecl(args)}):
         var individualMatches: Array<Expr> = [];
         for(arg in args) {

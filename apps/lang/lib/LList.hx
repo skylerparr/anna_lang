@@ -226,10 +226,9 @@ class AnnaList<T> extends LList {
       while(l != null) {
         if(first) {
           first = false;
-        } else {
-          s.add('; ');
+          s.add('\n');
         }
-        s.add(Anna.toAnnaString(l.item));
+        s.add('  ${Anna.toAnnaString(l.item)};\n');
         l = l.next;
       }
       _annaString = '{${s}}';

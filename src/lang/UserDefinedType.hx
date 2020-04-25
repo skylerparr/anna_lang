@@ -4,12 +4,12 @@ import lang.macros.AnnaLang;
 class UserDefinedType extends AbstractCustomType {
   public var __annaLang: AnnaLang;
   public var __type: String;
-  public var __values: Map<Atom, Dynamic>;
+  public var __values: Dynamic;
 
   public function new() {
   }
 
-  public static function create(type: String, arg: Map<Atom, Dynamic>, annaLang: AnnaLang): AbstractCustomType {
+  public static function create(type: String, arg: Dynamic, annaLang: AnnaLang): AbstractCustomType {
     var retVal: UserDefinedType = Type.createInstance(UserDefinedType, []);
     retVal.__annaLang = annaLang;
     retVal.__type = type;
@@ -21,12 +21,8 @@ class UserDefinedType extends AbstractCustomType {
     return retVal;
   }
 
-  public static function fields(type:UserDefinedType):Array<Atom> {
-    var retVal: Array<Atom> = [];
-    for(key in type.__values.keys()) {
-      retVal.push(key);
-    }
-    return retVal;
+  public static function fields(type:UserDefinedType):Array<String> {
+    return Reflect.fields(type.__values);
   }
 
   override public function toAnnaString(): String {
@@ -38,29 +34,29 @@ class UserDefinedType extends AbstractCustomType {
     return '${__type}%{${fieldPairs.join(', ')}}';
   }
 
-  public function getField(field: Atom): Dynamic {
+  public function getField(field: String): Dynamic {
     var variablesInScope: Map<String, Dynamic> = null;
     if(vm.NativeKernel.started) {
       variablesInScope = vm.Process.self().processStack.getVariablesInScope();
     } else {
       variablesInScope = new Map<String, Dynamic>();
     }
-    var valueToAssign = __values.get(field);
+    var valueToAssign = Reflect.field(__values, field);
     return ArgHelper.extractArgValue(valueToAssign, variablesInScope, __annaLang);
   }
 
   public static function get(obj: UserDefinedType, field: Atom): Dynamic {
-    return obj.getField(field);
+    return obj.getField(field.value);
   }
 
   public static function set(obj: UserDefinedType, field: Atom, value: Dynamic): AbstractCustomType {
     var values = obj.__values;
-    var arg: Map<Atom, Dynamic> = new Map<Atom, Dynamic>();
-    for(valueKey in values.keys()) {
-      if(field == valueKey) {
-        arg.set(valueKey, value);
+    var arg = {};
+    for(valueKey in Reflect.fields(values)) {
+      if(field.value == valueKey) {
+        Reflect.setField(arg, field.value, value);
       } else {
-        arg.set(valueKey, values.get(valueKey));
+        Reflect.setField(arg, valueKey, Reflect.field(values, valueKey));
       }
     }
     var retVal = create(obj.__type, arg, obj.__annaLang);

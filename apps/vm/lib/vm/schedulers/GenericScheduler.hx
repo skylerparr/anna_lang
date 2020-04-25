@@ -112,7 +112,7 @@ class GenericScheduler implements Scheduler {
       pids.add(pid);
       _allPids.push(pid);
     } else {
-      NativeKernel.exit(Process.self(), 'crashed'.atom());
+      NativeKernel.crash(Process.self());
     }
     return "ok".atom();
   }

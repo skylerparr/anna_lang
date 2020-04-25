@@ -14,11 +14,16 @@ defmodule(StateServer, {
   @def start_link({Atom: module, Dynamic: state}, [Tuple], {
     pid = Kernel.spawn_link(
       @_'StateServer',
-      @_'main_loop',
+      @_'init',
       [@_'Atom', @_'Dynamic'],
       {module; state;}
     );
     [@_'ok', pid];
+  });
+
+  @def init({Atom: module, Dynamic: state}, [Atom], {
+    Kernel.apply(module, @_'init', [@_'Dynamic'], {state;});
+    main_loop(module, state);
   });
 
   @def main_loop({Atom: module, Dynamic: state}, [Atom], {
