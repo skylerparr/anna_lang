@@ -54,7 +54,6 @@ defmodule(CommandHandler, {
     History.push(cmd);
     result = Repl.eval(cmd);
     handle_result(result);
-    @_'ok';
   });
 
   @def handle_result({Tuple: [@_'ok', @_'continuation']}, [Atom], {

@@ -109,7 +109,6 @@ class Lang {
       return Tuple.create(['error'.atom(), '${pe.message}']);
     } catch(e: Dynamic) {
       if(StringTools.endsWith(e, '"<eof>"')) {
-        trace(e);
         return Tuple.create(['ok'.atom(), 'continuation'.atom()]);
       } else {
         trace(e);

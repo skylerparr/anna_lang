@@ -77,7 +77,7 @@ defmodule(IAMain, {
     History.increment_line();
     prompt_string = get_prompt();
     System.print(prompt_string);
-    current_string;
+    '';
   });
 
   @def handle_result({Atom: @_'continuation', String: current_string}, [String], {
@@ -89,6 +89,8 @@ defmodule(IAMain, {
   });
 
   @def continuation_prompt({String: current_string}, [String], {
+    History.increment_line();
+    System.print('..> ');
     current_string;
   });
 
@@ -98,7 +100,6 @@ defmodule(IAMain, {
     current_string = Str.remove_whitespace(current_string);
     result = CommandHandler.process_command(current_string);
     handle_result(result, current_string);
-    '';
   });
 
   // ctrl+u
