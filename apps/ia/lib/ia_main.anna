@@ -91,7 +91,7 @@ defmodule(IAMain, {
   @def continuation_prompt({String: current_string}, [String], {
     History.increment_line();
     System.print('..> ');
-    current_string;
+    Str.concat(current_string, ' ');
   });
 
   // enter

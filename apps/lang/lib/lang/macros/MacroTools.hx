@@ -346,12 +346,23 @@ class MacroTools {
     return 'Tuple.create([${getAtom("field")}, "${object}", "${field}"])';
   }
 
+  private static var startsWithCapitalLetterRegex: EReg = ~/^[A-Z]/;
+
+  public static inline function startsWithCapital(value: String): Bool {
+    return startsWithCapitalLetterRegex.match(value);
+  }
+
   public function getTypeAndValue(expr: Expr, macroContext: MacroContext):Dynamic {
     return switch(expr.expr) {
       case EConst(CIdent(varName)):
         var const: String = macroContext.currentModuleDef.constants.get(varName);
         if(const == null) {
-          {type: 'Variable', value: getVar(varName), rawValue: varName};
+          if(MacroTools.startsWithCapital(varName)) {
+            var strValue: String = getAtom(varName);
+            {type: "Atom", value: getConstant(strValue), rawValue: strValue};
+          } else {
+            {type: 'Variable', value: getVar(varName), rawValue: varName};
+          }
         } else {
           getTypeAndValue(macros.haxeToExpr(const), macroContext);
         }

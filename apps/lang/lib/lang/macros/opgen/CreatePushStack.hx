@@ -57,7 +57,7 @@ class CreatePushStack {
           var typesForVar: Array<String> = getTypesForVar(typeAndValue, arg, macroContext);
 
           if(typesForVar == null) {
-            throw new FunctionClauseNotFound('AnnaLang: No function found for ${moduleName}.${funName}(${getArgsNames(args, printer).join(', ')}) with unabled to resolve type for var: `${printer.printExpr(arg)}`. You probably need to cast.');
+            throw new FunctionClauseNotFound('AnnaLang: No function found for ${moduleName}.${funName}(${getArgsNames(args, printer).join(', ')}) with unable to resolve type for var: `${printer.printExpr(arg)}`. You probably need to cast.');
           }
 
           var possibleTypes: Array<String> = [];
@@ -150,7 +150,11 @@ class CreatePushStack {
           return ["vm_Function"];
         }
         if(macroContext.currentModuleDef.constants.get(varName) == null) {
-          macroContext.varTypesInScope.getTypes(varName);
+          if(MacroTools.startsWithCapital(varName)) {
+            [typeAndValue.type];
+          } else {
+            macroContext.varTypesInScope.getTypes(varName);
+          }
         } else {
           [typeAndValue.type];
         }

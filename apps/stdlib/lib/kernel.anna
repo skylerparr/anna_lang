@@ -90,6 +90,10 @@ defmodule(Kernel, {
     @native NativeKernel.spawnFn(fun, {});
   });
 
+  @def spawn({Function: fun, LList: args}, [Pid], {
+    @native NativeKernel.spawnFn(fun, args);
+  });
+
   @def spawn({Atom: module, Atom: func, Tuple: types, LList: args}, [Pid], {
     @native NativeKernel.spawn(module, func, types, args);
   });
@@ -123,7 +127,7 @@ defmodule(Kernel, {
   });
 
   @def exit({Pid: pid}, [Atom], {
-    @native NativeKernel.exit(pid);
+    @native NativeKernel.exit(pid, @_'kill');
   });
 
   @def crash({Pid: pid}, [Atom], {

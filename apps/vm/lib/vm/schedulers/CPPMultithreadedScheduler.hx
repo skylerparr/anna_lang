@@ -116,10 +116,11 @@ class CPPMultithreadedScheduler implements Scheduler {
         var response = schedulerMessage.scheduler.spawnLink(parentPid, fn);
         respondThread.sendMessage(response);
       case EXIT(pid, signal, respondThread):
-        var threadForPid: ThreadHandle = getThreadForPid(pid).handle;
-        if(threadForPid == null) {
+        var thread: Thread = getThreadForPid(pid);
+        if(thread == null) {
           return;
         }
+        var threadForPid = thread.handle;
         var schedulerMessage: SchedulerMessages = threadSchedulerMessagesMap.get(threadForPid);
         var response = schedulerMessage.scheduler.exit(pid, signal);
         respondThread.sendMessage(response);
@@ -401,7 +402,11 @@ class CPPMultithreadedScheduler implements Scheduler {
         break;
       }
     }
-    if(currentThread == getThreadForPid(pid).handle) {
+    var pidThread: Thread = getThreadForPid(pid);
+    if(pidThread == null) {
+      return Atom.create('not_running');
+    }
+    if(currentThread == pidThread.handle) {
       return threadSchedulerMessagesMap.get(currentThread).scheduler.exit(pid, signal);
     } else {
       asyncThread.sendMessage(EXIT(pid, signal, Thread.current()));
