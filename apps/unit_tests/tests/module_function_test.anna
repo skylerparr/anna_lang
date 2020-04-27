@@ -155,7 +155,7 @@ defmodule(ModuleFunctionTest, {
       [{Atom: @_'ok'}] => {
         @_'true';
       };
-      [{Atom: catch_all}] => {
+      [{String: catch_all}] => {
         @_'false';
       };
     };

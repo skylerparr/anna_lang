@@ -7,6 +7,7 @@ class InvokeNativeFunctionOperation extends vm.AbstractInvokeFunction {
   private var classString: String;
   private var funString: String;
   private var arrayArgs: Array<Dynamic>;
+
   public function new(fun: Dynamic, args: LList, classString: String, funString: String, hostModule: Atom, hostFunction: Atom, lineNumber: Int, annaLang: AnnaLang) {
     super(hostModule, hostFunction, lineNumber, annaLang);
     this.classString = classString;
@@ -35,7 +36,7 @@ class InvokeNativeFunctionOperation extends vm.AbstractInvokeFunction {
     }
     var retVal: Dynamic = Reflect.callMethod(null, func, invokeArgs);
     if (retVal == null) {
-      scopeVariables.set("$$$", lang.HashTableAtoms.get("nil"));
+      scopeVariables.set("$$$", Atom.create("nil"));
     } else {
       scopeVariables.set("$$$", retVal);
     }

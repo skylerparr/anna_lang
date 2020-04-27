@@ -265,6 +265,13 @@ class GenericScheduler implements Scheduler {
     }
     pids.remove(pid);
     pidMetaMap.remove(pid);
+    for(pidName in registeredPids.keys()) {
+      var regPid: Pid = registeredPids.get(pidName);
+      if(regPid == pid) {
+        unregisterPid(pidName);
+        break;
+      }
+    }
     if(signal == 'kill'.atom()) {
       pid.setState(ProcessState.KILLED);
     } else if(signal == 'crash'.atom()) {

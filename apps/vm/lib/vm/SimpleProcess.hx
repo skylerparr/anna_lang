@@ -41,6 +41,7 @@ class SimpleProcess extends AbstractCustomType implements Pid {
     this.state = ProcessState.RUNNING;
     this.mailbox = [];
     this._children = new UniqueList();
+    this.trapExit = Atom.create('false');
   }
 
   public function init(): Void {

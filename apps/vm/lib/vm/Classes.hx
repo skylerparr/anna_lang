@@ -111,7 +111,7 @@ class Classes {
   }
 
   public static inline function getFunction(moduleName: Atom, funName: Atom): Function {
-    var funMap: Map<Atom, Dynamic> = functions.get(moduleName);
+    var funMap: Map<Atom, Function> = functions.get(moduleName);
     if(funMap != null) {
       return funMap.get(funName);
     }
@@ -141,6 +141,18 @@ class Classes {
       return LList.create([]); 
     }
     for(fun in funMap) {
+      retVal.push(fun);
+    }
+    return LList.create(cast retVal);
+  }
+
+  public static inline function getFunctions(moduleName: Atom): LList {
+    var retVal: Array<Atom> = [];
+    var funMap: Map<Atom, Function> = functions.get(moduleName);
+    if(funMap == null) {
+      return LList.create([]);
+    }
+    for(fun in funMap.keys()) {
       retVal.push(fun);
     }
     return LList.create(cast retVal);

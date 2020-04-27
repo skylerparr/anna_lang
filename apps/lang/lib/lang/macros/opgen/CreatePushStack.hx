@@ -114,7 +114,7 @@ class CreatePushStack {
     }
     var types: Array<String> = macroContext.varTypesInScope.getTypes(funName);
     if(types == null) {
-      throw new FunctionClauseNotFound('AnnaLang: No function found for ${moduleName}.${funName}(${getArgsNames(args, printer).join(', ')})');
+      throw new FunctionClauseNotFound('AnnaLang: No function found for ${moduleName}.${funName}(${getArgsNames(args, printer).join(', ')}):${lineNumber}');
     }
     #if !macro
     var fun = vm.Process.self().processStack.getVariablesInScope().get(funName);

@@ -1,4 +1,6 @@
 defmodule(System, {
+  @alias vm.Pid;
+
   @def print({String: str}, [Atom], {
     @native IO.print(str);
   });
@@ -36,6 +38,10 @@ defmodule(System, {
   });
 
   @def println({MMap: str}, [Atom], {
+    @native IO.inspect(str);
+  });
+
+  @def println({Pid: str}, [Atom], {
     @native IO.inspect(str);
   });
 

@@ -4,11 +4,26 @@ defmodule(StateServer, {
   @def start({Atom: module, Dynamic: state}, [Tuple], {
     pid = Kernel.spawn(
       @_'StateServer',
-      @_'main_loop',
+      @_'init',
       [@_'Atom', @_'Dynamic'],
       {module; state;}
     );
     [@_'ok', pid];
+  });
+
+  @def start({Atom: module, Dynamic: state, Atom: name}, [Tuple], {
+    reg_pid = Kernel.get_pid_by_name(name);
+    fun = @fn {
+      [{Atom: @_'nil'}] => {
+        [@_'ok', pid] = start(module, state);
+        Kernel.register_pid(cast(pid, Pid), name);
+        [@_'ok', pid];
+      };
+      [{Pid: pid}] => {
+        [@_'error', @_'already_started', pid];
+      };
+    }
+    Kernel.case(reg_pid, fun);
   });
 
   @def start_link({Atom: module, Dynamic: state}, [Tuple], {
@@ -19,6 +34,24 @@ defmodule(StateServer, {
       {module; state;}
     );
     [@_'ok', pid];
+  });
+
+  @def stop({Pid: pid}, [Atom], {
+    Kernel.exit(cast(pid, Pid));
+  });
+
+  @def stop({Atom: name}, [Tuple], {
+    pid = Kernel.get_pid_by_name(name);
+    fun = @fn {
+      [{Atom: @_'nil'}] => {
+        [@_'error', 'not running'];
+      };
+      [{Pid: pid}] => {
+        Kernel.exit(pid);
+        [@_'ok', 'killed'];
+      };
+    }
+    Kernel.case(pid, fun);
   });
 
   @def init({Atom: module, Dynamic: state}, [Atom], {
@@ -67,6 +100,11 @@ defmodule(StateServer, {
     Kernel.send(pid, [@_'async', self, message]);
   });
 
+  @def send_async({Atom: name, Tuple: message}, [Atom], {
+    pid = Kernel.get_pid_by_name(name);
+    send_async(pid, message);
+  });
+
   @def send_sync({Pid: pid, Tuple: message}, [Dynamic], {
     self = Kernel.self();
     Kernel.send(pid, [@_'sync', self, message]);
@@ -75,5 +113,10 @@ defmodule(StateServer, {
         state;
       };
     });
+  });
+
+  @def send_sync({Atom: name, Tuple: message}, [Atom], {
+    pid = Kernel.get_pid_by_name(name);
+    send_sync(pid, message);
   });
 })

@@ -150,6 +150,10 @@ defmodule(Kernel, {
     @native NativeKernel.applyMFA(self(), module, fun, types, args);
   });
 
+  @def alive({Pid: pid}, [Atom], {
+    @native Process.isAlive(pid);
+  });
+
   @def case({Int: input, Function: handler}, [Dynamic], {
     handler(input);
   });

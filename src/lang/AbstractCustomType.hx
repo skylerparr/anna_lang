@@ -5,8 +5,6 @@ import lang.CustomType;
 @:rtti
 class AbstractCustomType implements CustomType {
 
-  public static var __customTypeId: Float;
-
   public static function create(type: Class<Dynamic>, args: Dynamic): AbstractCustomType {
     return Type.createInstance(type, [args]);
   }
