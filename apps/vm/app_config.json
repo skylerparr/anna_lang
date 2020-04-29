@@ -4,5 +4,5 @@
   "apps": ["anna_unit", "lang", "vm_api"],
   "libs": [],
   "tests": [],
-  "haxelibs": ["minject"]
+  "haxelibs": ["hxbert"]
 }

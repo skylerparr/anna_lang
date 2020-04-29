@@ -190,4 +190,12 @@ defmodule(Kernel, {
     handler(input);
   });
 
+  @def term_to_binary({Dynamic: term}, [Bytes], {
+    @native NativeKernel.termToBinary(term);
+  });
+
+  @def binary_to_term({Binary: bin}, [Dynamic], {
+    @native NativeKernel.binaryToTerm(bin);
+  });
+
 })

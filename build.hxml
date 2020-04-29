@@ -11,4 +11,5 @@
 -lib hx-color-trace
 -lib ihx
 -lib hscript-plus
+-lib hxbert
 -debug

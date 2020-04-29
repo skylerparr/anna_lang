@@ -12,3 +12,4 @@
 -main StandaloneMain
 -lib sepia
 -lib hscript-plus
+-lib hxbert

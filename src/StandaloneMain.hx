@@ -16,6 +16,7 @@ import core.PathSettings;
 import hscript.Macro;
 import hscript.Interp;
 import hscript.Parser;
+import org.hxbert.BERT;
 #if scriptable
 import cpp.vm.Thread;
 #end
@@ -33,6 +34,8 @@ class StandaloneMain {
   private static var project: ProjectConfig;
 
   public static function main() {
+    BERT;
+    BERT.encode(1);
     Native;
     EitherEnums;
     HashTableAtoms;
@@ -68,7 +71,7 @@ class StandaloneMain {
   public function new() {
     var basePath: String = PathSettings.applicationBasePath;
     project = new DefaultProjectConfig('AnnaLang', '${basePath}scripts', '${basePath}out/',
-      ['${basePath}src/', '${basePath}apps/anna_unit/lib', '${basePath}apps/lang/lib'], ['hscript-plus', 'sepia']);
+      ['${basePath}src/', '${basePath}apps/anna_unit/lib', '${basePath}apps/lang/lib'], ['hscript-plus', 'sepia', 'hxbert']);
 
     #if scriptable
     mainThread = Thread.current();

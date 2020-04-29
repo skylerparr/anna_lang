@@ -3,6 +3,10 @@ package ;
 import lang.AmbiguousFunctionException;
 import lang.CustomType;
 import lang.EitherSupport;
+import haxe.io.BytesBuffer;
+import haxe.io.Bytes;
+import org.hxbert.BERT.ErlangValue;
+import org.hxbert.BERT;
 using lang.AtomSupport;
 @:rtti
 class Tuple implements CustomType {
@@ -37,6 +41,23 @@ class Tuple implements CustomType {
 
   public function toAnnaString():String {
     return '';
+  }
+
+  public function termToBinary(): Binary {
+    return null;
+  }
+
+  public function asBert(): Dynamic {
+    return null;
+  }
+
+  public static function fromBert(value: ErlangValue): Tuple {
+    var arr: Array<Any> = [];
+    var values: Array<Dynamic> = cast value.value;
+    for(v in values) {
+      arr.push(Anna.bertToTerm(v));
+    }
+    return create(arr);
   }
 }
 
@@ -95,5 +116,25 @@ class TupleInstance extends Tuple implements CustomType {
       __annaString = '[${stringFrags.join(', ')}]';
     }
     return __annaString;
+  }
+
+  public function toBytes(): Bytes {
+    var vars: Array<Any> = asArray();
+    var retVal: BytesBuffer = new BytesBuffer();
+    for(v in vars) {
+      var bin: Binary = Anna.termToBinary(v);
+      retVal.add(bin.getBytes());
+    } 
+    return retVal.getBytes();
+  }
+
+  override public function asBert(): Dynamic {
+    var bertFrags: Array<Dynamic> = [];
+    var vars: Array<Any> = asArray();
+    for(v in vars) {
+      var frag = Anna.termToBert(v);
+      bertFrags.push(frag);
+    }
+    return BERT.tuple(bertFrags);
   }
 }

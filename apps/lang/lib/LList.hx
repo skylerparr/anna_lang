@@ -71,6 +71,9 @@ class LList implements CustomType {
     return (cast list)._iterator();
   }
 
+  public function asBert(): Dynamic {
+    return null;
+  }
 }
 
 private class ListIterator<T> {
@@ -177,7 +180,7 @@ class AnnaList<T> extends LList {
   }
 
   override public function toString(): String {
-    return 'AnnaList';
+    return toAnnaString();
   }
   
   public function _add(item: T): AnnaList<T> {
@@ -238,6 +241,17 @@ class AnnaList<T> extends LList {
 
   public function _iterator(): ListIterator<T> {
     return new ListIterator<T>(h);
+  }
+
+  override public function asBert(): Dynamic {
+    var retVal: Array<Dynamic> = [];
+    var l = h;
+    while(l != null) {
+      var item = Anna.termToBert(l.item);
+      retVal.push(item);
+      l = l.next;
+    }
+    return retVal;
   }
 
 }

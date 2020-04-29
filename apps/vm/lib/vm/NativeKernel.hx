@@ -11,10 +11,10 @@ import EitherEnums.Either2;
 import lang.EitherSupport;
 import vm.Function;
 import vm.schedulers.GenericScheduler;
+import org.hxbert.BERT;
 
 using lang.AtomSupport;
 
-@:build(lang.macros.ValueClassImpl.build())
 @:rtti
 class NativeKernel {
 
@@ -372,6 +372,14 @@ class NativeKernel {
     var a: Dynamic = args[0];
     var b: Dynamic = args[1];
     return Type.typeof(a) == Type.typeof(b);
+  }
+
+  public static inline function termToBinary(term: Any): Binary {
+    return Anna.termToBinary(term);
+  }
+  
+  public static inline function binaryToTerm(bin: Binary): Dynamic {
+    return Anna.binaryToTerm(bin);
   }
 
 }
