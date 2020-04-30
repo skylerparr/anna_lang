@@ -39,6 +39,12 @@ class StandaloneMain {
     Native;
     EitherEnums;
     HashTableAtoms;
+    var regex = ~/\s/g;
+    regex.map("", function(e) {
+      regex.matched(0);
+      return "";
+    });
+    regex.matchSub("", 0, 1);
     Rtti.hasRtti(StandaloneMain);
     Rtti.getRtti(StandaloneMain);
     FileSystem.createDirectory(".tmp");

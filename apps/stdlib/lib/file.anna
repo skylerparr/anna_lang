@@ -2,7 +2,7 @@ defmodule(File, {
   @alias util.File;
   @alias sys.FileSystem;
 
-  @def get_content({String: file_path}, [String], {
+  @def get_content({String: file_path}, [Tuple], {
     @native File.getContent(file_path);
   });
 

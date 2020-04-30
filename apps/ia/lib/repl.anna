@@ -19,4 +19,7 @@ defmodule(Repl, {
     [@_'ok', result];
   });
 
+  @def format({String: code}, [Tuple], {
+    @native Lang.format(code);
+  });
 })

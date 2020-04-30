@@ -110,6 +110,8 @@ class Lang {
     } catch(e: Dynamic) {
       if(StringTools.endsWith(e, '"<eof>"')) {
         return Tuple.create(['ok'.atom(), 'continuation'.atom()]);
+      } else if(StringTools.endsWith(e, 'Unterminated string')) {
+        return Tuple.create(['ok'.atom(), 'continuation'.atom()]);
       } else {
         trace(e);
         return Tuple.create(['error'.atom(), '${e}']);
@@ -142,9 +144,53 @@ class Lang {
     return Tuple.create(['ok'.atom(), ast]);
   }
 
-  public inline static function eval(string:String):Tuple {
+  public static inline function eval(string:String):Tuple {
     var lang: Lang = new Lang();
     return lang.doEval(string);
+  }
+
+  public static inline function format(string: String): Tuple {
+    var lang: Lang = new Lang();
+    return lang.doFormat(string);
+  }
+
+  public function doFormat(string: String): Tuple {
+    var ast: Dynamic = null; 
+    try {
+      ast = annaLang.parser.parseString(string);
+      var pos = { max: ast.pmax, min: ast.pmin, file: ':${ast.line}' };
+      ast = new Macro(pos).convert(ast);
+    } catch(pe: ParsingException) {
+      return Tuple.create(['error'.atom(), '${pe.message}']);
+    } catch(e: Dynamic) {
+      return Tuple.create(['error'.atom(), '${e}']);
+    }
+    var formatted: String = printer.printExpr(ast);
+    formatted = StringTools.replace(formatted, "\"", "'");
+    formatted = StringTools.replace(formatted, "@_ ", "@_");
+    formatted = StringTools.replace(formatted, "\t", "  ");
+    formatted = StringTools.replace(formatted, "  @def", "\n  @def");
+    var regex: EReg = ~/({.[A-Z]*.*}|{*{.*?:|,.*:)/g;
+    formatted = regex.map(formatted, function(e: EReg): String {
+      var matched: String = e.matched(0);
+      matched = StringTools.replace(matched, "{ ", "{");
+      matched = StringTools.replace(matched, " :", ":");
+      matched = StringTools.replace(matched, " }", "}");
+      return matched;
+    });
+    regex = ~/([A-Z][a-z]*\s%\s)/g;
+    formatted = regex.map(formatted, function(e) {
+      var matched: String = e.matched(0);
+      matched = StringTools.replace(matched, " % ", "%");
+      return matched;
+    });
+    if(StringTools.startsWith(formatted, "{")) {
+      formatted = ~/{\s*/.replace(formatted, ""); 
+      formatted = formatted.substring(0, formatted.length - 2); 
+      formatted = ~/\n\s*/g.replace(formatted, "\n");
+    }
+
+    return Tuple.create([Atom.create('ok'), formatted]);
   }
 
   public inline function invokeAst(ast: Expr, isList: Bool): Atom {
