@@ -21,7 +21,15 @@ class UserDefinedType extends AbstractCustomType {
     return retVal;
   }
 
-  public static function fields(type:UserDefinedType):Array<String> {
+  public static function fields(type:UserDefinedType): LList {
+    var values: Array<Any> = [];
+    for(field in Reflect.fields(type.__values)) {
+      values.push(Atom.create(field));
+    }
+    return LList.create(values);
+  }
+
+  public static function rawFields(type: UserDefinedType): Array<String> {
     return Reflect.fields(type.__values);
   }
 

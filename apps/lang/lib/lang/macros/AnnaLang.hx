@@ -111,7 +111,7 @@ class AnnaLang {
     macroContext.declaredTypes.push(className);
     moduleDef.aliases.set('UserDefinedType', 'lang.UserDefinedType');
 
-    var fields: Array<Expr> = [macros.haxeToExpr('@alias lang.UserDefinedType;')];
+    var fields: Array<Expr> = [macros.haxeToExpr('@alias lang.UserDefinedType;'), macros.haxeToExpr('@alias vm.Port;')];
     var exprs: Array<Expr> = [];
     switch(body.expr) {
       case EBlock(block):
@@ -124,6 +124,14 @@ class AnnaLang {
               }
               var haxeStr: String = '@def set({${className}: a, Atom: b, ${strType}: c}, [${className}], {
                 @native lang.UserDefinedType.set(a, b, c);
+              });';
+              utilFuncs.push(macros.haxeToExpr(haxeStr));
+              var haxeStr: String = '@def get({${className}: a, Atom: b}, [Dynamic], {
+                @native lang.UserDefinedType.get(a, b);
+              });';
+              utilFuncs.push(macros.haxeToExpr(haxeStr));
+              var haxeStr: String = '@def fields({${className}: a}, [LList], {
+                @native lang.UserDefinedType.fields(a);
               });';
               utilFuncs.push(macros.haxeToExpr(haxeStr));
               var fieldMap: Map<String, String> = macroContext.typeFieldMap.get(className);

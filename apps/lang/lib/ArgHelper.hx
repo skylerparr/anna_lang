@@ -131,7 +131,7 @@ class ArgHelper {
 
   public static inline function resolveAbstractCustomTypeValues(value: lang.UserDefinedType, scopeVariables: Map<String, Dynamic>, annaLang: AnnaLang): AbstractCustomType {
     var obj = {};
-    for(field in UserDefinedType.fields(value)) {
+    for(field in UserDefinedType.rawFields(value)) {
       Reflect.setField(obj, field, extractArgValue(value.getField(field), scopeVariables, annaLang));
     }
     return UserDefinedType.create(value.__type, obj, annaLang);
