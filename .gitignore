@@ -12,3 +12,4 @@ projectFilesBackup/
 .DS_Store
 _build
 project/my_app/
+runtime_log
