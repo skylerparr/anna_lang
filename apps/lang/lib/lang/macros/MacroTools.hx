@@ -612,6 +612,9 @@ class MacroTools {
                   case EConst(CInt(pattern)) | EConst(CString(pattern)) | EConst(CFloat(pattern)):
                     var name = util.StringUtil.random();
                     {name: name, pattern: pattern, isPatternVar: false};
+                  case EUnop(OpNeg, false, {expr: EConst(CInt(pattern))}) | EUnop(OpNeg, false, {expr: EConst(CFloat(pattern))}):
+                    var name = util.StringUtil.random();
+                    {name: name, pattern: '-${pattern}', isPatternVar: false};
                   case EObjectDecl([]):
                     var name = util.StringUtil.random();
                     var items: Array<String> = [];
@@ -636,6 +639,14 @@ class MacroTools {
                           var lhsType = getTypeAndValue(key, macroContext);
                           var rhsType = getTypeAndValue(value, macroContext);
                           items.push('${lhsType.value} => ${rhsType.value}');
+
+                        case EMeta({name: "atom" | "_"}, {expr: EBinop(OpArrow, {expr: EConst(CString(keyString)), pos: pos}, value)}):
+                          type = 'map';
+                          var key = {pos: pos, expr: EMeta({name: "_", pos: pos}, {expr: EConst(CString(keyString)), pos: pos})};
+                          var lhsType = getTypeAndValue(key, macroContext);
+                          var rhsType = getTypeAndValue(value, macroContext);
+                          items.push('${lhsType.value} => ${rhsType.value}');
+
                         case expr:
                           var valueType = getTypeAndValue(value, macroContext);
                           items.push(valueType.value);

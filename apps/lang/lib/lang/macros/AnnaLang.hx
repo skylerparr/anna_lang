@@ -50,6 +50,7 @@ class AnnaLang {
     macroContext = new MacroContext(this);
     macros = new Macros(this);
     macroTools = new MacroTools(this);
+    MacroLogger.init();
   }
 
   macro public static function init(): Array<Field> {
