@@ -329,23 +329,55 @@ class NativeKernel {
     return val == null;
   }
 
-  public static function add(left: Float, right: Float): Float {
+  public static inline function add(left: Float, right: Float): Float {
     return left + right;
   }
 
-  public static function subtract(left: Float, right: Float): Float {
+  public static inline function subtract(left: Float, right: Float): Float {
     return left - right;
   }
 
-  public static function mult(left: Float, right: Float): Float {
+  public static inline function mult(left: Float, right: Float): Float {
     return left * right;
   }
 
-  public static function div(left: Float, right: Float): Float {
+  public static inline function div(left: Float, right: Float): Float {
     return left / right;
   }
 
-  public static function mod(left: Float, right: Float): Float {
+  public static inline function greaterThan(left: Float, right: Float): Atom {
+    if(left > right) {
+      return Atom.create('true');
+    } else {
+      return Atom.create('false');
+    }
+  }
+
+  public static inline function greaterThanOrEqual(left: Float, right: Float): Atom {
+    if(left >= right) {
+      return Atom.create('true');
+    } else {
+      return Atom.create('false');
+    }
+  }
+
+  public static inline function lessThan(left: Float, right: Float): Atom {
+    if(left < right) {
+      return Atom.create('true');
+    } else {
+      return Atom.create('false');
+    }
+  }
+ 
+  public static inline function lessThanOrEqual(left: Float, right: Float): Atom {
+    if(left <= right) {
+      return Atom.create('true');
+    } else {
+      return Atom.create('false');
+    }
+  }
+   
+  public static inline function mod(left: Float, right: Float): Float {
     return left % right;
   }
 

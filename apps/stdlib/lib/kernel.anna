@@ -118,8 +118,36 @@ defmodule(Kernel, {
     @native NativeKernel.subtract(a, b);
   });
 
+  @def mult({Float: a, Float: b}, [Float], {
+    @native NativeKernel.mult(a, b);
+  });
+
+  @def div({Float: a, Float: b}, [Float], {
+    @native NativeKernel.div(a, b);
+  });
+
+  @def gt({Float: a, Float: b}, [Atom], {
+    @native NativeKernel.greaterThan(a, b);
+  });
+
+  @def gte({Float: a, Float: b}, [Atom], {
+    @native NativeKernel.greaterThanOrEqual(a, b);
+  });
+
+  @def lt({Float: a, Float: b}, [Atom], {
+    @native NativeKernel.lessThan(a, b);
+  });
+
+  @def lte({Float: a, Float: b}, [Atom], {
+    @native NativeKernel.lessThanOrEqual(a, b);
+  });
+
   @def same({Dynamic: a, Dynamic: b}, [Atom], {
     @native NativeKernel.same(a, b);
+  });
+
+  @def equal({Float: a, Float: b}, [Float], {
+    @native NativeKernel.equal(a, b);
   });
 
   @def equal({Dynamic: a, Dynamic: b}, [Atom], {
@@ -156,6 +184,10 @@ defmodule(Kernel, {
 
   @def alive({Pid: pid}, [Atom], {
     @native Process.isAlive(pid);
+  });
+
+  @def case({Atom: input, Function: handler}, [Dynamic], {
+    handler(input);
   });
 
   @def case({Int: input, Function: handler}, [Dynamic], {

@@ -165,20 +165,28 @@ defmodule(IAMain, {
     position = state.position;
     current_string = state.current_string;
 
-    clear_prompt(state);
-    position = Kernel.subtract(position, 1);
-    position = ensure_bounds(position, current_string);
+    is_eq = Kernel.equal(position, 0);
+    Kernel.case(cast(is_eq, Atom), @fn {
+      [{Atom: @_'true'}] => {
+        state;
+      };
+      [{Atom: _}] => {
+        clear_prompt(state);
+        position = Kernel.subtract(position, 1);
+        position = ensure_bounds(position, current_string);
 
-    pre = Str.substr(current_string, 0, position);
-    
-    len = Str.length(current_string); 
-    pos = Kernel.add(position, 1);
-    post = Str.substr(current_string, pos, len);
+        pre = Str.substr(current_string, 0, position);
+        
+        len = Str.length(current_string); 
+        pos = Kernel.add(position, 1);
+        post = Str.substr(current_string, pos, len);
 
-    current_string = Str.concat(pre, post);
+        current_string = Str.concat(pre, post);
 
-    state = IAState.set(state, @_'current_string', current_string);
-    IAState.set(state, @_'position', position);
+        state = IAState.set(state, @_'current_string', current_string);
+        IAState.set(state, @_'position', position);
+      };
+    });
   });
 
   // arrow keys
@@ -265,6 +273,15 @@ defmodule(IAMain, {
   });
 
   @def ensure_bounds({Int: pos, String: current_string}, [Int], {
-    pos;
+    str_len = Str.length(current_string);
+    is_gte = Kernel.gte(pos, str_len);
+    Kernel.case(is_gte, @fn {
+      [{Atom: @_'true'}] => {
+        str_len;
+      };
+      [{Atom: _}] => {
+        pos;
+      };
+    });
   });
 })
