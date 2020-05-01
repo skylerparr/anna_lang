@@ -166,7 +166,7 @@ defmodule(IAMain, {
     current_string = state.current_string;
 
     is_eq = Kernel.equal(position, 0);
-    Kernel.case(cast(is_eq, Atom), @fn {
+    Kernel.case(is_eq, @fn {
       [{Atom: @_'true'}] => {
         state;
       };
