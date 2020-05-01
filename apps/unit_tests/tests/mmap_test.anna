@@ -58,12 +58,22 @@ defmodule(MMapTest, {
     Assert.assert('cat', cast(baz, String));
   });
 
+  @def test_should_pattern_match_function_head_with_atom_keys([Atom], {
+    map = [@_'foo' => 'bar', @_'baz' => 'cat'];
+    match_map_with_atom_keys(map);
+  });
+
   @def match_map({MMap: ['foo' => foo, 'baz' => baz]}, [Atom], {
     Assert.assert('bar', cast(foo, String));
     Assert.assert('cat', cast(baz, String));
   });
 
   @def match_tuple({Tuple: [@_'ok', ['foo' => foo, 'baz' => baz]]}, [Atom], {
+    Assert.assert('bar', cast(foo, String));
+    Assert.assert('cat', cast(baz, String));
+  });
+
+  @def match_map_with_atom_keys({MMap: [@_'foo' => foo, @_'baz' => baz]}, [Atom], {
     Assert.assert('bar', cast(foo, String));
     Assert.assert('cat', cast(baz, String));
   });

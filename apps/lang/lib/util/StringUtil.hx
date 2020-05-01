@@ -67,6 +67,10 @@ class StringUtil {
     return string.substring(start, end);
   }
 
+  public static function substr(string: String, start: Int, length: Int): String {
+    return string.substr(start, length);
+  }
+
   public static inline function length(string: String): Int {
     return string.length;
   }

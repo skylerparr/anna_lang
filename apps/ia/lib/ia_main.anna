@@ -43,16 +43,21 @@ defmodule(IAMain, {
 
     welcome = Str.concat('Interactive Anna version ', VSN);
     System.println(welcome);
-    prompt(port);
+    state = IAState%{
+      port: port,
+      current_string: '', 
+      full_string: '',
+      position: 0,
+      prompt_type: @_'basic'
+    }; 
+    collect_user_input(state);
   });
 
-  @def prompt({Port: port}, [Atom], {
-    prompt_string = get_prompt();
-    System.print(prompt_string);
-    collect_user_input(port, '', '');
+  @def get_prompt({Atom: @_'continuation'}, [String], {
+    '..> ';
   });
 
-  @def get_prompt([String], {
+  @def get_prompt({Atom: _}, [String], {
     counter = History.get_counter();
     prefix = Str.concat(PREFIX, cast(counter, String));
     Str.concat(prefix, ')> ');
@@ -67,120 +72,199 @@ defmodule(IAMain, {
     });
   });
 
-  @def collect_user_input({Port: port, String: current_string, String: full_string}, [String], {
-    input = read_input(port);
-    current_string = handle_input(input, current_string, full_string, port);
-    collect_user_input(port, current_string, full_string);
-  });
+  @def collect_user_input({IAState: state}, [String], {
+    port = state.port;
+    current_string = state.current_string;
+    full_string = state.full_string;
+    position = state.position;
+    prompt_type = state.prompt_type;
 
-  @def handle_result({Atom: @_'ok', String: current_string}, [Atom], {
-    History.increment_line();
-    prompt_string = get_prompt();
+    prompt_string = '\r';
+    prompt = get_prompt(cast(prompt_type, Atom));
+    prompt_string = Str.concat(prompt_string, prompt);
+    prompt_string = Str.concat(prompt_string, current_string);
+    prompt_string = Str.concat(prompt_string, ' ');
+    prompt_string = Str.concat(prompt_string, '\r');
+    prompt_string = Str.concat(prompt_string, prompt);
+    sub = Str.substr(current_string, 0, position);
+    prompt_string = Str.concat(prompt_string, sub);
+
     System.print(prompt_string);
-    '';
+
+    input = read_input(port);
+    state = handle_input(input, state);
+    
+    collect_user_input(state);
   });
 
-  @def handle_result({Atom: @_'continuation', String: current_string}, [String], {
-    continuation_prompt(current_string);
-  });
-
-  @def handle_result({Atom: @_'exit', String: _}, [String], {
-    @_'nil';
-  });
-
-  @def continuation_prompt({String: current_string}, [String], {
+  @def handle_result({Atom: @_'ok', IAState: state}, [IAState], {
     History.increment_line();
-    System.print('..> ');
-    Str.concat(current_string, ' ');
+
+    state = IAState.set(state, @_'current_string', '');
+    state = IAState.set(state, @_'full_string', '');
+    state = IAState.set(state, @_'position', 0);
+    IAState.set(state, @_'prompt_type', @_'basic');
+  });
+
+  @def handle_result({Atom: @_'continuation', IAState: state}, [IAState], {
+    History.increment_line();
+
+    current_string = Str.concat(state.current_string, ' ');
+    current_string = Str.concat(state.full_string, current_string);
+    state = IAState.set(state, @_'full_string', current_string);
+    state = IAState.set(state, @_'current_string', '');
+    state = IAState.set(state, @_'position', 0);
+    IAState.set(state, @_'prompt_type', @_'continuation');
+  });
+
+  @def handle_result({Atom: @_'exit', IAState: state}, [IAState], {
+    state = IAState.set(state, @_'current_string', '');
+    IAState.set(state, @_'position', 0);
   });
 
   // enter
-  @def handle_input({Int: 13, String: current_string, String: full_string, Port: _}, [String], {
+  @def handle_input({Int: 13, IAState: state}, [IAState], {
     System.println('');
-    current_string = Str.remove_whitespace(current_string);
+
+    current_string = Str.remove_whitespace(state.current_string);
+    state = IAState.set(state, @_'current_string', current_string);
+    state = IAState.set(state, @_'position', 0);
+
+    current_string = Str.concat(state.full_string, current_string);
+
     result = CommandHandler.process_command(current_string);
-    handle_result(result, current_string);
+    handle_result(result, state);
   });
 
   // ctrl+u
-  @def handle_input({Int: 21, String: current_string, String: full_string, Port: _}, [String], {
-    clear_prompt(current_string);
-    print_prompt('', full_string);
-    '';
+  @def handle_input({Int: 21, IAState: state}, [IAState], {
+    clear_prompt(state);
+    state = IAState.set(state, @_'current_string', '');
+    IAState.set(state, @_'position', 0);
   });
 
   // ctrl+d
-  @def handle_input({Int: 4, String: _, String: _, Port: port}, [String], {
+  @def handle_input({Int: 4, IAState: state}, [IAState], {
     System.println('');
     System.println('exiting...');
     Kernel.stop();
-    '';
+    state;
+  });
+
+  // ctrl+y -> takes a multiline statement and makes it 1 line
+  @def handle_input({Int: 25, IAState: state}, [IAState], {
+    current_string = Str.concat(state.full_string, state.current_string);
+    state = IAState.set(state, @_'current_string', current_string);
+    state = IAState.set(state, @_'position', Str.length(current_string));
+    state = IAState.set(state, @_'full_string', '');
+    IAState.set(state, @_'prompt_type', @_'basic');
   });
 
   // backspace
-  @def handle_input({Int: 127, String: current_string, String: full_string, Port: port}, [String], {
-    clear_prompt(current_string);
-    len = Str.length(current_string);
-    len = Kernel.subtract(len, 1);
-    current_string = Str.substring(current_string, 0, len);
-    print_prompt(current_string, full_string);
-    current_string;
+  @def handle_input({Int: 127, IAState: state}, [IAState], {
+    position = state.position;
+    current_string = state.current_string;
+
+    clear_prompt(state);
+    position = Kernel.subtract(position, 1);
+    position = ensure_bounds(position, current_string);
+
+    pre = Str.substr(current_string, 0, position);
+    
+    len = Str.length(current_string); 
+    pos = Kernel.add(position, 1);
+    post = Str.substr(current_string, pos, len);
+
+    current_string = Str.concat(pre, post);
+
+    state = IAState.set(state, @_'current_string', current_string);
+    IAState.set(state, @_'position', position);
   });
 
   // arrow keys
-  @def handle_input({Int: 27, String: current_string, String: full_string, Port: port}, [String], {
+  @def handle_input({Int: 27, IAState: state}, [IAState], {
+    port = state.port;
     read_input(port);
     input = read_input(port);
-    handle_arrow_input(input, current_string, full_string, port);
+    handle_arrow_input(input, state);
   });
 
-  @def handle_input({Int: code, String: current_string, String: full_string, Port: port}, [String], {
+  // everything else
+  @def handle_input({Int: code, IAState: state}, [IAState], {
+    current_string = state.current_string;
+    position = state.position;
+
     str = Str.from_char_code(code);
     str = Str.remove_whitespace(str);
-    System.print(str);
-    current_string = Str.concat(current_string, str);
-    current_string;
+
+    pre = Str.substr(current_string, 0, position);
+    pre = Str.concat(pre, str);
+    
+    len = Str.length(current_string); 
+    post = Str.substr(current_string, position, len);
+
+    current_string = Str.concat(pre, post);
+
+    position = Kernel.add(position, 1);
+
+    state = IAState.set(state, @_'current_string', current_string);
+    IAState.set(state, @_'position', position);
   });
 
   // up arrow
-  @def handle_arrow_input({Int: 65, String: current_string, String: full_string, Port: port}, [String], {
-    clear_prompt(current_string);
+  @def handle_arrow_input({Int: 65, IAState: state}, [IAState], {
+    clear_prompt(state);
     current_string = History.back();
-    print_prompt(current_string, full_string);
-    current_string;
+    position = Str.length(current_string);
+
+    state = IAState.set(state, @_'current_string', current_string);
+    IAState.set(state, @_'position', position);
   });
 
   // down arrow
-  @def handle_arrow_input({Int: 66, String: current_string, String: full_string, Port: port}, [String], {
-    clear_prompt(current_string);
+  @def handle_arrow_input({Int: 66, IAState: state}, [IAState], {
+    clear_prompt(state);
     current_string = History.forward();
-    print_prompt(current_string, full_string);
-    current_string;
+    position = Str.length(current_string);
+
+    state = IAState.set(state, @_'current_string', current_string);
+    IAState.set(state, @_'position', position);
   });
 
   // right arrow
-  @def handle_arrow_input({Int: 67, String: current_string, String: full_string, Port: port}, [String], {
-    current_string;
+  @def handle_arrow_input({Int: 67, IAState: state}, [IAState], {
+    clear_prompt(state);
+    position = Kernel.add(state.position, 1);
+    position = ensure_bounds(position, state.current_string);
+
+    IAState.set(state, @_'position', position);
   });
 
   // left arrow
-  @def handle_arrow_input({Int: 68, String: current_string, String: full_string, Port: port}, [String], {
-    current_string;
+  @def handle_arrow_input({Int: 68, IAState: state}, [IAState], {
+    position = Kernel.subtract(state.position, 1);
+    position = ensure_bounds(position, state.current_string);
+
+    IAState.set(state, @_'position', position);
   });
 
-  @def clear_prompt({String: current_string}, {
-    str_len = Str.length(current_string);
-    str_len = Kernel.add(str_len, 20);
+  @def clear_prompt({IAState: state}, [IAState], {
+    prompt = get_prompt(cast(state.prompt_type, Atom));
+    prompt_len = Str.length(prompt);
+    current_string = state.current_string;
+    str_len = Str.length(cast(current_string, String));
+    str_len = Kernel.add(prompt_len, str_len);
+    str_len = Kernel.add(str_len, 60);
     clear_string = Str.rpad('\r', ' ', str_len);
     System.print(clear_string);
+    state;
   });
 
-  @def print_prompt({String: current_string, String: full_string}, {
-    str_prompt = get_prompt();
-    str_prompt = Str.concat(str_prompt, current_string);
-    str_prompt = Str.concat('\r', str_prompt);
-    str_prompt = Str.rpad(str_prompt, ' ', 7);
-    System.print(str_prompt);
+  @def ensure_bounds({Int: -1, String: _}, [Int], {
+    0;
   });
 
+  @def ensure_bounds({Int: pos, String: current_string}, [Int], {
+    pos;
+  });
 })

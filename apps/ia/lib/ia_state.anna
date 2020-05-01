@@ -1,0 +1,9 @@
+deftype(IAState, {
+
+  var port: Port;
+  var current_string: String = '';
+  var full_string: String = '';
+  var position: Int = 0;
+  var prompt_type: Atom = @_'basic';
+
+});

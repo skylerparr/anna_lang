@@ -13,6 +13,10 @@ defmodule(Str, {
     @native StringUtil.substring(string, start, end);
   });
 
+  @def substr({String: string, Int: start, Int: len}, [String], {
+    @native StringUtil.substr(string, start, len);
+  });
+
   @def length({String: string}, [Int], {
     @native StringUtil.length(string);
   });

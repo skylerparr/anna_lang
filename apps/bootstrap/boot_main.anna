@@ -34,6 +34,7 @@ defmodule(BootMain, {
       'apps/unit_tests/lib/unit_tests.anna';
       'apps/unit_tests/lib/assert.anna';
 
+      'apps/ia/lib/ia_state.anna';
       'apps/ia/lib/history.anna';
       'apps/ia/lib/repl.anna';
       'apps/ia/lib/command_handler.anna';
