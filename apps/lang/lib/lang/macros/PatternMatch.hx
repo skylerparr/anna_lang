@@ -43,7 +43,7 @@ class PatternMatch {
         var haxeStr: String = 'scope.set("${varName}", ${value});';
         var expr: Expr = macros.haxeToExpr(haxeStr);
         expr;
-      case EConst(CString(_)) | EConst(CInt(_)) | EConst(CFloat(_)):
+      case EConst(CString(_)) | EConst(CInt(_)) | EConst(CFloat(_)) | EUnop(OpNeg, _, _):
         valuesNotEqual(pattern, valueExpr);
       case ECall({expr: EField({expr: EConst(CIdent("Atom"))}, _)}, [{expr: EConst(CString(_))}]):
         valuesNotEqual(pattern, valueExpr);
