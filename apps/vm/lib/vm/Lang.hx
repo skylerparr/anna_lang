@@ -122,22 +122,18 @@ class Lang {
       var pos = { max: ast.pmax, min: ast.pmin, file: ':${ast.line}' };
       ast = new Macro(pos).convert(ast);
     } catch(e: Dynamic) {
-      trace(e);
       return Tuple.create(['error'.atom(), '${e}']);
     }
     try {
       invokeAst(ast, isList);
     } catch(e: ParsingException) {
-      trace(e);
       return Tuple.create(['error'.atom(), '${e}']);
     } catch(e: FunctionClauseNotFound) {
-      trace('FunctionClauseNotFound: ${e}');
       return Tuple.create(['error'.atom(), 'FunctionClauseNotFound: ${e}']);
     } catch(e: Dynamic) {
       trace("call stack:", CallStack.callStack().join('\n'));
       trace("exception stack:", CallStack.exceptionStack().join('\n'));
       trace("TODO: Handle this exception");
-      trace(e);
       IO.inspect(e);
       return Tuple.create(['error'.atom(), '${e}']);
     }

@@ -12,6 +12,7 @@ class AnonFn implements Function {
   public var func: String;
 
   public function new() {
+    args = [];
   }
 
   public function invoke(args:Array<Dynamic>):Array<Operation> {
@@ -31,9 +32,6 @@ class AnonFn implements Function {
         retVal = Reflect.callMethod(null, fn.fn, args);
         break;
       }
-    }
-    if(retVal == null) {
-      IO.inspect(perms);
     }
     return retVal;
   }

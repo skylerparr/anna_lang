@@ -4,6 +4,7 @@ import lang.AbstractCustomType;
 import lang.EitherSupport;
 import lang.macros.AnnaLang;
 import lang.UserDefinedType;
+import vm.AnonFn;
 class ArgHelper {
 
   public static inline function extractArgValue(arg: Dynamic, scopeVariables: Map<String, Dynamic>, annaLang: AnnaLang): Dynamic {
@@ -82,7 +83,17 @@ class ArgHelper {
         var elem3: String = argArray[2];
 
         var customType: UserDefinedType = scopeVariables.get(elem2);
-        retVal = customType.getField(elem3);
+        if(customType == null) {
+          var anonFn: AnonFn = new AnonFn();
+          anonFn.module = Atom.create(elem2);
+          anonFn.func = elem3;
+          anonFn.annaLang = annaLang;
+          anonFn.scope = scopeVariables;
+          anonFn.apiFunc = Atom.create(elem3);
+          retVal = anonFn;
+        } else {
+          retVal = customType.getField(elem3);
+        }
       }
     }
     return retVal;

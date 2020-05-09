@@ -923,19 +923,22 @@ class AnnaLang {
             [{ expr: EArrayDecl([{ expr: ECall({ expr: EField({ expr: EConst(CIdent('Atom')) },'create') },
             [{ expr: EConst(CString('field')) }]) },{ expr: EConst(CString(varObj)) },{ expr: EConst(CString(varField)) }]) }]):
         var objTypes = macroContext.varTypesInScope.getTypes(varObj);
-        var retVal: String = null;
-        for(objType in objTypes) {
-          var fieldType = macroContext.getFieldType(objType, varField);
-          retVal = Helpers.getType(fieldType, macroContext);
-          if(retVal != null) {
-            break;
+        if(objTypes == null) {
+          'Dynamic';
+        } else {
+          var retVal: String = null;
+          for(objType in objTypes) {
+            var fieldType = macroContext.getFieldType(objType, varField);
+            retVal = Helpers.getType(fieldType, macroContext);
+            if(retVal != null) {
+              break;
+            }
           }
+          if(retVal == null) {
+            retVal = 'Dynamic';
+          }
+          retVal;
         }
-        if(retVal == null) {
-          retVal = 'Dynamic';
-        }
-        retVal;
-
       case e:
         printer.printExpr(expr);
     }
