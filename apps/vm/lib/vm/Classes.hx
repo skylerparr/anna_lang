@@ -110,6 +110,12 @@ class Classes {
     apiFunctions.set(interfaceModule, apiFunctions.get(implModule));
   }
 
+  /**
+   * Gets the true function to be executed. Must be the fully qualified function name
+   * 
+   * @param module atom
+   * @param fully qualified function atom
+   */
   public static inline function getFunction(moduleName: Atom, funName: Atom): Function {
     var funMap: Map<Atom, Function> = functions.get(moduleName);
     if(funMap != null) {
@@ -118,6 +124,13 @@ class Classes {
     return null;
   }
 
+  /**
+   * Gets the api function based on the fully qualified function name
+   * the Api function is the pure function name with no reference to types
+   *
+   * @param module atom
+   * @param fully qualified function atom
+   */
   public static inline function getApiFunction(moduleName: Atom, funName: Atom): Atom {
     var funMap: Map<Atom, Atom> = apiFunctions.get(moduleName);
     if(funMap != null) {

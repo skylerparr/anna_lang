@@ -63,6 +63,11 @@ defmodule(MMapTest, {
     match_map_with_atom_keys(map);
   });
 
+  @def test_should_pattern_match_multiple_times([Atom], {
+    map = [@_'foo' => 'bar', @_'baz' => 'cat'];
+    multimatch(map);
+  });
+
   @def match_map({MMap: ['foo' => foo, 'baz' => baz]}, [Atom], {
     Assert.assert('bar', cast(foo, String));
     Assert.assert('cat', cast(baz, String));
@@ -77,4 +82,12 @@ defmodule(MMapTest, {
     Assert.assert('bar', cast(foo, String));
     Assert.assert('cat', cast(baz, String));
   });
+
+  @def multimatch({MMap: full_map = [@_'foo' => foo1] = [@_'foo' => foo2, @_'baz' => baz]}, [Atom], {
+    Assert.assert('bar', cast(foo1, String));
+    Assert.assert('bar', cast(foo2, String));
+    Assert.assert('cat', cast(baz, String));
+    Assert.assert([@_'foo' => 'bar', @_'baz' => 'cat'], cast(full_map, MMap));
+  });
+
 })

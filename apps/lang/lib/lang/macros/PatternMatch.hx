@@ -12,7 +12,6 @@ class PatternMatch {
     var expr: Expr = generatePatternMatch(annaLang, pattern, valueExpr);
 
     var retVal = macro {
-      var scope: haxe.ds.StringMap<Dynamic> = new haxe.ds.StringMap();
       while(true) {
         $e{expr}
         break;
@@ -137,14 +136,13 @@ class PatternMatch {
                 individualMatches.push(expr);
               } else {
                 var value = printer.printExpr(v.expr);
-                MacroLogger.log(value, 'value');
-                MacroLogger.log(key, 'key');
                 var strExpr: String = 'lang.EitherSupport.getValue(MMap.get(${printer.printExpr(valueExpr)}, ArgHelper.extractArgValue(${key}, ____scopeVariables, Code.annaLang)))';
                 var expr: Expr = generatePatternMatch(annaLang, v.expr, macros.haxeToExpr(strExpr));
                 individualMatches.push(expr);
               }
               isKey = !isKey;
             case EArrayDecl(_):
+              // do nothing. 
             case e:
               MacroLogger.logExpr(value, 'value');
               throw new ParsingException('AnnaLang: Expected EVar, got ${e}');
@@ -282,15 +280,13 @@ class PatternMatch {
         if(individualMatchesBlock == null) {
           individualMatchesBlock = macro {};
         }
-        var expr = macro {
+        macro {
           if(!Std.is($e{valueExpr}, Keyword)) {
             scope = null;
             break;
           }
           $e{individualMatchesBlock};
         }
-        MacroLogger.logExpr(expr, 'expr');
-        expr;
       case EMeta(_):
         var typeAndValue = macroTools.getTypeAndValue(pattern, macroContext);
         var expr = macros.haxeToExpr(typeAndValue.value);
@@ -327,12 +323,12 @@ class PatternMatch {
   }
 
   public static inline function valuesNotEqual(pattern: Expr, valueExpr: Expr):Expr {
-    return macro
+    return macro {
       if($e{pattern} != $e{valueExpr}) {
         scope = null;
         break;
       }
-    ;
+    };
   }
 
 }

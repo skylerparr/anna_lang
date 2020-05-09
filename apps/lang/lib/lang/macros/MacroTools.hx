@@ -604,90 +604,11 @@ class MacroTools {
             case EBlock(_):
               break;
             case EObjectDecl(values):
-              for(value in values) {
+              for(argIndex in 0...values.length) {
+                var value = values[argIndex];
                 var expr: Expr = cast value.expr;
-                var nameAndPattern: Dynamic = switch(expr.expr) {
-                  case EConst(CIdent(name)):
-                    {name: name, pattern: name, isPatternVar: false}
-                  case EConst(CInt(pattern)) | EConst(CString(pattern)) | EConst(CFloat(pattern)):
-                    var name = util.StringUtil.random();
-                    {name: name, pattern: pattern, isPatternVar: false};
-                  case EUnop(OpNeg, false, {expr: EConst(CInt(pattern))}) | EUnop(OpNeg, false, {expr: EConst(CFloat(pattern))}):
-                    var name = util.StringUtil.random();
-                    {name: name, pattern: '-${pattern}', isPatternVar: false};
-                  case EObjectDecl([]):
-                    var name = util.StringUtil.random();
-                    var items: Array<String> = [];
-                    var haxeStr: String = getList(items);
-                    {name: name, pattern: haxeStr, isPatternVar: false};
-                  case EObjectDecl(values):
-                    var name = util.StringUtil.random();
-                    var items: Array<String> = [];
-                    for(value in values) {
-                      var typeAndValue = getTypeAndValue(value.expr, macroContext);
-                      items.push('[${getAtom(value.field)}, ${getConstant(typeAndValue.value)}]');
-                    }
-                    {name: name, pattern: getKeyword(items), isPatternVar: false};
-                  case EArrayDecl(values):
-                    var name = util.StringUtil.random();
-                    var items: Array<String> = [];
-                    var type: String = 'tuple';
-                    for(value in values) {
-                      switch(value.expr) {
-                        case EBinop(OpArrow, key, value):
-                          type = 'map';
-                          var lhsType = getTypeAndValue(key, macroContext);
-                          var rhsType = getTypeAndValue(value, macroContext);
-                          items.push('${lhsType.value} => ${rhsType.value}');
-
-                        case EMeta({name: "atom" | "_"}, {expr: EBinop(OpArrow, {expr: EConst(CString(keyString)), pos: pos}, value)}):
-                          type = 'map';
-                          var key = {pos: pos, expr: EMeta({name: "_", pos: pos}, {expr: EConst(CString(keyString)), pos: pos})};
-                          var lhsType = getTypeAndValue(key, macroContext);
-                          var rhsType = getTypeAndValue(value, macroContext);
-                          items.push('${lhsType.value} => ${rhsType.value}');
-
-                        case expr:
-                          var valueType = getTypeAndValue(value, macroContext);
-                          items.push(valueType.value);
-                      }
-                    }
-                    if(type == 'tuple') {
-                      var haxeStr: String = getTuple(items);
-                      {name: name, pattern: haxeStr, isPatternVar: false};
-                    } else {
-                      var haxeStr: String = getMap(items);
-                      {name: name, pattern: haxeStr, isPatternVar: false};
-                    }
-                  case EBlock(values):
-                    var name = util.StringUtil.random();
-                    var items: Array<String> = [];
-                    for(value in values) {
-                      items.push(printer.printExpr(value));
-                    }
-                    var haxeStr: String = getList(items);
-                    {name: name, pattern: haxeStr, isPatternVar: false};
-                  case EBinop(OpArrow, {expr: EConst(CString(name))}, {expr: EConst(CIdent(pattern))}):
-                    var patternStr = printer.printExpr(expr);
-                    retVal.argTypes.push({type: 'String', name: pattern, pattern: pattern, isPatternVar: true});
-
-                    {name: name, pattern: patternStr, isPatternVar: false}
-                  case EMeta({name: name}, expr):
-                    var patternStr = printer.printExpr(expr);
-                    {name: name, pattern: '@_${patternStr}', isPatternVar: false}
-                  case EBinop(OpMod, {expr: EConst(CIdent(name))}, {expr: EObjectDecl(customValueTypes)}):
-                    var items: Array<String> = [];
-                    for(value in customValueTypes) {
-                      var typeAndValue = getTypeAndValue(value.expr, macroContext);
-                      items.push('${value.field}: ${typeAndValue.value}');
-                    }
-                    {name: name, pattern: getCustomType(name, items), isPatternVar: false};
-                  case e:
-                    MacroLogger.log(e, 'e');
-                    throw new ParsingException("AnnaLang: expected variable or pattern");
-                }
-                retVal.argTypes.push({type: value.field, name: nameAndPattern.name, pattern: nameAndPattern.pattern, isPatternVar: nameAndPattern.isPatternVar});
-              }
+                extractPatternMatches(expr, value.field, argIndex, retVal, macroContext);
+             }
             case EArrayDecl(returnTypes):
               for(returnType in returnTypes) {
                 retVal.returnTypes.push(Helpers.getAlias(getIdent(returnType), macroContext));
@@ -700,8 +621,125 @@ class MacroTools {
         retVal;
       case e:
         MacroLogger.log(e, 'e');
-        throw new ParsingException("AnnaLang: Expected value types");
+        throw new ParsingException('AnnaLang: Expected value types at line ${getLineNumber(expr)}');
     }
+  }
+
+  private inline function extractPatternMatches(expr: Expr, field: String, argIndex: Int, retVal: Dynamic, macroContext: MacroContext): Void {
+    switch(expr.expr) {
+      case EBinop(OpAssign, lhs, rhs):
+        extractPatternMatches(lhs, field, argIndex, retVal, macroContext);
+        extractPatternMatches(rhs, field, argIndex, retVal, macroContext);
+      case _:
+        var nameAndPattern = getTypeAndReturnType(expr, retVal, macroContext);
+        if(retVal.argTypes.length == argIndex) {
+          retVal.argTypes.push({
+            type: field,
+            name: nameAndPattern.name,
+            patterns: nameAndPattern.pattern,
+            isPatternVar: nameAndPattern.isPatternVar
+          });
+        } else {
+          var argTypes: Dynamic = retVal.argTypes[argIndex];
+          if(argTypes.isPatternVar) {
+            retVal.argTypes.push({
+              type: field,
+              name: nameAndPattern.name,
+              patterns: nameAndPattern.pattern,
+              isPatternVar: nameAndPattern.isPatternVar
+            });
+          } else {
+            var patterns: Array<String> = argTypes.patterns;
+            for(p in cast(nameAndPattern.pattern, Array<Dynamic>)) {
+              patterns.push(p);
+            }
+          }
+        }
+    }
+  }
+
+  private inline function getTypeAndReturnType(expr: Expr, retVal: Dynamic, macroContext: MacroContext): Dynamic {
+    return switch(expr.expr) {
+      case EConst(CIdent(name)):
+        {name: name, pattern: [name], isPatternVar: false}
+      case EConst(CInt(pattern)) | EConst(CString(pattern)) | EConst(CFloat(pattern)):
+        var name = util.StringUtil.random();
+        {name: name, pattern: [pattern], isPatternVar: false};
+      case EUnop(OpNeg, false, {expr: EConst(CInt(pattern))}) | EUnop(OpNeg, false, {expr: EConst(CFloat(pattern))}):
+        var name = util.StringUtil.random();
+        {name: name, pattern: ['-${pattern}'], isPatternVar: false};
+      case EObjectDecl([]):
+        var name = util.StringUtil.random();
+        var items: Array<String> = [];
+        var haxeStr: String = getList(items);
+        {name: name, pattern: [haxeStr], isPatternVar: false};
+      case EObjectDecl(values):
+        var name = util.StringUtil.random();
+        var items: Array<String> = [];
+        for(value in values) {
+          var typeAndValue = getTypeAndValue(value.expr, macroContext);
+          items.push('[${getAtom(value.field)}, ${getConstant(typeAndValue.value)}]');
+        }
+        {name: name, pattern: [getKeyword(items)], isPatternVar: false};
+      case EArrayDecl(values):
+        var name = util.StringUtil.random();
+        var items: Array<String> = [];
+        var type: String = 'tuple';
+        for(value in values) {
+          switch(value.expr) {
+            case EBinop(OpArrow, key, value):
+              type = 'map';
+              var lhsType = getTypeAndValue(key, macroContext);
+              var rhsType = getTypeAndValue(value, macroContext);
+              items.push('${lhsType.value} => ${rhsType.value}');
+
+            case EMeta({name: "atom" | "_"}, {expr: EBinop(OpArrow, {expr: EConst(CString(keyString)), pos: pos}, value)}):
+              type = 'map';
+              var key = {pos: pos, expr: EMeta({name: "_", pos: pos}, {expr: EConst(CString(keyString)), pos: pos})};
+              var lhsType = getTypeAndValue(key, macroContext);
+              var rhsType = getTypeAndValue(value, macroContext);
+              items.push('${lhsType.value} => ${rhsType.value}');
+
+            case expr:
+              var valueType = getTypeAndValue(value, macroContext);
+              items.push(valueType.value);
+          }
+        }
+        if(type == 'tuple') {
+          var haxeStr: String = getTuple(items);
+          {name: name, pattern: [haxeStr], isPatternVar: false};
+        } else {
+          var haxeStr: String = getMap(items);
+          {name: name, pattern: [haxeStr], isPatternVar: false};
+        }
+      case EBlock(values):
+        var name = util.StringUtil.random();
+        var items: Array<String> = [];
+        for(value in values) {
+          items.push(printer.printExpr(value));
+        }
+        var haxeStr: String = getList(items);
+        {name: name, pattern: [haxeStr], isPatternVar: false};
+      case EBinop(OpArrow, {expr: EConst(CString(name))}, {expr: EConst(CIdent(pattern))}):
+        var patternStr = printer.printExpr(expr);
+        retVal.argTypes.push({type: 'String', name: pattern, patterns: [pattern], isPatternVar: true});
+
+        {name: name, pattern: [patternStr], isPatternVar: false};
+      case EMeta({name: name}, expr):
+        var patternStr = printer.printExpr(expr);
+        {name: name, pattern: ['@_${patternStr}'], isPatternVar: false}
+      case EBinop(OpMod, {expr: EConst(CIdent(name))}, {expr: EObjectDecl(customValueTypes)}):
+        var items: Array<String> = [];
+        for(value in customValueTypes) {
+          var typeAndValue = getTypeAndValue(value.expr, macroContext);
+          items.push('${value.field}: ${typeAndValue.value}');
+        }
+        {name: name, pattern: [getCustomType(name, items)], isPatternVar: false};
+     case e:
+        MacroLogger.log(e, 'e');
+        throw new ParsingException("AnnaLang: expected variable or pattern");
+    }
+
   }
 
   public function resolveType(expr: Expr):String {

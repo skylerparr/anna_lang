@@ -327,7 +327,9 @@ class AnnaLang {
 
           for(argType in cast(funDef.funArgsTypes, Array<Dynamic>)) {
             macroContext.varTypesInScope.set(argType.name, argType.type);
-            setScopeTypesForCustomType(macros.haxeToExpr(argType.pattern));
+            for(pattern in cast(argType.patterns, Array<Dynamic>)) {
+              setScopeTypesForCustomType(macros.haxeToExpr(pattern));
+            }
           }
 
           // Actual operations this function will be doing
@@ -449,7 +451,7 @@ class AnnaLang {
     MacroLogger.log("------------------");
   }
 
-  public inline function buildFunctionHeadPatternMatch(funDef: Dynamic): Dynamic {
+  public function buildFunctionHeadPatternMatch(funDef: Dynamic): Dynamic {
     var funArgsTypes: Array<Dynamic> = cast funDef.funArgsTypes;
     var funArgs: Array<FunctionArg> = [];
     var patternMatches: Array<String> = [];
@@ -462,24 +464,26 @@ class AnnaLang {
       }
       var argName: String = '_${argNameCounter++}';
       funArgs.push({name: argName, type: macroTools.buildType(funArgsType.type)});
-      var haxeStr: String = '';
-      if(funArgsType.pattern != funArgsType.name) {
-        var pattern: String = funArgsType.pattern;
-        if(funArgsType.type == "String") {
-          var ereg: EReg = ~/"|'.*"|'.*=>/;
-          if(!ereg.match(pattern)) {
-            pattern = '"${pattern}"';
+      var haxeStr: String = 'var scope:haxe.ds.StringMap<Dynamic> = new haxe.ds.StringMap();';
+      for(pattern in cast(funArgsType.patterns, Array<Dynamic>)) {
+        if(pattern != funArgsType.name) {
+          if(funArgsType.type == "String") {
+            var ereg: EReg = ~/"|'.*"|'.*=>/;
+            if(!ereg.match(pattern)) {
+              pattern = '"${pattern}"';
+            }
           }
+          var patternExpr = PatternMatch.match(this, macros.haxeToExpr(pattern), macros.haxeToExpr(argName));
+          haxeStr += '${printer.printExpr(patternExpr)};';
+        } else {
+          haxeStr += '{
+                    scope.set("${funArgsType.name}", ${argName});
+                    scope;
+                  };';
         }
-        var patternExpr = PatternMatch.match(this, macros.haxeToExpr(pattern), macros.haxeToExpr(argName));
-        haxeStr = 'var match${matchCount}: Map<String, Dynamic> = ${printer.printExpr(patternExpr)};';
-      } else {
-        haxeStr = 'var match${matchCount}: Map<String, Dynamic> = {
-                  var scope:haxe.ds.StringMap<Dynamic> = new haxe.ds.StringMap();
-                  scope.set("${funArgsType.name}", ${argName});
-                  scope;
-                };';
       }
+
+      haxeStr = 'var match${matchCount}: Map<String, Dynamic> = {${haxeStr}}';
       matchCount++;
       patternMatches.push(haxeStr);
     }
