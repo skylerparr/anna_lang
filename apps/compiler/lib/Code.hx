@@ -2274,6 +2274,10 @@ import CPPCLIInput;
     @native Classes.getApiFunctions(module);
   });
 
+  @def get_functions({Atom: module}, [LList], {
+    @native Classes.getFunctions(module);
+  });
+
   @def compile({String: file_path}, [Tuple], {
     #if cpp
     content = @native sys.io.File.getContent(file_path);

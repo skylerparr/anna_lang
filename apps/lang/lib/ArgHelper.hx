@@ -84,13 +84,21 @@ class ArgHelper {
 
         var customType: UserDefinedType = scopeVariables.get(elem2);
         if(customType == null) {
-          var anonFn: AnonFn = new AnonFn();
-          anonFn.module = Atom.create(elem2);
-          anonFn.func = elem3;
-          anonFn.annaLang = annaLang;
-          anonFn.scope = scopeVariables;
-          anonFn.apiFunc = Atom.create(elem3);
-          retVal = anonFn;
+          var module: Atom = Atom.create(elem2);
+          var funAtom: Atom = Atom.create(elem3);
+
+          var fn = vm.Classes.getFunction(module, funAtom);
+          if(fn == null) {
+            retVal = arg;
+          } else {
+            var anonFn: AnonFn = new AnonFn();
+            anonFn.module = Atom.create(elem2);
+            anonFn.func = elem3;
+            anonFn.annaLang = annaLang;
+            anonFn.scope = scopeVariables;
+            anonFn.apiFunc = Atom.create(elem3);
+            retVal = anonFn;
+          }
         } else {
           retVal = customType.getField(elem3);
         }

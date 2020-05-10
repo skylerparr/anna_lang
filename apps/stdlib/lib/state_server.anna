@@ -55,8 +55,8 @@ defmodule(StateServer, {
   });
 
   @def init({Atom: module, Dynamic: state}, [Atom], {
-    Kernel.apply(module, @_'init', [@_'Dynamic'], {state;});
-    main_loop(module, state);
+    [@_'ok', state] = Kernel.apply(module, @_'init', [@_'Dynamic'], {state;});
+    main_loop(module, cast(state, Dynamic));
   });
 
   @def main_loop({Atom: module, Dynamic: state}, [Atom], {
@@ -80,6 +80,7 @@ defmodule(StateServer, {
             {message; from_pid; state;}
           );
         Kernel.send(cast(from_pid, Pid), [@_'reply', ret_val]);
+ 
         state;
       };
       [{Tuple: random_message}] => {
