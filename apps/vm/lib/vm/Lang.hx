@@ -106,6 +106,7 @@ class Lang {
     try {
       ast = annaLang.parser.parseString(string);
     } catch(pe: ParsingException) {
+      trace(pe.message);
       return Tuple.create(['error'.atom(), '${pe.message}']);
     } catch(e: Dynamic) {
       if(StringTools.endsWith(e, '"<eof>"')) {
@@ -127,8 +128,10 @@ class Lang {
     try {
       invokeAst(ast, isList);
     } catch(e: ParsingException) {
+      trace(e);
       return Tuple.create(['error'.atom(), '${e}']);
     } catch(e: FunctionClauseNotFound) {
+      trace(e);
       return Tuple.create(['error'.atom(), 'FunctionClauseNotFound: ${e}']);
     } catch(e: Dynamic) {
       trace("call stack:", CallStack.callStack().join('\n'));

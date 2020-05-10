@@ -167,4 +167,8 @@ class StringUtil {
     }
     return string;
   }
+
+  public static inline function intToString(i: Int): String {
+    return i + "";
+  }
 }

@@ -29,6 +29,10 @@ defmodule(Str, {
     @native Std.int(s);
   });
 
+  @def int_to_string({Int: i}, [String], {
+    @native StringUtil.intToString(i);
+  });
+
   @def random({Int: length}, [String], {
     @native StringUtil.random(length);
   });

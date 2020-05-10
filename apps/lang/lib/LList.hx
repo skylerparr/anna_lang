@@ -63,10 +63,6 @@ class LList implements CustomType {
     return '';
   }
   
-  public function toString(): String {
-    return "LList";
-  }
-
   public static function iterator(list: LList) : ListIterator<Any> {
     return (cast list)._iterator();
   }
@@ -179,10 +175,6 @@ class AnnaList<T> extends LList {
     return this;
   }
 
-  override public function toString(): String {
-    return toAnnaString();
-  }
-  
   public function _add(item: T): AnnaList<T> {
     var x = ListNode.create(item, null);
     if(h == null) {

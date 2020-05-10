@@ -11,6 +11,7 @@ class Classes {
 
   @field public static var functions: Map<Atom, Map<Atom, Function>>;
   @field public static var apiFunctions: Map<Atom, Map<Atom, Atom>>;
+  @field public static var apiMap: Map<Atom, Map<Atom, Atom>>;
 
   public static inline var PREFIX: String = '___';
   public static inline var SUFFIX: String = '_args';
@@ -19,6 +20,7 @@ class Classes {
   public static function clear(): Void {
     functions = null;
     apiFunctions = null;
+    apiMap = null;
   }
 
   public static function defineWithInstance(className: Atom, instance: Dynamic, funcs: Array<String>): Void {
@@ -31,6 +33,9 @@ class Classes {
     }
     if(apiFunctions == null) {
       apiFunctions = new Map<Atom, Map<Atom, Atom>>();
+    }
+    if(apiMap == null) {
+      apiMap = new Map<Atom, Map<Atom, Atom>>();
     }
     Lang.definedModules.set(className.value, instance);
     var funIndex: Int = 0;
@@ -59,13 +64,18 @@ class Classes {
           continue;
         }
         var funcModMap: Map<Atom, Atom> = apiFunctions.get(className);
+        var apiModMap: Map<Atom, Atom> = apiMap.get(className);
         if(funcModMap == null) {
           funcModMap = new Map<Atom, Atom>();
+          apiModMap = new Map<Atom, Atom>();
         }
         for(func in apiFuncs) {
-          funcModMap.set(func, Atom.create(apiFun));
+          var apiFunAtom = Atom.create(apiFun);
+          funcModMap.set(func, apiFunAtom);
+          apiModMap.set(apiFunAtom, apiFunAtom);
         }
         apiFunctions.set(className, funcModMap);
+        apiMap.set(className, apiModMap);
       } else {
         var origFnAtom: Atom = cast(fun, String).atom();
         var classFunctions: Map<Atom, Function> = functions.get(className);
@@ -108,6 +118,7 @@ class Classes {
     }
     functions.set(interfaceModule, funMap);
     apiFunctions.set(interfaceModule, apiFunctions.get(implModule));
+    apiMap.set(interfaceModule, apiMap.get(implModule));
   }
 
   /**
@@ -137,6 +148,18 @@ class Classes {
       return funMap.get(funName);
     }
     return null;
+  }
+
+  public static inline function exists(moduleName: Atom, funName: Atom): Bool {
+    if(apiMap.exists(moduleName)) {
+      var funMap: Map<Atom, Atom> = apiMap.get(moduleName);
+      if(funMap != null) {
+        return funMap.exists(funName);
+      }
+      return false;
+    } else {
+      return false;
+    }
   }
 
   public static inline function getModules(): LList {

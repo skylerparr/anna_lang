@@ -141,7 +141,4 @@ class AnnaMap<K, V> extends MMap implements CustomType {
     return _annaString;
   }
 
-  public function toString(): String {
-    return 'Map';
-  }
 }

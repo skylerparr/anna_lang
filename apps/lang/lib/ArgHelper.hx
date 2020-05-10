@@ -79,28 +79,29 @@ class ArgHelper {
             arg;
         }
       } else if(argArray.length == 3) {
-        var elem2: String = argArray[1];
-        var elem3: String = argArray[2];
+        if(argArray[0] == Atom.create("field")) {
+          var elem2: String = cast argArray[1];
+          var elem3: String = cast argArray[2];
+          var customType: UserDefinedType = scopeVariables.get(elem2);
+          if(customType == null) {
+            var module: Atom = Atom.create(elem2);
+            var funAtom: Atom = Atom.create(elem3);
 
-        var customType: UserDefinedType = scopeVariables.get(elem2);
-        if(customType == null) {
-          var module: Atom = Atom.create(elem2);
-          var funAtom: Atom = Atom.create(elem3);
-
-          var fn = vm.Classes.getFunction(module, funAtom);
-          if(fn == null) {
-            retVal = arg;
+            var exists = vm.Classes.exists(module, funAtom);
+            if(exists) {
+              var anonFn: AnonFn = new AnonFn();
+              anonFn.module = Atom.create(elem2);
+              anonFn.func = elem3;
+              anonFn.annaLang = annaLang;
+              anonFn.scope = scopeVariables;
+              anonFn.apiFunc = Atom.create(elem3);
+              retVal = anonFn;
+            } else {
+              retVal = arg;
+            }
           } else {
-            var anonFn: AnonFn = new AnonFn();
-            anonFn.module = Atom.create(elem2);
-            anonFn.func = elem3;
-            anonFn.annaLang = annaLang;
-            anonFn.scope = scopeVariables;
-            anonFn.apiFunc = Atom.create(elem3);
-            retVal = anonFn;
+            retVal = customType.getField(elem3);
           }
-        } else {
-          retVal = customType.getField(elem3);
         }
       }
     }
