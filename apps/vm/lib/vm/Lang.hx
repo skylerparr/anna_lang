@@ -16,7 +16,7 @@ import vm.PortMan;
 using lang.AtomSupport;
 class Lang {
 
-    public static var definedModules: Map<String, Dynamic> = {
+  public static var definedModules: Map<String, Dynamic> = {
     definedModules = new Map<String, Dynamic>();
     definedModules.set("Anna", Anna);
     definedModules.set("ArgHelper", ArgHelper);
@@ -74,8 +74,11 @@ class Lang {
 
   public var annaLang: AnnaLang;
   private var printer: Printer;
+  private var evals: Array<Dynamic> = [];
+  private var ref: Reference;
 
   private static inline var ANNA_HOME: String = 'ANNA_HOME';
+  private static var transactionMap: ObjectMap<Reference, Lang> = new ObjectMap<Reference, Lang>();
 
   public static function annaLangHome(): String {
     var annaLangHome: String = Sys.environment().get(ANNA_HOME);
@@ -91,6 +94,7 @@ class Lang {
     annaLang.macroContext = code.annaLang.macroContext.clone();
     annaLang.lang = this;
     printer = annaLang.printer;
+    ref = new Reference();
   }
 
   public function doEval(string: String): Tuple {
@@ -125,8 +129,55 @@ class Lang {
     } catch(e: Dynamic) {
       return Tuple.create(['error'.atom(), '${e}']);
     }
+    evals.push({ast: ast, isList: isList});
+    return Tuple.create(['ok'.atom(), ast]);
+  }
+
+  public static inline function eval(string:String):Tuple {
+    var ref: Reference = beginTransaction();
+    var lang: Lang = transactionMap.get(ref);
+
+    var result: Tuple = lang.doEval(string);
+    if(Tuple.elem(result, 0) == 'ok'.atom() && Tuple.elem(result, 1) != 'continuation'.atom()) {
+      return commit(ref);
+    } else {
+      return result;
+    }
+  }
+
+  public static inline function disposeTransaction(ref: Reference): Tuple {
+    transactionMap.remove(ref);
+    return Tuple.create(['ok'.atom(), 'disposed']); 
+  }
+
+  public static inline function read(ref: Reference, string: String): Tuple {
+    var lang: Lang = transactionMap.get(ref);
+    return lang.doEval(string);
+  }
+
+  public static inline function beginTransaction(): Reference {
+    var lang: Lang = new Lang();
+    var ref = lang.ref;
+    transactionMap.set(ref, lang);
+    return ref;
+  }
+
+  public static inline function commit(ref: Reference): Tuple {
+    var lang: Lang = transactionMap.get(ref);
+    if(lang == null) {
+      return Tuple.create(['error'.atom(), 'transaction not found']);
+    }
+    return lang.doCommit();
+  }
+
+  public function doCommit(): Tuple {
     try {
-      invokeAst(ast, isList);
+      for(eval in evals) {
+        invokeAst(eval.ast, eval.isList);
+      }
+      annaLang.commit();
+      disposeTransaction(ref);
+      return Tuple.create(['ok'.atom(), 'success']);
     } catch(e: ParsingException) {
       trace(e);
       return Tuple.create(['error'.atom(), '${e}']);
@@ -140,12 +191,6 @@ class Lang {
       IO.inspect(e);
       return Tuple.create(['error'.atom(), '${e}']);
     }
-    return Tuple.create(['ok'.atom(), ast]);
-  }
-
-  public static inline function eval(string:String):Tuple {
-    var lang: Lang = new Lang();
-    return lang.doEval(string);
   }
 
   public static inline function format(string: String): Tuple {

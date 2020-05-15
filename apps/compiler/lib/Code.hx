@@ -6,6 +6,7 @@ import vm.Pid;
 import vm.Port;
 import IO;
 import vm.Function;
+import vm.Reference;
 import CPPCLIInput;
 @:build(lang.macros.AnnaLang.init())
 //@:build(lang.macros.AnnaLang.defmodule(Str, {
@@ -2265,6 +2266,8 @@ import CPPCLIInput;
   @alias vm.Classes;
   @alias vm.Lang;
   @alias util.StringUtil;
+  @alias util.File;
+  @alias vm.Reference;
 
   @def get_modules([LList], {
     @native Classes.getModules();
@@ -2279,12 +2282,26 @@ import CPPCLIInput;
   });
 
   @def compile({String: file_path}, [Tuple], {
-    #if cpp
-    content = @native sys.io.File.getContent(file_path);
-    #else
-    content = '';
-    #end
+    [@_'ok', content] = @native File.getContent(file_path);
     @native Lang.eval(content);
+  });
+
+  @def compile_path({String: path}, [Tuple], {
+    ref = @native Lang.beginTransaction();
+    files = @native File.readDirectory(path);
+    [ref, files];
+  });
+
+  @def compile_files({Reference: ref, LList: {}}, [Tuple], {
+    [@_'ok', 'success'];
+  });
+
+  @def read({Reference: ref, String: content}, [Tuple], {
+    @native Lang.read(ref, content);
+  });
+
+  @def commit({Reference: ref}, [Tuple], {
+    @native Lang.commit(ref);
   });
 
   @def anna_lang_home([String], {

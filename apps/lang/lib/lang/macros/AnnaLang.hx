@@ -44,12 +44,20 @@ class AnnaLang {
   #if !macro
   // This is for the interpreter
   public var lang: vm.Lang;
+  public var runtimeDef: RuntimeDef;
+  
+  public function commit(): Void {
+    runtimeDef.commit();
+  }
   #end
 
   public function new() {
     macroContext = new MacroContext(this);
     macros = new Macros(this);
     macroTools = new MacroTools(this);
+    #if !macro
+    runtimeDef = new RuntimeDef(this);
+    #end
     MacroLogger.init();
   }
 
@@ -92,7 +100,8 @@ class AnnaLang {
     }
     macroContext.declaredInterfaces.set(interfaceName, moduleDef);
     #if !macro
-    annaLangForMacro.macroContext.declaredInterfaces.set(interfaceName, moduleDef);
+    //annaLangForMacro.macroContext.declaredInterfaces.set(interfaceName, moduleDef);
+    runtimeDef.declareInterface(interfaceName, moduleDef);
     #end
 
     return AnnaLang.persistClassFields();
@@ -145,9 +154,10 @@ class AnnaLang {
               fieldMap.set(name, strType);
               macroContext.typeFieldMap.set(className, fieldMap);
               #if !macro
-              var code = getCodeModule();
-              code.annaLang.macroContext.typeFieldMap.set(className, fieldMap);
-              code.annaLang.macroContext.declaredTypes.push(className);
+              //var code = getCodeModule();
+              //code.annaLang.macroContext.typeFieldMap.set(className, fieldMap);
+              //code.annaLang.macroContext.declaredTypes.push(className);
+              runtimeDef.defType(className, fieldMap);
               #end
             case _:
               throw "AnnaLang: Unexpected code. You can only define var types. For Example: `var name: String;` or `var ellie: Bear;`";
@@ -295,7 +305,7 @@ class AnnaLang {
     return classFields;
   }
 
-  private function compileModule(moduleName: String, moduleDef: Dynamic): Void {
+  public function compileModule(moduleName: String, moduleDef: ModuleDef): Void {
     MacroLogger.log(moduleName, 'compiling');
     macroContext.currentModuleDef = moduleDef;
     macroContext.aliases = moduleDef.aliases;
@@ -528,24 +538,19 @@ class AnnaLang {
     var impl: String = macroTools.getIdent(implName);
     macroContext.associatedInterfaces.set(impl, iface);
     #if !macro
-    var code: Dynamic = getCodeModule();
+    //var code: Dynamic = getCodeModule();
 
-    var moduleDef: ModuleDef = macroContext.declaredClasses.get(impl);
-    if(moduleDef == null) {
-      throw new ModuleNotFoundException('AnnaLang: module ${impl} not found');
-    }
+    //var moduleDef: ModuleDef = macroContext.declaredClasses.get(impl);
+    //if(moduleDef == null) {
+    //  throw new ModuleNotFoundException('AnnaLang: module ${impl} not found');
+    //}
 
-    code.annaLang.macroContext.associatedInterfaces.set(impl, iface);
-    code.annaLang.macroContext.declaredInterfaces.set(iface, moduleDef);
+    //code.annaLang.macroContext.associatedInterfaces.set(impl, iface);
+    //code.annaLang.macroContext.declaredInterfaces.set(iface, moduleDef);
+    runtimeDef.setIFace(iface, impl);
     #end
     return AnnaLang.persistClassFields();
   }
-
-  #if !macro
-  private inline function getCodeModule(): Dynamic {
-    return Type.resolveClass("Code");
-  }
-  #end
 
   macro public static function defmodule(name: Expr, body: Expr): Array<Field> {
     return annaLangForMacro.defCls(name, body);
@@ -571,8 +576,9 @@ class AnnaLang {
 
     macroContext.declaredClasses.set(moduleName, moduleDef);
     #if !macro
-    var code: Dynamic = getCodeModule();
-    code.annaLang.macroContext.declaredClasses.set(moduleName, moduleDef);
+    //var code: Dynamic = getCodeModule();
+    //code.annaLang.macroContext.declaredClasses.set(moduleName, moduleDef);
+    runtimeDef.declareModule(moduleName, moduleDef);
     #end
     moduleDef.aliases = macroContext.aliases;
 
@@ -584,8 +590,7 @@ class AnnaLang {
 
   #if macro
   private static inline function persistClassFields():Array<Field> {
-    var fields: Array<Field> = Context.getBuildFields();
-    return fields;
+    return Context.getBuildFields();
   }
   #else
   private static inline function persistClassFields():Array<Field> {
@@ -593,11 +598,12 @@ class AnnaLang {
   }
   #end
 
-  private function getIface(iface: String): ModuleDef {
+  private inline function getIface(iface: String): ModuleDef {
     var interfaceDef: ModuleDef = macroContext.declaredInterfaces.get(iface);
     #if !macro
     if(interfaceDef == null) {
-      interfaceDef = annaLangForMacro.macroContext.declaredInterfaces.get(iface);
+      //interfaceDef = annaLangForMacro.macroContext.declaredInterfaces.get(iface);
+      interfaceDef = runtimeDef.getIFace(iface);
     }
     #end
     return interfaceDef;
@@ -676,30 +682,23 @@ class AnnaLang {
               for(expr in exprs) {
                 retExprs.push(expr);
               }
+            #if !macro
             case ECall({ expr: EConst(CIdent('defmodule'))}, params):
               var name: Expr = params.shift();
               var body: Expr = params.shift();
               var moduleName: String = macroTools.getIdent(name);
               defCls(name, body);
-              compileModule(macroContext.currentModuleDef.moduleName, macroContext.currentModuleDef);
-              #if !macro
-              defineRuntimeModule();
-              #end
+              //compileModule(macroContext.currentModuleDef.moduleName, macroContext.currentModuleDef);
+              runtimeDef.defineRuntimeModule(macroContext, macroTools);
             case ECall({ expr: EConst(CIdent('defapi'))}, params):
               defApi(params[0], params[1]);
             case ECall({ expr: EConst(CIdent('set_iface'))}, params):
               setIface(params[0], params[1]);
-              #if !macro
-              var ifaceName: String = macroTools.getIdent(params[0]);
-              var moduleName: String = macroTools.getIdent(params[1]);
-              vm.Classes.setIFace(Atom.create(ifaceName), Atom.create(moduleName));
-              #end
             case ECall({ expr: EConst(CIdent('deftype'))}, params):
               defType(params[0], params[1]);
-              compileModule(macroContext.currentModuleDef.moduleName, macroContext.currentModuleDef);
-              #if !macro
-              defineRuntimeModule();
-              #end
+              //compileModule(macroContext.currentModuleDef.moduleName, macroContext.currentModuleDef);
+              runtimeDef.defineRuntimeModule(macroContext, macroTools);
+            #end
             case ECall({ expr: EField({ expr: EConst(CIdent(moduleName))}, funName) }, params):
               var args: Array<Expr> = macroTools.getFunBody(blockExpr);
               var lineNumber: Int = macroTools.getLineNumber(expr);
@@ -816,54 +815,6 @@ class AnnaLang {
     }
     return retExprs;
   }
-
-  #if !macro
-  private inline function defineRuntimeModule(): Void {
-    var code: Dynamic = getCodeModule();
-    code.annaLang.macroContext.declaredClasses.set(macroContext.currentModuleDef.moduleName, macroContext.currentModuleDef);
-    var instance: Dynamic = {};
-    var functions: Map<String, Dynamic> = new Map();
-    for(field in macroContext.definedClass.fields) {
-      switch(field.kind) {
-        case FVar(t, expr):
-          var ast = parser.parseString(printer.printExpr(expr));
-          var operations: Array<vm.Operation> = vm.Lang.getHaxeInterp().execute(ast);
-          Reflect.setField(instance, field.name, operations);
-        case FFun(f):
-          functions.set(field.name, f);
-        case _:
-          throw new ParsingException("AnnaLang walkBlock: Unexpect field type FProp");
-      }
-    }
-    var instanceFields: Array<String> = Reflect.fields(instance);
-    for(funcKey in functions.keys()) {
-      var interp: Interp = vm.Lang.getHaxeInterp();
-      for(field in instanceFields) {
-        interp.variables.set(field, Reflect.field(instance, field));
-      }
-      var func = functions.get(funcKey);
-      var args: Array<String> = {
-        var retVal: Array<String> = [];
-        for(funArg in cast(func.args, Array<Dynamic>)) {
-          retVal.push('${funArg.name}: ${macroTools.getType(funArg.type)}');
-        }
-        retVal;
-      }
-      var bodyString: String = printer.printExpr(func.expr);
-      var anonFuncString: String = 'function(${args.join(', ')}) {
-                  ${bodyString}
-                }';
-      var ast = parser.parseString(anonFuncString);
-      var anonFunc = interp.execute(ast);
-      Reflect.setField(instance, funcKey, anonFunc);
-    }
-    vm.Classes.defineWithInstance(
-      Atom.create(macroContext.currentModuleDef.moduleName),
-      instance,
-      Reflect.fields(instance)
-    );
-  }
-  #end
 
   private function setScopeTypesForCustomType(expr: Expr): Void {
     switch(expr.expr) {

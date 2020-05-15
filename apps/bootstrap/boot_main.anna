@@ -3,9 +3,15 @@ defmodule(BootMain, {
   @alias vm.NativeKernel;
   @alias vm.Pid;
   @alias util.StringUtil;
+  @alias util.File;
+  @alias vm.Reference;
 
   @def start([Atom], {
-    result = compile_all();
+    result = compile_path('apps/stdlib/lib');
+    compile_path('apps/unit_tests/lib');
+    compile_path('apps/ia/lib');
+    compile_path('apps/unit_tests/tests');
+    result = compile_path('apps/project/lib');
     start_app(result);
     @_'ok';
   });
@@ -18,76 +24,35 @@ defmodule(BootMain, {
     @native NativeKernel.applyMFA(self(), @_'IAMain', @_'start', @tuple[], {});
   });
 
-  @def compile_all([Tuple], {
-    files = {
-      'apps/stdlib/lib/system.anna';
-      'apps/stdlib/lib/str.anna';
-      'apps/stdlib/lib/json.anna';
-      'apps/stdlib/lib/kernel.anna';
-      'apps/stdlib/lib/state_handler.anna';
-      'apps/stdlib/lib/state_server.anna';
-      'apps/stdlib/lib/eenum.anna';
-      'apps/stdlib/lib/default_enum.anna';
-      'apps/stdlib/lib/file.anna';
-      'apps/stdlib/lib/map_apis.anna';
-
-      'apps/unit_tests/lib/unit_tests.anna';
-      'apps/unit_tests/lib/assert.anna';
-
-      'apps/ia/lib/ia_state.anna';
-      'apps/ia/lib/history.anna';
-      'apps/ia/lib/repl.anna';
-      'apps/ia/lib/command_handler.anna';
-      'apps/ia/lib/ia_main.anna';
-
-      'apps/unit_tests/tests/foo_api.anna';
-      'apps/unit_tests/tests/foo_impl.anna';
-
-      'apps/unit_tests/tests/sample_type.anna';
-      'apps/unit_tests/tests/sample_compose_type.anna';
-
-      'apps/unit_tests/tests/map_apis.anna';
-
-      'apps/unit_tests/tests/string_test.anna';
-      'apps/unit_tests/tests/number_test.anna';
-      'apps/unit_tests/tests/atom_test.anna';
-      'apps/unit_tests/tests/tuple_test.anna';
-      'apps/unit_tests/tests/list_test.anna';
-      'apps/unit_tests/tests/mmap_test.anna';
-      'apps/unit_tests/tests/keyword_test.anna';
-      'apps/unit_tests/tests/module_function_test.anna';
-      'apps/unit_tests/tests/custom_types_test.anna';
-
-      // project builder
-      'apps/project/lib/source_file.anna';
-      'apps/project/lib/project_config.anna';
-      'apps/project/lib/project_compiler.anna';
-    };
-    compile_files(cast(files, LList));
-  });
-
   @def self([Pid], {
     @native vm.Process.self();
   });
 
-  @def compile_files({LList: {}}, [Tuple], {
-    [@_'ok', 'success'];
+  @def compile_path({String: path}, [Tuple], {
+    ref = @native Lang.beginTransaction();
+    files = @native File.readDirectory(path);
+    path = @native StringUtil.concat(path, '/');
+    compile_files(ref, path, files);
   });
 
-  @def compile_files({LList: {file | files;}}, [Tuple], {
-    home = AppCode.anna_lang_home();
-    file = @native StringUtil.concat(home, file);
-
-    result = AppCode.compile(cast(file, String));
-    handle_compile_result(result, cast(files, LList));
+  @def compile_files({Reference: ref, String: _, LList: {}}, [Tuple], {
+    AppCode.commit(ref);
   });
 
-  @def handle_compile_result({Tuple: [@_'error', message], LList: _}, [Tuple], {
+  @def compile_files({Reference: ref, String: path, LList: {file | files;}}, [Tuple], {
+    file_path = @native StringUtil.concat(path, file);
+    [@_'ok', content] = @native File.getContent(file_path);
+    result = AppCode.read(ref, cast(content, String));
+    handle_compile_result(ref, result, path, cast(files, LList));
+  });
+
+  @def handle_compile_result({Reference: _, Tuple: [@_'error', message], String: _, LList: _}, [Tuple], {
     @native IO.inspect(message);
     [@_'error', message];
   });
 
-  @def handle_compile_result({Tuple: _, LList: files}, [Tuple], {
-    compile_files(cast(files, LList));
+  @def handle_compile_result({Reference: ref, Tuple: _, String: path, LList: files}, [Tuple], {
+    compile_files(ref, path, cast(files, LList));
   });
+
 })
