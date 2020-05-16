@@ -7,13 +7,18 @@ defmodule(BootMain, {
   @alias vm.Reference;
 
   @def start([Atom], {
-    result = compile_path('apps/stdlib/lib');
-    compile_path('apps/unit_tests/lib');
-    compile_path('apps/ia/lib');
-    compile_path('apps/unit_tests/tests');
-    result = compile_path('apps/project/lib');
+    result = compile_all();
     start_app(result);
     @_'ok';
+  });
+
+  @def compile_all([Tuple], {
+    base_path = AppCode.anna_lang_home();
+    AppCode.compile_path('apps/stdlib/lib', base_path);
+    AppCode.compile_path('apps/unit_tests/lib', base_path);
+    AppCode.compile_path('apps/ia/lib', base_path);
+    AppCode.compile_path('apps/unit_tests/tests', base_path);
+    AppCode.compile_path('apps/project/lib', base_path);
   });
 
   @def start_app({Tuple: [@_'error', message]}, [Atom], {
@@ -21,38 +26,14 @@ defmodule(BootMain, {
   });
 
   @def start_app({Tuple: _}, [Atom], {
-    @native NativeKernel.applyMFA(self(), @_'IAMain', @_'start', @tuple[], {});
+    pid = self();
+    //AppCode.compile('project/apps/local_history/lib/local_history.anna');
+    //@native NativeKernel.applyMFA(self(), @_'LocalHistory', @_'start', @tuple[], {});
+    @native NativeKernel.applyMFA(pid, @_'IAMain', @_'start', @tuple[], {});
   });
 
   @def self([Pid], {
     @native vm.Process.self();
-  });
-
-  @def compile_path({String: path}, [Tuple], {
-    ref = @native Lang.beginTransaction();
-    files = @native File.readDirectory(path);
-    path = @native StringUtil.concat(path, '/');
-    compile_files(ref, path, files);
-  });
-
-  @def compile_files({Reference: ref, String: _, LList: {}}, [Tuple], {
-    AppCode.commit(ref);
-  });
-
-  @def compile_files({Reference: ref, String: path, LList: {file | files;}}, [Tuple], {
-    file_path = @native StringUtil.concat(path, file);
-    [@_'ok', content] = @native File.getContent(file_path);
-    result = AppCode.read(ref, cast(content, String));
-    handle_compile_result(ref, result, path, cast(files, LList));
-  });
-
-  @def handle_compile_result({Reference: _, Tuple: [@_'error', message], String: _, LList: _}, [Tuple], {
-    @native IO.inspect(message);
-    [@_'error', message];
-  });
-
-  @def handle_compile_result({Reference: ref, Tuple: _, String: path, LList: files}, [Tuple], {
-    compile_files(ref, path, cast(files, LList));
   });
 
 })

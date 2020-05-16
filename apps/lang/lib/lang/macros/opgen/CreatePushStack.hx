@@ -57,7 +57,7 @@ class CreatePushStack {
           var typesForVar: Array<String> = getTypesForVar(typeAndValue, arg, macroContext);
 
           if(typesForVar == null) {
-            throw new FunctionClauseNotFound('AnnaLang: No function found for ${moduleName}.${funName}(${getArgsNames(args, printer).join(', ')}) with unable to resolve type for var: `${printer.printExpr(arg)}`. You probably need to cast.');
+            throw new FunctionClauseNotFound('AnnaLang: No function found for ${moduleName}.${funName}(${getArgsNames(args, printer).join(', ')}):${lineNumber} with unable to resolve type for var: `${printer.printExpr(arg)}`. You probably need to cast.');
           }
 
           var possibleTypes: Array<String> = [];

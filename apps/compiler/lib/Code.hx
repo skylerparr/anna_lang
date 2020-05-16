@@ -2286,22 +2286,36 @@ import CPPCLIInput;
     @native Lang.eval(content);
   });
 
+  @def compile_path({String: path, String: base_path}, [Tuple], {
+    path = @native StringUtil.concat(base_path, path);
+    compile_path(path);
+  });
+
   @def compile_path({String: path}, [Tuple], {
     ref = @native Lang.beginTransaction();
     files = @native File.readDirectory(path);
-    [ref, files];
+    path = @native StringUtil.concat(path, '/');
+    compile_files(ref, path, files);
   });
 
-  @def compile_files({Reference: ref, LList: {}}, [Tuple], {
-    [@_'ok', 'success'];
-  });
-
-  @def read({Reference: ref, String: content}, [Tuple], {
-    @native Lang.read(ref, content);
-  });
-
-  @def commit({Reference: ref}, [Tuple], {
+  @def compile_files({Reference: ref, String: _, LList: {}}, [Tuple], {
     @native Lang.commit(ref);
+  });
+
+  @def compile_files({Reference: ref, String: path, LList: {file | files;}}, [Tuple], {
+    file_path = @native StringUtil.concat(path, file);
+    [@_'ok', content] = @native File.getContent(file_path);
+    result = @native Lang.read(ref, cast(content, String));
+    handle_compile_result(ref, result, path, cast(files, LList));
+  });
+
+  @def handle_compile_result({Reference: _, Tuple: [@_'error', message], String: _, LList: _}, [Tuple], {
+    @native IO.inspect(message);
+    [@_'error', message];
+  });
+
+  @def handle_compile_result({Reference: ref, Tuple: _, String: path, LList: files}, [Tuple], {
+    compile_files(ref, path, cast(files, LList));
   });
 
   @def anna_lang_home([String], {
