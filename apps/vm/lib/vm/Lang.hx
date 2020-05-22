@@ -91,7 +91,7 @@ class Lang {
   public function new() {
     annaLang = new AnnaLang();
     var code: Dynamic = Type.resolveClass("Code");
-    annaLang.macroContext = code.annaLang.macroContext.clone();
+    annaLang.updateMacroContext(code.annaLang.macroContext.clone());
     annaLang.lang = this;
     printer = annaLang.printer;
     ref = new Reference();
@@ -124,7 +124,7 @@ class Lang {
     }
 
     try {
-      var pos = { max: ast.pmax, min: ast.pmin, file: ':${ast.line}' };
+      var pos = { max: ast.pmax, min: ast.pmin, file: 'none:${ast.line}' };
       ast = new Macro(pos).convert(ast);
     } catch(e: Dynamic) {
       return Tuple.create(['error'.atom(), '${e}']);
@@ -191,7 +191,6 @@ class Lang {
       trace("call stack:", CallStack.callStack().join('\n'));
       trace("exception stack:", CallStack.exceptionStack().join('\n'));
       trace("TODO: Handle this exception");
-      IO.inspect(e);
       return Tuple.create(['error'.atom(), '${e}']);
     }
   }
@@ -241,6 +240,7 @@ class Lang {
   }
 
   public inline function invokeAst(ast: Expr, isList: Bool): Atom {
+    annaLang.macroContext.currentPosition = ast.pos;
     switch(ast.expr) {
       case EBlock(exprs) if(!isList):
         var expr = annaLang.macroTools.buildBlock(exprs);

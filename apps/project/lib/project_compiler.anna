@@ -67,6 +67,7 @@ defmodule(ProjectCompiler, {
   });
 
   @def get_app_source_files({String: dir}, [Tuple], {
+    System.println(dir);
     [@_'ok', files] = File.ls(dir);
     result = gather_source_files(dir, {}, cast(files, LList));
     [@_'ok', result];

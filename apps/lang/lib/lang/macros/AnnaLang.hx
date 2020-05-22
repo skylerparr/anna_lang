@@ -37,9 +37,15 @@ class AnnaLang {
   public static var annaLangForMacro: AnnaLang = new AnnaLang();
   public var printer: Printer = new Printer();
 
+ 
   public var macroContext: MacroContext;
   public var macroTools: MacroTools;
   public var macros: Macros;
+
+  public function updateMacroContext(mc: MacroContext): Void {
+    macroContext = mc;
+    macroTools.macroContext = mc;
+  }
 
   #if !macro
   // This is for the interpreter
@@ -563,6 +569,9 @@ class AnnaLang {
     initCls();
     macroContext.aliases = new Map();
     macroContext.currentModuleDef = moduleDef;
+    #if !macro
+    macroContext.currentPosition = body.pos;
+    #end
 
     prewalk(body);
 

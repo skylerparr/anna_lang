@@ -100,7 +100,7 @@ class ArgHelper {
               retVal = arg;
             }
           } else {
-            retVal = customType.getField(elem3);
+            retVal = customType.getField(Atom.create(elem3));
           }
         }
       }
@@ -150,11 +150,11 @@ class ArgHelper {
   }
 
   public static inline function resolveAbstractCustomTypeValues(value: lang.UserDefinedType, scopeVariables: Map<String, Dynamic>, annaLang: AnnaLang): AbstractCustomType {
-    var obj = {};
+    var data: Map<Atom, Dynamic> = new Map<Atom, Dynamic>();
     for(field in UserDefinedType.rawFields(value)) {
-      Reflect.setField(obj, field, extractArgValue(value.getField(field), scopeVariables, annaLang));
+      data.set(field, extractArgValue(value.getField(field), scopeVariables, annaLang));
     }
-    return UserDefinedType.create(value.__type, obj, annaLang);
+    return UserDefinedType.create(value.__type, data, annaLang);
   }
 
   public static inline function __updateScope(match: Map<String, Dynamic>, scope: Map<String, Dynamic>): Void {

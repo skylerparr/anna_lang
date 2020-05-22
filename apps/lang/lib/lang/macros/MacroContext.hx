@@ -151,6 +151,9 @@ class MacroContext {
     if(currentPosition == null) {
       return {file: "none:0", min: 0, max: 0};
     } else {
+      if(currentPosition.file.split(':')[1] == 0) {
+        throw 'here';
+      }
       return {file: currentPosition.file, min: currentPosition.pmin, max: currentPosition.pmax};
     }
   }

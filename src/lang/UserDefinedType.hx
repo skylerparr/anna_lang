@@ -4,71 +4,70 @@ import lang.macros.AnnaLang;
 class UserDefinedType extends AbstractCustomType {
   public var __annaLang: AnnaLang;
   public var __type: String;
-  public var __values: Dynamic;
+  public var __values: Map<Atom, Dynamic>;
 
   public function new() {
   }
 
-  public static function create(type: String, arg: Dynamic, annaLang: AnnaLang): AbstractCustomType {
-    var retVal: UserDefinedType = Type.createInstance(UserDefinedType, []);
+  public static function create(type: String, arg: Map<Atom, Dynamic>, annaLang: AnnaLang): AbstractCustomType {
+    var retVal: UserDefinedType = new UserDefinedType();
     retVal.__annaLang = annaLang;
     retVal.__type = type;
     retVal.__values = arg;
-
-    if(arg == null) {
-      return retVal;
-    }
     return retVal;
   }
 
   public static function fields(type:UserDefinedType): LList {
-    var values: Array<Any> = [];
-    for(field in Reflect.fields(type.__values)) {
-      values.push(Atom.create(field));
+    var retVal: Array<Any> = [];
+    for(key in type.__values.keys()) {
+      retVal.push(key);
     }
-    return LList.create(values);
+    return LList.create(retVal);
   }
 
-  public static function rawFields(type: UserDefinedType): Array<String> {
-    return Reflect.fields(type.__values);
+  public static function rawFields(type: UserDefinedType): Array<Atom> {
+    var retVal: Array<Atom> = [];
+    for(key in type.__values.keys()) {
+      retVal.push(key);
+    }
+    return retVal;
   }
 
   override public function toAnnaString(): String {
     var fieldPairs: Array<String> = [];
-    for(field in Reflect.fields(__values)) {
-      var value = get(this, Atom.create(field));
-      fieldPairs.push('${StringTools.replace(Anna.toAnnaString(field), '"', '')}: ${Anna.toAnnaString(value)}');
+    for(field in __values.keys()) {
+      var value = get(this, field);
+      fieldPairs.push('${field.value}: ${Anna.toAnnaString(value)}');
     }
     return '${__type}%{${fieldPairs.join(', ')}}';
   }
 
-  public function getField(field: String): Dynamic {
+  public function getField(field: Atom): Dynamic {
     var variablesInScope: Map<String, Dynamic> = null;
     if(vm.NativeKernel.started) {
       variablesInScope = vm.Process.self().processStack.getVariablesInScope();
     } else {
       variablesInScope = new Map<String, Dynamic>();
     }
-    var valueToAssign = Reflect.field(__values, field);
+    var valueToAssign = __values.get(field);
     return ArgHelper.extractArgValue(valueToAssign, variablesInScope, __annaLang);
   }
 
   public static function get(obj: UserDefinedType, field: Atom): Dynamic {
-    return obj.getField(field.value);
+    return obj.getField(field);
   }
 
   public static function set(obj: UserDefinedType, field: Atom, value: Dynamic): AbstractCustomType {
-    var values = obj.__values;
-    var arg = {};
-    for(valueKey in Reflect.fields(values)) {
-      if(field.value == valueKey) {
-        Reflect.setField(arg, field.value, value);
+    var values: Map<Atom, Dynamic> = obj.__values;
+    var retVal: Map<Atom, Dynamic> = new Map<Atom, Dynamic>();
+    for(key in values.keys()) {
+      if(key == field) {
+        retVal.set(key, value);
       } else {
-        Reflect.setField(arg, valueKey, Reflect.field(values, valueKey));
+        retVal.set(key, values.get(key));
       }
     }
-    var retVal = create(obj.__type, arg, obj.__annaLang);
-    return retVal;
+    return create(obj.__type, retVal, obj.__annaLang);
   }
 
   public inline function clone(): lang.AbstractCustomType {

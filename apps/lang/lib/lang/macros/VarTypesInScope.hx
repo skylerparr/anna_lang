@@ -35,6 +35,8 @@ class VarTypesInScope {
       for(type in types) {
         retVal.push(type);
       }
+    } else if(cls == lang.UserDefinedType) {
+      retVal.push(value.__type);
     } else if(haxe.rtti.Rtti.hasRtti(cls)) {
       var clsDef: Classdef = haxe.rtti.Rtti.getRtti(cls);
       for(iface in clsDef.interfaces) {

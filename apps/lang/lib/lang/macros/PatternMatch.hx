@@ -164,17 +164,23 @@ class PatternMatch {
         var customTypeStr: String = StringTools.replace(printer.printExpr(type), "\"", "");
         var individualMatches: Array<Expr> = [];
         switch(params[0].expr) {
-          case EObjectDecl(fields):
+          case EArrayDecl(fields):
             for(field in fields) {
-              switch(field.expr.expr) {
-                case ECall({ expr: EField({ expr: EConst(CIdent('Tuple')) },'create') },[{ expr: EArrayDecl([{ expr: ECall({ expr: EField({ expr: EConst(CIdent('Atom')) },'create') },[{ expr: EConst(CString('var')) }]) },{ expr: EConst(CString(name)) }]) }]):
-                  var fieldType: String = macroContext.getFieldType(customTypeStr, name);
-                  macroContext.varTypesInScope.set(name, fieldType);
-                case e:
-                  MacroLogger.log(e, 'e');
+              switch(field.expr) {
+                case EBinop(OpArrow, key, value):
+                  switch(key.expr) {
+                    case ECall({expr: EField({expr: EConst(CIdent('Atom')) }, 'create') }, [{ expr: EConst(CString(name)) }]):
+                      var fieldType: String = macroContext.getFieldType(customTypeStr, name);
+                      macroContext.varTypesInScope.set(name, fieldType);
+
+                      var expr = generatePatternMatch(annaLang, value, macros.haxeToExpr('lang.UserDefinedType.get(value, ${macroTools.getAtom(name)})'));
+                      individualMatches.push(expr);
+                    case _:
+                      throw new ParsingException('AnnaLang: expected custom type declaration values, got ${printer.printExpr(params[0])}');
+                  }
+                case _:
+                  throw new ParsingException('AnnaLang: expected custom type declaration values, got ${printer.printExpr(params[0])}');
               }
-              var expr = generatePatternMatch(annaLang, field.expr, macros.haxeToExpr('lang.UserDefinedType.get(value, ${macroTools.getAtom(field.field)})'));
-              individualMatches.push(expr);
             }
           case _:
             throw new ParsingException('AnnaLang: expected custom type declaration values, got ${printer.printExpr(params[0])}');
