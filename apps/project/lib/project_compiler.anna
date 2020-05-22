@@ -28,7 +28,7 @@ defmodule(ProjectCompiler, {
 
     config = get_config(project_dir);
     handle_config(project_dir, config);
-    [@_'ok', config];
+    //[@_'ok', config];
   });
 
   @def ports_dir({String: project_dir}, [String], {
@@ -45,7 +45,7 @@ defmodule(ProjectCompiler, {
   @def get_config({String: project_dir}, [Tuple], {
     config_path = Str.concat(project_dir, CONFIG_FILE);
     [@_'ok', content] = File.get_content(config_path);
-    JSON.parse(content);
+    JSON.parse(cast(content, String));
   });
 
   @def handle_config({String: project_root, Tuple: [@_'ok', [
@@ -102,7 +102,7 @@ defmodule(ProjectCompiler, {
 
             [@_'ok', module_name, module_type] = @native util.AST.getModuleInfo(content);
 
-            content = Str.concat(HAXE_BUILD_MACRO_START, content);
+            content = Str.concat(HAXE_BUILD_MACRO_START, cast(content, String));
             content = Str.concat(content, HAXE_BUILD_MACRO_END);
 
             // todo: figure out why this fields are nil after they're added to the list
@@ -165,7 +165,7 @@ defmodule(ProjectCompiler, {
     template_file = Str.concat(project_root, template_file);
     File.save_content(template_file, cast(result, String));
 
-//    status = @native util.Compiler.compileProject(project_root);
-    [@_'ok', filename, status];
+    status = @native util.Compiler.compileProject(project_root);
+    [@_'ok', app_name, status];
   });
 })

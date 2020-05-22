@@ -184,6 +184,9 @@ class Lang {
     } catch(e: FunctionClauseNotFound) {
       trace(e);
       return Tuple.create(['error'.atom(), 'FunctionClauseNotFound: ${e}']);
+    } catch(e: lang.MissingApiFunctionException) {
+      trace(e.message);
+      return Tuple.create(['error'.atom(), 'MissingApiFunction: ${e.message}']);
     } catch(e: Dynamic) {
       trace("call stack:", CallStack.callStack().join('\n'));
       trace("exception stack:", CallStack.exceptionStack().join('\n'));

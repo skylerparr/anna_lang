@@ -41,8 +41,8 @@ class MMap implements CustomType {
     return (cast map)._put(key, value);
   }
 
-  public static function remove(map: MMap, key: Any): Any {
-    return (cast map)._remove(key, key);
+  public static function remove(map: MMap, key: Any): MMap {
+    return (cast map)._remove(key);
   }
 
   public static function hasKey(map: MMap, key: Any): Atom {

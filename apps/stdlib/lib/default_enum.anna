@@ -68,9 +68,14 @@ defmodule(DefaultEnum, {
   });
 
   @def each({LList: {head | rest;}, Function: callback}, [Atom], {
-    callback(cast(head, LList));
+    callback(cast(head, Dynamic));
     each(cast(rest, LList), callback);
   });
 
+  @def each({MMap: map, Function: callback}, [Atom], {
+    keys = @native MMap.keys(map);
+    each(keys, callback);
+    @_'ok';
+  });
   //==========================================================
 })
