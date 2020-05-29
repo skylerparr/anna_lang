@@ -23,6 +23,10 @@ class AnonFn implements Function {
       var resolvedTypes = VarTypesInScope.resolveTypes(arg);
       types.push(resolvedTypes);
     }
+    for(argTypes in types) {
+      argTypes.remove("Dynamic");
+      argTypes.push("Dynamic");
+    }
     var perms: Array<Array<String>> = [];
     Helpers.generatePermutations(types, perms, 0, []);
     for(typeArgs in perms) {

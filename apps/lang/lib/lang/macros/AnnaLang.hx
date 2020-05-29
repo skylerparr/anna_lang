@@ -697,7 +697,6 @@ class AnnaLang {
               var body: Expr = params.shift();
               var moduleName: String = macroTools.getIdent(name);
               defCls(name, body);
-              //compileModule(macroContext.currentModuleDef.moduleName, macroContext.currentModuleDef);
               runtimeDef.defineRuntimeModule(macroContext, macroTools);
             case ECall({ expr: EConst(CIdent('defapi'))}, params):
               defApi(params[0], params[1]);
@@ -705,7 +704,6 @@ class AnnaLang {
               setIface(params[0], params[1]);
             case ECall({ expr: EConst(CIdent('deftype'))}, params):
               defType(params[0], params[1]);
-              //compileModule(macroContext.currentModuleDef.moduleName, macroContext.currentModuleDef);
               runtimeDef.defineRuntimeModule(macroContext, macroTools);
             #end
             case ECall({ expr: EField({ expr: EConst(CIdent(moduleName))}, funName) }, params):

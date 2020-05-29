@@ -13,7 +13,9 @@ import haxe.macro.Expr;
 import hscript.Macro;
 import vm.Port;
 import vm.PortMan;
-using lang.AtomSupport;
+import Tuple.TupleInstance;
+import haxe.CallStack;
+import haxe.rtti.CType.Classdef;
 class Lang {
 
   public static var definedModules: Map<String, Dynamic> = {
@@ -111,15 +113,15 @@ class Lang {
       ast = annaLang.parser.parseString(string);
     } catch(pe: ParsingException) {
       trace(pe.message);
-      return Tuple.create(['error'.atom(), '${pe.message}']);
+      return Tuple.create([Atom.create('error'), '${pe.message}']);
     } catch(e: Dynamic) {
       if(StringTools.endsWith(e, '"<eof>"')) {
-        return Tuple.create(['ok'.atom(), 'continuation'.atom()]);
+        return Tuple.create([Atom.create('ok'), Atom.create('continuation')]);
       } else if(StringTools.endsWith(e, 'Unterminated string')) {
-        return Tuple.create(['ok'.atom(), 'continuation'.atom()]);
+        return Tuple.create([Atom.create('ok'), Atom.create('continuation')]);
       } else {
         trace(e);
-        return Tuple.create(['error'.atom(), '${e}']);
+        return Tuple.create([Atom.create('error'), '${e}']);
       }
     }
 
@@ -127,10 +129,10 @@ class Lang {
       var pos = { max: ast.pmax, min: ast.pmin, file: 'none:${ast.line}' };
       ast = new Macro(pos).convert(ast);
     } catch(e: Dynamic) {
-      return Tuple.create(['error'.atom(), '${e}']);
+      return Tuple.create([Atom.create('error'), '${e}']);
     }
     evals.push({ast: ast, isList: isList});
-    return Tuple.create(['ok'.atom(), ast]);
+    return Tuple.create([Atom.create('ok'), ast]);
   }
 
   public static inline function eval(string:String):Tuple {
@@ -138,7 +140,7 @@ class Lang {
     var lang: Lang = transactionMap.get(ref);
 
     var result: Tuple = lang.doEval(string);
-    if(Tuple.elem(result, 0) == 'ok'.atom() && Tuple.elem(result, 1) != 'continuation'.atom()) {
+    if(Tuple.elem(result, 0) == Atom.create('ok') && Tuple.elem(result, 1) != Atom.create('continuation')) {
       return commit(ref);
     } else {
       return result;
@@ -147,7 +149,7 @@ class Lang {
 
   public static inline function disposeTransaction(ref: Reference): Tuple {
     transactionMap.remove(ref);
-    return Tuple.create(['ok'.atom(), 'disposed']); 
+    return Tuple.create([Atom.create('ok'), 'disposed']); 
   }
 
   public static inline function read(ref: Reference, string: String): Tuple {
@@ -165,7 +167,7 @@ class Lang {
   public static inline function commit(ref: Reference): Tuple {
     var lang: Lang = transactionMap.get(ref);
     if(lang == null) {
-      return Tuple.create(['error'.atom(), 'transaction not found']);
+      return Tuple.create([Atom.create('error'), 'transaction not found']);
     }
     return lang.doCommit();
   }
@@ -177,21 +179,21 @@ class Lang {
       }
       annaLang.commit();
       disposeTransaction(ref);
-      return Tuple.create(['ok'.atom(), 'success']);
+      return Tuple.create([Atom.create('ok'), 'success']);
     } catch(e: ParsingException) {
       trace(e);
-      return Tuple.create(['error'.atom(), '${e}']);
+      return Tuple.create([Atom.create('error'), '${e}']);
     } catch(e: FunctionClauseNotFound) {
       trace(e);
-      return Tuple.create(['error'.atom(), 'FunctionClauseNotFound: ${e}']);
+      return Tuple.create([Atom.create('error'), 'FunctionClauseNotFound: ${e}']);
     } catch(e: lang.MissingApiFunctionException) {
       trace(e.message);
-      return Tuple.create(['error'.atom(), 'MissingApiFunction: ${e.message}']);
+      return Tuple.create([Atom.create('error'), 'MissingApiFunction: ${e.message}']);
     } catch(e: Dynamic) {
       trace("call stack:", CallStack.callStack().join('\n'));
       trace("exception stack:", CallStack.exceptionStack().join('\n'));
       trace("TODO: Handle this exception");
-      return Tuple.create(['error'.atom(), '${e}']);
+      return Tuple.create([Atom.create('error'), '${e}']);
     }
   }
 
@@ -207,9 +209,9 @@ class Lang {
       var pos = { max: ast.pmax, min: ast.pmin, file: ':${ast.line}' };
       ast = new Macro(pos).convert(ast);
     } catch(pe: ParsingException) {
-      return Tuple.create(['error'.atom(), '${pe.message}']);
+      return Tuple.create([Atom.create('error'), '${pe.message}']);
     } catch(e: Dynamic) {
-      return Tuple.create(['error'.atom(), '${e}']);
+      return Tuple.create([Atom.create('error'), '${e}']);
     }
     var formatted: String = printer.printExpr(ast);
     formatted = StringTools.replace(formatted, "\"", "'");
@@ -249,7 +251,7 @@ class Lang {
         var expr = annaLang.macroTools.buildBlock([ast]);
         invokeBlock(expr);
     }
-    return 'ok'.atom();
+    return Atom.create('ok');
   }
 
   public static function getHaxeInterp(): Interp {
@@ -297,4 +299,5 @@ class Lang {
     }
     Process.apply(Process.self(), operations);
   }
+
 }

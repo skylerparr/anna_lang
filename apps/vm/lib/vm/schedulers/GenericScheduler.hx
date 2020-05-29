@@ -300,7 +300,8 @@ class GenericScheduler implements Scheduler {
     args.push(scopeVariables);
     var operations: Array<Operation> = fn.invoke(args);
     if(operations == null) {
-      IO.inspect('Empty function body for ${Anna.toAnnaString(fn)}');
+      args.pop(); // remove the scope 
+      IO.inspect('RuntimeException: No matching function for ${Anna.toAnnaString(fn)} args: ${Anna.toAnnaString(args)}, scope: ${Anna.toAnnaString(scopeVariables)}');
       NativeKernel.crash(Process.self());
       return;
     }

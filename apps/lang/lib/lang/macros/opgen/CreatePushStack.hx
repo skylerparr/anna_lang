@@ -73,6 +73,10 @@ class CreatePushStack {
       }
     }
 
+    for(typeArgs in types) {
+      typeArgs.remove("Dynamic");
+      typeArgs.push("Dynamic");
+    }
     var perms: Array<Array<String>> = [];
     Helpers.generatePermutations(types, perms, 0, []);
 

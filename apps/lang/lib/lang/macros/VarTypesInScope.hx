@@ -69,6 +69,8 @@ class VarTypesInScope {
         retVal.push('Tuple');
       case TClass(AnnaMap_Any_Any):
         retVal.push('MMap');
+      case TClass(vm.AnonFn):
+        retVal.push('vm.Function');
       case TClass(cls):
         if(haxe.rtti.Rtti.hasRtti(cls)) {
           var clsDef: Classdef = haxe.rtti.Rtti.getRtti(cls);

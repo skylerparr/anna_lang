@@ -10,6 +10,12 @@ class Helpers {
         "Number";
       case null:
         getAlias(macroContext.lastFunctionReturnType, macroContext);
+      case "AnnaList_Any":
+        "LList";
+      case "vm.Function" | "vm.AnonFn" | "vm_Function" | "vm_AnonFn":
+        "vm.Function";
+      case "AnnaMap_Any_Any":
+        "MMap";
       case _:
         type;
     }

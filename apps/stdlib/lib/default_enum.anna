@@ -56,7 +56,7 @@ defmodule(DefaultEnum, {
   });
 
   @def reduce({LList: {head | rest;}, LList: acc, Function: callback}, [LList], {
-    result = callback(cast(head, LList), acc);
+    result = callback(cast(head, Dynamic), acc);
     reduce(cast(rest, LList), acc, callback);
   });
   //==========================================================
@@ -76,6 +76,25 @@ defmodule(DefaultEnum, {
     keys = @native MMap.keys(map);
     each(keys, callback);
     @_'ok';
+  });
+  //==========================================================
+
+  // filter
+  // ---------------------------------------------------------
+  @def filter({LList: list, Function: callback}, [LList], {
+    reduce(list, {}, @fn {
+      [{Dynamic: item, LList: acc}] => {
+        result = callback(item);
+        Kernel.case(result, @fn {
+          [{Atom: @_'true'}] => {
+            @native LList.push(acc, item);
+          };
+          [{Atom: _}] => {
+            acc;
+          };
+        });
+      };
+    });
   });
   //==========================================================
 })
