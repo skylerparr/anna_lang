@@ -59,6 +59,15 @@ defmodule(DefaultEnum, {
     result = callback(cast(head, Dynamic), acc);
     reduce(cast(rest, LList), acc, callback);
   });
+
+  @def reduce({LList: {}, Tuple: acc, Function: _}, [LList], {
+    acc;
+  });
+
+  @def reduce({LList: {head | rest;}, Tuple: acc, Function: callback}, [LList], {
+    result = callback(cast(head, Dynamic), acc);
+    reduce(cast(rest, LList), acc, callback);
+  });
   //==========================================================
 
   // each
@@ -85,7 +94,7 @@ defmodule(DefaultEnum, {
     reduce(list, {}, @fn {
       [{Dynamic: item, LList: acc}] => {
         result = callback(item);
-        Kernel.case(result, @fn {
+        Kernel.cond(result, @fn {
           [{Atom: @_'true'}] => {
             @native LList.push(acc, item);
           };

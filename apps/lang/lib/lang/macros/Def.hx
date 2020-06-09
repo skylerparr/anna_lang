@@ -23,7 +23,9 @@ class Def {
     for(argType in funArgsTypes) {
       if(!argType.isPatternVar) {
         var argTypeStr: String = argType.type;
+        #if !macro
         argTypeStr = Helpers.getCustomType(argTypeStr, macroContext);
+        #end
         var strType: String = macroTools.resolveType(annaLang.macros.haxeToExpr(argTypeStr));
         strType = r.replace(strType, '');
         var origTypeStr: String = '';

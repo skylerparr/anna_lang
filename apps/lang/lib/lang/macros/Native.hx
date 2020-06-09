@@ -45,6 +45,16 @@ class Native {
     var currentModuleStr: String = currentModule.name;
 
     var invokeClass: TypeDefinition = createOperationClass(annaLang, moduleName, invokeFunName, strArgs);
+    
+    var moduleDef: ModuleDef = new ModuleDef(invokeClass.name);
+    moduleDef.extend = "vm.AbstractInvokeFunction";
+    macroContext.compiledModules.set(moduleDef.moduleName, moduleDef);
+    var codeString: String = "";
+    for(field in invokeClass.fields) {
+      codeString += printer.printField(field) + ";";
+    }
+    moduleDef.codeString = codeString;
+    moduleDef.pack = 'vm';
 
     var haxeString = '${funName}.push(new vm.${invokeClass.name}(${moduleName}.${invokeFunName}, ${macroTools.getList(strArgs)}, "${moduleName}", "${invokeFunName}",
       ${macroTools.getAtom(currentModuleStr)}, ${macroTools.getAtom(macroContext.currentFunction)}, ${macroTools.getLineNumber(params)}, Code.annaLang))';

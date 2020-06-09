@@ -23,7 +23,7 @@ defmodule(StateServer, {
         [@_'error', @_'already_started', pid];
       };
     }
-    Kernel.case(reg_pid, fun);
+    Kernel.cond(reg_pid, fun);
   });
 
   @def start_link({Atom: module, Dynamic: state}, [Tuple], {
@@ -51,7 +51,7 @@ defmodule(StateServer, {
         [@_'ok', 'killed'];
       };
     }
-    Kernel.case(pid, fun);
+    Kernel.cond(pid, fun);
   });
 
   @def init({Atom: module, Dynamic: state}, [Atom], {

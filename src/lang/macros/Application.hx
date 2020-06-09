@@ -41,15 +41,8 @@ class Application {
     }
 
     var haxeLibs: Expr = macros.haxeToExpr('["hscript-plus", "sepia"${haxelibsStr}]');
-    var includeClasses: Array<String> = [];
-    #if !scriptable
-    includeClasses = getClassesToInclude(appDir(appName + '/lib/'));
-    includeClasses = includeClasses.concat(getClassesToInclude(appDir(appName + '/test/')));
-    #end
 
-    var includeExpr: Expr = macros.haxeToExpr('${includeClasses.join(';')}');
     return macro {
-      $e{includeExpr}
       var appRoot: String = Native.callStaticField("core.PathSettings", "applicationBasePath");
       new project.AnnaLangProject(appRoot, $e{appNameExpr}, $e{autoStart}, $e{appsExpr}, [], $e{haxeLibs});
     }
@@ -67,7 +60,7 @@ class Application {
   }
 
   private static function appDir(appName: String): String {
-    return '${annaLangHome()}/${APP_DIR}${appName}';
+    return '${APP_DIR}${appName}';
   }
 
   private static function fetchAppConfigByName(appName: String): Dynamic {

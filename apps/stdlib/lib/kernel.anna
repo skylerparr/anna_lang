@@ -186,39 +186,39 @@ defmodule(Kernel, {
     @native Process.isAlive(pid);
   });
 
-  @def case({Atom: input, Function: handler}, [Dynamic], {
+  @def cond({Atom: input, Function: handler}, [Dynamic], {
     handler(input);
   });
 
-  @def case({Int: input, Function: handler}, [Dynamic], {
+  @def cond({Int: input, Function: handler}, [Dynamic], {
     handler(input);
   });
 
-  @def case({Float: input, Function: handler}, [Dynamic], {
+  @def cond({Float: input, Function: handler}, [Dynamic], {
     handler(input);
   });
 
-  @def case({String: input, Function: handler}, [Dynamic], {
+  @def cond({String: input, Function: handler}, [Dynamic], {
     handler(input);
   });
 
-  @def case({Tuple: input, Function: handler}, [Dynamic], {
+  @def cond({Tuple: input, Function: handler}, [Dynamic], {
     handler(input);
   });
 
-  @def case({LList: input, Function: handler}, [Dynamic], {
+  @def cond({LList: input, Function: handler}, [Dynamic], {
     handler(input);
   });
 
-  @def case({MMap: input, Function: handler}, [Dynamic], {
+  @def cond({MMap: input, Function: handler}, [Dynamic], {
     handler(input);
   });
 
-  @def case({Pid: input, Function: handler}, [Dynamic], {
+  @def cond({Pid: input, Function: handler}, [Dynamic], {
     handler(input);
   });
 
-  @def case({Dynamic: input, Function: handler}, [Dynamic], {
+  @def cond({Dynamic: input, Function: handler}, [Dynamic], {
     handler(input);
   });
 

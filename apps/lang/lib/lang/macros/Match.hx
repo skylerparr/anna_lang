@@ -57,7 +57,17 @@ class Match {
       var className: String = '___${_id++}';
       cls.name = className;
       cls.pack = ["vm"];
-      MacroLogger.printFields(cls.fields);
+
+      var moduleDef: ModuleDef = new ModuleDef(cls.name);
+      moduleDef.extend = "vm.AbstractMatch";
+      macroContext.compiledModules.set(moduleDef.moduleName, moduleDef);
+      var codeString: String = "";
+      for(field in cls.fields) {
+        codeString += printer.printField(field) + ";";
+      }
+      moduleDef.codeString = codeString;
+      moduleDef.pack = "vm";
+
 
       macroContext.defineType(cls);
 

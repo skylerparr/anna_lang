@@ -48,6 +48,10 @@ class LList implements CustomType {
     return (cast list)._remove(item);
   }
 
+  public static function join(list: LList, list2: LList): LList {
+    return (cast list)._join(list2);
+  }
+
   public var head(get, never): Any;
   public var tail(get, never): Any;
 
@@ -210,6 +214,17 @@ class AnnaList<T> extends LList {
       prev = l;
       l = l.next;
     }
+    return this;
+  }
+
+  public function _join(list: AnnaList<T>): LList {
+    if(q != null) {
+      q.next = list.h;
+    } else {
+      h = list.h;
+    }
+    q = list.q;
+    _annaString = null;
     return this;
   }
 

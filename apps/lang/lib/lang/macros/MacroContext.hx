@@ -60,6 +60,7 @@ class MacroContext {
   public var associatedInterfaces: Map<String, String> = new Map<String, String>();
   public var declaredClasses: Map<String, ModuleDef> = new Map<String, ModuleDef>();
   public var declaredInterfaces: Map<String, ModuleDef> = new Map<String, ModuleDef>();
+  public var compiledModules: Map<String, ModuleDef> = new Map<String, ModuleDef>();
 
   @:isVar
   public var currentModuleDef(get, set):ModuleDef;

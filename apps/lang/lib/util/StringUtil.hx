@@ -168,7 +168,7 @@ class StringUtil {
     return string;
   }
 
-  public static inline function intToString(i: Int): String {
+  public static inline function intToString(i: Null<Int>): String {
     return i + "";
   }
 }

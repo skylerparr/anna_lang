@@ -329,23 +329,23 @@ class NativeKernel {
     return val == null;
   }
 
-  public static inline function add(left: Float, right: Float): Float {
+  public static inline function add(left: Null<Float>, right: Null<Float>): Float {
     return left + right;
   }
 
-  public static inline function subtract(left: Float, right: Float): Float {
+  public static inline function subtract(left: Null<Float>, right: Null<Float>): Float {
     return left - right;
   }
 
-  public static inline function mult(left: Float, right: Float): Float {
+  public static inline function mult(left: Null<Float>, right: Null<Float>): Float {
     return left * right;
   }
 
-  public static inline function div(left: Float, right: Float): Float {
+  public static inline function div(left: Null<Float>, right: Null<Float>): Float {
     return left / right;
   }
 
-  public static inline function greaterThan(left: Float, right: Float): Atom {
+  public static inline function greaterThan(left: Null<Float>, right: Null<Float>): Atom {
     if(left > right) {
       return Atom.create('true');
     } else {
@@ -353,7 +353,7 @@ class NativeKernel {
     }
   }
 
-  public static inline function greaterThanOrEqual(left: Float, right: Float): Atom {
+  public static inline function greaterThanOrEqual(left: Null<Float>, right: Null<Float>): Atom {
     if(left >= right) {
       return Atom.create('true');
     } else {
@@ -361,7 +361,7 @@ class NativeKernel {
     }
   }
 
-  public static inline function lessThan(left: Float, right: Float): Atom {
+  public static inline function lessThan(left: Null<Float>, right: Null<Float>): Atom {
     if(left < right) {
       return Atom.create('true');
     } else {
@@ -369,7 +369,7 @@ class NativeKernel {
     }
   }
  
-  public static inline function lessThanOrEqual(left: Float, right: Float): Atom {
+  public static inline function lessThanOrEqual(left: Null<Float>, right: Null<Float>): Atom {
     if(left <= right) {
       return Atom.create('true');
     } else {
@@ -377,7 +377,7 @@ class NativeKernel {
     }
   }
    
-  public static inline function mod(left: Float, right: Float): Float {
+  public static inline function mod(left: Null<Float>, right: Null<Float>): Float {
     return left % right;
   }
 

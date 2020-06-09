@@ -65,6 +65,8 @@ class CreatePushStack {
             var type: String = Helpers.getType(typeForVar, macroContext);
             type = StringTools.replace(type, '.', '_');
             type = Helpers.getAlias(type, macroContext);
+            possibleTypes.remove(Helpers.getCustomType(type, macroContext)) ;
+            possibleTypes.push(Helpers.getCustomType(type, macroContext)) ;
             possibleTypes.remove(type);
             possibleTypes.push(type);
           }

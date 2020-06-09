@@ -6,4 +6,4 @@ deftype(IAState, {
   var position: Int = 0;
   var prompt_type: Atom = @_'basic';
 
-});
+})

@@ -16,6 +16,7 @@ defmodule(ProjectCompiler, {
   @const PORTS_DIR = 'ports/';
 
   @const STDLIB_DIR = 'apps/';
+  @const APPS_DIR = 'apps/';
 
   @def build_project({String: project_dir}, [Tuple], {
     project_dir = Str.concat(project_dir, '/');
@@ -28,7 +29,6 @@ defmodule(ProjectCompiler, {
 
     config = get_config(project_dir);
     handle_config(project_dir, config);
-    //[@_'ok', config];
   });
 
   @def ports_dir({String: project_dir}, [String], {
@@ -52,9 +52,30 @@ defmodule(ProjectCompiler, {
       'application' => app_name,
       'libs' => libs
   ]]}, [Tuple], {
-    lib_dir = Str.concat(project_root, LIB_DIR);
-    [@_'ok', files] = get_app_source_files(lib_dir);
+    [@_'ok', files] = get_app_source_files(project_root);
     [@_'ok', files] = gather_lib_files(project_root, cast(files, LList), cast(libs, LList));
+    
+    [types, others] = EEnum.reduce(cast(files, LList), [{}, {}], @fn {
+      [{MMap: src = ['module_type' => 'type'], Tuple: [types, others]}] => {
+        types = @native LList.push(types, src);
+        [types, others];
+      };
+      [{MMap: src, Tuple: [types, others]}] => {
+        others = @native LList.push(others, src);
+        [types, others];
+      };
+    });
+
+    files = @native LList.join(types, others);
+
+    /*
+    EEnum.each(cast(files, LList), @fn {
+      [{MMap: src}] => {
+        module_type = @native MMap.get(src, 'module_type');
+        @native IO.inspect(module_type);
+      };
+    });
+    */
     generate_template(project_root, cast(files, LList));
     //copy_ports() //todo:
     compile_app(project_root, cast(app_name, String));
@@ -66,11 +87,45 @@ defmodule(ProjectCompiler, {
     error;
   });
 
-  @def get_app_source_files({String: dir}, [Tuple], {
-    System.println(dir);
-    [@_'ok', files] = File.ls(dir);
-    result = gather_source_files(dir, {}, cast(files, LList));
-    [@_'ok', result];
+  @def get_app_source_files({String: project_root}, [Tuple], {
+    apps = Str.concat(project_root, APPS_DIR);
+    [@_'ok', dirs] = File.ls(apps);
+    [@_'ok', files] = gather_each_app_source_files(apps, cast(dirs, LList));
+    [@_'ok', files];
+  });
+
+  @def gather_each_app_source_files({String: apps_dir, LList: apps}, [Tuple], {
+    files = EEnum.reduce(apps, {}, @fn {
+      [{String: app, LList: acc}] => {
+        app_dir = Str.concat(apps_dir, app);
+        app_lib_dir = Str.concat(app_dir, '/');
+        app_lib_dir = Str.concat(app_lib_dir, LIB_DIR);
+
+        [@_'ok', files] = File.ls(app_lib_dir);
+
+        filtered = EEnum.reduce(cast(files, LList), {}, @fn {
+          [{String: filename, LList: acc}] => {
+            Kernel.cond(Str.ends_with(filename, '.anna'), @fn {
+              [{Atom: @_'true'}] => {
+                filename = Str.concat(app_lib_dir, filename);
+                src = build_src_file(filename);
+                @native LList.push(acc, src);
+              };
+              [{Atom: @_'false'}] => {
+                acc;
+              };
+            });
+          };
+          [{String: _, LList: acc}] => {
+            acc;
+          };
+        });
+
+        @native LList.join(acc, filtered);
+      };
+    });
+
+    [@_'ok', files];
   });
 
   @def gather_lib_files({String: project_root, LList: acc_files, LList: libs}, [Tuple], {
@@ -91,6 +146,20 @@ defmodule(ProjectCompiler, {
       };
     });
     [@_'ok', acc_files];
+  });
+
+  @def build_src_file({String: filename}, [Tuple], {
+    [@_'ok', content] = File.get_content(filename);
+
+    [@_'ok', module_name, module_type] = @native util.AST.getModuleInfo(content);
+
+    content = Str.concat(HAXE_BUILD_MACRO_START, cast(content, String));
+    content = Str.concat(content, HAXE_BUILD_MACRO_END);
+
+    // todo: figure out why this fields are nil after they're added to the list
+    // src_file = SourceFile%{source_code: content, module_name: module_name, module_type: module_type};
+    src_file = ['source_code' => content, 'module_name' => module_name, 'module_type' => module_type];
+ 
   });
 
   @def gather_source_files({String: dir, LList: acc_files, LList: paths_to_load}, [LList], {

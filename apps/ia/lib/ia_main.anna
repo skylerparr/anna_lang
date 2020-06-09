@@ -64,7 +64,7 @@ defmodule(IAMain, {
   });
 
   @def read_input({Port: port}, [Int], {
-    @native PortMan.send(port, null);
+    @native PortMan.send(port, @_'nil');
     Kernel.receive(@fn {
       [{Tuple: [@_'ok', input]}] => {
         input;
@@ -166,7 +166,7 @@ defmodule(IAMain, {
     current_string = state.current_string;
 
     is_eq = Kernel.equal(position, 0);
-    Kernel.case(is_eq, @fn {
+    Kernel.cond(is_eq, @fn {
       [{Atom: @_'true'}] => {
         state;
       };
@@ -275,7 +275,7 @@ defmodule(IAMain, {
   @def ensure_bounds({Int: pos, String: current_string}, [Int], {
     str_len = Str.length(current_string);
     is_gte = Kernel.gte(pos, str_len);
-    Kernel.case(is_gte, @fn {
+    Kernel.cond(is_gte, @fn {
       [{Atom: @_'true'}] => {
         str_len;
       };

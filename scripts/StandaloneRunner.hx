@@ -7,14 +7,13 @@ using StringTools;
 using haxe.EnumTools;
 using haxe.EnumTools.EnumValueTools;
 
-@:build(lang.macros.ValueClassImpl.build())
 class StandaloneRunner {
   public function new() {
   }
 
   public static function start(pc: ProjectConfig): Atom {
     #if !scriptable
-    var annaProject: AnnaLangProject = Application.getProjectConfig('compiler'.atom());
+    var annaProject: AnnaLangProject = Application.getProjectConfig('my_app'.atom());
     vm.NativeKernel.setProject(pc);
     Code.defineCode();
     vm.NativeKernel.start();
