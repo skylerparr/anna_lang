@@ -1,0 +1,40 @@
+defmodule(KVS, {
+  @alias vm.KVSApi;
+  @alias vm.Reference;
+
+  @def create({Atom: type}, [Tuple], {
+    @native KVSApi.create(type);
+  });
+
+  @def destroy({Reference: ref}, [Atom], {
+    @native KVSApi.destroy(ref);
+  });
+
+  @def store({Reference: ref, String: key, Dynamic: value}, [Atom], {
+    @native KVSApi.store(ref, key, value);
+  });
+
+  @def fetch({Reference: ref, String: key}, [Tuple], {
+    @native KVSApi.fetch(ref, key);
+  });
+
+  @def delete({Reference: ref, String: key}, [Atom], {
+    @native KVSApi.delete(ref, key);
+  });
+
+  @def clear({Reference: ref}, [Atom], {
+    @native KVSApi.clear(ref);
+  });
+
+  @def get_and_update({Reference: ref, String: key, Dynamic: value}, [Tuple], {
+    @native KVSApi.getAndUpdate(ref, key, value);
+  });
+
+  @def get_and_remove({Reference: ref, String: key}, [Tuple], {
+    @native KVSApi.getAndRemove(ref, key);
+  });
+
+  @def exists({Reference: ref, String: key}, [Atom], {
+    @native KVSApi.exists(ref, key);
+  });
+})

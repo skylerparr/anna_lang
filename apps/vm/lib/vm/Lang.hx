@@ -57,6 +57,7 @@ class Lang {
       DeclareAnonFunction: vm.DeclareAnonFunction,
       AnonymousFunction: vm.AnonymousFunction,
       PortMan: vm.PortMan,
+      KVSApi: vm.KVSApi,
     });
     definedModules.set("lang", {
       EitherSupport: lang.EitherSupport,
@@ -193,6 +194,7 @@ class Lang {
       trace("call stack:", CallStack.callStack().join('\n'));
       trace("exception stack:", CallStack.exceptionStack().join('\n'));
       trace("TODO: Handle this exception");
+      trace(e);
       return Tuple.create([Atom.create('error'), '${e}']);
     }
   }
