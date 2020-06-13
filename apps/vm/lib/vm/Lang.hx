@@ -114,15 +114,14 @@ class Lang {
       ast = annaLang.parser.parseString(string);
     } catch(pe: ParsingException) {
       trace(pe.message);
-      return Tuple.create([Atom.create('error'), '${pe.message}']);
+      return Tuple.create([Atom.create('execution_error'), '${pe.message}']);
     } catch(e: Dynamic) {
       if(StringTools.endsWith(e, '"<eof>"')) {
         return Tuple.create([Atom.create('ok'), Atom.create('continuation')]);
       } else if(StringTools.endsWith(e, 'Unterminated string')) {
         return Tuple.create([Atom.create('ok'), Atom.create('continuation')]);
       } else {
-        trace(e);
-        return Tuple.create([Atom.create('error'), '${e}']);
+        return Tuple.create([Atom.create('execution_error'), '${e}']);
       }
     }
 
@@ -130,7 +129,7 @@ class Lang {
       var pos = { max: ast.pmax, min: ast.pmin, file: 'none:${ast.line}' };
       ast = new Macro(pos).convert(ast);
     } catch(e: Dynamic) {
-      return Tuple.create([Atom.create('error'), '${e}']);
+      return Tuple.create([Atom.create('execution_error'), '${e}']);
     }
     evals.push({ast: ast, isList: isList});
     return Tuple.create([Atom.create('ok'), ast]);
@@ -168,7 +167,7 @@ class Lang {
   public static inline function commit(ref: Reference): Tuple {
     var lang: Lang = transactionMap.get(ref);
     if(lang == null) {
-      return Tuple.create([Atom.create('error'), 'transaction not found']);
+      return Tuple.create([Atom.create('exectuion_error'), 'transaction not found']);
     }
     return lang.doCommit();
   }
@@ -183,19 +182,19 @@ class Lang {
       return Tuple.create([Atom.create('ok'), 'success']);
     } catch(e: ParsingException) {
       trace(e);
-      return Tuple.create([Atom.create('error'), '${e}']);
+      return Tuple.create([Atom.create('execution_error'), '${e}']);
     } catch(e: FunctionClauseNotFound) {
       trace(e);
-      return Tuple.create([Atom.create('error'), 'FunctionClauseNotFound: ${e}']);
+      return Tuple.create([Atom.create('execution_error'), 'FunctionClauseNotFound: ${e}']);
     } catch(e: lang.MissingApiFunctionException) {
       trace(e.message);
-      return Tuple.create([Atom.create('error'), 'MissingApiFunction: ${e.message}']);
+      return Tuple.create([Atom.create('execution_error'), 'MissingApiFunction: ${e.message}']);
     } catch(e: Dynamic) {
       trace("call stack:", CallStack.callStack().join('\n'));
       trace("exception stack:", CallStack.exceptionStack().join('\n'));
       trace("TODO: Handle this exception");
       trace(e);
-      return Tuple.create([Atom.create('error'), '${e}']);
+      return Tuple.create([Atom.create('execution_error'), '${e}']);
     }
   }
 
@@ -211,9 +210,9 @@ class Lang {
       var pos = { max: ast.pmax, min: ast.pmin, file: ':${ast.line}' };
       ast = new Macro(pos).convert(ast);
     } catch(pe: ParsingException) {
-      return Tuple.create([Atom.create('error'), '${pe.message}']);
+      return Tuple.create([Atom.create('execution_error'), '${pe.message}']);
     } catch(e: Dynamic) {
-      return Tuple.create([Atom.create('error'), '${e}']);
+      return Tuple.create([Atom.create('execution_error'), '${e}']);
     }
     var formatted: String = printer.printExpr(ast);
     formatted = StringTools.replace(formatted, "\"", "'");

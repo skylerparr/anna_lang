@@ -10,7 +10,8 @@ defmodule(Repl, {
     [@_'ok', @_'continuation'];
   });
 
-  @def handle_result({Dynamic: [@_'error', message]}, [Tuple], {
+  @def handle_result({Dynamic: [@_'execution_error', message]}, [Tuple], {
+    @native IO.inspect(message);
     [@_'error', message];
   });
 
