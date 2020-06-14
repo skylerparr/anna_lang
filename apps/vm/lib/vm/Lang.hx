@@ -167,7 +167,7 @@ class Lang {
   public static inline function commit(ref: Reference): Tuple {
     var lang: Lang = transactionMap.get(ref);
     if(lang == null) {
-      return Tuple.create([Atom.create('exectuion_error'), 'transaction not found']);
+      return Tuple.create([Atom.create('execution_error'), 'transaction not found']);
     }
     return lang.doCommit();
   }

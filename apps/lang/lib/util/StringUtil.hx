@@ -3,6 +3,7 @@ package util;
 class StringUtil {
 
   public static var CAPITALS: EReg = ~/[A-Z]/;
+  public static var SYMBOLS: EReg = ~/[!@#$%^&*()_+-=;,.]/;
   private static inline var CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
   public static inline function capitalizePackage(string: String): String {
@@ -30,6 +31,21 @@ class StringUtil {
       } else {
         retVal += char;
       }
+    }
+    return retVal;
+  }
+  
+  public static inline function toSnakeCase(camelCase: String): String {
+    var retVal: String = "";
+    var prevChar: String = null;
+    for(i in 0...camelCase.length) {
+      var char: String = camelCase.charAt(i);
+      if(CAPITALS.match(char) && prevChar != null && !SYMBOLS.match(prevChar)) {
+        retVal += "_" + char.toLowerCase();
+      } else {
+        retVal += char.toLowerCase();
+      }
+      prevChar = char;
     }
     return retVal;
   }

@@ -12,4 +12,5 @@ interface ModuleFunctionMapping {
   function getModules(): LList;
   function getApiFunctions(moduleName: Atom): LList;
   function getFunctions(moduleName: Atom): LList;
+  function defined(moduleName: Atom): Atom;
 }

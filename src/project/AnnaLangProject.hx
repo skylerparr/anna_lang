@@ -8,9 +8,9 @@ class AnnaLangProject {
   private static inline var TESTS_DIR: String = 'test/';
 
   @:isVar
-  private var appRoot(get, null): String;
+  public var appRoot(get, null): String;
   @:isVar
-  private var application(get, null): Atom;
+  public var application(get, null): Atom;
   @:isVar
   public var autoStart(get, null): String;
   @:isVar
@@ -19,9 +19,9 @@ class AnnaLangProject {
   private var libs(get, null): Array<Atom>;
   @:isVar
   private var haxeLibs(get, null): Array<String>;
-  private var srcDir(get, never): String;
+  public var srcDir(get, never): String;
   private var testsDir(get, never): String;
-  private var projectDir(get, never): String;
+  public var projectDir(get, never): String;
 
   function get_appRoot(): String {
     return appRoot;

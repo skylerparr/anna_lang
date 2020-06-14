@@ -12,6 +12,7 @@ import lang.EitherSupport;
 import vm.Function;
 import vm.schedulers.GenericScheduler;
 import org.hxbert.BERT;
+import project.AnnaLangProject;
 
 using lang.AtomSupport;
 
@@ -25,6 +26,7 @@ class NativeKernel {
   @field public static var msg: Dynamic;
 
   private static var annaLang: AnnaLang;
+  private static var annaLangProject: AnnaLangProject;
 
   public static function start(): Atom {
     if(started) {
@@ -180,6 +182,19 @@ class NativeKernel {
 
   public static function setProject(pc: ProjectConfig): Void {
     projectConfig = pc;
+  }
+
+  public static function setAnnaLangProject(ap: AnnaLangProject): Void {
+    annaLangProject = ap;
+  }
+
+  public static function getAutoStart(): Atom {
+    return annaLangProject.autoStart.atom();
+  }
+  
+  public static function getAutoStartPath(): String {
+    var autoStart: String = util.StringUtil.toSnakeCase(annaLangProject.autoStart); 
+    return '${annaLangProject.srcDir}${autoStart}.anna';
   }
 
   public static function spawn(module: Atom, func: Atom, types: Tuple, args: LList): Pid {

@@ -29,9 +29,12 @@ defmodule(BootMain, {
     pid = self();
     //AppCode.compile('project/apps/local_history/lib/local_history.anna');
     //@native NativeKernel.applyMFA(self(), @_'LocalHistory', @_'start', @tuple[], {});
+    auto_start = @native NativeKernel.getAutoStart();
+    path = @native NativeKernel.getAutoStartPath();
+    AppCode.compile(path);
+    @native NativeKernel.applyMFA(pid, auto_start, @_'start', @tuple[], {});
     //result = AppCode.compile('../../../apps/main/lib/app.anna');
     //@native NativeKernel.applyMFA(pid, @_'App', @_'start', @tuple[], {});
-    @native NativeKernel.applyMFA(pid, @_'IAMain', @_'start', @tuple[], {});
   });
 
   @def self([Pid], {

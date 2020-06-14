@@ -197,4 +197,13 @@ class BasicModuleFunctionMapping implements ModuleFunctionMapping {
     }
     return LList.create(cast retVal);
   }
+
+  public inline function defined(moduleName: Atom): Atom {
+    var funMap: Map<Atom, Atom> = apiFunctions.get(moduleName);
+    if(funMap == null) {
+      return Atom.create("false");
+    } else {
+      return Atom.create("true");
+    }
+  }
 }

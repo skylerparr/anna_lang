@@ -41,6 +41,10 @@ defmodule(Str, {
     @native StringUtil.nameify(str);
   });
 
+  @def snake_case({String: str}, [String], {
+    @native StringUtil.toSnakeCase(str);
+  });
+
   @def ends_with({String: str, String: other_str}, [Atom], {
     @native StringUtil.endsWith(str, other_str);
   });

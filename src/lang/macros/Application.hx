@@ -18,7 +18,6 @@ class Application {
   private static inline var APP_DIR: String = 'apps/';
   private static inline var CONFIG_FILE: String = 'app_config.json';
 
-
   macro public static function getProjectConfig(appAtomName: Expr): Expr {
     var annaLang: AnnaLang = AnnaLang.annaLangForMacro;
     var macros: Macros = annaLang.macros;

@@ -67,4 +67,8 @@ class Classes {
   public static inline function getFunctions(moduleName: Atom): LList {
     return mapping.getFunctions(moduleName);
   }
+
+  public static inline function defined(moduleName: Atom): Atom {
+    return mapping.defined(moduleName);
+  }
 }

@@ -13,11 +13,17 @@ class StandaloneRunner {
 
   public static function start(pc: ProjectConfig): Atom {
     #if !scriptable
-    var annaProject: AnnaLangProject = Application.getProjectConfig('my_app'.atom());
+    //var annaProject: AnnaLangProject = Application.getProjectConfig('my_app'.atom());
+    var annaProject: AnnaLangProject = Application.getProjectConfig('main'.atom());
     vm.NativeKernel.setProject(pc);
+    vm.NativeKernel.setAnnaLangProject(annaProject);
     Code.defineCode();
     vm.NativeKernel.start();
-    vm.NativeKernel.runApplication(annaProject.autoStart);
+    if(vm.Classes.defined("Kernel".atom()) == "false".atom()) {
+      vm.NativeKernel.runApplication("CompilerMain"); 
+    } else {
+      vm.NativeKernel.runApplication(annaProject.autoStart);
+    }
     vm.NativeKernel.run();
     #end
 
