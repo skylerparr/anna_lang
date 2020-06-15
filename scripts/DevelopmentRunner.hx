@@ -34,6 +34,7 @@ class DevelopmentRunner {
     #else
     var annaProject: AnnaLangProject = Application.getProjectConfig('compiler'.atom());
     vm.NativeKernel.setProject(pc);
+    vm.NativeKernel.setAnnaLangProject(annaProject);
     vm.NativeKernel.start();
     vm.NativeKernel.testCompiler();
     vm.NativeKernel.run();

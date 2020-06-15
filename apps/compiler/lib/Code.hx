@@ -2281,6 +2281,10 @@ import CPPCLIInput;
     @native Classes.getFunctions(module);
   });
 
+  @def defined({Atom: module}, [Atom], {
+    @native Classes.defined(module);
+  });
+
   @def compile({String: file_path}, [Tuple], {
     [@_'ok', content] = @native File.getContent(file_path);
     @native Lang.eval(content);
@@ -2330,7 +2334,7 @@ import CPPCLIInput;
 
   @def start([Atom], {
     main = @native StringUtil.concat(AppCode.anna_lang_home(), 'apps/bootstrap/boot_main.anna');
-    AppCode.compile(main);
+    result = AppCode.compile(main);
     @native Lang.eval('BootMain.start()');
     @_'ok';
   });

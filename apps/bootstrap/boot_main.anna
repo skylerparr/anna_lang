@@ -27,14 +27,23 @@ defmodule(BootMain, {
 
   @def start_app({Tuple: _}, [Atom], {
     pid = self();
-    //AppCode.compile('project/apps/local_history/lib/local_history.anna');
-    //@native NativeKernel.applyMFA(self(), @_'LocalHistory', @_'start', @tuple[], {});
     auto_start = @native NativeKernel.getAutoStart();
+    compile_auto_start(auto_start);
+    @native NativeKernel.applyMFA(pid, auto_start, @_'start', @tuple[], {});
+  });
+
+  @def compile_auto_start({Atom: auto_start_module}, [Atom], {
+    defined = AppCode.defined(auto_start_module);
+    compile_if_not_defined(defined, auto_start_module);
+  });
+
+  @def compile_if_not_defined({Atom: @_'false', Atom: auto_start_module}, [Atom], {
     path = @native NativeKernel.getAutoStartPath();
     AppCode.compile(path);
-    @native NativeKernel.applyMFA(pid, auto_start, @_'start', @tuple[], {});
-    //result = AppCode.compile('../../../apps/main/lib/app.anna');
-    //@native NativeKernel.applyMFA(pid, @_'App', @_'start', @tuple[], {});
+  });
+
+  @def compile_if_not_defined({Atom: @_'true', Atom: auto_start_module}, [Atom], {
+    @_'ok';
   });
 
   @def self([Pid], {

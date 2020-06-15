@@ -1,6 +1,6 @@
 {
   "application": "compiler",
-  "autoStart": "CompilerMain",
+  "autoStart": "IAMain",
   "apps": ["vm_api", "vm", "lang"],
   "libs": [],
   "tests": [],

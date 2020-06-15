@@ -1,0 +1,12 @@
+defmodule(DefaultEnumTest, {
+  @alias vm.Lang;
+
+  @def test_should_iterate_list([Atom], {
+    EEnum.each({@_'true'; @_'true'; @_'true';}, @fn {
+      [{Atom: value}] => {
+        Assert.assert(value, @_'true');
+      }
+    });
+  });
+
+})

@@ -30,15 +30,16 @@ defmodule(CommandHandler, {
     History.push('t');
     Kernel.spawn(@fn {
       [{}] => {
-        UnitTests.add_test(@_'StringTest');
-        UnitTests.add_test(@_'NumberTest');
-        UnitTests.add_test(@_'AtomTest');
-        UnitTests.add_test(@_'TupleTest');
-        UnitTests.add_test(@_'LListTest');
-        UnitTests.add_test(@_'MMapTest');
-        UnitTests.add_test(@_'KeywordTest');
-        UnitTests.add_test(@_'ModuleFunctionTest');
-        UnitTests.add_test(@_'CustomTypesTest');
+        UnitTests.add_test(StringTest);
+        UnitTests.add_test(NumberTest);
+        UnitTests.add_test(AtomTest);
+        UnitTests.add_test(TupleTest);
+        UnitTests.add_test(LListTest);
+        UnitTests.add_test(MMapTest);
+        UnitTests.add_test(KeywordTest);
+        UnitTests.add_test(ModuleFunctionTest);
+        UnitTests.add_test(CustomTypesTest);
+        UnitTests.add_test(DefaultEnumTest);
 
         UnitTests.run_tests();
       }
