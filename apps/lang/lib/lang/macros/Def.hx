@@ -24,6 +24,7 @@ class Def {
       if(!argType.isPatternVar) {
         var argTypeStr: String = argType.type;
         #if !macro
+        macroContext.varTypesInScope.set(argType.name, argTypeStr);
         argTypeStr = Helpers.getCustomType(argTypeStr, macroContext);
         #end
         var strType: String = macroTools.resolveType(annaLang.macros.haxeToExpr(argTypeStr));
