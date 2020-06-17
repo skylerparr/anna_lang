@@ -106,4 +106,34 @@ defmodule(DefaultEnum, {
     });
   });
   //==========================================================
+
+  // join 
+  //----------------------------------------------------------
+  @def join({LList: {}, String: _}, [String], {
+    '';
+  });
+
+  @def join({LList: list, String: delimiter}, [String], {
+    do_join(list, delimiter, '');
+  });
+
+  @def do_join({LList: {}, String: _, String: acc}, [String], {
+    acc;
+  });
+
+  @def do_join({LList: {head | tail;}, String: delimiter, String: acc}, [String], {
+    head = cast(head, String);
+    Kernel.cond(cast(tail, LList), @fn {
+      [{LList: {}}] => {
+        acc = Str.concat(acc, head);
+        do_join(cast(tail, LList), delimiter, acc);
+      };
+      [{LList: _}] => {
+        item = Str.concat(head, delimiter);
+        acc = Str.concat(acc, item);
+        do_join(cast(tail, LList), delimiter, acc);
+      };
+    });
+  });
+  //==========================================================
 })

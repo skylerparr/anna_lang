@@ -8,4 +8,5 @@ defapi(EEnum, {
   @def each({LList: list, Function: callback}, [Atom]);
   @def each({MMap: map, Function: callback}, [Atom]);
   @def filter({LList: list, Function: callback}, [LList]);
+  @def join({LList: list, String: char}, [String]);
 })

@@ -100,6 +100,15 @@ class StringUtil {
     return LList.create(cast array);
   }
 
+  public static inline function startsWith(string:String, otherString: String):Atom {
+    var result: Bool = StringTools.startsWith(string, otherString);
+    if(result) {
+      return Atom.create('true');
+    } else {
+      return Atom.create('false');
+    }
+  }
+
   public static inline function endsWith(string:String, starts: String):Atom {
     var result: Bool = StringTools.endsWith(string, starts);
     if(result) {
@@ -186,5 +195,9 @@ class StringUtil {
 
   public static inline function intToString(i: Null<Int>): String {
     return i + "";
+  }
+
+  public static inline function toAtom(string: String): Atom {
+    return Atom.create(string);
   }
 }

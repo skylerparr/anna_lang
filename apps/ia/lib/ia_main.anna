@@ -203,6 +203,18 @@ defmodule(IAMain, {
     handle_arrow_input(input, state);
   });
 
+  // tab
+  @def handle_input({Int: 9, IAState: state}, [IAState], {
+    Kernel.cond(state.current_string, @fn {
+      [{String: ''}] => {
+        state;
+      };
+      [{String: curr_str}] => {
+        tab_complete(state);
+      };
+    });
+  });
+
   // everything else
   @def handle_input({Int: code, IAState: state}, [IAState], {
     current_string = state.current_string;
@@ -318,6 +330,87 @@ defmodule(IAMain, {
       };
       [{Atom: _}] => {
         pos;
+      };
+    });
+  });
+  
+  @def tab_complete({IAState: state}, [IAState], {
+    curr_str = state.current_string;
+
+    frags = Str.split(curr_str, '.');
+    last = @native LList.last(frags);
+    beginning = @native LList.remove(frags, last);  
+
+    Kernel.cond(beginning, @fn {
+      [{LList: {}}] => {
+        //filter module
+        filtered = filter_modules(cast(last, String));
+        len = @native LList.length(filtered);
+        Kernel.cond(len, @fn {
+          [{Int: 1}] => {
+            mod = @native LList.hd(filtered);
+            mod_string = @native Atom.to_s(mod);
+            mod_string = Str.concat(mod_string, '.');
+            state = IAState.set(state, @_'current_string', mod_string);
+            IAState.set(state, @_'position', Str.length(mod_string));
+          };
+          [{Int: _}] => {
+            System.println('');
+            EEnum.each(filtered, @fn {
+              [{Atom: value}] => {
+                @native IO.inspect(value);
+              };
+            });
+            state;
+          };
+        });
+      };
+      [{LList: module}] => {
+        //filter functions
+        str_module = EEnum.join(module, '.');
+        module = Str.to_atom(str_module);
+        filtered = filter_functions(module, cast(last, String));
+        len = @native LList.length(filtered);
+        Kernel.cond(len, @fn {
+          [{Int: 1}] => {
+            fun = @native LList.hd(filtered);
+            fun_string = @native Atom.to_s(fun);
+            str_module = Str.concat(str_module, '.');
+            curr_string = Str.concat(str_module, fun_string);
+            state = IAState.set(state, @_'current_string', curr_string);
+            IAState.set(state, @_'position', Str.length(curr_string));
+          };
+          [{Int: _}] => {
+            System.println('');
+            EEnum.each(filtered, @fn {
+              [{Atom: value}] => {
+                value = @native Atom.to_s(value);
+                System.println(value);
+              };
+            });
+            state;
+          };
+        });
+      };
+    });
+  });
+
+  @def filter_modules({String: string}, [LList], {
+    modules = AppCode.get_modules();
+    EEnum.filter(modules, @fn {
+      [{Atom: module}] => {
+        mod_str = @native Atom.to_s(module);
+        Str.starts_with(mod_str, string);    
+      };
+    });
+  });
+  
+  @def filter_functions({Atom: module, String: string}, [LList], {
+    api_functions = AppCode.get_api(module);
+    EEnum.filter(api_functions, @fn {
+      [{Atom: fun}] => {
+        fun_str = @native Atom.to_s(fun);
+        Str.starts_with(fun_str, string);
       };
     });
   });

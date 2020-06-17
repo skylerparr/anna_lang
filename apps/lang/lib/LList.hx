@@ -40,6 +40,10 @@ class LList implements CustomType {
     return (cast list).getTail();
   }
 
+  public static function last(list: LList): Any {
+    return (cast list).last();
+  }
+
   public static function length(list: LList): Int {
     return (cast list).length;
   }
@@ -117,6 +121,10 @@ class AnnaList<T> extends LList {
       }
     }
     return tl;
+  }
+
+  function last(): T {
+    return _getAt(length - 1);
   }
 
   public var length(default, null): Int;
