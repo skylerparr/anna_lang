@@ -189,6 +189,12 @@ defmodule(IAMain, {
     });
   });
 
+  // delete (up key value)
+  @def handle_input({Int: 126, IAState: state}, [IAState], {
+    // ignore
+    state;
+  });
+
   // arrow keys
   @def handle_input({Int: 27, IAState: state}, [IAState], {
     port = state.port;
@@ -254,6 +260,37 @@ defmodule(IAMain, {
     position = ensure_bounds(position, state.current_string);
 
     IAState.set(state, @_'position', position);
+  });
+
+  // delete
+  @def handle_arrow_input({Int: 51, IAState: state}, [IAState], {
+    position = state.position;
+    current_string = state.current_string;
+
+    is_eq = Kernel.equal(position, Str.length(current_string));
+    Kernel.cond(is_eq, @fn {
+      [{Atom: @_'true'}] => {
+        state;
+      };
+      [{Atom: _}] => {
+        clear_prompt(state);
+
+        pre = Str.substr(current_string, 0, position);
+        
+        len = Str.length(current_string); 
+        pos = Kernel.add(position, 1);
+        post = Str.substr(current_string, pos, len);
+
+        current_string = Str.concat(pre, post);
+
+        state = IAState.set(state, @_'current_string', current_string);
+        IAState.set(state, @_'position', position);
+      };
+    });
+  });
+
+  @def handle_arrow_input({Int: _, IAState: state}, [IAState], {
+    state;
   });
 
   @def clear_prompt({IAState: state}, [IAState], {
