@@ -42,8 +42,7 @@ class Match {
             var matched: Map<String, Dynamic> = $e{patternMatch};
          
             if(NativeKernel.isNull(matched)) {
-              Logger.inspect('BadMatch: ${currentModuleStr}.${macroContext.currentFunction}():${macroTools.getLineNumber(params)} => ${printer.printExpr(params)}');
-              IO.inspect('BadMatch: ${currentModuleStr}.${macroContext.currentFunction}():${macroTools.getLineNumber(params)} => ${printer.printExpr(params)}');
+              IO.inspect('BadMatch: ${currentModuleStr}.${macroContext.currentFunction}():${macroTools.getLineNumber(params)} => ${printer.printExpr(params)} != ' + Anna.toAnnaString(____scopeVariables.get("$$$")));
               vm.NativeKernel.crash(vm.Process.self());
               return;
             }
