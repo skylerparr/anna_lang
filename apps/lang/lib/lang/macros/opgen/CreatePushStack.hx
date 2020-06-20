@@ -110,8 +110,12 @@ class CreatePushStack {
         #if macro
         macroContext.lastFunctionReturnType = funDef[0].funReturnTypes[0];
         #else
-        var returnTypes: String = funDef[0].funReturnTypes;
-        macroContext.lastFunctionReturnType = returnTypes.substr(1, returnTypes.length - 2);
+        if(Std.is(funDef[0].funReturnTypes, Array)) {
+          macroContext.lastFunctionReturnType = funDef[0].funReturnTypes[0];
+        } else {
+          var returnTypes: String = funDef[0].funReturnTypes;
+          macroContext.lastFunctionReturnType = returnTypes.substr(1, returnTypes.length - 2);
+        }
         #end
         var expr = buildPushStackExpr(moduleName, fqFunName, funArgs, currentModuleStr, macroContext.currentFunction, lineNumber, macroTools);
         retVal.push(expr);

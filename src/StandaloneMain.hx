@@ -47,10 +47,10 @@ class StandaloneMain {
     regex.matchSub("", 0, 1);
     Rtti.hasRtti(StandaloneMain);
     Rtti.getRtti(StandaloneMain);
-    FileSystem.createDirectory(".tmp");
-    File.copy(".tmp", ".tmp2");
-    FileSystem.deleteDirectory(".tmp");
-    FileSystem.deleteFile(".tmp2");
+    FileSystem.createDirectory;
+    File.copy;
+    FileSystem.deleteDirectory;
+    FileSystem.deleteFile;
     CallStack.exceptionStack();
     CallStack.callStack();
     Sys.setCwd('.');
