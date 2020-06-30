@@ -14,10 +14,10 @@ using StringTools;
 @:rtti
 class MMap implements CustomType {
 
-  public static function create(vals: Array<Tuple>): MMap {
+  public static function create(vals: Array<Any>): MMap {
     var map: AnnaMap<Any, Any> = new AnnaMap<Any, Any>();
-    var key: Tuple = null;
-    var value: Tuple = null;
+    var key: Any = null;
+    var value: Any = null;
     for(val in vals) {
       if(key == null) {
         key = val;

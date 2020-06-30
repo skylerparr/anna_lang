@@ -2333,6 +2333,7 @@ import CPPCLIInput;
   @alias util.StringUtil;
 
   @def start([Atom], {
+    map = [@_'foo' => 'bar', @_'baz' => 'cat'];
     main = @native StringUtil.concat(AppCode.anna_lang_home(), 'apps/bootstrap/boot_main.anna');
     result = AppCode.compile(main);
     @native Lang.eval('BootMain.start()');

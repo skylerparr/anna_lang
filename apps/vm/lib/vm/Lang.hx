@@ -46,6 +46,8 @@ class Lang {
       File: util.File,
       StringUtil: util.StringUtil,
       Template: util.Template,
+      XMLUtil: util.XMLUtil,
+      ZipUtil: util.ZipUtil,
     });
     definedModules.set("vm", {
       Classes: vm.Classes,
