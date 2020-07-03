@@ -2,21 +2,23 @@ package vm;
 import core.BaseObject;
 import lang.CustomType;
 class Reference implements BaseObject implements CustomType {
-  private var refId: String;
+  private static var nextId: Int;
+
+  private var refId: Int;
 
   public static function create():Reference {
     return new Reference();
   }
 
   public function new() {
-    refId = haxe.crypto.Sha256.encode('${Math.random()}');
+    refId = nextId++;
   }
 
   public function init():Void {
   }
 
   public function dispose():Void {
-    refId = null;
+
   }
 
   public function toAnnaString():String {

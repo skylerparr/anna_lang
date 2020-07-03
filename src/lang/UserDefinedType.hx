@@ -9,6 +9,10 @@ class UserDefinedType extends AbstractCustomType {
   public function new() {
   }
 
+  public static function type(t: UserDefinedType): String {
+    return t.__type;
+  }
+
   public static function create(type: String, arg: Map<Atom, Dynamic>, annaLang: AnnaLang): AbstractCustomType {
     var retVal: UserDefinedType = new UserDefinedType();
     retVal.__annaLang = annaLang;

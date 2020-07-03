@@ -146,6 +146,10 @@ TODO:
 - [ ] create a way to pass a tuple of AST to the compiler and have it generate anna_lang code.
 - [ ] create a way to pass anna_lang haxe AST to convert to anna_lang AST
 
+# BUGS!
+
+- [ ] user defined type not being resolved correct in anonymous functions
+
 # Language features (in progress)
 
 - [x] Modules

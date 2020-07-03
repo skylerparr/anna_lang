@@ -21,9 +21,11 @@ class XMLUtil {
       var children: LList = LList.create([]);
       iterateChildren(e, children);
       mmap = MMap.put(mmap, "__children__", children);
-      var nodeValue = e.firstChild().nodeValue;
-      if(nodeValue != null && StringTools.trim(nodeValue) != "") {
-        mmap = MMap.put(mmap, "__node_value__", nodeValue);
+      if(e.firstChild() != null) {
+        var nodeValue = e.firstChild().nodeValue;
+        if(nodeValue != null && StringTools.trim(nodeValue) != "") {
+          mmap = MMap.put(mmap, "__node_value__", nodeValue);
+        }
       }
       retVal = LList.add(retVal, mmap);
     }
