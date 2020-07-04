@@ -2313,7 +2313,7 @@ import CPPCLIInput;
     handle_compile_result(ref, result, path, cast(files, LList));
   });
 
-  @def handle_compile_result({Reference: _, Tuple: [@_'error', message], String: _, LList: _}, [Tuple], {
+  @def handle_compile_result({Reference: _, Tuple: [@_'execution_error', message], String: _, LList: _}, [Tuple], {
     @native IO.inspect(message);
     [@_'error', message];
   });

@@ -13,6 +13,9 @@ class PatternMatch {
 
     var retVal = macro {
       while(true) {
+        if(scope == null) {
+          break;
+        }
         $e{expr}
         break;
       }
