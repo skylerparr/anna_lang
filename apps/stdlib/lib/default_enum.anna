@@ -68,6 +68,11 @@ defmodule(DefaultEnum, {
     result = callback(cast(head, Dynamic), acc);
     reduce(cast(rest, LList), acc, callback);
   });
+ 
+  @def reduce({LList: {head | rest;}, Dynamic: acc, Function: callback}, [LList], {
+    result = callback(cast(head, Dynamic), acc);
+    reduce(cast(rest, LList), acc, callback);
+  });
   //==========================================================
 
   // each

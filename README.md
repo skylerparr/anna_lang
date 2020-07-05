@@ -149,6 +149,21 @@ TODO:
 # BUGS!
 
 - [ ] user defined type not being resolved correct in anonymous functions
+- [ ] Investigate why this is throwing a runtime exception
+```
+    Kernel.cond(c, @fn {
+      [{Int: -1}] => {
+        '#' => color = color;
+        color = Str.concat('0x', color);
+        Str.string_to_int(color);
+      };
+      [{Int: val}] => {
+        val;
+      };
+    });
+``` 
+Likely it's an issue with the anonymous function pattern matching using a negative
+
 
 # Language features (in progress)
 

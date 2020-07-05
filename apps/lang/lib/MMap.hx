@@ -33,8 +33,17 @@ class MMap implements CustomType {
     return map;
   }
 
-  public static function get(map: MMap, key: Any): Any {
-    return (cast map)._get(key);
+  public static function get(map: MMap, key: Any, _default: Any = null): Any {
+    var retVal: Any = (cast map)._get(key);
+    if(retVal == null) {
+      if(_default != null) {
+        return _default;
+      } else {
+        return Atom.create("nil");
+      }
+    } else {
+      return retVal;
+    }
   }
 
   public static function put(map: MMap, key: Any, value: Any): Any {

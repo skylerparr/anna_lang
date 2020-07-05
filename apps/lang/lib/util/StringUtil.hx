@@ -197,6 +197,15 @@ class StringUtil {
     return i + "";
   }
 
+  public static inline function stringToInt(s: String): Int {
+    var retVal: Null<Int> = Std.parseInt(s);
+    if(retVal == null) {
+      return 0;
+    } else {
+      return retVal;
+    }
+  }
+
   public static inline function toAtom(string: String): Atom {
     return Atom.create(string);
   }

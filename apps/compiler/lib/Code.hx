@@ -2310,15 +2310,16 @@ import CPPCLIInput;
     file_path = @native StringUtil.concat(path, file);
     [@_'ok', content] = @native File.getContent(file_path);
     result = @native Lang.read(ref, cast(content, String));
-    handle_compile_result(ref, result, path, cast(files, LList));
+    handle_compile_result(ref, result, path, file_path, cast(files, LList));
   });
 
-  @def handle_compile_result({Reference: _, Tuple: [@_'execution_error', message], String: _, LList: _}, [Tuple], {
+  @def handle_compile_result({Reference: _, Tuple: [@_'execution_error', message], String: path, String: file_path, LList: _}, [Tuple], {
+    @native IO.inspect(file_path);
     @native IO.inspect(message);
     [@_'error', message];
   });
 
-  @def handle_compile_result({Reference: ref, Tuple: _, String: path, LList: files}, [Tuple], {
+  @def handle_compile_result({Reference: ref, Tuple: _, String: path, String: _, LList: files}, [Tuple], {
     compile_files(ref, path, cast(files, LList));
   });
 

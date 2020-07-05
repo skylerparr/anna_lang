@@ -70,8 +70,14 @@ class EitherMacro {
           throw new ParsingException("AnnaLang: Unmatched map value. All maps must have a value to map to the key");
         }
         var argVars: Array<String> = [];
+        var alphabetLength: Int = alphabet.length;
         for(i in 0...typeAndExprs.length) {
-          var varType: String = alphabet[i];
+          var index: Int = i;
+          var varType: String = '';
+          while(index >= 0) {
+            varType += alphabet[index % alphabetLength];
+            index -= alphabetLength;
+          }
           var varName: String = varType.toLowerCase();
           argVars.push(varName);
           var typeAndExpr: Dynamic = typeAndExprs[i];

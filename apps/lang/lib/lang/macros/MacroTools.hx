@@ -369,9 +369,10 @@ class MacroTools {
       case EConst(CString(value)):
         value = StringTools.replace(value, '"', '\\"');
         {type: "String", value: getConstant('"${value}"'), rawValue: '"${value}"'};
-      case EConst(CInt(value)):
+      case EConst(CInt(value)) | EConst(CFloat(value)):
         {type: "Number", value: getConstant(value), rawValue: value};
-      case EConst(CFloat(value)):
+      case EUnop(OpNeg, false, {expr: EConst(CInt(value))}) | EUnop(OpNeg, false, {expr: EConst(CFloat(value))}):
+        value = '-${value}';
         {type: "Number", value: getConstant(value), rawValue: value};
       case EMeta({name: "atom" | "_"}, {expr: EConst(CString(value))}):
         var strValue: String = getAtom(value);
