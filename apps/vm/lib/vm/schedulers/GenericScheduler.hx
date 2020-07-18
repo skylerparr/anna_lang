@@ -20,7 +20,7 @@ class GenericScheduler implements Scheduler {
   public var sleepingProcesses: UniqueList<PidMetaData>;
   public var pidMetaMap: Map<Pid, PidMetaData>;
   public var currentPid: Pid;
-  public var registeredPids: Map<Atom, Pid>;
+  public var registeredPidsMap: Map<Atom, Pid>;
 
   public var _allPids: UniqueList<Pid>;
 
@@ -40,7 +40,7 @@ class GenericScheduler implements Scheduler {
       _allPids = new UniqueList<Pid>();
       sleepingProcesses = new UniqueList<PidMetaData>();
       pidMetaMap = new Map<Pid, PidMetaData>();
-      registeredPids = new Map<Atom, Pid>();
+      registeredPidsMap = new Map<Atom, Pid>();
       return "ok".atom();
     }
     return "already_started".atom();
@@ -71,7 +71,7 @@ class GenericScheduler implements Scheduler {
       currentPid.dispose();
       currentPid = null;
     }
-    registeredPids = null;
+    registeredPidsMap = null;
     #end
     pids = null;
     _allPids = null;
@@ -265,8 +265,8 @@ class GenericScheduler implements Scheduler {
     }
     pids.remove(pid);
     pidMetaMap.remove(pid);
-    for(pidName in registeredPids.keys()) {
-      var regPid: Pid = registeredPids.get(pidName);
+    for(pidName in registeredPidsMap.keys()) {
+      var regPid: Pid = registeredPidsMap.get(pidName);
       if(regPid == pid) {
         unregisterPid(pidName);
         break;
@@ -317,17 +317,26 @@ class GenericScheduler implements Scheduler {
   }
 
   public function registerPid(pid: Pid, name: Atom): Atom {
-    registeredPids.set(name, pid);
+    registeredPidsMap.set(name, pid);
     return 'ok'.atom();
   }
 
   public function unregisterPid(name: Atom): Atom {
-    registeredPids.remove(name);
+    registeredPidsMap.remove(name);
     return 'ok'.atom();
   }
 
   public function getPidByName(name: Atom): Pid {
-    return registeredPids.get(name);
+    return registeredPidsMap.get(name);
+  }
+
+  public function registeredPids(): LList {
+    var retVal: Array<Any> = [];
+    for(name in registeredPidsMap.keys()) {
+      var t: Tuple = Tuple.create([name, getPidByName(name)]);
+      retVal.push(t);
+    }
+    return LList.create(retVal);
   }
 
   private inline function notRunning(): Bool {

@@ -361,7 +361,7 @@ class MacroTools {
             var strValue: String = getAtom(varName);
             {type: "Atom", value: getConstant(strValue), rawValue: strValue};
           } else {
-            {type: 'Variable', value: getVar(varName), rawValue: varName};
+            {type: "Variable", value: getVar(varName), rawValue: varName};
           }
         } else {
           getTypeAndValue(macros.haxeToExpr(const), macroContext);

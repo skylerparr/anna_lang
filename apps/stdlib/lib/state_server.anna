@@ -36,8 +36,23 @@ defmodule(StateServer, {
     [@_'ok', pid];
   });
 
+  @def start_link({Atom: module, Dynamic: state, Atom: name}, [Tuple], {
+    reg_pid = Kernel.get_pid_by_name(name);
+    fun = @fn {
+      [{Atom: @_'nil'}] => {
+        [@_'ok', pid] = start_link(module, state);
+        Kernel.register_pid(cast(pid, Pid), name);
+        [@_'ok', pid];
+      };
+      [{Pid: pid}] => {
+        [@_'error', @_'already_started', pid];
+      };
+    }
+    Kernel.cond(reg_pid, fun);
+  });
+
   @def stop({Pid: pid}, [Atom], {
-    Kernel.exit(cast(pid, Pid));
+    Kernel.exit(pid);
   });
 
   @def stop({Atom: name}, [Tuple], {

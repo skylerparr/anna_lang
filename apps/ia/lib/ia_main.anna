@@ -136,6 +136,11 @@ defmodule(IAMain, {
     handle_result(result, state);
   });
 
+  // ctrl+a
+  @def handle_input({Int: 1, IAState: state}, [IAState], {
+    IAState.set(state, @_'position', 0);
+  });
+
   // ctrl+u
   @def handle_input({Int: 21, IAState: state}, [IAState], {
     clear_prompt(state);

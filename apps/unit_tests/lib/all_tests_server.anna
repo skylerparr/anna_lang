@@ -1,0 +1,58 @@
+defmodule(AllTestsServer, {
+  @impl StateHandler;
+
+  @alias vm.Pid;
+
+  @def start_link([Tuple], {
+    StateServer.start_link(AllTestsServer, {}, AllTestsServer);
+  });
+
+  @def init({Dynamic: initial_state}, [Tuple], {
+    [@_'ok', initial_state];
+  });
+
+  @def add_test({Atom: module, Atom: func}, [Atom], {
+    StateServer.send_async(AllTestsServer, [@_'add_test', module, func]);
+  });
+
+  @def get_all_tests([LList], {
+    StateServer.send_sync(AllTestsServer, [@_'get_all_tests']);
+  });
+
+  @def clear([Atom], {
+    StateServer.send_sync(AllTestsServer, [@_'clear']);
+  });
+
+  @def handle_sync({Tuple: [@_'get_all_tests'], Pid: _, Dynamic: state}, [Tuple], {
+    [@_'reply', state, state];
+  });
+
+  @def handle_sync({Tuple: [@_'clear'], Pid: _, Dynamic: _}, [Tuple], {
+    [@_'reply', @_'ok', {}];
+  });
+
+  @def handle_sync({Tuple: message, Pid: _from_pid, Dynamic: state}, [Tuple], {
+    [@_'reply', @_'unmatched_case', state];
+  });
+
+  @def handle_async({Tuple: [@_'add_test', module, func], Pid: _, Dynamic: state}, [Tuple], {
+    state = @native LList.add(cast(state, LList), [module, func]);
+    [@_'noreply', state];
+  });
+
+  @def handle_async({Tuple: message, Pid: _from_pid, Dynamic: state}, [Tuple], {
+    [@_'noreply', state];
+  });
+
+  @def handle_unmatched({Dynamic: message, Dynamic: state}, [Tuple], {
+    [@_'noreply', state];
+  });
+
+  @def terminate({Tuple: message, Dynamic: state}, [Tuple], {
+    [@_'ok', state];
+  });
+
+  @def code_change({Dynamic: state}, [Tuple], {
+    [@_'ok', state];
+  });
+})

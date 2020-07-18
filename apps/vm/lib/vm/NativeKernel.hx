@@ -340,6 +340,10 @@ class NativeKernel {
     currentScheduler.apply(pid, anonFn, callArgs, nextScopeVariables, callback);
   }
 
+  public static inline function registeredPids(): LList {
+    return currentScheduler.registeredPids();
+  }
+
   public static inline function isNull(val: Dynamic): Bool {
     return val == null;
   }

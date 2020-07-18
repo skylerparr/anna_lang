@@ -16,8 +16,8 @@ class CPPMultithreadedScheduler implements Scheduler {
 
   public var pids: UniqueList<Pid>;
   public var paused: Bool;
-  public var registeredPids: Map<Atom, Pid>;
-  public var registeredPidsMutex: Mutex;
+  public var registeredPidsMap: Map<Atom, Pid>;
+  public var registeredPidsMapMutex: Mutex;
 
   public var threadSchedulerMessagesMap: ObjectMap<ThreadHandle, SchedulerMessages>;
   public var threadMap: ObjectMap<ThreadHandle, Thread>;
@@ -35,8 +35,8 @@ class CPPMultithreadedScheduler implements Scheduler {
   public function start(): Atom {
     if(notRunning()) {
       pids = new UniqueList();
-      registeredPids = new Map<Atom, Pid>();
-      registeredPidsMutex = new Mutex();
+      registeredPidsMap = new Map<Atom, Pid>();
+      registeredPidsMapMutex = new Mutex();
       asyncThread = Thread.create(onAsyncThreadStarted);
       threadMap = new ObjectMap<ThreadHandle, Thread>();
       threadSchedulerMessagesMap = new ObjectMap<ThreadHandle, SchedulerMessages>();
@@ -233,8 +233,8 @@ class CPPMultithreadedScheduler implements Scheduler {
     objectCreator = null;
     pids = null;
     paused = false;
-    registeredPids = null;
-    registeredPidsMutex = null;
+    registeredPidsMap = null;
+    registeredPidsMapMutex = null;
     threadMap = null;
     asyncThread = null;
     allPids = null;
@@ -384,9 +384,9 @@ class CPPMultithreadedScheduler implements Scheduler {
   }
 
   public function flag(pid: Pid, flag: Atom, value: Atom): Atom {
-    registeredPidsMutex.acquire();
+    registeredPidsMapMutex.acquire();
     pid.setTrapExit(value);
-    registeredPidsMutex.release();
+    registeredPidsMapMutex.release();
     return "ok".atom();
   }
 
@@ -395,8 +395,8 @@ class CPPMultithreadedScheduler implements Scheduler {
       return null;
     }
     var currentThread: ThreadHandle = Thread.current().handle;
-    for(pidName in registeredPids.keys()) {
-      var regPid: Pid = registeredPids.get(pidName);
+    for(pidName in registeredPidsMap.keys()) {
+      var regPid: Pid = registeredPidsMap.get(pidName);
       if(regPid == pid) {
         unregisterPid(pidName);
         break;
@@ -445,23 +445,34 @@ class CPPMultithreadedScheduler implements Scheduler {
   }
 
   public function registerPid(pid: Pid, name: Atom): Atom {
-    registeredPidsMutex.acquire();
-    registeredPids.set(name, pid);
-    registeredPidsMutex.release();
+    registeredPidsMapMutex.acquire();
+    registeredPidsMap.set(name, pid);
+    registeredPidsMapMutex.release();
     return 'ok'.atom();
   }
 
   public function unregisterPid(name: Atom): Atom {
-    registeredPidsMutex.acquire();
-    registeredPids.remove(name);
-    registeredPidsMutex.release();
+    registeredPidsMapMutex.acquire();
+    registeredPidsMap.remove(name);
+    registeredPidsMapMutex.release();
     return 'ok'.atom();
   }
 
+  public function registeredPids(): LList {
+    registeredPidsMapMutex.acquire();
+    var retVal: Array<Any> = [];
+    for(name in registeredPidsMap.keys()) {
+      var t: Tuple = Tuple.create([name, getPidByName(name)]);
+      retVal.push(t);
+    }
+    registeredPidsMapMutex.release();
+    return LList.create(retVal);
+  }
+
   public function getPidByName(name: Atom): Pid {
-    registeredPidsMutex.acquire();
-    var retVal: Pid = registeredPids.get(name);
-    registeredPidsMutex.release();
+    registeredPidsMapMutex.acquire();
+    var retVal: Pid = registeredPidsMap.get(name);
+    registeredPidsMapMutex.release();
     return retVal;
   }
 

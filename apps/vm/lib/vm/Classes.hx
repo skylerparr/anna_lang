@@ -6,7 +6,7 @@ import lang.macros.AnnaLang;
 import lang.AtomSupport;
 using lang.AtomSupport;
 using StringTools;
-@:build(lang.macros.ValueClassImpl.build())
+@:rtti
 class Classes {
 
   @field public static var mapping: ModuleFunctionMapping = new BasicModuleFunctionMapping();

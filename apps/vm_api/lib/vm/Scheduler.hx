@@ -65,6 +65,8 @@ interface Scheduler {
 
   function self(): Pid;
 
+  function registeredPids(): LList;
+
   function registerPid(pid: Pid, name: Atom): Atom;
 
   function unregisterPid(name: Atom): Atom;
