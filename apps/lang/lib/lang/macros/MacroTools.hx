@@ -794,6 +794,8 @@ class MacroTools {
         [expr];
       case EField(_, _):
         [expr];
+      case EUnop(OpNeg, _, _):
+        [expr];
       case e:
         MacroLogger.log(e, 'e');
         throw new ParsingException("AnnaLang: Expected function body definition");
@@ -851,6 +853,9 @@ class MacroTools {
       case EConst(CString(value)) | EConst(CInt(value)) | EConst(CFloat(value)):
         acc.push(value);
         acc;
+      case EUnop(OpNeg, _, {expr: EConst(CInt(value))}) | EUnop(OpNeg, _, {expr: EConst(CFloat(value))}):
+        acc.push('-${value}');
+        acc;                           
       case EMeta(_, _) | EArrayDecl(_) | EBlock(_) | EBinop(OpArrow, _, _) | EObjectDecl(_):
         acc.push(printer.printExpr(expr));
         acc;

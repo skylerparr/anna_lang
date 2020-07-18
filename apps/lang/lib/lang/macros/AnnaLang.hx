@@ -803,7 +803,9 @@ class AnnaLang {
               }
               var assignOp: Array<Expr> = keywordMap.get("=")(this, left);
               retExprs.push(assignOp[0]);
-            case EConst(CString(value)) | EConst(CInt(value)) | EConst(CFloat(value)) | EConst(CIdent(value)):
+            case EConst(CString(value)) | EConst(CInt(value)) | EConst(CFloat(value)) | EConst(CIdent(value)) |
+                EUnop(OpNeg, _, {expr: EConst(CInt(value))}) |
+                EUnop(OpNeg, _, {expr: EConst(CFloat(value))}):
               var lineNumber = macroTools.getLineNumber(blockExpr);
               var assignOp: Expr = createPutIntoScope(blockExpr, lineNumber);
               retExprs.push(assignOp);
