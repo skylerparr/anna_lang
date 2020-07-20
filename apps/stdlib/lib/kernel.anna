@@ -146,7 +146,7 @@ defmodule(Kernel, {
     @native NativeKernel.same(a, b);
   });
 
-  @def equal({Float: a, Float: b}, [Float], {
+  @def equal({Float: a, Float: b}, [Atom], {
     @native NativeKernel.equal(a, b);
   });
 

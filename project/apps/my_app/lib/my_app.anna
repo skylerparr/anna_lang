@@ -1,7 +1,7 @@
 defmodule(MyApp, {
   @alias vm.NativeKernel;
 
-  @def start([Atom], {
+  @def start({}, [Atom], {
     System.println('doing a simple test');
     SimpleTest.test();
     @native NativeKernel.applyMFA(Kernel.self(), @_'IAMain', @_'start', @tuple[], {});

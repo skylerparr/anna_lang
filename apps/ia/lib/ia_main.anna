@@ -285,6 +285,8 @@ defmodule(IAMain, {
     current_string = state.current_string;
 
     is_eq = Kernel.equal(position, Str.length(current_string));
+    System.println(is_eq);
+    @native vm.NativeKernel.printScope();
     Kernel.cond(is_eq, @fn {
       [{Atom: @_'true'}] => {
         state;

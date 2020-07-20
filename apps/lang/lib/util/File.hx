@@ -54,7 +54,7 @@ class File {
     if(FileSystem.exists(path)) {
       return Tuple.create([Atom.create('ok'), sys.io.File.getContent(path)]);
     } else {
-      return Tuple.create([Atom.create('error'), 'File does not exist']);
+      return Tuple.create([Atom.create('error'), 'File ${path} does not exist']);
     }
   }
 

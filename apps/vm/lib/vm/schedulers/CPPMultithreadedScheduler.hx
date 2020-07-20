@@ -9,7 +9,7 @@ import core.ObjectCreator;
 using lang.AtomSupport;
 
 class CPPMultithreadedScheduler implements Scheduler {
-  public var numberOfThreads: Int = 8;
+  public var numberOfThreads: Int = 16;
 
   @inject
   public var objectCreator: ObjectCreator;

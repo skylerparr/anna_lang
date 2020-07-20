@@ -50,6 +50,11 @@ class NativeKernel {
     return 'ok'.atom();
   }
 
+  public static inline function printScope(): Atom {
+    trace(Process.self().processStack.getVariablesInScope()); 
+    return Atom.create('ok');
+  }
+
   private static inline function defineCode(): Atom {
     #if cppia
       var cls: Class<Dynamic> = Type.resolveClass('Code');

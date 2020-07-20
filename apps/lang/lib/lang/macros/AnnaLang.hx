@@ -148,7 +148,7 @@ class AnnaLang {
 
   public function defType(name: Expr, body: Expr): Array<Field> {
     var className: String = macroTools.getIdent(name);
-    #if macro 
+    #if macro
     var typeName: String = "UserDefinedType";
     #else
     var typeName: String = className;
@@ -219,7 +219,7 @@ class AnnaLang {
   private inline function createCustomType(type: Expr, params: Expr): Expr {
     var typeAndValue: Dynamic = macroTools.getCustomTypeAndValue(params);
     typeAndValue.type = printer.printExpr(type);
-    var str: String = 'lang.UserDefinedType.create("${typeAndValue.type}", ${typeAndValue.rawValue}, Code.annaLang)';
+    var str: String = 'lang.UserDefinedType.create("${typeAndValue.type}", (${typeAndValue.rawValue}), Code.annaLang)';
     var expr = macros.haxeToExpr(str);
     return expr;
   }
@@ -519,6 +519,7 @@ class AnnaLang {
       codeString += printer.printField(field);
     }
     moduleDef.codeString = codeString;
+    MacroLogger.log(codeString);
   }
 
   public function buildFunctionHeadPatternMatch(funDef: Dynamic): Dynamic {
@@ -533,7 +534,8 @@ class AnnaLang {
         continue;
       }
       var argName: String = '_${argNameCounter++}';
-      funArgs.push({name: argName, type: macroTools.buildType(funArgsType.type)});
+      var type = Helpers.getCustomType(funArgsType.type, macroContext);
+      funArgs.push({name: argName, type: macroTools.buildType(type)});
       var haxeStr: String = 'var scope:haxe.ds.StringMap<Dynamic> = new haxe.ds.StringMap();';
       for(pattern in cast(funArgsType.patterns, Array<Dynamic>)) {
         if(pattern != funArgsType.name) {
