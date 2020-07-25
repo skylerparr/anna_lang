@@ -15,7 +15,7 @@ class Keyword implements CustomType {
     uniqueKeys = new Map<Atom, Int>();
     data = [];
     for(value in kw) {
-      var key: Atom = value[0].atom();
+      var key: Atom = Atom.create(value[0]);
       data.push(Tuple.create([key, value[1]]));
       var count: Null<Int> = 0;
       if(uniqueKeys.exists(key)) {

@@ -3,7 +3,6 @@ package lang.macros;
 import haxe.macro.Context;
 import haxe.macro.Expr;
 import haxe.macro.Printer;
-import hscript.plus.ParserPlus;
 import lang.macros.MacroLogger;
 import haxe.macro.Expr;
 using haxe.macro.Tools;
@@ -152,7 +151,7 @@ class Macros {
         retValBlock.push(expr);
       case EContinue:
         throw "AnnaLang: Unimplemented case";
-      case EDisplay(e, isCall):
+      case EDisplay(e, displayKind):
         throw "AnnaLang: Unimplemented case";
       case EDisplayNew(t):
         throw "AnnaLang: Unimplemented case";
@@ -161,13 +160,13 @@ class Macros {
           ${printer.printExpr(expr)}
         }';
         retValBlock.push(haxeToExpr(haxeStr));
-      case EIn(e1, e2):
-        throw "AnnaLang: Unimplemented case";
+//      case EIn(e1, e2):
+//        throw "AnnaLang: Unimplemented case";
       case EObjectDecl(fields):
-        var keyValues: Array<{field:String, expr:Expr}> = [];
+        var keyValues: Array<{field:String, expr:Expr, quotes: Null<QuoteStatus>}> = [];
         for(item in fields) {
           var expr = findMetaInBlock(item.expr, null);
-          keyValues.push({field: item.field, expr: expr});
+          keyValues.push({field: item.field, expr: expr, quotes: null});
         }
         retValBlock.push({expr: EObjectDecl(keyValues), pos: macroContext.currentPos()});
       case EParenthesis(e):
@@ -338,14 +337,14 @@ class Macros {
           for(value in values) {
             collectMetaExpr(value.expr, arrayValues);
             var arrayVal = arrayValues.pop();
-            finalArray.push({expr: EArrayDecl([{expr: EConst(CString(value.field)), pos: macroContext.currentPos()}, arrayVal]), pos: macroContext.currentPos()});
+            finalArray.push({expr: EArrayDecl([{expr: EConst(CString(value.field, SingleQuotes)), pos: macroContext.currentPos()}, arrayVal]), pos: macroContext.currentPos()});
           }
           expr = {expr: EArrayDecl(finalArray), pos: macroContext.currentPos()};
           expr = callback(expr);
           expr;
         case EConst(CIdent(_)):
           expr;
-        case EConst(CString(_)):
+        case EConst(CString(_, _)):
           expr = callback(expr);
           expr;
         case ECheckType(e, t):
@@ -448,9 +447,17 @@ class Macros {
     return context;
   }
 
-  public function haxeToExpr(str: String): Expr {
-    var ast = annaLang.parser.parseString(str);
-    return new hscript.Macro(macroContext.currentPos()).convert(ast);
+  public static var cache: Map<String, Expr> = new Map<String, Expr>();
+
+  public function haxeToExpr(str: String, debug: Bool = false): Expr {
+    if(cache.exists(str)) {
+      return cache.get(str);
+    } else {
+      var ast = annaLang.parser.parseString(str);
+      var retVal = new hscript.Macro(macroContext.currentPos()).convert(ast);
+      cache.set(str, retVal);
+      return retVal;
+    }
   }
 
   macro public static function ei(expr: Expr): Expr {
@@ -462,22 +469,27 @@ class Macros {
   }
 
   macro public function getTuple(expr: Expr): Expr {
-    return _tuple(expr, null);
+    return macro null;
+//    return _tuple(expr, null);
   }
 
   macro public function getMap(expr: Expr): Expr {
-    return _map(expr, null);
+    return macro null;
+//    return _map(expr, null);
   }
 
   macro public function getList(expr: Expr): Expr {
-    return _list(expr, null);
+    return macro null;
+//    return _list(expr, null);
   }
 
   macro public function getAtom(expr: Expr): Expr {
-    return _atom(expr, null);
+    return macro null;
+//    return _atom(expr, null);
   }
 
   macro public function getKeyword(expr:Expr):Expr {
-    return _keyword(expr, null);
+    return macro null;
+//    return _keyword(expr, null);
   }
 }

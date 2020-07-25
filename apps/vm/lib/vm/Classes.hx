@@ -6,10 +6,9 @@ import lang.macros.AnnaLang;
 import lang.AtomSupport;
 using lang.AtomSupport;
 using StringTools;
-@:build(lang.macros.ValueClassImpl.build())
 class Classes {
 
-  @field public static var mapping: ModuleFunctionMapping = new BasicModuleFunctionMapping();
+  public static var mapping: ModuleFunctionMapping = new BasicModuleFunctionMapping();
 
   public static function clear(): Void {
     mapping.clear();

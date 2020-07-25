@@ -4,11 +4,10 @@ import lang.ParsingException;
 import lang.AbstractCustomType;
 using lang.AtomSupport;
 
-@:build(lang.macros.ValueClassImpl.build())
 class SimpleProcess extends AbstractCustomType implements Pid {
-  @field public static var _instanceId: Int = 0;
-  @field public static var _groupId: Int = 0;
-  @field public static var _nodeId: Int = 0;
+  public static var _instanceId: Int = 0;
+  public static var _groupId: Int = 0;
+  public static var _nodeId: Int = 0;
 
   private var serverId: Int;
   private var instanceId: Int;
@@ -26,11 +25,6 @@ class SimpleProcess extends AbstractCustomType implements Pid {
   public var dictionary: MMap;
 
   function get_children():Array<Pid> {
-    #if cppia
-    if(this._children == null) {
-      this._children = new UniqueList();
-    }
-    #end
     return this._children.asArray();
   }
 
@@ -123,9 +117,7 @@ class SimpleProcess extends AbstractCustomType implements Pid {
     if(monitors == null) {
       monitors = new List<Pid>();
     }
-    #if !cppia
     monitors.remove(pid);
-    #end
     monitors.add(pid);
   }
 

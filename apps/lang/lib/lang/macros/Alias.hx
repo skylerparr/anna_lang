@@ -1,7 +1,5 @@
 package lang.macros;
 import lang.macros.AnnaLang;
-import haxe.macro.Printer;
-import hscript.plus.ParserPlus;
 import haxe.macro.Expr;
 
 class Alias {

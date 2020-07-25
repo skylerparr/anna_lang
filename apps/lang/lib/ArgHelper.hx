@@ -7,15 +7,10 @@ import lang.UserDefinedType;
 import vm.AnonFn;
 class ArgHelper {
 
-  public static inline function extractArgValue(arg: Dynamic, scopeVariables: Map<String, Dynamic>, annaLang: AnnaLang): Dynamic {
+  public static function extractArgValue(arg: Dynamic, scopeVariables: Map<String, Dynamic>, annaLang: AnnaLang): Dynamic {
     var argValue = EitherSupport.getValue(arg);
     var retVal: Dynamic = arg;
-
-    #if scriptable
-    if(Std.is(argValue, Tuple)) {
-    #else
     if(cast(argValue, Tuple) != null) {
-    #end
       var argArray = Tuple.array(argValue);
       if(argArray.length == 2) {
         var elem1 = argArray[0];
@@ -24,21 +19,6 @@ class ArgHelper {
         retVal = switch(cast(EitherSupport.getValue(elem1), Atom)) {
           case {value: 'const'}:
             var value = EitherSupport.getValue(elem2);
-          #if scriptable
-            if(Std.is(value, Tuple)) {
-              resolveTupleValues(cast value, scopeVariables, annaLang);
-            } else if(Std.is(value, LList)) {
-              resolveListValues(cast value, scopeVariables, annaLang);
-            } else if(Std.is(value, MMap)) {
-              resolveMapValues(cast value, scopeVariables, annaLang);
-            } else if(Std.is(value, Keyword)) {
-              resolveKeywordValues(cast value, scopeVariables, annaLang);
-            } else if(Std.is(value, AbstractCustomType)) {
-              resolveAbstractCustomTypeValues(cast value, scopeVariables, annaLang);
-            } else {
-              value;
-            }
-          #else
             // Going for speed here. Minimizing the casts as best as possible
             var t: Tuple = cast value;
             if(t != null) {
@@ -66,8 +46,6 @@ class ArgHelper {
                 }
               }
             }
-
-          #end
           case {value: 'var'}:
             var varName: String = EitherSupport.getValue(elem2);
             var value: Dynamic = scopeVariables.get(varName);
@@ -157,7 +135,7 @@ class ArgHelper {
     return UserDefinedType.create(value.__type, data, annaLang);
   }
 
-  public static inline function __updateScope(match: Map<String, Dynamic>, scope: Map<String, Dynamic>): Void {
+  public static function __updateScope(match: Map<String, Dynamic>, scope: Map<String, Dynamic>): Void {
     for(key in match.keys()) {
       scope.set(key, match.get(key));
     }

@@ -1,6 +1,6 @@
 package ;
 
-#if (cpp || cppia)
+#if cpp
 import haxe.io.Output;
 import sys.io.File;
 #end
@@ -14,7 +14,7 @@ class Logger {
   private inline static var filePath: String = 'log.txt';
 
   #if !macro
-  private static var logThread: cpp.vm.Thread;
+  private static var logThread: sys.thread.Thread;
 
   public static function sendLog(log: String): Void {
     logThread.sendMessage(log);
@@ -22,7 +22,7 @@ class Logger {
 
   private static function logListener():Void {
     while(true) {
-      var log: String = cpp.vm.Thread.readMessage(true);
+      var log: String = sys.thread.Thread.readMessage(true);
       var output: haxe.io.Output = sys.io.File.append('log.txt');
       output.writeString(log);
       output.close();

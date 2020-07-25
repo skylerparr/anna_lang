@@ -1,10 +1,7 @@
 package lang.macros;
 import haxe.CallStack;
 import haxe.macro.Printer;
-import hscript.plus.ParserPlus;
-import haxe.macro.Context;
 import haxe.macro.Type;
-import haxe.macro.Type.ClassType;
 import haxe.macro.Expr;
 import haxe.macro.Expr.ComplexType;
 import haxe.macro.Expr.MetadataEntry;
@@ -269,7 +266,7 @@ class MacroTools {
 
   public function getValue(expr: Expr):Dynamic {
     return switch(expr.expr) {
-      case EConst(CString(value)):
+      case EConst(CString(value, _)):
         value;
       case EConst(CInt(value)) | EConst(CFloat(value)):
         value;
@@ -286,7 +283,7 @@ class MacroTools {
   public inline function getAtomExpr(value: String):Expr {
     return { expr: ECall({ expr: EField({ expr: EConst(CIdent('Atom')), pos: macroContext.currentPos() },
         'create'), pos: macroContext.currentPos() },
-        [{ expr: EConst(CString(value)), pos: macroContext.currentPos() }]),
+        [{ expr: EConst(CString(value, SingleQuotes)), pos: macroContext.currentPos() }]),
         pos: macroContext.currentPos() }
   }
 
@@ -366,14 +363,14 @@ class MacroTools {
         } else {
           getTypeAndValue(macros.haxeToExpr(const), macroContext);
         }
-      case EConst(CString(value)):
+      case EConst(CString(value, _)):
         value = StringTools.replace(value, '"', '\\"');
         {type: "String", value: getConstant('"${value}"'), rawValue: '"${value}"'};
       case EConst(CInt(value)):
         {type: "Number", value: getConstant(value), rawValue: value};
       case EConst(CFloat(value)):
         {type: "Number", value: getConstant(value), rawValue: value};
-      case EMeta({name: "atom" | "_"}, {expr: EConst(CString(value))}):
+      case EMeta({name: "atom" | "_"}, {expr: EConst(CString(value, _))}):
         var strValue: String = getAtom(value);
         {type: "Atom", value: getConstant(strValue), rawValue: strValue};
       case EMeta({name: "tuple"}, {expr: EArrayDecl(values)}):
@@ -432,7 +429,7 @@ class MacroTools {
               var keyType = getTypeAndValue(key, macroContext);
               var valueType = getTypeAndValue(value, macroContext);
               listValues.push('${keyType.value} => ${valueType.value}');
-            case EMeta({name: "atom" | "_"}, {expr: EBinop(OpArrow, {expr: EConst(CString(key))}, valExpr)}):
+            case EMeta({name: "atom" | "_"}, {expr: EBinop(OpArrow, {expr: EConst(CString(key, _))}, valExpr)}):
               var valueType = getTypeAndValue(valExpr, macroContext);
               listValues.push('${getAtom(key)} => ${valueType.value}');
             case _:
@@ -482,7 +479,7 @@ class MacroTools {
       case ECast(expr, TPath({ name: type })):
         var typeAndValue = getTypeAndValue(expr, macroContext);
         {type: Helpers.getAlias(type, macroContext), value: typeAndValue.value, rawValue: typeAndValue.value};
-      case ECall({expr: EField({expr: EConst(CIdent("Atom"))}, "create")}, [{expr: EConst(CString(atom))}]):
+      case ECall({expr: EField({expr: EConst(CIdent("Atom"))}, "create")}, [{expr: EConst(CString(atom, _))}]):
         {type: "Atom", value: 'Tuple.create([Atom.create("const"), ${atom}])', rawValue: atom};
       case ECall({expr: EField({expr: EConst(CIdent("Tuple"))}, "create")}, [{expr: EArrayDecl(args)}]):
         var listValues: Array<String> = [];
@@ -662,7 +659,7 @@ class MacroTools {
     return switch(expr.expr) {
       case EConst(CIdent(name)):
         {name: name, pattern: [name], isPatternVar: false}
-      case EConst(CInt(pattern)) | EConst(CString(pattern)) | EConst(CFloat(pattern)):
+      case EConst(CInt(pattern)) | EConst(CString(pattern, _)) | EConst(CFloat(pattern)):
         var name = util.StringUtil.random();
         {name: name, pattern: [pattern], isPatternVar: false};
       case EUnop(OpNeg, false, {expr: EConst(CInt(pattern))}) | EUnop(OpNeg, false, {expr: EConst(CFloat(pattern))}):
@@ -693,9 +690,9 @@ class MacroTools {
               var rhsType = getTypeAndValue(value, macroContext);
               items.push('${lhsType.value} => ${rhsType.value}');
 
-            case EMeta({name: "atom" | "_"}, {expr: EBinop(OpArrow, {expr: EConst(CString(keyString)), pos: pos}, value)}):
+            case EMeta({name: "atom" | "_"}, {expr: EBinop(OpArrow, {expr: EConst(CString(keyString, _)), pos: pos}, value)}):
               type = 'map';
-              var key = {pos: pos, expr: EMeta({name: "_", pos: pos}, {expr: EConst(CString(keyString)), pos: pos})};
+              var key = {pos: pos, expr: EMeta({name: "_", pos: pos}, {expr: EConst(CString(keyString, SingleQuotes)), pos: pos})};
               var lhsType = getTypeAndValue(key, macroContext);
               var rhsType = getTypeAndValue(value, macroContext);
               items.push('${lhsType.value} => ${rhsType.value}');
@@ -720,7 +717,7 @@ class MacroTools {
         }
         var haxeStr: String = getList(items);
         {name: name, pattern: [haxeStr], isPatternVar: false};
-      case EBinop(OpArrow, {expr: EConst(CString(name))}, {expr: EConst(CIdent(pattern))}):
+      case EBinop(OpArrow, {expr: EConst(CString(name, _))}, {expr: EConst(CIdent(pattern))}):
         var patternStr = printer.printExpr(expr);
         retVal.argTypes.push({type: 'String', name: pattern, patterns: [pattern], isPatternVar: true});
 
@@ -847,7 +844,7 @@ class MacroTools {
       case EConst(CIdent(name)):
         acc.push(name);
         acc;
-      case EConst(CString(value)) | EConst(CInt(value)) | EConst(CFloat(value)):
+      case EConst(CString(value, _)) | EConst(CInt(value)) | EConst(CFloat(value)):
         acc.push(value);
         acc;
       case EMeta(_, _) | EArrayDecl(_) | EBlock(_) | EBinop(OpArrow, _, _) | EObjectDecl(_):

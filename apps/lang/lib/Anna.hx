@@ -30,12 +30,9 @@ using StringTools;
 using haxe.EnumTools;
 using haxe.EnumTools.EnumValueTools;
 
-#if !macro
-@:build(lang.macros.ValueClassImpl.build())
-#end
 class Anna {
-  @field public static var parser: Parser;
-  @field public static var interp: Interp;
+  public static var parser: Parser;
+  public static var interp: Interp;
 
   #if !macro
   public static function compileProject(p: ProjectConfig): Array<String> {

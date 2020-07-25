@@ -162,10 +162,11 @@ class GenericScheduler implements Scheduler {
       var mailbox: Array<Dynamic> = pid.mailbox;
       var data = mailbox[pidMeta.mailboxIndex++ % mailbox.length];
       if(data != null) {
-        Logger.log(data, 'data');
-        Logger.log(mailbox.length, "mailbox size");
         var scopeVars: Map<String, Dynamic> = pid.processStack.getVariablesInScope();
         scopeVars.set(pidMeta.fn.args[0], data);
+        if(data == null) {
+          trace("generic scheduler");
+        }
         scopeVars.set("$$$", data);
 
         pid.setState(ProcessState.RUNNING);

@@ -9,7 +9,7 @@ import hscript.Macro;
 import haxe.macro.Context;
 import haxe.macro.Expr;
 import haxe.macro.Printer;
-import hscript.plus.ParserPlus;
+import hscript.Parser;
 using haxe.macro.Tools;
 
 class AnnaLang {
@@ -27,8 +27,8 @@ class AnnaLang {
     keywordMap;
   }
 
-  public var parser: ParserPlus = {
-    var parser = new ParserPlus();
+  public var parser: Parser = {
+    var parser = new Parser();
     parser.allowTypes = true;
     parser.allowMetadata = true;
     parser;
@@ -37,7 +37,7 @@ class AnnaLang {
   public static var annaLangForMacro: AnnaLang = new AnnaLang();
   public var printer: Printer = new Printer();
 
- 
+
   public var macroContext: MacroContext;
   public var macroTools: MacroTools;
   public var macros: Macros;
@@ -51,7 +51,7 @@ class AnnaLang {
   // This is for the interpreter
   public var lang: vm.Lang;
   public var runtimeDef: RuntimeDef;
-  
+
   public function commit(): Void {
     runtimeDef.commit();
   }
@@ -134,8 +134,8 @@ class AnnaLang {
       }
       var template: haxe.Template = new haxe.Template(temp);
       var content: String = template.execute({
-        code: moduleDef.codeString, 
-        moduleName: moduleDef.moduleName, 
+        code: moduleDef.codeString,
+        moduleName: moduleDef.moduleName,
         pack: moduleDef.pack,
         extend: extend
       });
@@ -148,7 +148,7 @@ class AnnaLang {
 
   public function defType(name: Expr, body: Expr): Array<Field> {
     var className: String = macroTools.getIdent(name);
-    #if macro 
+    #if macro
     var typeName: String = "UserDefinedType";
     #else
     var typeName: String = className;

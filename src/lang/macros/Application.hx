@@ -1,53 +1,37 @@
 package lang.macros;
 
-#if macro
-import haxe.Template;
-import sys.FileSystem;
+import project.AnnaLangProject;
 import sys.io.File;
-import lang.macros.Macros;
-import lang.macros.MacroTools;
-import haxe.macro.Context;
-import lang.macros.MacroLogger;
-import haxe.macro.Expr;
-import haxe.macro.Printer;
-#end
-import haxe.macro.Context;
-import haxe.macro.Expr;
+import sys.FileSystem;
 import haxe.Json;
 class Application {
   private static inline var APP_DIR: String = 'apps/';
   private static inline var CONFIG_FILE: String = 'app_config.json';
 
-  macro public static function getProjectConfig(appAtomName: Expr): Expr {
-    var annaLang: AnnaLang = AnnaLang.annaLangForMacro;
-    var macros: Macros = annaLang.macros;
-
-    var appName: String = getAtomValue(appAtomName);
+  public static function getProjectConfig(appAtomName: String): AnnaLangProject {
+    var appName: String = appAtomName;
     var config: Dynamic = fetchAppConfigByName(appName);
 
-    var appNameExpr: Expr = macros.haxeToExpr('"${appName}".atom()');
-    var autoStart: Expr = macros.haxeToExpr('"${config.autoStart}"');
+    var appNameExpr: String = appName;
+    var autoStart: String = config.autoStart;
     var configApps: Array<String> = cast config.apps;
     var apps: Array<String> = [];
     for(app in configApps) {
-      apps.push('"${app}"');
+      apps.push(app);
     }
-    var appsExpr: Expr = macros.haxeToExpr('[${apps.join(",")}]');
+    var appsExpr: Array<String> = apps;
     var haxelibsStr: String = '';
+    var libs: Array<String> = ["hscript-plus", "sepia"];
     var haxelibs: Array<Dynamic> = cast(config.haxelibs, Array<Dynamic>);
     for(lib in haxelibs) {
-      haxelibsStr += ', "${lib}"';
+      libs.push(lib);
     }
+    var appRoot: String = core.PathSettings.applicationBasePath;
 
-    var haxeLibs: Expr = macros.haxeToExpr('["hscript-plus", "sepia"${haxelibsStr}]');
-
-    return macro {
-      var appRoot: String = Native.callStaticField("core.PathSettings", "applicationBasePath");
-      new project.AnnaLangProject(appRoot, $e{appNameExpr}, $e{autoStart}, $e{appsExpr}, [], $e{haxeLibs});
-    }
+    var retVal = new project.AnnaLangProject(appRoot, Atom.create(appNameExpr), autoStart, appsExpr, [], libs);
+    return retVal;
   }
 
-  #if macro
   private static inline var ANNA_HOME: String = 'ANNA_HOME';
 
   public static function annaLangHome(): String {
@@ -65,16 +49,6 @@ class Application {
   private static function fetchAppConfigByName(appName: String): Dynamic {
     var strConfig: String = File.getContent('${appDir(appName)}/${CONFIG_FILE}');
     return Json.parse(strConfig);
-  }
-
-  private static function getAtomValue(expr: Expr): String {
-    return switch(expr.expr) {
-      case ECall({ expr: EField({ expr: EConst(CString(value))},'atom')},[]):
-        value;
-      case _:
-        Context.error("Application Name must be an atom", Context.currentPos());
-        null;
-    }
   }
 
   private static function getClassesToInclude(classPath: String): Array<String> {
@@ -107,5 +81,4 @@ class Application {
       }
     }
   }
-  #end
 }

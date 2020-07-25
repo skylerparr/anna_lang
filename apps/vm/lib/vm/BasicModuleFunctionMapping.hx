@@ -6,12 +6,11 @@ import lang.macros.AnnaLang;
 import lang.AtomSupport;
 using lang.AtomSupport;
 using StringTools;
-@:build(lang.macros.ValueClassImpl.build())
 class BasicModuleFunctionMapping implements ModuleFunctionMapping {
 
-  @field public var functions: Map<Atom, Map<Atom, Function>>;
-  @field public var apiFunctions: Map<Atom, Map<Atom, Atom>>;
-  @field public var apiMap: Map<Atom, Map<Atom, Atom>>;
+  public var functions: Map<Atom, Map<Atom, Function>>;
+  public var apiFunctions: Map<Atom, Map<Atom, Atom>>;
+  public var apiMap: Map<Atom, Map<Atom, Atom>>;
 
   public static inline var PREFIX: String = '___';
   public static inline var SUFFIX: String = '_args';

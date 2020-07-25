@@ -59,7 +59,7 @@ class DSUtil {
     return retVal;
   }
 
-  private static inline function parseObj(field: Dynamic, value: Dynamic, retVal: Dynamic): Dynamic {
+  private static function parseObj(field: Dynamic, value: Dynamic, retVal: Dynamic): Dynamic {
     field = EitherSupport.getValue(field);
     if(value == null) {
       Reflect.setField(retVal, field, Atom.create('nil'));

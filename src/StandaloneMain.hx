@@ -4,7 +4,6 @@ import sys.io.File;
 import sys.FileSystem;
 import project.DefaultProjectConfig;
 import project.ProjectConfig;
-import hscript.plus.ParserPlus;
 import lang.HashTableAtoms;
 import haxe.ds.ObjectMap;
 import haxe.Timer;
@@ -17,16 +16,9 @@ import hscript.Macro;
 import hscript.Interp;
 import hscript.Parser;
 import org.hxbert.BERT;
-#if scriptable
-import cpp.vm.Thread;
-#end
-
 using lang.AtomSupport;
 @:rtti
 class StandaloneMain {
-  #if scriptable
-  private static var mainThread: Thread;
-  #end
   private static var ready: Bool = false;
 
   public static var compilerCompleteCallbacks: Array<Void->Void> = [];
@@ -71,7 +63,20 @@ class StandaloneMain {
     new Date(2018, 1, 1, 0, 0, 0).getTime();
     new Printer().printExpr(macro 'foo');
     GlobalStore.start();
+
+//    cache('scope.set("foo", lang.EitherSupport.getValue(MMap.get(lang.EitherSupport.getValue(arrayTuple[1]), ArgHelper.extractArgValue(Tuple.create([Atom.create("const"), "foo"]), ____scopeVariables, Code.annaLang))));');
+//    cache('scope.set("baz", lang.EitherSupport.getValue(MMap.get(lang.EitherSupport.getValue(arrayTuple[1]), ArgHelper.extractArgValue(Tuple.create([Atom.create("const"), "baz"]), ____scopeVariables, Code.annaLang))));');
+
     new StandaloneMain();
+  }
+
+  public static function cache(s: String): Void {
+    var parser: Parser = new Parser();
+    parser.allowTypes = true;
+    parser.allowMetadata = true;
+    var ast = parser.parseString(s);
+    var retVal = new hscript.Macro( { file : "", min : 0, max : 0 }).convert(ast);
+    lang.macros.Macros.cache.set(s, retVal);
   }
 
   public function new() {
@@ -79,59 +84,11 @@ class StandaloneMain {
     project = new DefaultProjectConfig('AnnaLang', '${basePath}scripts', '${basePath}out/',
       ['${basePath}src/', '${basePath}apps/anna_unit/lib', '${basePath}apps/lang/lib'], ['hscript-plus', 'sepia', 'hxbert']);
 
-    #if scriptable
-    mainThread = Thread.current();
-    Thread.create(function() {
-      var loaded: Bool = false;
-      var onComplete = function(files: Array<String>) {
-        if(!loaded) {
-          var files = Runtime.loadAll(project);
-          mainThread.sendMessage(files);
-          loaded = true;
-        } else {
-          mainThread.sendMessage(files);
-        }
-      }
-      project.subscribeAfterCompileCallback(onComplete);
-      Runtime.compileProject(project);
-    });
-
-    pollChanges();
-    #else
     #if dev_anna
     DevelopmentRunner.start(project);
     #else
     StandaloneRunner.start(project);
     #end
-    #end
   }
-
-  #if scriptable
-  private inline function pollChanges(): Void {
-    while(true) {
-      var files: Array<String> = Thread.readMessage(true);
-
-      if(files != null && files.length > 0) {
-        var clazz: Class<Dynamic> = Type.resolveClass("DevelopmentRunner");
-        if(clazz != null) {
-          var fields: Array<String> = Type.getClassFields(clazz);
-          for(f in fields) {
-            if(f == "start") {
-              continue;
-            }
-          }
-          if(!ready) {
-            var fun = Reflect.field(clazz, "start");
-            fun(project);
-          }
-          ready = true;
-        }
-        for(cb in compilerCompleteCallbacks) {
-          cb();
-        }
-      }
-    }
-  }
-  #end
 
 }

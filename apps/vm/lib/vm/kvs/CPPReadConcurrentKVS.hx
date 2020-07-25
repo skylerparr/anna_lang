@@ -1,7 +1,7 @@
 package vm.kvs;
 
 import core.BaseObject;
-import cpp.vm.Mutex;
+import sys.thread.Mutex;
 
 class CPPReadConcurrentKVS extends MapKVS {
 

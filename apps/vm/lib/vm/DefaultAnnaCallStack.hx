@@ -41,6 +41,7 @@ class DefaultAnnaCallStack implements AnnaCallStack {
       currentOperation.execute(scopeVariables, processStack);
     } catch(e: Dynamic) {
       trace(e);
+      trace(haxe.CallStack.exceptionStack().join('\n'));
       NativeKernel.crash(Process.self());
       return;
     }

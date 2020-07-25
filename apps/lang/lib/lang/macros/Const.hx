@@ -2,7 +2,6 @@ package lang.macros;
 
 import lang.macros.AnnaLang;
 import haxe.macro.Expr;
-import hscript.plus.ParserPlus;
 import haxe.macro.Printer;
 class Const {
   public static function gen(annaLang: AnnaLang, params: Expr): Array<Expr> {

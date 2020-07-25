@@ -19,32 +19,6 @@ class EitherMacro {
     alphabet;
   };
 
-//  macro public static function gen(values: Expr): Expr {
-//    MacroLogger.log("=====================");
-//    MacroLogger.log('EitherMacro.gen(): ${Context.getLocalClass()}');
-//    var macroContext = new MacroContext();
-//    switch(setup(values)) {
-//      case [p, valueExpressions, typeAndExprs, varTypeMap, allTypes, numberOfElements]:
-//        var eitherArray: Array<Expr> = [];
-//        var exprs: Array<Expr> = [];
-//        for(i in 0...valueExpressions.length) {
-//          var varType: String = alphabet[i];
-//          var varName: String = varType.toLowerCase();
-//          if(typeAndExprs.length == 0) {
-//            return macro [];
-//          }
-//          var typeAndExpr: Dynamic = typeAndExprs[i];
-//          var uniqueVarType: String = varTypeMap.get(typeAndExpr.type);
-//          exprs.push({ expr: EVars([{ expr: { expr: typeAndExpr.expr, pos: MacroContext.currentPos() }, name: varName, type: TPath({ name: 'Tuple', pack: [], params: allTypes }) }]), pos: MacroContext.currentPos() });
-//          eitherArray.push({expr: EConst(CIdent(varName)), pos: MacroContext.currentPos()});
-//        }
-//        exprs.push(macro $a{eitherArray});
-//        return macro $b{exprs};
-//      case _:
-//        throw "EitherMacro.get(): gen setup return has changed, this shouldn't happen accidentally!";
-//    }
-//  }
-
   macro public static function genMap(values: Expr): Expr {
     var annaLang: AnnaLang = AnnaLang.annaLangForMacro;
     return doGenMap(annaLang, values);
@@ -159,19 +133,19 @@ class EitherMacro {
         switch(val) {
           case CInt(value):
             typeAndExprs.push({type: "Int", expr: vExpr});
-          case CString(value):
+          case CString(value, _):
             typeAndExprs.push({type: "String", expr: vExpr});
           case CFloat(value):
             typeAndExprs.push({type: "Float", expr: vExpr});
           case CIdent(ident):
-            var identExpr: Expr = {expr: EConst(CString(ident)), pos: macroContext.currentPos()}
+            var identExpr: Expr = {expr: EConst(CString(ident, SingleQuotes)), pos: macroContext.currentPos()}
             var expr: Expr = macro Tuple.create([Atom.create("var"), $e{identExpr}]);
             typeAndExprs.push({type: 'Dynamic', expr: expr});
           case _:
         }
       case {expr: ECall(val, _fun)}:
         switch(val) {
-          case {expr: EField({expr: EConst(CString(_))}, _)}:
+          case {expr: EField({expr: EConst(CString(_, _))}, _)}:
             typeAndExprs.push({type: "Atom", expr: vExpr});
           case {expr: EField({expr: EConst(CIdent(type))}, _)}:
             typeAndExprs.push({type: '${type}', expr: vExpr});

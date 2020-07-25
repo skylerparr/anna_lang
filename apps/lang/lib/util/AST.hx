@@ -8,7 +8,7 @@ class AST {
     parser.allowMetadata = true;
     parser.allowTypes = true;
     var ast = parser.parseString(moduleCode);
-    var pos = { max: 12, min: 0, file: null };
+    var pos = { max: 12, min: 0, file: "" };
     var ast = new Macro(pos).convert(ast);
 
     return switch(ast.expr) {

@@ -14,23 +14,21 @@ import vm.schedulers.GenericScheduler;
 import org.hxbert.BERT;
 import project.AnnaLangProject;
 
-using lang.AtomSupport;
-
 @:rtti
 class NativeKernel {
 
-  @field public static var currentScheduler: Scheduler;
-  @field public static var statePid: Pid;
-  @field public static var projectConfig: ProjectConfig;
-  @field public static var started: Bool;
-  @field public static var msg: Dynamic;
+  public static var currentScheduler: Scheduler;
+  public static var statePid: Pid;
+  public static var projectConfig: ProjectConfig;
+  public static var started: Bool;
+  public static var msg: Dynamic;
 
   private static var annaLang: AnnaLang;
   private static var annaLangProject: AnnaLangProject;
 
   public static function start(): Atom {
     if(started) {
-      return 'already_started'.atom();
+      return Atom.create("already_started");
     }
     Logger.init();
     var scheduler: vm.schedulers.CPPMultithreadedScheduler = new vm.schedulers.CPPMultithreadedScheduler();
@@ -40,33 +38,14 @@ class NativeKernel {
     currentScheduler = scheduler;
     currentScheduler.start();
 
-    #if cppia
-    defineCode();
-    #else
     Code.defineCode();
-    #end
 
     started = true;
-    return 'ok'.atom();
-  }
-
-  private static inline function defineCode(): Atom {
-    #if cppia
-      var cls: Class<Dynamic> = Type.resolveClass('Code');
-      if(cls == null) {
-        trace('Module Code was not found');
-        return 'error'.atom();
-      }
-      Reflect.callMethod(null, Reflect.field(cls, 'defineCode'), []);
-    #end
-    return 'ok'.atom();
+    return Atom.create("ok");
   }
 
   public static function run(): Void {
-    #if scriptable
-    cpp.vm.Thread.create(function() {
-    #end
-    #if (cpp || scriptable)
+    #if cpp
     while(started) {
       if(currentScheduler.hasSomethingToExecute()) {
         for(i in 0...1000) {
@@ -84,9 +63,6 @@ class NativeKernel {
     currentScheduler = null;
     statePid = null;
     Classes.clear();
-    #end
-    #if scriptable
-    });
     #end
     #if js
     js.Node.process.nextTick(onNextTick);
@@ -119,16 +95,11 @@ class NativeKernel {
     if(currentScheduler != null) {
       started = false;
     }
-    return 'ok'.atom();
+    return Atom.create('ok');
   }
 
   public static function testCompiler(): Pid {
-    #if startHaxe
-    switchToHaxe();
-    return null;
-    #else
     return testSpawn('CompilerMain', 'start', []);
-    #end
   }
 
   public static function runApplication(appName: String): Pid {
@@ -141,43 +112,15 @@ class NativeKernel {
     }
     var createArgs: Array<Tuple> = [];
     for(arg in args) {
-      createArgs.push(Tuple.create(["const".atom(), arg]));
+      createArgs.push(Tuple.create([Atom.create("const"), arg]));
     }
     #if cpp
     //need this or we get a segfault
     Sys.sleep(0.0001);
     #end
     return currentScheduler.spawn(function() {
-      return new PushStack(module.atom(), func.atom(), LList.create(cast createArgs), "Kernel".atom(), "testSpawn".atom(), MacroTools.line(), annaLang);
+      return new PushStack(Atom.create(module), Atom.create(func), LList.create(cast createArgs), Atom.create("Kernel"), Atom.create("testSpawn"), MacroTools.line(), annaLang);
     });
-  }
-
-  #if cppia
-  public static function restart(): Atom {
-    stop();
-    Sys.sleep(0.2);
-    return start();
-  }
-  #end
-
-  public static function recompile(): Atom {
-    #if cppia
-    Reflect.callMethod(null, Reflect.field(Type.resolveClass('DevelopmentRunner'), 'compileCompiler'), [function() {
-      switchToIA();
-    }]);
-    return 'ok'.atom();
-    #end
-    return 'not_available'.atom();
-  }
-
-  public static function switchToIA(): Atom {
-    #if cppia
-    Reflect.callMethod(null, Reflect.field(Type.resolveClass('Runtime'), 'stop'), []);
-    restart();
-    testCompiler();
-    return 'ok'.atom();
-    #end
-    return 'not_available'.atom();
   }
 
   public static function setProject(pc: ProjectConfig): Void {
@@ -189,7 +132,7 @@ class NativeKernel {
   }
 
   public static function getAutoStart(): Atom {
-    return annaLangProject.autoStart.atom();
+    return Atom.create(annaLangProject.autoStart);
   }
   
   public static function getAutoStartPath(): String {
@@ -200,26 +143,26 @@ class NativeKernel {
   public static function spawn(module: Atom, func: Atom, types: Tuple, args: LList): Pid {
     func = resolveApiFuncWithTypes(func, types);
     return currentScheduler.spawn(function() {
-      return new PushStack(module, func, args, "NativeKernel".atom(), "spawn".atom(), MacroTools.line(), annaLang);
+      return new PushStack(module, func, args, Atom.create("NativeKernel"), Atom.create("spawn"), MacroTools.line(), annaLang);
     });
   }
 
   public static function spawnFn(fn: Function, args: LList): Pid {
     return currentScheduler.spawn(function() {
-      return new InvokeAnonFunction(fn, args, 'NativeKernel'.atom(), 'spawnFn'.atom(), MacroTools.line(), annaLang);
+      return new InvokeAnonFunction(fn, args, Atom.create("NativeKernel"), Atom.create("spawnFn"), MacroTools.line(), annaLang);
     });
   }
 
   public static function spawn_linkFn(fn: Function, args: LList): Pid {
      return currentScheduler.spawnLink(Process.self(), function() {
-      return new InvokeAnonFunction(fn, args, 'NativeKernel'.atom(), 'spawn_linkFn'.atom(), MacroTools.line(), annaLang);
+      return new InvokeAnonFunction(fn, args, Atom.create("NativeKernel"), Atom.create("spawn_linkFn"), MacroTools.line(), annaLang);
     });
   }
 
   public static function spawn_link(module: Atom, func: Atom, types: Tuple, args: LList): Pid {
     func = resolveApiFuncWithTypes(func, types);
     return currentScheduler.spawnLink(Process.self(), function() {
-      return new PushStack(module, func, args, "NativeKernel".atom(), "spawn_link".atom(), MacroTools.line(), annaLang);
+      return new PushStack(module, func, args, Atom.create("NativeKernel"), Atom.create("spawn_link"), MacroTools.line(), annaLang);
     });
   }
 
@@ -249,7 +192,7 @@ class NativeKernel {
 
   public static function send(pid: Pid, payload: Dynamic): Atom {
     currentScheduler.send(pid, payload);
-    return 'ok'.atom();
+    return Atom.create("ok");
   }
 
   public static function crash(pid: Pid): Atom {
@@ -257,22 +200,22 @@ class NativeKernel {
     Logger.inspect(pid);
     Process.printStackTrace(pid);
     Logger.inspect("************");
-    return currentScheduler.exit(pid, 'crash'.atom());
+    return currentScheduler.exit(pid, Atom.create("crash"));
   }
 
   public static function exit(pid: Pid, signal: Atom = null): Atom {
     if(signal == null) {
-      signal = 'kill'.atom();
+      signal = Atom.create("kill");
     }
     return currentScheduler.exit(pid, signal);
   }
 
   public static function trapExit(pid: Pid): Atom {
-    return currentScheduler.flag(pid, 'trap_exit'.atom(), 'true'.atom());
+    return currentScheduler.flag(pid, Atom.create("trap_exit"), Atom.create("true"));
   }
 
   public static function untrapExit(pid: Pid): Atom {
-    return currentScheduler.flag(pid, 'trap_exit'.atom(), 'false'.atom());
+    return currentScheduler.flag(pid, Atom.create("trap_exit"), Atom.create("false"));
   }
 
   public static function monitor(pid: Pid): Atom {

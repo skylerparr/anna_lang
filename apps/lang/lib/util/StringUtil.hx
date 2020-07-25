@@ -40,7 +40,7 @@ class StringUtil {
     var prevChar: String = null;
     for(i in 0...camelCase.length) {
       var char: String = camelCase.charAt(i);
-      if(CAPITALS.match(char) && prevChar != null && !SYMBOLS.match(prevChar)) {
+      if(CAPITALS.match(char) && prevChar != null && !(CAPITALS.match(prevChar) && CAPITALS.match(camelCase.charAt(i + 1))) && !SYMBOLS.match(prevChar)) {
         retVal += "_" + char.toLowerCase();
       } else {
         retVal += char.toLowerCase();

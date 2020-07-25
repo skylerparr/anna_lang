@@ -4,7 +4,6 @@ import lang.macros.MacroTools;
 import lang.macros.MacroTools;
 import haxe.macro.Expr;
 import haxe.macro.Printer;
-import hscript.plus.ParserPlus;
 using haxe.macro.Tools;
 
 class PatternMatch {
@@ -28,23 +27,23 @@ class PatternMatch {
     var printer: Printer = annaLang.printer;
 
     return switch(pattern.expr) {
-      case ECall({expr: EField({expr: EConst(CIdent("Tuple"))}, "create")}, [{expr: EArrayDecl([{expr: ECall({ expr: EField({ expr: EConst(CIdent('Atom')) },'create') }, [{ expr: EConst(CString('const')) }]) }, value])}]):
+      case ECall({expr: EField({expr: EConst(CIdent("Tuple"))}, "create")}, [{expr: EArrayDecl([{expr: ECall({ expr: EField({ expr: EConst(CIdent('Atom')) },'create') }, [{ expr: EConst(CString('const', _)) }]) }, value])}]):
         generatePatternMatch(annaLang, value, valueExpr);
-      case ECall({expr: EField({expr: EConst(CIdent("Tuple"))}, "create")}, [{expr: EArrayDecl([{expr: ECall({ expr: EField({ expr: EConst(CIdent('Atom')) },'create') }, [{ expr: EConst(CString('var')) }]) }, { expr: EConst(CString(varName)) }])}]):
+      case ECall({expr: EField({expr: EConst(CIdent("Tuple"))}, "create")}, [{expr: EArrayDecl([{expr: ECall({ expr: EField({ expr: EConst(CIdent('Atom')) },'create') }, [{ expr: EConst(CString('var', _)) }]) }, { expr: EConst(CString(varName)) }])}]):
         var value = { expr: EConst(CIdent(varName)), pos: macroContext.currentPos() }
         generatePatternMatch(annaLang, value, valueExpr);
-      case ECall({expr: EField({expr: EConst(CIdent("Tuple"))}, "create")}, [{expr: EArrayDecl([{expr: ECall({ expr: EField({ expr: EConst(CIdent('Atom')) },'create') }, [{ expr: EConst(CString('pinned')) }]) }, { expr: EConst(CString(varName)) }])}]):
+      case ECall({expr: EField({expr: EConst(CIdent("Tuple"))}, "create")}, [{expr: EArrayDecl([{expr: ECall({ expr: EField({ expr: EConst(CIdent('Atom')) },'create') }, [{ expr: EConst(CString('pinned', _)) }]) }, { expr: EConst(CString(varName)) }])}]):
         var haxeStr: String = 'arrayTuple[${counter}] = ____scopeVariables.get("${varName}"); lang.EitherSupport.getValue(arrayTuple[${counter}]);';
         macros.haxeToExpr(haxeStr);
       case EConst(CIdent(v)):
         var varName: Dynamic = v;
         var value: Dynamic = printer.printExpr(valueExpr);
         var haxeStr: String = 'scope.set("${varName}", ${value});';
-        var expr: Expr = macros.haxeToExpr(haxeStr);
+        var expr: Expr = macros.haxeToExpr(haxeStr, true);
         expr;
-      case EConst(CString(_)) | EConst(CInt(_)) | EConst(CFloat(_)) | EUnop(OpNeg, _, _):
+      case EConst(CString(_, _)) | EConst(CInt(_)) | EConst(CFloat(_)) | EUnop(OpNeg, _, _):
         valuesNotEqual(pattern, valueExpr);
-      case ECall({expr: EField({expr: EConst(CIdent("Atom"))}, _)}, [{expr: EConst(CString(_))}]):
+      case ECall({expr: EField({expr: EConst(CIdent("Atom"))}, _)}, [{expr: EConst(CString(_, _))}]):
         valuesNotEqual(pattern, valueExpr);
       case ECall({expr: EField({expr: EConst(CIdent("Tuple"))}, _)}, [{expr: EArrayDecl(values)}]) | EArrayDecl(values):
         var individualMatches: Array<Expr> = [];
@@ -169,7 +168,7 @@ class PatternMatch {
               switch(field.expr) {
                 case EBinop(OpArrow, key, value):
                   switch(key.expr) {
-                    case ECall({expr: EField({expr: EConst(CIdent('Atom')) }, 'create') }, [{ expr: EConst(CString(name)) }]):
+                    case ECall({expr: EField({expr: EConst(CIdent('Atom')) }, 'create') }, [{ expr: EConst(CString(name, _)) }]):
                       var fieldType: String = macroContext.getFieldType(customTypeStr, name);
                       macroContext.varTypesInScope.set(name, fieldType);
 
