@@ -25,6 +25,7 @@ class PatternMatch {
   }
 
   public static function generatePatternMatch(annaLang: AnnaLang, pattern: Expr, valueExpr: Expr, counter: Int = 0):Expr {
+    trace("here");
     var macroContext: MacroContext = annaLang.macroContext;
     var macros: Macros = annaLang.macros;
     var macroTools: MacroTools = annaLang.macroTools;
@@ -32,7 +33,10 @@ class PatternMatch {
 
     return switch(pattern.expr) {
       case ECall({expr: EField({expr: EConst(CIdent("Tuple"))}, "create")}, [{expr: EArrayDecl([{expr: ECall({ expr: EField({ expr: EConst(CIdent('Atom')) },'create') }, [{ expr: EConst(CString('const')) }]) }, value])}]):
-        generatePatternMatch(annaLang, value, valueExpr);
+        trace("generate");
+        var retVal = generatePatternMatch(annaLang, value, valueExpr, 0);
+        trace(retVal);
+        retVal;
       case ECall({expr: EField({expr: EConst(CIdent("Tuple"))}, "create")}, [{expr: EArrayDecl([{expr: ECall({ expr: EField({ expr: EConst(CIdent('Atom')) },'create') }, [{ expr: EConst(CString('var')) }]) }, { expr: EConst(CString(varName)) }])}]):
         var value = { expr: EConst(CIdent(varName)), pos: macroContext.currentPos() }
         generatePatternMatch(annaLang, value, valueExpr);
