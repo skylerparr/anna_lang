@@ -165,7 +165,7 @@ class Anna {
         case TBool:
           '${(val : Bool)}';
         case TNull:
-          'nil';
+          'null';
         case type:
           if(Std.is(val, CustomType)) {
             var retVal: String = (val : CustomType).toAnnaString();

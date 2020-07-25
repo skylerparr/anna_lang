@@ -2,6 +2,7 @@ defmodule(DefaultEnum, {
   @impl EEnum;
 
   @alias vm.Function;
+  @alias vm.NativeKernel;
 
   // all LList
   // ---------------------------------------------------------

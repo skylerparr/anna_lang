@@ -51,8 +51,17 @@ class NativeKernel {
   }
 
   public static inline function printScope(): Atom {
-    trace(Process.self().processStack.getVariablesInScope()); 
+    trace(Anna.toAnnaString(Process.self().processStack.getVariablesInScope())); 
     return Atom.create('ok');
+  }
+
+  public static inline function printStackTrace(): Atom {
+    Process.self().processStack.printStackTrace(); 
+    return Atom.create('ok');
+  }
+
+  public static inline function resolveTypes(variable: Dynamic): Array<String> {
+    return annaLang.macroContext.varTypesInScope.getTypes(variable);
   }
 
   private static inline function defineCode(): Atom {

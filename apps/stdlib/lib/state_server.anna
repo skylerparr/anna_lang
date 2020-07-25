@@ -1,5 +1,6 @@
 defmodule(StateServer, {
   @alias vm.Pid;
+  @alias vm.NativeKernel;
 
   @def start({Atom: module, Dynamic: state}, [Tuple], {
     pid = Kernel.spawn(
