@@ -25,7 +25,7 @@ $ haxelib dev hxbert hxbert/src
 Lastly we need hscript-plus
 ```
 $ git clone git@github.com:skylerparr/hscript-plus.git
-$ haxelib dev hf_fork hscript-plus
+$ haxelib dev hscript-plus hscript-plus
 ```
 Now we're ready to build and run:
 ```
