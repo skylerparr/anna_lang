@@ -3,6 +3,39 @@
 A fully functional programming language that will eventually transpile
 to multiple language targets. Currently just C++.
 
+Installation Notes:
+===================
+I'm assuming you already have your system setup to compile
+C++ files on your desired OS and have haxe 3.4.7 installed
+
+First you will need the correct haxelibs.
+First grab hxcpp from haxelib
+`haxelib install hxcpp`
+next you need a library called sepia, we can just clone it
+into this directory and set the dev directory for haxelib.
+```
+$ git clone git@github.com:skylerparr/sepia.git
+$ haxelib dev sepia sepia/src
+```
+Next we'll need hxbert
+```
+$ git clone git@github.com:skylerparr/hxbert.git
+$ haxelib dev hxbert hxbert/src
+```
+Lastly we need hscript-plus
+```
+$ git clone git@github.com:skylerparr/hscript-plus.git
+$ haxelib dev hf_fork hscript-plus
+```
+Now we're ready to build and run:
+```
+$ haxe build-static.hxml && ./anna-static/StandaloneMain-debug
+```
+If all goes well, you'll see the interactive anna console.
+
+Please report bugs :)
+
+
 TODO:
 =====
 - [ ] create a way to pass which scheduler to use
