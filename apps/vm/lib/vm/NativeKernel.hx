@@ -33,7 +33,7 @@ class NativeKernel {
       return 'already_started'.atom();
     }
     Logger.init();
-    var scheduler: vm.schedulers.CPPMultithreadedScheduler = new vm.schedulers.CPPMultithreadedScheduler();
+    var scheduler: vm.schedulers.GenericScheduler = new vm.schedulers.GenericScheduler();
 
     annaLang = new AnnaLang();
 
@@ -77,10 +77,7 @@ class NativeKernel {
   }
 
   public static function run(): Void {
-    #if scriptable
-    cpp.vm.Thread.create(function() {
-    #end
-    #if (cpp || scriptable)
+    #if cpp
     while(started) {
       if(currentScheduler.hasSomethingToExecute()) {
         for(i in 0...1000) {
@@ -98,9 +95,6 @@ class NativeKernel {
     currentScheduler = null;
     statePid = null;
     Classes.clear();
-    #end
-    #if scriptable
-    });
     #end
     #if js
     js.Node.process.nextTick(onNextTick);

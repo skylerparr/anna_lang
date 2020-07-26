@@ -17,9 +17,6 @@ import hscript.Macro;
 import hscript.Interp;
 import hscript.Parser;
 import org.hxbert.BERT;
-#if scriptable
-import cpp.vm.Thread;
-#end
 
 using lang.AtomSupport;
 @:rtti
@@ -79,59 +76,11 @@ class StandaloneMain {
     project = new DefaultProjectConfig('AnnaLang', '${basePath}scripts', '${basePath}out/',
       ['${basePath}src/', '${basePath}apps/anna_unit/lib', '${basePath}apps/lang/lib'], ['hscript-plus', 'sepia', 'hxbert']);
 
-    #if scriptable
-    mainThread = Thread.current();
-    Thread.create(function() {
-      var loaded: Bool = false;
-      var onComplete = function(files: Array<String>) {
-        if(!loaded) {
-          var files = Runtime.loadAll(project);
-          mainThread.sendMessage(files);
-          loaded = true;
-        } else {
-          mainThread.sendMessage(files);
-        }
-      }
-      project.subscribeAfterCompileCallback(onComplete);
-      Runtime.compileProject(project);
-    });
-
-    pollChanges();
-    #else
     #if dev_anna
     DevelopmentRunner.start(project);
     #else
     StandaloneRunner.start(project);
     #end
-    #end
   }
-
-  #if scriptable
-  private inline function pollChanges(): Void {
-    while(true) {
-      var files: Array<String> = Thread.readMessage(true);
-
-      if(files != null && files.length > 0) {
-        var clazz: Class<Dynamic> = Type.resolveClass("DevelopmentRunner");
-        if(clazz != null) {
-          var fields: Array<String> = Type.getClassFields(clazz);
-          for(f in fields) {
-            if(f == "start") {
-              continue;
-            }
-          }
-          if(!ready) {
-            var fun = Reflect.field(clazz, "start");
-            fun(project);
-          }
-          ready = true;
-        }
-        for(cb in compilerCompleteCallbacks) {
-          cb();
-        }
-      }
-    }
-  }
-  #end
 
 }

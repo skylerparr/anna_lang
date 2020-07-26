@@ -14,10 +14,8 @@ class Logger {
   private inline static var filePath: String = 'log.txt';
 
   #if !macro
-  private static var logThread: cpp.vm.Thread;
 
   public static function sendLog(log: String): Void {
-    logThread.sendMessage(log);
   }
 
   private static function logListener():Void {
@@ -31,12 +29,6 @@ class Logger {
   #end
 
   public static function init():Void {
-    #if !macro
-    #if cpp
-    sys.io.File.saveContent(filePath, '');
-//    logThread = cpp.vm.Thread.create(logListener);
-    #end
-    #end
   }
 
   public static function inspect(term: Dynamic, label: String = null): Void {
