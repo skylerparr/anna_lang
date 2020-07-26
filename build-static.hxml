@@ -11,6 +11,6 @@
 -cpp anna_static
 -main StandaloneMain
 -lib sepia
--lib hscript
+-lib hscript-plus
 -lib hxbert
 -debug
