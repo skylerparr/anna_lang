@@ -1,12 +1,10 @@
 package;
 import haxe.io.Bytes;
 import haxe.io.Input;
-import cpp.vm.Thread;
 import vm.Port;
 import vm.SynchronizedInstance;
 class CPPCLIInput implements SynchronizedInstance {
   public var port:Port;
-  public var thread: Thread;
 
   public function new() {
   }

@@ -19,12 +19,6 @@ class Logger {
   }
 
   private static function logListener():Void {
-    while(true) {
-      var log: String = cpp.vm.Thread.readMessage(true);
-      var output: haxe.io.Output = sys.io.File.append('log.txt');
-      output.writeString(log);
-      output.close();
-    }
   }
   #end
 

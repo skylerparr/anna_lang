@@ -1,8 +1,0 @@
-{
-  "application": "debugger",
-  "autoStart": null,
-  "apps": ["lang", "vm"],
-  "libs": [],
-  "tests": [],
-  "haxelibs": []
-}

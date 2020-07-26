@@ -21,9 +21,6 @@ import org.hxbert.BERT;
 using lang.AtomSupport;
 @:rtti
 class StandaloneMain {
-  #if scriptable
-  private static var mainThread: Thread;
-  #end
   private static var ready: Bool = false;
 
   public static var compilerCompleteCallbacks: Array<Void->Void> = [];
