@@ -15,6 +15,8 @@ defmodule(UnitTests, {
     test_results_pid = Kernel.spawn_link(@_'UnitTests', @_'start_test_results_store', @tuple[], {});
     Kernel.register_pid(test_results_pid, TEST_RESULTS);
 
+    AllTestsServer.start_link();
+
     [@_'ok', all_tests_pid];
   });
 
@@ -38,6 +40,21 @@ defmodule(UnitTests, {
   @def add_test({Atom: module}, [Atom], {
     all_tests_pid = Kernel.get_pid_by_name(ALL_TESTS);
     Kernel.send(all_tests_pid, [@_'store', module]);
+    
+    functions = @native Classes.getApiFunctions(module);
+    fun = @fn {
+      [{Dynamic: func}] => {
+        @_'ok';
+      };
+    }
+    EEnum.each(cast(functions, LList), fun);
+    EEnum.each(functions, @fn {
+      [{Dynamic: func}] => {
+        //AllTestsServer.add_test(module, cast(func, Atom));
+        @_'ok';
+      };
+    });
+
     @_'ok';
   });
 

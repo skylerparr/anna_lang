@@ -13,7 +13,7 @@ class Logger {
 
   private inline static var filePath: String = 'log.txt';
 
-  #if !macro
+  #if (!macro && cpp)
   private static var logThread: sys.thread.Thread;
 
   public static function sendLog(log: String): Void {

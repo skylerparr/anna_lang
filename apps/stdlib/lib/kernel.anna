@@ -146,7 +146,7 @@ defmodule(Kernel, {
     @native NativeKernel.same(a, b);
   });
 
-  @def equal({Float: a, Float: b}, [Float], {
+  @def equal({Float: a, Float: b}, [Atom], {
     @native NativeKernel.equal(a, b);
   });
 
@@ -172,6 +172,10 @@ defmodule(Kernel, {
 
   @def get_pid_by_name({Atom: name}, [Pid], {
     @native Process.getPidByName(name);
+  });
+
+  @def registered_pids([LList], {
+    @native NativeKernel.registeredPids();
   });
 
   @def apply({Function: fun, LList: args}, [Dynamic], {

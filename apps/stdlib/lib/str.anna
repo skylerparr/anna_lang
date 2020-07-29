@@ -26,7 +26,11 @@ defmodule(Str, {
   });
 
   @def string_to_int({String: s}, [Int], {
-    @native Std.int(s);
+    @native StringUtil.stringToInt(s);
+  });
+
+  @def string_to_float({String: s}, [Float], {
+    @native Std.parseFloat(s);
   });
 
   @def int_to_string({Int: i}, [String], {

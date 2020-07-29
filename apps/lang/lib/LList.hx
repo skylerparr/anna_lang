@@ -75,6 +75,14 @@ class LList implements CustomType {
     return (cast list)._iterator();
   }
 
+  public static function toArray(list: LList): Array<Any> {
+    var retVal: Array<Any> = [];
+    for(i in iterator(list)) {
+      retVal.push(i);
+    }
+    return retVal;
+  }
+
   public function asBert(): Dynamic {
     return null;
   }

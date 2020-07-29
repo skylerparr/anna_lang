@@ -358,7 +358,7 @@ class MacroTools {
             var strValue: String = getAtom(varName);
             {type: "Atom", value: getConstant(strValue), rawValue: strValue};
           } else {
-            {type: 'Variable', value: getVar(varName), rawValue: varName};
+            {type: "Variable", value: getVar(varName), rawValue: varName};
           }
         } else {
           getTypeAndValue(macros.haxeToExpr(const), macroContext);
@@ -366,9 +366,10 @@ class MacroTools {
       case EConst(CString(value, _)):
         value = StringTools.replace(value, '"', '\\"');
         {type: "String", value: getConstant('"${value}"'), rawValue: '"${value}"'};
-      case EConst(CInt(value)):
+      case EConst(CInt(value)) | EConst(CFloat(value)):
         {type: "Number", value: getConstant(value), rawValue: value};
-      case EConst(CFloat(value)):
+      case EUnop(OpNeg, false, {expr: EConst(CInt(value))}) | EUnop(OpNeg, false, {expr: EConst(CFloat(value))}):
+        value = '-${value}';
         {type: "Number", value: getConstant(value), rawValue: value};
       case EMeta({name: "atom" | "_"}, {expr: EConst(CString(value, _))}):
         var strValue: String = getAtom(value);
@@ -790,6 +791,8 @@ class MacroTools {
         [expr];
       case EField(_, _):
         [expr];
+      case EUnop(OpNeg, _, _):
+        [expr];
       case e:
         MacroLogger.log(e, 'e');
         throw new ParsingException("AnnaLang: Expected function body definition");
@@ -847,6 +850,9 @@ class MacroTools {
       case EConst(CString(value, _)) | EConst(CInt(value)) | EConst(CFloat(value)):
         acc.push(value);
         acc;
+      case EUnop(OpNeg, _, {expr: EConst(CInt(value))}) | EUnop(OpNeg, _, {expr: EConst(CFloat(value))}):
+        acc.push('-${value}');
+        acc;                           
       case EMeta(_, _) | EArrayDecl(_) | EBlock(_) | EBinop(OpArrow, _, _) | EObjectDecl(_):
         acc.push(printer.printExpr(expr));
         acc;

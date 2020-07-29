@@ -1,5 +1,4 @@
 import haxe.rtti.Rtti;
-import cpp.NativeProcess;
 import sys.io.File;
 import sys.FileSystem;
 import project.DefaultProjectConfig;

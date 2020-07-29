@@ -31,7 +31,11 @@ class NativeKernel {
       return Atom.create("already_started");
     }
     Logger.init();
+#if cpp
     var scheduler: vm.schedulers.CPPMultithreadedScheduler = new vm.schedulers.CPPMultithreadedScheduler();
+#else
+    var scheduler: vm.schedulers.GenericScheduler = new vm.schedulers.GenericScheduler();
+#end
 
     annaLang = new AnnaLang();
 
@@ -42,6 +46,20 @@ class NativeKernel {
 
     started = true;
     return Atom.create("ok");
+  }
+
+  public static inline function printScope(): Atom {
+    trace(Anna.toAnnaString(Process.self().processStack.getVariablesInScope())); 
+    return Atom.create('ok');
+  }
+
+  public static inline function printStackTrace(): Atom {
+    Process.self().processStack.printStackTrace(); 
+    return Atom.create('ok');
+  }
+
+  public static inline function resolveTypes(variable: Dynamic): Array<String> {
+    return annaLang.macroContext.varTypesInScope.getTypes(variable);
   }
 
   public static function run(): Void {
@@ -281,6 +299,10 @@ class NativeKernel {
       nextScopeVariables.set(argName, value);
     }
     currentScheduler.apply(pid, anonFn, callArgs, nextScopeVariables, callback);
+  }
+
+  public static inline function registeredPids(): LList {
+    return currentScheduler.registeredPids();
   }
 
   public static inline function isNull(val: Dynamic): Bool {
