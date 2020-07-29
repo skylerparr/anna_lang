@@ -7,7 +7,9 @@ import vm.Port;
 import IO;
 import vm.Function;
 import vm.Reference;
+#if cpp
 import CPPCLIInput;
+#end
 import lang.UserDefinedType;
 @:build(lang.macros.AnnaLang.init())
 @:build(lang.macros.AnnaLang.deftype(FooCus, {

@@ -10,6 +10,7 @@ class AnonFn implements Function {
   public var annaLang: AnnaLang;
   public var module: Atom;
   public var func: String;
+  public var instance: Dynamic;
 
   public function new() {
     args = [];
@@ -33,7 +34,7 @@ class AnonFn implements Function {
       var fqFunName: String = Helpers.makeFqFunName(func, typeArgs);
       var fn: Function = Classes.getFunction(module, Atom.create(fqFunName));
       if(fn != null) {
-        retVal = Reflect.callMethod(null, fn.fn, args);
+        retVal = Reflect.callMethod(instance, fn.fn, args);
         break;
       }
     }

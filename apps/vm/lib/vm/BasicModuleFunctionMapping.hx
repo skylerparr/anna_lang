@@ -57,6 +57,7 @@ class BasicModuleFunctionMapping implements ModuleFunctionMapping {
         if(fn == null) {
           fn = new SimpleFunction();
         }
+        fn.instance = instance;
         var args: Array<String> = Reflect.field(instance, fun);
         fn.args = args;
         classFunctions.set(origFnAtom, fn);
@@ -90,6 +91,7 @@ class BasicModuleFunctionMapping implements ModuleFunctionMapping {
         if(fn == null) {
           fn = new SimpleFunction();
         }
+        fn.instance = instance;
         fn.fn = Reflect.field(instance, fun);
         classFunctions.set(origFnAtom, fn);
         functions.set(className, classFunctions);

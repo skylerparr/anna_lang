@@ -19,11 +19,11 @@ using lang.AtomSupport;
 @:rtti
 class NativeKernel {
 
-  @field public static var currentScheduler: Scheduler;
-  @field public static var statePid: Pid;
-  @field public static var projectConfig: ProjectConfig;
-  @field public static var started: Bool;
-  @field public static var msg: Dynamic;
+  public static var currentScheduler: Scheduler;
+  public static var statePid: Pid;
+  public static var projectConfig: ProjectConfig;
+  public static var started: Bool;
+  public static var msg: Dynamic;
 
   private static var annaLang: AnnaLang;
   private static var annaLangProject: AnnaLangProject;
@@ -33,7 +33,11 @@ class NativeKernel {
       return 'already_started'.atom();
     }
     Logger.init();
+#if cpp
     var scheduler: vm.schedulers.CPPMultithreadedScheduler = new vm.schedulers.CPPMultithreadedScheduler();
+#else
+    var scheduler: vm.schedulers.GenericScheduler = new vm.schedulers.GenericScheduler();
+#end
 
     annaLang = new AnnaLang();
 

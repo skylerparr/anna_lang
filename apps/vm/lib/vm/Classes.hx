@@ -9,7 +9,7 @@ using StringTools;
 @:rtti
 class Classes {
 
-  @field public static var mapping: ModuleFunctionMapping = new BasicModuleFunctionMapping();
+  public static var mapping: ModuleFunctionMapping = new BasicModuleFunctionMapping();
 
   public static function clear(): Void {
     mapping.clear();

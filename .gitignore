@@ -13,3 +13,7 @@ projectFilesBackup/
 _build
 project/my_app/
 runtime_log
+anna-js.js
+anna-js.js.map
+dump/
+project/app_config.json
