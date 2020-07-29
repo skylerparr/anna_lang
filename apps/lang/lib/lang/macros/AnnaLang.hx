@@ -121,7 +121,7 @@ class AnnaLang {
     var dir: String = "proj_src";
     sys.FileSystem.createDirectory(dir);
 
-    var temp: String = sys.io.File.getContent("/home/skyler/programming/anna_lang/gen.tpl");
+    var temp: String = sys.io.File.getContent('${Sys.getCwd()}gen.tpl');
     for(moduleDef in annaLangForMacro.macroContext.compiledModules) {
       var packDir = "";
       if(moduleDef.pack != "") {
