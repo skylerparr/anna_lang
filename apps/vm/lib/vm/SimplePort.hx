@@ -35,13 +35,10 @@ class SimplePort extends AbstractCustomType implements Port {
   }
 
   public function sendMessage(payload:Tuple):Void {
-    trace(payload);
     if(Process.isAlive(pid) == Atom.create('false')) {
-      trace("dispose");
       dispose();
       return;
     }
-    trace("send to kernel");
     NativeKernel.send(pid, payload);
   }
 
