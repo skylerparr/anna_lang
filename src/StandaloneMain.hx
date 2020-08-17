@@ -63,19 +63,7 @@ class StandaloneMain {
     new Printer().printExpr(macro 'foo');
     GlobalStore.start();
 
-//    cache('scope.set("foo", lang.EitherSupport.getValue(MMap.get(lang.EitherSupport.getValue(arrayTuple[1]), ArgHelper.extractArgValue(Tuple.create([Atom.create("const"), "foo"]), ____scopeVariables, Code.annaLang))));');
-//    cache('scope.set("baz", lang.EitherSupport.getValue(MMap.get(lang.EitherSupport.getValue(arrayTuple[1]), ArgHelper.extractArgValue(Tuple.create([Atom.create("const"), "baz"]), ____scopeVariables, Code.annaLang))));');
-
     new StandaloneMain();
-  }
-
-  public static function cache(s: String): Void {
-    var parser: Parser = new Parser();
-    parser.allowTypes = true;
-    parser.allowMetadata = true;
-    var ast = parser.parseString(s);
-    var retVal = new hscript.Macro( { file : "", min : 0, max : 0 }).convert(ast);
-    lang.macros.Macros.cache.set(s, retVal);
   }
 
   public function new() {

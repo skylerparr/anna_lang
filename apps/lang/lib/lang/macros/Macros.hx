@@ -447,17 +447,10 @@ class Macros {
     return context;
   }
 
-  public static var cache: Map<String, Expr> = new Map<String, Expr>();
-
   public function haxeToExpr(str: String, debug: Bool = false): Expr {
-    if(cache.exists(str)) {
-      return cache.get(str);
-    } else {
-      var ast = annaLang.parser.parseString(str);
-      var retVal = new hscript.Macro(macroContext.currentPos()).convert(ast);
-      cache.set(str, retVal);
-      return retVal;
-    }
+    var ast = annaLang.parser.parseString(str);
+    var retVal = new hscript.Macro(macroContext.currentPos()).convert(ast);
+    return retVal;
   }
 
   macro public static function ei(expr: Expr): Expr {
