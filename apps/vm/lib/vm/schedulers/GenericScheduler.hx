@@ -58,7 +58,6 @@ class GenericScheduler implements Scheduler {
     if(pids == null) {
       return "ok".atom();
     }
-    #if !cppia
     for(pid in _allPids) {
       pid.dispose();
     }
@@ -72,7 +71,6 @@ class GenericScheduler implements Scheduler {
       currentPid = null;
     }
     registeredPidsMap = null;
-    #end
     pids = null;
     _allPids = null;
     return "ok".atom();
@@ -83,9 +81,6 @@ class GenericScheduler implements Scheduler {
       return "not_running".atom();
     }
     pid.setState(ProcessState.COMPLETE);
-    #if !cppia
-    pid.dispose();
-    #end
     pids.remove(pid);
     _allPids.remove(pid);
     pidMetaMap.remove(pid);
@@ -106,6 +101,10 @@ class GenericScheduler implements Scheduler {
     if(notRunning()) {
       return "not_running".atom();
     }
+    if(pid == null) {
+      NativeKernel.crash(Process.self());
+      return "ok".atom();
+    }
     if(pid.state == ProcessState.RUNNING || pid.state == ProcessState.WAITING || pid.state == ProcessState.SLEEPING) {
       Logger.log(Anna.toAnnaString(pid) + ":" + Anna.toAnnaString(payload), 'send');
       pid.putInMailbox(payload);
@@ -119,6 +118,10 @@ class GenericScheduler implements Scheduler {
 
   public function receive(pid: Pid, fn: Function, timeout: Null<Int> = null, callback: (Dynamic) -> Void = null): Void {
     if(notRunning()) {
+      return;
+    }
+    if(pid == null) {
+      NativeKernel.crash(Process.self());
       return;
     }
     if(pid.state == ProcessState.RUNNING) {
